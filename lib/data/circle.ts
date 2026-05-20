@@ -13,6 +13,7 @@ export type CircleMember = {
   user_id: string;
   role: Role;
   access_level: AccessLevel;
+  title: string | null;
   profile: Pick<Profile, "id" | "full_name" | "email"> | null;
   created_at: string;
 };
@@ -23,7 +24,7 @@ export async function listCircleMembers(): Promise<CircleMember[]> {
 
   const { data: memberships } = await supabase
     .from("memberships")
-    .select("id, user_id, role, access_level, created_at")
+    .select("id, user_id, role, access_level, title, created_at")
     .eq("organization_id", ctx.organization.id)
     .order("created_at", { ascending: true });
 
@@ -32,6 +33,7 @@ export async function listCircleMembers(): Promise<CircleMember[]> {
     user_id: string;
     role: Role;
     access_level: AccessLevel;
+    title: string | null;
     created_at: string;
   }[];
   if (rows.length === 0) return [];
@@ -53,6 +55,7 @@ export async function listCircleMembers(): Promise<CircleMember[]> {
     user_id: m.user_id,
     role: m.role,
     access_level: m.access_level,
+    title: m.title,
     created_at: m.created_at,
     profile: profileMap.get(m.user_id) ?? null,
   }));

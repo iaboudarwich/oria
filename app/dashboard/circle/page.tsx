@@ -4,6 +4,7 @@ import { InviteCreator } from "@/components/circle/invite-creator";
 import { InviteCard } from "@/components/circle/invite-card";
 import { ManageMemberPanel } from "@/components/circle/manage-member-panel";
 import { CircleSettings } from "@/components/circle/circle-settings";
+import { TitleEditor } from "@/components/circle/title-editor";
 import { getCurrentContext } from "@/lib/data/organizations";
 import {
   listCircleMembers,
@@ -119,8 +120,14 @@ export default async function MembersPage() {
                     email={m.profile?.email ?? ""}
                     role={m.role}
                     accessLevel={m.access_level}
+                    title={m.title}
                     joinedAt={m.created_at}
                   />
+                  {isOwner ? (
+                    <div className="space-y-1 px-3 pb-2">
+                      <TitleEditor membershipId={m.id} current={m.title} />
+                    </div>
+                  ) : null}
                   {isOwner ? (
                     <ManageMemberPanel
                       member={{
@@ -228,6 +235,7 @@ function MemberRow({
   email,
   role,
   accessLevel,
+  title,
   isSelf,
   joinedAt,
 }: {
@@ -235,6 +243,7 @@ function MemberRow({
   email: string;
   role: string;
   accessLevel: AccessLevel;
+  title?: string | null;
   isSelf?: boolean;
   joinedAt?: string;
 }) {
@@ -251,6 +260,9 @@ function MemberRow({
       <div className="min-w-0 flex-1">
         <p className="truncate text-[13px] text-ink">
           {name}
+          {title ? (
+            <span className="ml-2 text-[11.5px] text-ink-muted">{title}</span>
+          ) : null}
           {isSelf ? (
             <span className="ml-2 text-[11px] text-ink-faint">you</span>
           ) : null}

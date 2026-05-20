@@ -104,6 +104,34 @@ export async function setMemberSections(formData: FormData): Promise<void> {
   revalidatePath("/dashboard/circle");
 }
 
+/**
+ * Set a free-text title on a member ("Property manager", "Lawyer",
+ * "Accountant"). Owner only. Permissions are controlled by access_level;
+ * the title is for display in Workspaces (and harmless in Personal/Circle).
+ *
+ * FormData:
+ *   - membership_id
+ *   - title (may be empty to clear)
+ */
+export async function setMemberTitle(formData: FormData): Promise<void> {
+  const membershipId = String(formData.get("membership_id") ?? "");
+  if (!membershipId) return;
+  const titleRaw = String(formData.get("title") ?? "").trim().slice(0, 60);
+  const title = titleRaw.length > 0 ? titleRaw : null;
+
+  const owner = await ensureOwner();
+  if (!owner) return;
+
+  const supabase = await createClient();
+  await supabase
+    .from("memberships")
+    .update({ title })
+    .eq("id", membershipId)
+    .eq("organization_id", owner.orgId);
+
+  revalidatePath("/dashboard/circle");
+}
+
 /** Remove a member from the active circle. Owner only. Cannot remove self. */
 export async function removeMember(formData: FormData): Promise<void> {
   const membershipId = String(formData.get("membership_id") ?? "");

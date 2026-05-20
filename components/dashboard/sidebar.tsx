@@ -25,6 +25,7 @@ import {
   ScalesIcon,
   SearchIcon,
   SettingsIcon,
+  SparkIcon,
   StaffIcon,
   TagIcon,
   UploadIcon,
@@ -62,9 +63,10 @@ const personalSecondaryNav: NavItem[] = [
   { label: "Members", href: "/dashboard/circle", icon: PersonIcon },
 ];
 
-// Work mode: business-focused nav. Analysis is the centerpiece of Work
-// (visual operational intelligence), so it sits at the top.
+// Work mode: business-focused nav. AI Agent sits right under Ask Oria as
+// the persistent operational brain for the Workspace.
 const workSecondaryNav: NavItem[] = [
+  { label: "AI Agent", href: "/dashboard/work/agent", icon: SparkIcon },
   { label: "Analysis", href: "/dashboard/work/analysis", icon: ChartIcon },
   { label: "Uploads", href: "/dashboard/inbox", icon: UploadIcon },
   { label: "Finance", href: "/dashboard/work/finance", icon: WalletIcon },
