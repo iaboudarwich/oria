@@ -6,6 +6,7 @@ import {
   type ExtractionResult,
   type SkipReason,
 } from "@/lib/ai/extract";
+import { proposeAutoReminders } from "./auto-reminders";
 import type { DocumentType, Section } from "@/lib/supabase/types";
 
 /**
@@ -332,8 +333,16 @@ export async function processUpload(uploadId: string): Promise<void> {
       })
       .eq("id", uploadId);
 
-    // Calendar surfaces memory_items.occurred_at directly now — we no longer
-    // auto-create generic "Check this itinerary"-style reminders.
+    // Calendar already surfaces memory_items.occurred_at directly (passive
+    // events like flights and hotel check-ins). On top of that, propose
+    // action-shaped reminders for items that need follow-up — invoice due
+    // dates, lease/contract renewals, recurring bills. Confidence-gated
+    // and date-gated so we don't fill the user's inbox with noise.
+    await proposeAutoReminders({
+      uploadId: upload.id,
+      organizationId: upload.organization_id,
+    }).catch(() => undefined);
+
     return;
   }
 

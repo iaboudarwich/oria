@@ -31,6 +31,7 @@ type Props = {
 
 type SpaceFilter = "all" | string;
 type CategoryFilter = "all" | CalendarCategory;
+type KindFilter = "all" | "event" | "reminder";
 
 type Mode = "list" | "year" | "month" | "week" | "day";
 
@@ -46,6 +47,7 @@ const CATEGORY_ORDER: CalendarCategory[] = [
 export function CalendarView({ entries, spaces, activeSpaceId }: Props) {
   const [spaceFilter, setSpaceFilter] = useState<SpaceFilter>("all");
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>("all");
+  const [kindFilter, setKindFilter] = useState<KindFilter>("all");
   const [mode, setMode] = useState<Mode>("list");
   const [cursor, setCursor] = useState<Date>(() => {
     const d = new Date();
@@ -59,9 +61,11 @@ export function CalendarView({ entries, spaces, activeSpaceId }: Props) {
       if (categoryFilter !== "all" && e.category !== categoryFilter) {
         return false;
       }
+      if (kindFilter === "event" && e.kind !== "item") return false;
+      if (kindFilter === "reminder" && e.kind !== "reminder") return false;
       return true;
     });
-  }, [entries, spaceFilter, categoryFilter]);
+  }, [entries, spaceFilter, categoryFilter, kindFilter]);
 
   const showSpacePill = spaceFilter === "all";
 
@@ -89,7 +93,24 @@ export function CalendarView({ entries, spaces, activeSpaceId }: Props) {
           ) : null}
           <PillRow muted>
             <Pill
-              label="All"
+              label="Everything"
+              active={kindFilter === "all"}
+              onClick={() => setKindFilter("all")}
+            />
+            <Pill
+              label="Events"
+              active={kindFilter === "event"}
+              onClick={() => setKindFilter("event")}
+            />
+            <Pill
+              label="Reminders"
+              active={kindFilter === "reminder"}
+              onClick={() => setKindFilter("reminder")}
+            />
+          </PillRow>
+          <PillRow muted>
+            <Pill
+              label="All categories"
               active={categoryFilter === "all"}
               onClick={() => setCategoryFilter("all")}
             />

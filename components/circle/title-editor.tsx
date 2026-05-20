@@ -3,13 +3,26 @@
 import { useState, useTransition } from "react";
 import { setMemberTitle } from "@/lib/data/member-access-actions";
 
-const PRESETS = [
+const CIRCLE_PRESETS = [
+  "Wife",
+  "Husband",
+  "Family",
+  "Partner",
+  "Roommate",
+  "Driver",
+  "Cleaner",
+  "Assistant",
+];
+
+const WORKSPACE_PRESETS = [
   "Property manager",
   "Lawyer",
   "Accountant",
   "Assistant",
   "Broker",
   "Analyst",
+  "Tenant rep",
+  "Contractor",
 ];
 
 /**
@@ -21,13 +34,21 @@ const PRESETS = [
 export function TitleEditor({
   membershipId,
   current,
+  orgKind = "circle",
 }: {
   membershipId: string;
   current: string | null;
+  /** Drives the preset chips so a Workspace doesn't offer "Wife" and a
+   *  Circle doesn't offer "Lawyer". */
+  orgKind?: "personal" | "circle" | "office";
 }) {
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState(current ?? "");
   const [pending, startTransition] = useTransition();
+  const presets =
+    orgKind === "office" ? WORKSPACE_PRESETS : CIRCLE_PRESETS;
+  const placeholder =
+    orgKind === "office" ? "e.g. Property manager" : "e.g. Wife or Driver";
 
   function save(text: string) {
     const fd = new FormData();
@@ -65,13 +86,13 @@ export function TitleEditor({
         type="text"
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        placeholder="e.g. Property manager"
+        placeholder={placeholder}
         maxLength={60}
         className="block h-8 w-full rounded-md border border-line bg-surface-raised px-2.5 text-[12.5px] text-ink placeholder:text-ink-faint outline-none focus:border-line-strong"
         autoFocus
       />
       <ul className="flex flex-wrap gap-1.5">
-        {PRESETS.map((p) => (
+        {presets.map((p) => (
           <li key={p}>
             <button
               type="button"

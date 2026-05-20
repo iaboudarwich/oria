@@ -36,6 +36,7 @@ export async function POST(request: Request) {
     query?: string;
     history?: AgentMessage[];
     scope?: { kind?: string; key?: string; label?: string } | null;
+    crossSpace?: boolean;
   } = {};
   try {
     body = (await request.json()) as typeof body;
@@ -81,11 +82,18 @@ export async function POST(request: Request) {
     controller.enqueue(encoder.encode(JSON.stringify(obj) + "\n"));
   }
 
+  // God's Eye view: client requests crossSpace when the user has flipped
+  // the "Everywhere I own" toggle. We only honour it when there's no
+  // section scope (a scoped Ask is, by definition, single-section) and
+  // when the user is currently in their Personal space (retrieveForQuery
+  // re-checks this on the server too, so a forged request can't broaden).
+  const crossSpace = body.crossSpace === true && !scope;
+
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
       try {
         // 1. Retrieval (works without an API key — useful for the empty case).
-        const sources = await retrieveForQuery(query, { scope });
+        const sources = await retrieveForQuery(query, { scope, crossSpace });
         writeEvent(controller, { type: "sources", sources });
 
         // 2. If Claude isn't configured, surface a calm error and stop.

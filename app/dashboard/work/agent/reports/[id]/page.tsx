@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Topbar } from "@/components/dashboard/topbar";
 import { ReportChartView } from "@/components/work/report-chart";
+import { ReportPoller } from "@/components/work/report-poller";
 import { getWorkspaceReport } from "@/lib/data/workspace-reports";
 import { deleteWorkspaceReport } from "@/lib/data/workspace-report-actions";
 
@@ -17,6 +18,7 @@ export default async function ReportPage({ params }: Props) {
   return (
     <>
       <Topbar title={report.title} />
+      <ReportPoller pending={report.status === "pending"} />
 
       <div className="mb-4 flex items-center gap-2">
         <Link

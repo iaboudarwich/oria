@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { Topbar } from "@/components/dashboard/topbar";
 import { ContextEditor } from "@/components/work/context-editor";
 import { GenerateReportForm } from "@/components/work/generate-report";
+import { ReportPoller } from "@/components/work/report-poller";
 import { WorkAgentChat } from "@/components/work/work-agent-chat";
 import { ChartIcon } from "@/components/ui/icon";
 import { getCurrentContext } from "@/lib/data/organizations";
@@ -34,9 +35,12 @@ export default async function WorkAgentPage() {
     listWorkspaceReports(20),
   ]);
 
+  const hasPendingReport = reports.some((r) => r.status === "pending");
+
   return (
     <>
-      <Topbar title={`${ctx.organization.name} · AI Agent`} />
+      <Topbar title="AI Agent" />
+      <ReportPoller pending={hasPendingReport} />
 
       <p className="mb-6 max-w-2xl px-1 text-[13px] text-ink-muted">
         Persistent operational AI for this Workspace. Knows your standing

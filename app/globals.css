@@ -83,6 +83,24 @@
     border-radius: 2px;
   }
 
+  /* Tailwind v4 dropped the preflight that gave <button> a pointer
+   * cursor. Restore it project-wide so every clickable control reads
+   * as clickable. Disabled buttons keep the default cursor. */
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]) {
+    cursor: pointer;
+  }
+
+  /* Subtle iOS-style press feedback on primary CTAs. Components opt in
+   * by adding `cta` alongside their normal classes; nothing changes for
+   * the rest of the UI. */
+  .cta {
+    transition: transform 0.08s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .cta:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+
   h1, h2, h3, h4 {
     font-family: var(--font-display);
     letter-spacing: -0.012em;

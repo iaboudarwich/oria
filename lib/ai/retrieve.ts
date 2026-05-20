@@ -160,18 +160,19 @@ export async function retrieveForQuery(
   let allowedOrgIds: string[];
   const userSpacesList = await listUserSpaces();
   if (crossSpace) {
-    // Universal personal search: span the user's personal + circle orgs
-    // only. Office (Work) orgs are excluded so a personal "ask everything"
-    // never reaches into a Workspace.
-    if (ctx.organization.kind === "office") {
-      // Cross-space doesn't make sense from within a Workspace — fall back
-      // to active-org-only rather than silently broadening into personal
-      // data the Workspace user might not own.
+    // God's Eye view: the account owner, sitting in their Personal space,
+    // wants to find anything anywhere they have access to. We span every
+    // org the signed-in user is a member of — Personal + Circles + their
+    // own Workspaces. The asymmetry the user designed for stays intact:
+    //   • Work AI always passes `crossSpace: false`, so a Workspace
+    //     agent never sees Personal or other Workspaces.
+    //   • A user sitting inside a Circle or Workspace can't use this —
+    //     it's only allowed when the active org is `personal`, because
+    //     that space is by definition just you.
+    if (ctx.organization.kind !== "personal") {
       allowedOrgIds = [activeOrgId];
     } else {
-      allowedOrgIds = userSpacesList
-        .filter((s) => s.organization.kind !== "office")
-        .map((s) => s.organization.id);
+      allowedOrgIds = userSpacesList.map((s) => s.organization.id);
       if (!allowedOrgIds.includes(activeOrgId)) {
         allowedOrgIds.push(activeOrgId);
       }

@@ -32,20 +32,30 @@ const ACCESS_OPTIONS = [
   },
 ] as const;
 
-const TITLE_SUGGESTIONS = [
-  "Husband",
+const CIRCLE_TITLE_SUGGESTIONS = [
   "Wife",
+  "Husband",
   "Family",
-  "Sister",
-  "Brother",
-  "Mom",
-  "Dad",
+  "Partner",
   "Roommate",
   "Driver",
-  "Maid",
   "Cleaner",
   "Gardener",
   "Assistant",
+  "Babysitter",
+];
+
+const WORKSPACE_TITLE_SUGGESTIONS = [
+  "Property manager",
+  "Lawyer",
+  "Accountant",
+  "Assistant",
+  "Broker",
+  "Analyst",
+  "Tenant rep",
+  "Vendor contact",
+  "Contractor",
+  "Auditor",
 ];
 
 /**
@@ -56,8 +66,27 @@ const TITLE_SUGGESTIONS = [
  * status line shows the email outcome with the recipient, and the new
  * invite appears auto-expanded at the top of the pending list below.
  */
-export function InviteCreator({ sections }: { sections: SectionOption[] }) {
+export function InviteCreator({
+  sections,
+  orgKind = "circle",
+}: {
+  sections: SectionOption[];
+  /** The org being invited to. Drives the title presets — a Workspace
+   *  shouldn't suggest "Wife" / "Driver"; a Circle shouldn't suggest
+   *  "Property manager" / "Lawyer". */
+  orgKind?: "personal" | "circle" | "office";
+}) {
   const router = useRouter();
+  const titleSuggestions =
+    orgKind === "office"
+      ? WORKSPACE_TITLE_SUGGESTIONS
+      : CIRCLE_TITLE_SUGGESTIONS;
+  const titleFieldLabel =
+    orgKind === "office" ? "Role or title" : "Relationship or title";
+  const titlePlaceholder =
+    orgKind === "office"
+      ? "e.g. Property manager, Lawyer, Accountant"
+      : "e.g. Wife, Roommate, Driver, Assistant";
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [confirmation, setConfirmation] = useState<{
@@ -131,8 +160,8 @@ export function InviteCreator({ sections }: { sections: SectionOption[] }) {
         </div>
 
         <Field
-          label="Relationship or title"
-          hint="Optional. How you think of them. Pick a suggestion or type your own."
+          label={titleFieldLabel}
+          hint="Optional. Pick a suggestion or type your own."
         >
           <input
             type="text"
@@ -140,11 +169,11 @@ export function InviteCreator({ sections }: { sections: SectionOption[] }) {
             maxLength={40}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="e.g. Wife, Roommate, Driver, Assistant"
+            placeholder={titlePlaceholder}
             className="block h-10 w-full rounded-lg border border-line-strong bg-canvas px-3 text-[13px] text-ink placeholder:text-ink-faint outline-none focus:border-ink"
           />
           <ul className="mt-2 flex flex-wrap gap-1.5">
-            {TITLE_SUGGESTIONS.map((s) => {
+            {titleSuggestions.map((s) => {
               const active = title.trim().toLowerCase() === s.toLowerCase();
               return (
                 <li key={s}>

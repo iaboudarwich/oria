@@ -37,6 +37,10 @@ type AskChatProps = {
   /** Custom suggestion chips for the empty state. Defaults to general life
    *  prompts; section pages pass section-specific examples. */
   suggestions?: string[];
+  /** When true, render the God's Eye toggle. The server only honours it
+   *  when the active org is Personal — this prop is the visual gate, the
+   *  data layer is the security gate. */
+  crossSpaceAvailable?: boolean;
 };
 
 /**
@@ -44,10 +48,15 @@ type AskChatProps = {
  * persistence yet — turns live in client state. Streaming uses an NDJSON
  * protocol from /api/ask: each line is one event.
  */
-export function AskChat({ scope, suggestions }: AskChatProps = {}) {
+export function AskChat({
+  scope,
+  suggestions,
+  crossSpaceAvailable = false,
+}: AskChatProps = {}) {
   const [input, setInput] = useState("");
   const [turns, setTurns] = useState<Turn[]>([]);
   const [busy, setBusy] = useState(false);
+  const [crossSpace, setCrossSpace] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const effectiveSuggestions = suggestions ?? SUGGESTIONS;
@@ -81,7 +90,12 @@ export function AskChat({ scope, suggestions }: AskChatProps = {}) {
         const res = await fetch("/api/ask", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ query: trimmed, history, scope: scope ?? null }),
+          body: JSON.stringify({
+            query: trimmed,
+            history,
+            scope: scope ?? null,
+            crossSpace: crossSpaceAvailable && crossSpace,
+          }),
         });
         if (!res.ok || !res.body) {
           let friendly: string | undefined;
@@ -142,7 +156,7 @@ export function AskChat({ scope, suggestions }: AskChatProps = {}) {
         setBusy(false);
       }
     },
-    [busy, turns, updateTurn, scope],
+    [busy, turns, updateTurn, scope, crossSpace, crossSpaceAvailable],
   );
 
   // Auto-scroll on new turn / streaming text.
@@ -171,6 +185,12 @@ export function AskChat({ scope, suggestions }: AskChatProps = {}) {
     : "h-[calc(100vh-160px)]";
   return (
     <div className={`flex ${containerHeight} flex-col`}>
+      {crossSpaceAvailable && !scope ? (
+        <CrossSpaceToggle
+          on={crossSpace}
+          onToggle={() => setCrossSpace((v) => !v)}
+        />
+      ) : null}
       <div ref={scrollRef} className="flex-1 overflow-y-auto pb-6">
         {turns.length === 0 ? (
           <EmptyState
@@ -201,6 +221,43 @@ export function AskChat({ scope, suggestions }: AskChatProps = {}) {
         onKeyDown={onKeyDown}
         onSubmit={() => send(input)}
       />
+    </div>
+  );
+}
+
+/**
+ * Personal-only pill: "This space" ↔ "Everywhere I own". When ON, the
+ * server includes every org the user is a member of in retrieval. The
+ * page only shows the toggle when the user actually has more than one
+ * space; the API also re-checks active-org=personal so a forged flag
+ * can never broaden a Circle or Workspace search.
+ */
+function CrossSpaceToggle({
+  on,
+  onToggle,
+}: {
+  on: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <div className="mb-3 flex items-center gap-2 px-1">
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-pressed={on}
+        className={`cursor-pointer rounded-full border px-2.5 py-0.5 text-[11.5px] transition-base focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink ${
+          on
+            ? "border-ink bg-ink text-surface"
+            : "border-line bg-canvas text-ink-muted hover:border-line-strong hover:text-ink"
+        }`}
+      >
+        {on ? "Everywhere I own" : "This space only"}
+      </button>
+      <span className="text-[11.5px] text-ink-faint">
+        {on
+          ? "Searching across your Personal, Circles, and Workspaces."
+          : "Only the active space."}
+      </span>
     </div>
   );
 }

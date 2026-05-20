@@ -86,7 +86,8 @@ export default async function MembersPage() {
       <Topbar title={ctx.organization.name} />
 
       <p className="mb-6 max-w-xl text-[13.5px] text-ink-muted">
-        Personal items stay private. Only what is shared into this circle is
+        Personal items stay private. Only what is shared into this{" "}
+        {ctx.organization.kind === "office" ? "Workspace" : "circle"} is
         visible to members, based on the access you grant them.
       </p>
 
@@ -107,7 +108,8 @@ export default async function MembersPage() {
         {others.length > 0 ? (
           <section>
             <h2 className="mb-3 px-1 text-[13px] font-medium text-ink-muted">
-              People in this circle
+              People in this{" "}
+              {ctx.organization.kind === "office" ? "Workspace" : "circle"}
             </h2>
             <ul className="space-y-2">
               {others.map((m) => (
@@ -125,7 +127,11 @@ export default async function MembersPage() {
                   />
                   {isOwner ? (
                     <div className="space-y-1 px-3 pb-2">
-                      <TitleEditor membershipId={m.id} current={m.title} />
+                      <TitleEditor
+                        membershipId={m.id}
+                        current={m.title}
+                        orgKind={ctx.organization.kind}
+                      />
                     </div>
                   ) : null}
                   {isOwner ? (
@@ -172,7 +178,10 @@ export default async function MembersPage() {
               They get a one-time link and a short code. Personal items stay
               private.
             </p>
-            <InviteCreator sections={sectionOptions} />
+            <InviteCreator
+              sections={sectionOptions}
+              orgKind={ctx.organization.kind}
+            />
           </section>
         ) : null}
 
