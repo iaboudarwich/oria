@@ -1,65 +1,232 @@
-import Image from "next/image";
+import Link from "next/link";
+import { Wordmark } from "@/components/brand/wordmark";
+import { Button } from "@/components/ui/button";
+import {
+  ArrowRightIcon,
+  CalendarIcon,
+  ChatIcon,
+  DocumentIcon,
+  MicIcon,
+  PaperclipIcon,
+  PlaneIcon,
+  UploadIcon,
+} from "@/components/ui/icon";
 
-export default function Home() {
+// Demo personas + fixture data should not appear on the public site by
+// default — only when explicitly enabled via NEXT_PUBLIC_DEMO_MODE=1.
+const DEMO_ENABLED = process.env.NEXT_PUBLIC_DEMO_MODE === "1";
+
+export default function LandingPage() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+    <div className="min-h-screen bg-canvas">
+      <SiteHeader />
+      <main>
+        <Hero />
+        <UploadShowcase />
+        <FeatureGrid />
+        <ForEveryone />
+        <CTA />
       </main>
+      <SiteFooter />
     </div>
+  );
+}
+
+function SiteHeader() {
+  return (
+    <header className="border-b border-line">
+      <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4 sm:px-8">
+        <Wordmark />
+        <nav className="hidden items-center gap-7 md:flex">
+          <Link href="#features" className="text-[13.5px] text-ink-muted hover:text-ink transition-base">
+            Features
+          </Link>
+          <Link href="#for-everyone" className="text-[13.5px] text-ink-muted hover:text-ink transition-base">
+            Who it&apos;s for
+          </Link>
+          {DEMO_ENABLED ? (
+            <Link href="/demo" className="text-[13.5px] text-ink-muted hover:text-ink transition-base">
+              Demo
+            </Link>
+          ) : null}
+        </nav>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/login"
+            className="hidden sm:inline text-[13.5px] text-ink-muted hover:text-ink transition-base"
+          >
+            Sign in
+          </Link>
+          <Button href="/signup" variant="primary" size="sm">
+            Get started
+          </Button>
+        </div>
+      </div>
+    </header>
+  );
+}
+
+function Hero() {
+  return (
+    <section className="border-b border-line">
+      <div className="mx-auto max-w-3xl px-6 pt-20 pb-20 text-center sm:px-8">
+        <h1 className="text-[40px] font-semibold leading-[1.05] tracking-tight text-ink text-balance sm:text-[56px]">
+          Drop anything into Oria.
+        </h1>
+        <p className="mx-auto mt-4 max-w-xl text-[16px] leading-[1.55] text-ink-muted">
+          A searchable memory for your life. Nothing gets lost.
+        </p>
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+          <Button href="/signup" variant="primary" size="lg">
+            Get started, free
+          </Button>
+          {DEMO_ENABLED ? (
+            <Button href="/demo" variant="ghost" size="lg">
+              Explore demo
+            </Button>
+          ) : null}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function UploadShowcase() {
+  const fileTypes = [
+    { Icon: DocumentIcon, label: "PDFs" },
+    { Icon: PaperclipIcon, label: "Receipts" },
+    { Icon: ChatIcon, label: "WhatsApps" },
+    { Icon: MicIcon, label: "Voice notes" },
+    { Icon: PlaneIcon, label: "Itineraries" },
+    { Icon: CalendarIcon, label: "Schedules" },
+  ];
+  return (
+    <section className="border-b border-line bg-surface/50">
+      <div className="mx-auto max-w-4xl px-6 py-16 sm:px-8">
+        <div className="rounded-2xl border border-dashed border-line-strong bg-surface-raised/70 p-10 sm:p-14 text-center">
+          <span className="inline-flex h-12 w-12 items-center justify-center rounded-xl border border-line bg-canvas text-ink-muted">
+            <UploadIcon size={18} />
+          </span>
+          <h2 className="mt-5 text-[22px] font-semibold tracking-tight text-ink sm:text-[26px]">
+            Drag, drop, done.
+          </h2>
+          <p className="mt-2 text-[14px] text-ink-muted">
+            Read, filed, and kept searchable. Find it years later.
+          </p>
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
+            {fileTypes.map((f) => (
+              <span
+                key={f.label}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-line bg-canvas/60 px-2.5 py-1 text-[12px] text-ink-muted"
+              >
+                <f.Icon size={12} /> {f.label}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function FeatureGrid() {
+  const features = [
+    { title: "Upload anything", body: "PDFs, receipts, screenshots, voice notes. Nothing gets lost." },
+    { title: "Find anything", body: "Search past trips, receipts, contractors, and uploads." },
+    { title: "Auto sections", body: "Household, Travel, Finance, Legal. Sorted for you." },
+    { title: "Reminders", body: "Dates and follow-ups surfaced when they matter." },
+    { title: "Share with people", body: "Family, assistants, contractors. Scoped views." },
+    { title: "Long-term memory", body: "A full record of every upload and decision, kept for the long run." },
+  ];
+  return (
+    <section id="features" className="border-b border-line">
+      <div className="mx-auto max-w-6xl px-6 py-20 sm:px-8">
+        <h2 className="text-[28px] font-semibold tracking-tight text-ink sm:text-[32px]">
+          A calm place to keep everything, and find it later.
+        </h2>
+        <div className="mt-10 grid gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-2 lg:grid-cols-3">
+          {features.map((f) => (
+            <article key={f.title} className="bg-surface-raised p-6">
+              <h3 className="text-[15px] font-semibold text-ink">{f.title}</h3>
+              <p className="mt-1.5 text-[13.5px] leading-[1.55] text-ink-muted">
+                {f.body}
+              </p>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ForEveryone() {
+  const groups = [
+    { label: "Individuals", body: "Keep your life in one place." },
+    { label: "Couples", body: "Shared reminders, shared notes." },
+    { label: "Families", body: "School, medical, travel, in sync." },
+    { label: "Assistants", body: "Coordinate across everyone you support." },
+    { label: "Property managers", body: "Track properties, vendors, contracts." },
+    { label: "Family offices", body: "Memory across households and advisors." },
+  ];
+  return (
+    <section id="for-everyone" className="border-b border-line bg-surface/50">
+      <div className="mx-auto max-w-6xl px-6 py-20 sm:px-8">
+        <h2 className="text-[28px] font-semibold tracking-tight text-ink sm:text-[32px]">
+          Works for one person or a whole office.
+        </h2>
+        <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {groups.map((g) => (
+            <div
+              key={g.label}
+              className="rounded-xl border border-line bg-surface-raised p-5"
+            >
+              <p className="text-[14px] font-semibold text-ink">{g.label}</p>
+              <p className="mt-1 text-[13px] leading-[1.55] text-ink-muted">
+                {g.body}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function CTA() {
+  return (
+    <section className="border-b border-line">
+      <div className="mx-auto max-w-3xl px-6 py-20 text-center sm:px-8">
+        <h2 className="text-[28px] font-semibold tracking-tight text-ink text-balance sm:text-[34px]">
+          Upload anything. Find it years later.
+        </h2>
+        <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
+          <Button href="/signup" variant="primary" size="lg">
+            Get started <ArrowRightIcon size={14} />
+          </Button>
+          {DEMO_ENABLED ? (
+            <Button href="/demo" variant="secondary" size="lg">
+              Explore demo
+            </Button>
+          ) : null}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function SiteFooter() {
+  return (
+    <footer>
+      <div className="mx-auto flex max-w-6xl flex-col gap-6 px-6 py-10 text-[12.5px] text-ink-muted sm:flex-row sm:items-center sm:justify-between sm:px-8">
+        <Wordmark />
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+          <Link href="#" className="hover:text-ink transition-base">Privacy</Link>
+          <Link href="#" className="hover:text-ink transition-base">Security</Link>
+          <Link href="#" className="hover:text-ink transition-base">Terms</Link>
+          <Link href="#" className="hover:text-ink transition-base">Contact</Link>
+        </div>
+        <p className="text-ink-faint">© {new Date().getFullYear()} Oria</p>
+      </div>
+    </footer>
   );
 }

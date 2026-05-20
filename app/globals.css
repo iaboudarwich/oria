@@ -1,26 +1,173 @@
 @import "tailwindcss";
 
+/*
+ * Oria design tokens.
+ * Warm neutral palette, calm, simple, operational.
+ */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --canvas: #f7f5f0;
+  --surface: #fbfaf6;
+  --surface-raised: #ffffff;
+  --ink: #1c1a17;
+  --ink-soft: #3a352d;
+  --ink-muted: #6b6258;
+  --ink-faint: #9c9387;
+  --line: rgba(28, 26, 23, 0.08);
+  --line-strong: rgba(28, 26, 23, 0.14);
+  --accent: #b89968;
+  --accent-soft: #efe6d4;
+  --sand: #ece4d4;
+  --sage: #6f8472;
+  --claret: #9b4a4a;
+  --success: #5a7a5a;
+
+  --shadow-xs: 0 1px 2px rgba(28, 26, 23, 0.04);
+  --shadow-sm: 0 1px 2px rgba(28, 26, 23, 0.05);
+  --shadow-md: 0 2px 6px rgba(28, 26, 23, 0.05), 0 12px 28px -16px rgba(28, 26, 23, 0.10);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-faint: var(--ink-faint);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-champagne: var(--accent);
+  --color-champagne-soft: var(--accent-soft);
+  --color-sand: var(--sand);
+  --color-sage: var(--sage);
+  --color-claret: var(--claret);
+  --color-success: var(--success);
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system,
+    "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+  --font-display: var(--font-inter), ui-sans-serif, system-ui, -apple-system,
+    "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo,
+    monospace;
+
+  --shadow-soft: var(--shadow-sm);
+  --shadow-raised: var(--shadow-md);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  html {
+    color-scheme: light;
+  }
+
+  body {
+    background: var(--canvas);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-feature-settings: "cv11", "ss03", "kern";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background: var(--accent-soft);
+    color: var(--ink);
+  }
+
+  *:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    letter-spacing: -0.012em;
+    color: var(--ink);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .text-pretty {
+    text-wrap: pretty;
+  }
+
+  /* Sidebar width driven by a CSS variable so the sidebar aside + the main
+   * content padding stay in sync as the user toggles. The SidebarShell sets
+   * --sidebar-w via inline style; these classes are fallbacks + state
+   * markers. .sidebar-dragging kills width transitions so the drag handle
+   * feels native instead of laggy. */
+  .sidebar-expanded { --sidebar-w: 250px; }
+  .sidebar-collapsed { --sidebar-w: 64px; }
+  .sidebar-dragging aside,
+  .sidebar-dragging .sidebar-content {
+    transition: none !important;
+  }
+  .sidebar-dragging,
+  .sidebar-dragging * {
+    user-select: none;
+    cursor: col-resize !important;
+  }
+}
+
+/* Animations.
+ * Kept short so navigation feels native rather than animated. Slow appears
+ * read as "the app is thinking"; under 250ms reads as "the app is ready". */
+@keyframes oria-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes oria-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@layer utilities {
+  .animate-fade-up {
+    animation: oria-fade-up 0.22s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+
+  .animate-fade-in {
+    animation: oria-fade-in 0.18s ease-out both;
+  }
+
+  .delay-1 { animation-delay: 30ms; }
+  .delay-2 { animation-delay: 60ms; }
+  .delay-3 { animation-delay: 90ms; }
+  .delay-4 { animation-delay: 120ms; }
+  .delay-5 { animation-delay: 150ms; }
+  .delay-6 { animation-delay: 180ms; }
+  .delay-7 { animation-delay: 210ms; }
+
+  /* transition-base: explicit property list. `transition: all` paints layout
+   * and reads as laggy on hovered rows. We only animate the cheap, paint-only
+   * properties used by the app. */
+  .transition-base {
+    transition-property: background-color, border-color, color, fill, stroke,
+      box-shadow, opacity, transform;
+    transition-duration: 0.15s;
+    transition-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
