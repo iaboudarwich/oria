@@ -8,6 +8,26 @@ import type { AccessLevel, Invite, Role } from "@/lib/supabase/types";
 
 export type EmailStatus = SendInviteResult["status"];
 
+/**
+ * Compact email outcome we hand to the client UI. Carries the reason so
+ * the owner sees what actually went wrong (e.g. "Sending domain isn't
+ * verified on Resend yet.") rather than the generic banner.
+ */
+export type EmailOutcome = {
+  status: EmailStatus;
+  reason?: string;
+};
+
+function toOutcome(send: SendInviteResult): EmailOutcome {
+  if (send.status === "failed") {
+    return { status: "failed", reason: send.reason };
+  }
+  if (send.status === "skipped") {
+    return { status: "skipped" };
+  }
+  return { status: "sent" };
+}
+
 type Result<T = undefined> =
   | (T extends undefined ? { ok: true } : { ok: true; data: T })
   | { ok: false; error: string };
@@ -43,7 +63,7 @@ function parseSectionFields(
  */
 export async function inviteToCircle(
   formData: FormData,
-): Promise<Result<{ invite: Invite; emailStatus: EmailStatus }>> {
+): Promise<Result<{ invite: Invite; emailOutcome: EmailOutcome }>> {
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const display_name =
     String(formData.get("display_name") ?? "").trim().slice(0, 80) || null;
@@ -123,7 +143,7 @@ export async function inviteToCircle(
   });
 
   revalidatePath("/dashboard/circle");
-  return { ok: true, data: { invite, emailStatus: send.status } };
+  return { ok: true, data: { invite, emailOutcome: toOutcome(send) } };
 }
 
 /**
@@ -156,7 +176,7 @@ export async function revokeInvite(formData: FormData): Promise<void> {
  */
 export async function regenerateInvite(
   formData: FormData,
-): Promise<Result<{ invite: Invite; emailStatus: EmailStatus }>> {
+): Promise<Result<{ invite: Invite; emailOutcome: EmailOutcome }>> {
   const id = String(formData.get("id") ?? "");
   if (!id) return { ok: false, error: "Missing invite id" };
 
@@ -240,7 +260,7 @@ export async function regenerateInvite(
   });
 
   revalidatePath("/dashboard/circle");
-  return { ok: true, data: { invite: fresh, emailStatus: send.status } };
+  return { ok: true, data: { invite: fresh, emailOutcome: toOutcome(send) } };
 }
 
 /**
@@ -249,7 +269,7 @@ export async function regenerateInvite(
  */
 export async function resendInvite(
   formData: FormData,
-): Promise<Result<{ emailStatus: EmailStatus }>> {
+): Promise<Result<{ emailOutcome: EmailOutcome }>> {
   const id = String(formData.get("id") ?? "");
   if (!id) return { ok: false, error: "Missing invite id" };
 
@@ -292,7 +312,7 @@ export async function resendInvite(
   });
 
   revalidatePath("/dashboard/circle");
-  return { ok: true, data: { emailStatus: send.status } };
+  return { ok: true, data: { emailOutcome: toOutcome(send) } };
 }
 
 /**

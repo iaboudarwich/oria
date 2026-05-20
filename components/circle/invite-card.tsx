@@ -7,7 +7,7 @@ import {
   resendInvite,
   revokeInvite,
   updateInviteAccess,
-  type EmailStatus,
+  type EmailOutcome,
 } from "@/lib/data/circle-actions";
 import {
   ACCESS_LEVEL_BLURBS,
@@ -40,8 +40,15 @@ export function InviteCard({
 }) {
   const router = useRouter();
   const [editing, setEditing] = useState(false);
-  const [open, setOpen] = useState(false);
-  const [resendStatus, setResendStatus] = useState<EmailStatus | null>(null);
+  // Auto-open when the invite is brand-new (created in the last 60s).
+  // Computed once on mount via the lazy useState initializer so the open
+  // state stays user-controlled after that. This is what makes Create
+  // and "Get a fresh code" feel coherent: the new invite mounts open,
+  // showing the code/link immediately, while older ones stay collapsed.
+  const [open, setOpen] = useState(
+    () => Date.now() - new Date(invite.created_at).getTime() < 60_000,
+  );
+  const [resendOutcome, setResendOutcome] = useState<EmailOutcome | null>(null);
   const [resending, startResend] = useTransition();
   const [refreshing, startRefresh] = useTransition();
   const [codeCopied, setCodeCopied] = useState(false);
@@ -128,12 +135,9 @@ export function InviteCard({
         <div className="border-t border-line bg-canvas/30 px-3.5 py-3.5">
           <InviteResultCard invite={invite} />
 
-          {resendStatus ? (
+          {resendOutcome ? (
             <div className="mt-3">
-              <EmailStatusLine
-                status={resendStatus}
-                recipient={display}
-              />
+              <EmailStatusLine outcome={resendOutcome} recipient={display} />
             </div>
           ) : null}
 
@@ -151,8 +155,9 @@ export function InviteCard({
                 fd.set("id", invite.id);
                 startResend(async () => {
                   const result = await resendInvite(fd);
-                  if (result.ok) setResendStatus(result.data.emailStatus);
-                  else setResendStatus("failed");
+                  if (result.ok) setResendOutcome(result.data.emailOutcome);
+                  else
+                    setResendOutcome({ status: "failed", reason: result.error });
                 });
               }}
             >
@@ -166,10 +171,14 @@ export function InviteCard({
                 startRefresh(async () => {
                   const result = await regenerateInvite(fd);
                   if (result.ok) {
-                    setResendStatus(result.data.emailStatus);
+                    // The old card (this one) is about to unmount because
+                    // regenerate revokes the old invite. The new invite
+                    // mounts auto-open via the page's `defaultOpen` rule,
+                    // so the user immediately sees the fresh code/link —
+                    // no transient mismatch between code and card.
                     router.refresh();
                   } else {
-                    setResendStatus("failed");
+                    setResendOutcome({ status: "failed", reason: result.error });
                   }
                 });
               }}
