@@ -15,11 +15,17 @@ function revalidateAll() {
 /**
  * Move an upload to trash. Sets deleted_at + deleted_by. The file remains in
  * storage for 30 days and is then hard-deleted (see purgeExpiredTrash).
+ *
+ * When `redirect_to` is set in the form data we redirect there afterwards —
+ * used by the upload detail page, where the row the user just deleted is
+ * also the page they're on. When it's absent we stay put: the inline
+ * trash button on list rows uses this path so the list re-renders in
+ * place via the revalidatePath calls above.
  */
 export async function softDeleteUpload(formData: FormData): Promise<void> {
   const id = String(formData.get("id") ?? "");
   if (!id) return;
-  const redirectTo = String(formData.get("redirect_to") ?? "/dashboard");
+  const redirectTo = String(formData.get("redirect_to") ?? "").trim() || null;
 
   const ctx = await requireContext();
   const supabase = await createClient();
@@ -34,7 +40,7 @@ export async function softDeleteUpload(formData: FormData): Promise<void> {
     .eq("organization_id", ctx.organization.id);
 
   revalidateAll();
-  redirect(redirectTo);
+  if (redirectTo) redirect(redirectTo);
 }
 
 /** Restore a trashed upload back to its prior section. */

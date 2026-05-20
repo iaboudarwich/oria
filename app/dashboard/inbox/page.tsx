@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Topbar } from "@/components/dashboard/topbar";
 import { Dropzone } from "@/components/upload/dropzone";
+import { InlineTrashButton } from "@/components/upload/inline-trash";
 import { Thumbnail } from "@/components/upload/thumbnail";
 import { SectionsGrid } from "@/components/dashboard/sections-grid";
 import {
@@ -80,10 +81,13 @@ function RecentList({
       </h2>
       <ul className="space-y-0.5">
         {items.map((it) => (
-          <li key={it.id}>
+          <li
+            key={it.id}
+            className="group flex items-center gap-3 rounded-lg px-3 py-2 transition-base hover:bg-surface-raised"
+          >
             <Link
               href={`/dashboard/uploads/${it.id}`}
-              className="flex items-center gap-3 rounded-lg px-3 py-2 transition-base hover:bg-surface-raised"
+              className="flex min-w-0 flex-1 items-center gap-3"
             >
               <Thumbnail
                 mime={it.mime_type}
@@ -102,6 +106,7 @@ function RecentList({
                 </p>
               </div>
             </Link>
+            <InlineTrashButton uploadId={it.id} />
           </li>
         ))}
       </ul>

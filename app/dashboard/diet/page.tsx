@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Topbar } from "@/components/dashboard/topbar";
-import { Dropzone } from "@/components/upload/dropzone";
+import { DropzoneCompact } from "@/components/upload/dropzone-compact";
 import { AskChat } from "@/components/ask/ask-chat";
 import { SectionMemoryPanel } from "@/components/section/section-memory-panel";
 import {
@@ -40,50 +40,30 @@ export default async function DietPage() {
     <>
       <Topbar title="Diet" />
 
-      <div className="mb-6 flex items-center gap-2 px-1">
-        <SmartBadge />
-        <p className="text-[12.5px] text-ink-faint">
-          Upload meal photos with a short note. Oria estimates the rest.
-        </p>
-      </div>
+      <div className="space-y-7 animate-fade-up">
+        <DropzoneCompact
+          smartSection="diet"
+          heading="Drop a meal photo"
+          subheading="add a short note, e.g. ‘Lunch: chicken, rice, salad’"
+        />
 
-      <div className="space-y-9 animate-fade-up">
         <section>
-          <h2 className="mb-3 px-1 text-[13px] font-medium text-ink-muted">
-            Log a meal
-          </h2>
-          <Dropzone
-            smartSection="diet"
-            heading="Drop a meal photo"
-            subheading="Add a short note (e.g. ‘Lunch: chicken, rice, salad’). Click to browse."
+          <DailyStrip
+            total={todayTotals}
+            hasData={todayMeals.length > 0}
+            mealCount={todayMeals.length}
           />
+          {todayMeals.length === 0 ? null : (
+            <ul className="mt-3 rounded-2xl border border-line bg-surface-raised divide-y divide-line">
+              {todayMeals.map((m) => (
+                <MealRow key={m.id} meal={m} />
+              ))}
+            </ul>
+          )}
         </section>
 
-        <div className="grid gap-6 lg:grid-cols-3">
-          <section className="lg:col-span-2">
-            <h2 className="mb-3 px-1 text-[13px] font-medium text-ink-muted">
-              Today
-            </h2>
-            {todayMeals.length === 0 ? (
-              <p className="px-1 text-[13px] text-ink-faint">
-                No meals logged today yet. Drop a photo above to get started.
-              </p>
-            ) : (
-              <ul className="rounded-2xl border border-line bg-surface-raised divide-y divide-line">
-                {todayMeals.map((m) => (
-                  <MealRow key={m.id} meal={m} />
-                ))}
-              </ul>
-            )}
-          </section>
-
-          <aside className="space-y-6">
-            <DailyTotal total={todayTotals} hasData={todayMeals.length > 0} />
-          </aside>
-        </div>
-
         <section>
-          <h2 className="mb-3 px-1 text-[13px] font-medium text-ink-muted">
+          <h2 className="mb-2 px-1 text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
             Last 7 days
           </h2>
           <div className="rounded-2xl border border-line bg-surface-raised p-4">
@@ -92,7 +72,7 @@ export default async function DietPage() {
                 Your weekly chart fills in as you log meals.
               </p>
             ) : (
-              <ul className="flex h-[110px] items-end gap-2">
+              <ul className="flex h-[100px] items-end gap-2">
                 {week.map((d, i) => {
                   const h =
                     d.calories === 0
@@ -127,14 +107,9 @@ export default async function DietPage() {
         </section>
 
         <section>
-          <div className="mb-2 flex items-baseline gap-2 px-1">
-            <h2 className="text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
-              Ask Diet
-            </h2>
-            <span className="text-[11.5px] text-ink-faint">
-              Scoped to your meals
-            </span>
-          </div>
+          <h2 className="mb-2 px-1 text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
+            Ask Diet
+          </h2>
           <div className="rounded-2xl border border-line bg-surface-raised p-3">
             <AskChat scope={SCOPE} suggestions={SUGGESTIONS} />
           </div>
@@ -142,7 +117,7 @@ export default async function DietPage() {
 
         <SectionMemoryPanel scope={SCOPE} memories={memories} />
 
-        <p className="px-1 text-[11.5px] text-ink-faint">
+        <p className="px-1 text-[11px] text-ink-faint">
           Nutrition estimates are approximate. Treat them as a calm reference,
           not medical advice.
         </p>
@@ -201,81 +176,73 @@ function MealRow({ meal: m }: { meal: DietMeal }) {
   );
 }
 
-function DailyTotal({
+/**
+ * Horizontal totals strip. Reads as one calm row: today's calories on
+ * the left, macros on the right. Replaces the old vertical aside card so
+ * the meals list takes the full width and the page breathes.
+ */
+function DailyStrip({
   total,
   hasData,
+  mealCount,
 }: {
   total: DietTotals;
   hasData: boolean;
+  mealCount: number;
 }) {
   return (
-    <section>
-      <h2 className="mb-3 px-1 text-[13px] font-medium text-ink-muted">
-        Today, at a glance
-      </h2>
-      <div className="rounded-2xl border border-line bg-surface-raised p-5">
-        <p className="text-[11.5px] uppercase tracking-[0.12em] text-ink-faint">
-          Calories
-        </p>
-        <p className="mt-1 text-[32px] font-semibold tracking-tight text-ink">
+    <div className="flex flex-col gap-3 rounded-2xl border border-line bg-surface-raised p-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex items-baseline gap-3">
+        <span className="text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
+          Today
+        </span>
+        <span className="text-[26px] font-semibold tracking-tight text-ink">
           {hasData ? Math.round(total.calories).toLocaleString() : "·"}
-        </p>
-        <p className="text-[11.5px] text-ink-faint">
-          {hasData ? "estimated · today" : "no meals yet"}
-        </p>
-        <div className="mt-5 grid grid-cols-3 gap-3">
-          <Macro
-            label="Protein"
-            value={hasData ? Math.round(total.protein_g) : null}
-            unit="g"
-            tint="text-[#7a4a7a]"
-          />
-          <Macro
-            label="Carbs"
-            value={hasData ? Math.round(total.carbs_g) : null}
-            unit="g"
-            tint="text-[#7a5a2a]"
-          />
-          <Macro
-            label="Fat"
-            value={hasData ? Math.round(total.fat_g) : null}
-            unit="g"
-            tint="text-[#3a6a8a]"
-          />
-        </div>
+        </span>
+        <span className="text-[12.5px] text-ink-faint">cal</span>
+        <span className="text-[11.5px] text-ink-faint">
+          {mealCount === 0
+            ? "no meals yet"
+            : `${mealCount} meal${mealCount === 1 ? "" : "s"}`}
+        </span>
       </div>
-    </section>
+      <div className="flex items-baseline gap-4 sm:gap-5">
+        <Macro
+          label="P"
+          value={hasData ? Math.round(total.protein_g) : null}
+          tint="text-[#7a4a7a]"
+        />
+        <Macro
+          label="C"
+          value={hasData ? Math.round(total.carbs_g) : null}
+          tint="text-[#7a5a2a]"
+        />
+        <Macro
+          label="F"
+          value={hasData ? Math.round(total.fat_g) : null}
+          tint="text-[#3a6a8a]"
+        />
+      </div>
+    </div>
   );
 }
 
 function Macro({
   label,
   value,
-  unit,
   tint,
 }: {
   label: string;
   value: number | null;
-  unit: string;
   tint: string;
 }) {
   return (
-    <div>
-      <p className="text-[11px] text-ink-faint">{label}</p>
-      <p className={`mt-0.5 text-[15px] font-medium ${tint}`}>
+    <span className="inline-flex items-baseline gap-1">
+      <span className={`text-[14px] font-medium ${tint}`}>
         {value ?? "·"}
-        {value !== null ? (
-          <span className="ml-0.5 text-[11px] text-ink-faint">{unit}</span>
-        ) : null}
-      </p>
-    </div>
-  );
-}
-
-function SmartBadge() {
-  return (
-    <span className="inline-flex h-5 items-center rounded-full bg-accent-soft/60 px-2 text-[10.5px] font-medium text-[#7a5a2a]">
-      Smart section
+      </span>
+      <span className="text-[10.5px] text-ink-faint">g</span>
+      <span className="text-[10.5px] text-ink-muted">{label}</span>
     </span>
   );
 }

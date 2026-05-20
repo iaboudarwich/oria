@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Topbar } from "@/components/dashboard/topbar";
-import { Dropzone } from "@/components/upload/dropzone";
+import { DropzoneCompact } from "@/components/upload/dropzone-compact";
 import { WalletIcon } from "@/components/ui/icon";
 import { AskChat } from "@/components/ask/ask-chat";
 import { SectionMemoryPanel } from "@/components/section/section-memory-panel";
@@ -47,25 +47,14 @@ export default async function BillsPage() {
     <>
       <Topbar title="Bills" />
 
-      <div className="mb-6 flex items-center gap-2 px-1">
-        <SmartBadge />
-        <p className="text-[12.5px] text-ink-faint">
-          Upload bills as they arrive. Oria tracks the recurring ones and
-          forecasts what&apos;s next.
-        </p>
-      </div>
+      <div className="space-y-7 animate-fade-up">
+        <DropzoneCompact
+          smartSection="bills"
+          heading="Drop a bill or invoice"
+          subheading="add a short note, e.g. ‘Electricity for LA apartment’"
+        />
 
-      <div className="space-y-9 animate-fade-up">
-        <section>
-          <h2 className="mb-3 px-1 text-[13px] font-medium text-ink-muted">
-            Add a bill
-          </h2>
-          <Dropzone
-            smartSection="bills"
-            heading="Drop a bill or invoice"
-            subheading="Add a short note (e.g. ‘Electricity bill for LA apartment’). Click to browse."
-          />
-        </section>
+        <ForecastStrip forecast={forecast} />
 
         {empty ? (
           <p className="px-1 text-[13px] text-ink-faint">
@@ -73,32 +62,25 @@ export default async function BillsPage() {
           </p>
         ) : null}
 
-        <div className="grid gap-6 lg:grid-cols-3">
-          <section className="lg:col-span-2">
-            <h2 className="mb-3 px-1 text-[13px] font-medium text-ink-muted">
-              Upcoming
-            </h2>
-            {upcoming.length === 0 ? (
-              <p className="px-1 text-[12.5px] text-ink-faint">
-                Nothing with a future due date yet.
-              </p>
-            ) : (
-              <ul className="rounded-2xl border border-line bg-surface-raised divide-y divide-line">
-                {upcoming.map((b) => (
-                  <BillRow key={b.id} bill={b} kind="upcoming" />
-                ))}
-              </ul>
-            )}
-          </section>
-
-          <aside className="space-y-6">
-            <ForecastCard f={forecast} />
-            <UnusualCard />
-          </aside>
-        </div>
+        <section>
+          <h2 className="mb-2 px-1 text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
+            Upcoming
+          </h2>
+          {upcoming.length === 0 ? (
+            <p className="px-1 text-[12.5px] text-ink-faint">
+              Nothing with a future due date yet.
+            </p>
+          ) : (
+            <ul className="rounded-2xl border border-line bg-surface-raised divide-y divide-line">
+              {upcoming.map((b) => (
+                <BillRow key={b.id} bill={b} kind="upcoming" />
+              ))}
+            </ul>
+          )}
+        </section>
 
         <section>
-          <h2 className="mb-3 px-1 text-[13px] font-medium text-ink-muted">
+          <h2 className="mb-2 px-1 text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
             Recurring
           </h2>
           {recurring.length === 0 ? (
@@ -116,13 +98,11 @@ export default async function BillsPage() {
         </section>
 
         <section>
-          <h2 className="mb-3 px-1 text-[13px] font-medium text-ink-muted">
+          <h2 className="mb-2 px-1 text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
             Recent
           </h2>
           {recent.length === 0 ? (
-            <p className="px-1 text-[12.5px] text-ink-faint">
-              No bills yet.
-            </p>
+            <p className="px-1 text-[12.5px] text-ink-faint">No bills yet.</p>
           ) : (
             <ul className="rounded-2xl border border-line bg-surface-raised divide-y divide-line">
               {recent.map((b) => (
@@ -133,14 +113,9 @@ export default async function BillsPage() {
         </section>
 
         <section>
-          <div className="mb-2 flex items-baseline gap-2 px-1">
-            <h2 className="text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
-              Ask Bills
-            </h2>
-            <span className="text-[11.5px] text-ink-faint">
-              Scoped to your bills
-            </span>
-          </div>
+          <h2 className="mb-2 px-1 text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
+            Ask Bills
+          </h2>
           <div className="rounded-2xl border border-line bg-surface-raised p-3">
             <AskChat scope={SCOPE} suggestions={SUGGESTIONS} />
           </div>
@@ -148,12 +123,55 @@ export default async function BillsPage() {
 
         <SectionMemoryPanel scope={SCOPE} memories={memories} />
 
-        <p className="px-1 text-[11.5px] text-ink-faint">
+        <p className="px-1 text-[11px] text-ink-faint">
           Forecasts are based on your recent uploads. Treat them as a calm
           reference, not a guarantee.
         </p>
       </div>
     </>
+  );
+}
+
+/**
+ * Horizontal forecast strip. Replaces the old vertical aside cards
+ * (Forecast + Unusual) so the page lays out as one calm column instead
+ * of a hero block + sidebar.
+ */
+function ForecastStrip({
+  forecast,
+}: {
+  forecast: { total: number; currency: string | null } | null;
+}) {
+  return (
+    <div className="flex flex-col gap-3 rounded-2xl border border-line bg-surface-raised p-4 sm:flex-row sm:items-baseline sm:justify-between">
+      <div className="flex items-baseline gap-3">
+        <span className="text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
+          Next month
+        </span>
+        {forecast ? (
+          <>
+            <span className="text-[26px] font-semibold tracking-tight text-ink">
+              {forecast.total.toLocaleString()}
+            </span>
+            {forecast.currency ? (
+              <span className="text-[12.5px] text-ink-muted">
+                {forecast.currency}
+              </span>
+            ) : null}
+            <span className="text-[11.5px] text-ink-faint">
+              based on your recurring bills
+            </span>
+          </>
+        ) : (
+          <span className="text-[12.5px] text-ink-faint">
+            Forecast fills in once Oria sees a few recurring bills.
+          </span>
+        )}
+      </div>
+      <span className="text-[11.5px] text-ink-faint">
+        Nothing unusual flagged.
+      </span>
+    </div>
   );
 }
 
@@ -227,74 +245,6 @@ function RecurringRow({ r }: { r: RecurringSummary }) {
         </p>
       ) : null}
     </li>
-  );
-}
-
-function ForecastCard({
-  f,
-}: {
-  f: { total: number; currency: string | null } | null;
-}) {
-  if (!f) {
-    return (
-      <section>
-        <h2 className="mb-3 px-1 text-[13px] font-medium text-ink-muted">
-          Next month forecast
-        </h2>
-        <div className="rounded-2xl border border-line bg-surface-raised p-5">
-          <p className="text-[12.5px] text-ink-faint">
-            Oria forecasts your next month once it sees a few recurring bills.
-          </p>
-        </div>
-      </section>
-    );
-  }
-  return (
-    <section>
-      <h2 className="mb-3 px-1 text-[13px] font-medium text-ink-muted">
-        Next month forecast
-      </h2>
-      <div className="rounded-2xl border border-line bg-surface-raised p-5">
-        <p className="text-[11.5px] uppercase tracking-[0.12em] text-ink-faint">
-          Estimated total
-        </p>
-        <p className="mt-1 text-[28px] font-semibold tracking-tight text-ink">
-          {f.total.toLocaleString()}{" "}
-          {f.currency ? (
-            <span className="text-[14px] font-medium text-ink-muted">
-              {f.currency}
-            </span>
-          ) : null}
-        </p>
-        <p className="mt-1 text-[12px] text-ink-faint">
-          based on your recurring bills
-        </p>
-      </div>
-    </section>
-  );
-}
-
-function UnusualCard() {
-  return (
-    <section>
-      <h2 className="mb-3 px-1 text-[13px] font-medium text-ink-muted">
-        Unusual charges
-      </h2>
-      <div className="rounded-2xl border border-line bg-surface-raised p-5">
-        <p className="text-[12.5px] text-ink-faint">
-          Nothing flagged. Oria will surface anything that&apos;s noticeably
-          higher than usual.
-        </p>
-      </div>
-    </section>
-  );
-}
-
-function SmartBadge() {
-  return (
-    <span className="inline-flex h-5 items-center rounded-full bg-accent-soft/60 px-2 text-[10.5px] font-medium text-[#7a5a2a]">
-      Smart section
-    </span>
   );
 }
 

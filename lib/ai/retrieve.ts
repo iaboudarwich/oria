@@ -372,7 +372,7 @@ export async function retrieveForQuery(
   let itemsQ = supabase
     .from("memory_items")
     .select(
-      "id, upload_id, organization_id, title, summary, merchant, amount_value, amount_currency, occurred_at, location, category, section, raw_text, created_at",
+      "id, upload_id, organization_id, title, summary, merchant, amount_value, amount_currency, occurred_at, location, category, section, raw_text, created_at, smart_section, calories, protein_g, carbs_g, fat_g, is_recurring, recurring_interval, direction",
     )
     .is("deleted_at", null)
     .in("organization_id", allowedOrgIds);
@@ -402,6 +402,14 @@ export async function retrieveForQuery(
     section: Section | null;
     raw_text: string | null;
     created_at: string;
+    smart_section: string | null;
+    calories: number | null;
+    protein_g: number | null;
+    carbs_g: number | null;
+    fat_g: number | null;
+    is_recurring: boolean | null;
+    recurring_interval: string | null;
+    direction: "inflow" | "outflow" | null;
   };
   const items = (itemsRes.data ?? []) as ItemRow[];
 
@@ -581,12 +589,23 @@ type ItemSnippetSource = {
   location: string | null;
   summary: string | null;
   raw_text: string | null;
+  smart_section?: string | null;
+  calories?: number | null;
+  protein_g?: number | null;
+  carbs_g?: number | null;
+  fat_g?: number | null;
+  is_recurring?: boolean | null;
+  recurring_interval?: string | null;
+  direction?: "inflow" | "outflow" | null;
 };
 
 /**
  * Compose a tight snippet for memory_items. Leads with the structured facts
  * (merchant, amount, date, location) the user actually asked about, then
- * appends a relevant text fragment so the model can ground its answer.
+ * folds in smart-section specifics — calories/macros for diet items,
+ * recurrence/direction for bills — so the agent can answer "how many
+ * calories today?" or "what are my recurring bills?" with real numbers.
+ * Falls back to summary / raw text when structured fields are sparse.
  */
 function buildItemSnippet(it: ItemSnippetSource, keywords: string[]): string {
   const parts: string[] = [];
@@ -602,14 +621,41 @@ function buildItemSnippet(it: ItemSnippetSource, keywords: string[]): string {
   if (it.location) parts.push(it.location);
   const head = parts.join(" · ");
 
+  // Smart-section facts: a one-line "tags" segment after the head.
+  const tags: string[] = [];
+  if (it.smart_section === "diet") {
+    if (typeof it.calories === "number") {
+      tags.push(`${Math.round(it.calories)} cal`);
+    }
+    const macros: string[] = [];
+    if (typeof it.protein_g === "number")
+      macros.push(`${Math.round(it.protein_g)}g protein`);
+    if (typeof it.carbs_g === "number")
+      macros.push(`${Math.round(it.carbs_g)}g carbs`);
+    if (typeof it.fat_g === "number")
+      macros.push(`${Math.round(it.fat_g)}g fat`);
+    if (macros.length > 0) tags.push(macros.join(", "));
+  }
+  if (it.smart_section === "bills" || it.is_recurring) {
+    if (it.is_recurring) {
+      tags.push(
+        it.recurring_interval
+          ? `recurring ${it.recurring_interval.toLowerCase()}`
+          : "recurring",
+      );
+    }
+    if (it.direction) tags.push(it.direction);
+  }
+  const tagLine = tags.join(" · ");
+
   const body = it.summary
     ? it.summary
     : it.raw_text
       ? buildUploadSnippet(it.raw_text, keywords)
       : "";
 
-  if (head && body) return `${head}\n${body}`;
-  return head || body;
+  const lines = [head, tagLine, body].filter((s) => s && s.length > 0);
+  return lines.join("\n");
 }
 
 function friendlyDate(iso: string): string {

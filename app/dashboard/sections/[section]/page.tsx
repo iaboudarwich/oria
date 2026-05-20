@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Topbar } from "@/components/dashboard/topbar";
-import { Dropzone } from "@/components/upload/dropzone";
+import { DropzoneCompact } from "@/components/upload/dropzone-compact";
 import { Thumbnail } from "@/components/upload/thumbnail";
 import { SparkIcon } from "@/components/ui/icon";
 import {
@@ -18,6 +18,7 @@ import { listAllSections } from "@/lib/data/all-sections";
 import { displayActor } from "@/lib/data/timeline";
 import { relativeTime } from "@/lib/utils";
 import { MovePicker } from "@/components/upload/move-picker";
+import { InlineTrashButton } from "@/components/upload/inline-trash";
 import { SECTION_META } from "@/lib/sections-meta";
 import type { Section } from "@/lib/supabase/types";
 
@@ -83,10 +84,10 @@ export default async function SectionPage({ params }: Props) {
         title={custom.name}
         count={entries.length}
         dropzoneNode={
-          <Dropzone
+          <DropzoneCompact
             defaultCustomSectionId={custom.id}
             heading={`Drop into ${custom.name}`}
-            subheading="Click to browse, or drag a file here."
+            subheading="or click to add"
           />
         }
       >
@@ -114,10 +115,10 @@ export default async function SectionPage({ params }: Props) {
       title={meta.label}
       count={entries.length}
       dropzoneNode={
-        <Dropzone
+        <DropzoneCompact
           defaultSection={sec}
           heading={`Drop into ${meta.label}`}
-          subheading="Click to browse, or drag a file here."
+          subheading="or click to add"
         />
       }
     >
@@ -235,6 +236,7 @@ function UploadList({
               />
             </div>
           ) : null}
+          <InlineTrashButton uploadId={it.id} />
         </li>
       ))}
     </ul>
@@ -308,6 +310,9 @@ function EntryList({
               <SparkIcon size={12} />
             ) : null}
           </Link>
+          {e.kind === "upload" ? (
+            <InlineTrashButton uploadId={e.upload_id} />
+          ) : null}
         </li>
       ))}
     </ul>
