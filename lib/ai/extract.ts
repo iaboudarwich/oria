@@ -188,9 +188,16 @@ DIRECTION — set direction whenever a document moves money:
 - null for non-financial or ambiguous documents (contracts without monetary movement, statements that contain both directions, etc.).
 
 SMART SECTIONS — set smart_section on each item:
-- "diet" when the item is food the user ate (meal photo, restaurant receipt, food description). Estimate calories, protein_g, carbs_g, fat_g — these are best-effort estimates, not lab values; if you genuinely can't tell from the photo or text, leave them null. Suggest a friendly meal title like "Chicken bowl, rice, salad" and set occurred_at to when the meal happened (use upload time if unclear).
-- "bills" when the item is a bill or invoice the user owes or paid (utility, rent, subscription, recurring service). Pull amount + currency + occurred_at (use the DUE DATE if visible, otherwise the issue/payment date). Detect recurrence: set is_recurring=true and recurring_interval ("monthly" / "quarterly" / "yearly" / "weekly") when the bill clearly recurs. Leave is_recurring null when uncertain — don't guess.
+- "diet" when the item is food the user ate (meal photo, restaurant receipt, food description). Estimate calories, protein_g, carbs_g, fat_g as plain numbers. Be DECISIVE — a reasonable rough estimate is much more useful than null. Use both the image AND the user_description (e.g. "lunch: chicken bowl, rice, salad" → estimate ~600 cal, 45g protein, 70g carbs, 18g fat). Only leave calories null when the item genuinely contains no food cue at all. Suggest a friendly meal title like "Chicken bowl with rice and salad" and set occurred_at to when the meal happened — use the upload time if no other timestamp is visible (the meal page slices by occurred_at, so an unset value means it won't appear in "Today").
+- "bills" when the item is a bill or invoice the user owes or paid (utility, rent, subscription, recurring service). Pull amount + currency + occurred_at (use the DUE DATE if visible, otherwise the issue/payment date). Detect recurrence: set is_recurring=true and recurring_interval ("monthly" / "quarterly" / "yearly" / "weekly") when the bill clearly recurs. Leave is_recurring null when uncertain.
 - null when the item is neither (a contract, photo, note, generic receipt that isn't a household bill).
+
+CALENDAR / EVENT DATES — occurred_at is what the Calendar reads:
+- For boarding passes, tickets, itineraries, and reservations, occurred_at MUST be the EVENT date and time (the flight time, the show time, the hotel check-in), NOT the booking date or issue date.
+- For invoices and bills, occurred_at is the DUE DATE when visible.
+- For receipts of past purchases, occurred_at is the purchase date/time.
+- For meal photos, occurred_at is when the meal was eaten (often = upload time).
+- If you cannot infer the right date, leave occurred_at null. Don't guess wildly — better empty than wrong.
 
 USER CONTEXT may be provided alongside the file. It's a free-form note the user typed before uploading (e.g. "Lunch: chicken, rice, salad" or "Electricity bill for LA apartment"). Use it to:
 - Disambiguate when the image is unclear.

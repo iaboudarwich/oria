@@ -119,6 +119,84 @@ export function extractKeywords(query: string): string[] {
   return Array.from(new Set(tokens)).slice(0, 8);
 }
 
+const AGGREGATE_PATTERNS = [
+  /\bhow\s*much\b/,
+  /\bhow\s*many\b/,
+  /\btotal(s)?\b/,
+  /\bsum\b/,
+  /\bbreakdown\b/,
+  /\bsummar(y|ize)\b/,
+  /\bshow\s+(me\s+)?(all|every|my\s+last|my\s+recent|recent|the\s+last)\b/,
+  /\blist\s+(my\s+|the\s+|all\s+)?\b/,
+  /\baverage\b/,
+  /\bspent\b/,
+  /\bcalor(ies|ie)\b/,
+  /\bprotein\b|\bcarbs?\b|\bfat\b/,
+  /\bthis\s+(week|month|year|quarter)\b/,
+  /\blast\s+(week|month|year|quarter|night)\b/,
+  /\btoday\b|\byesterday\b/,
+  /\bwhat\s+did\s+i\b/,
+  /\bcompare\b/,
+];
+
+export type AggregateIntent = {
+  isAggregate: boolean;
+  /** ISO timestamp lower bound when the query mentions a time window. */
+  sinceISO: string | null;
+  /** Set when the user clearly asks about money (spent, total, paid…). */
+  wantsAmounts: boolean;
+  /** Set when the user clearly asks about food (calories, protein, eat…). */
+  wantsMacros: boolean;
+};
+
+const MONEY_RE =
+  /\b(spent|spend|paid|owe|cost|expense|invoice|bill|total|sum|breakdown|how\s*much)\b/;
+const FOOD_RE =
+  /\b(ate|eaten|meal|meals|calor|protein|carbs?|fat|breakfast|lunch|dinner|snack|food)\b/;
+
+/**
+ * Detect whether the question wants a roll-up answer (totals, breakdown,
+ * "show me all my X") versus a specific lookup. When aggregate, the
+ * retriever broadens its pull so the agent has the data to sum/group.
+ */
+export function detectAggregateIntent(query: string): AggregateIntent {
+  const q = query.toLowerCase();
+  const isAggregate = AGGREGATE_PATTERNS.some((re) => re.test(q));
+  const wantsAmounts = MONEY_RE.test(q);
+  const wantsMacros = FOOD_RE.test(q);
+  let sinceISO: string | null = null;
+  if (isAggregate) {
+    const now = new Date();
+    if (/\btoday\b/.test(q)) {
+      const d = new Date(now);
+      d.setHours(0, 0, 0, 0);
+      sinceISO = d.toISOString();
+    } else if (/\byesterday\b/.test(q)) {
+      const d = new Date(now);
+      d.setDate(d.getDate() - 1);
+      d.setHours(0, 0, 0, 0);
+      sinceISO = d.toISOString();
+    } else if (/\bthis\s+week\b/.test(q) || /\blast\s+week\b/.test(q)) {
+      const d = new Date(now);
+      d.setDate(d.getDate() - 7);
+      sinceISO = d.toISOString();
+    } else if (/\bthis\s+month\b/.test(q) || /\blast\s+month\b/.test(q)) {
+      const d = new Date(now);
+      d.setDate(d.getDate() - 31);
+      sinceISO = d.toISOString();
+    } else if (/\bthis\s+quarter\b/.test(q) || /\blast\s+quarter\b/.test(q)) {
+      const d = new Date(now);
+      d.setDate(d.getDate() - 92);
+      sinceISO = d.toISOString();
+    } else if (/\bthis\s+year\b/.test(q) || /\blast\s+year\b/.test(q)) {
+      const d = new Date(now);
+      d.setDate(d.getDate() - 365);
+      sinceISO = d.toISOString();
+    }
+  }
+  return { isAggregate, sinceISO, wantsAmounts, wantsMacros };
+}
+
 /**
  * Retrieve the most relevant uploads + reminders for a query.
  *
@@ -146,9 +224,18 @@ export async function retrieveForQuery(
     crossSpace?: boolean;
   } = {},
 ): Promise<RetrievedSource[]> {
-  const { maxSources = 8, scope = null, crossSpace = false } = opts;
+  const { scope = null, crossSpace = false } = opts;
   const keywords = extractKeywords(query);
-  if (keywords.length === 0 && !scope) return [];
+  const intent = detectAggregateIntent(query);
+  // Roll-up questions need a bigger pool of source rows so the agent can
+  // actually sum. Single-target lookups stay tight to keep the prompt fast
+  // and the answer focused.
+  const maxSources = opts.maxSources ?? (intent.isAggregate ? 20 : 8);
+  // Aggregate queries like "how much did I spend today" don't need
+  // keyword matches — they need ALL relevant items. We still bail when
+  // there's literally nothing to work with (no keywords, no scope, no
+  // aggregation intent).
+  if (keywords.length === 0 && !scope && !intent.isAggregate) return [];
 
   const supabase = await createClient();
   const ctx = await requireContext();
@@ -413,6 +500,38 @@ export async function retrieveForQuery(
   };
   const items = (itemsRes.data ?? []) as ItemRow[];
 
+  // -- Aggregate second pass --------------------------------------------------
+  // "How much did I spend?" / "calories today" / "show my meals this week"
+  // don't match on keywords. Pull items with the relevant numeric field
+  // populated in the active scope so the agent has data to sum, even
+  // when nothing keyword-hit.
+  if (intent.isAggregate) {
+    const seenIds = new Set(items.map((i) => i.id));
+    const fields: Array<"amount_normalized" | "calories"> = [];
+    if (intent.wantsAmounts || (!intent.wantsAmounts && !intent.wantsMacros)) {
+      fields.push("amount_normalized");
+    }
+    if (intent.wantsMacros) fields.push("calories");
+    const aggregateResults = await Promise.all(
+      fields.map((field) =>
+        buildAggregateQuery({
+          supabase,
+          allowedOrgIds,
+          scope,
+          sinceISO: intent.sinceISO,
+          field,
+        }),
+      ),
+    );
+    for (const rows of aggregateResults) {
+      for (const row of rows) {
+        if (seenIds.has(row.id)) continue;
+        seenIds.add(row.id);
+        items.push(row);
+      }
+    }
+  }
+
   // -- Reminders -------------------------------------------------------------
   const reminderFilter = keywords
     .map((k) => `title.ilike.*${k.replace(/[%,]/g, "")}*`)
@@ -492,6 +611,16 @@ export async function retrieveForQuery(
       .toLowerCase();
     let score = 0;
     for (const kw of keywords) if (haystack.includes(kw)) score += kw.length;
+    // Aggregate intent: items pulled in the second pass don't keyword-
+    // match, but they ARE relevant — give them a base score so they
+    // survive the filter and the agent can sum across them.
+    if (score === 0 && intent.isAggregate) {
+      const hasAmount = typeof it.amount_value === "string" && it.amount_value.length > 0;
+      const hasMacros = typeof it.calories === "number" && it.calories > 0;
+      if ((intent.wantsAmounts && hasAmount) || (intent.wantsMacros && hasMacros) || (hasAmount && !intent.wantsMacros)) {
+        score = 3; // base relevance for roll-up
+      }
+    }
     if (score === 0) continue;
     // Boost items that carry structured fields — they're more likely to be
     // the "right" answer than a vaguely-matching raw upload.
@@ -666,4 +795,64 @@ function friendlyDate(iso: string): string {
     day: "numeric",
     year: "numeric",
   });
+}
+
+type AggregateRow = {
+  id: string;
+  upload_id: string | null;
+  organization_id: string;
+  title: string;
+  summary: string | null;
+  merchant: string | null;
+  amount_value: string | null;
+  amount_currency: string | null;
+  occurred_at: string | null;
+  location: string | null;
+  category: string | null;
+  section: Section | null;
+  raw_text: string | null;
+  created_at: string;
+  smart_section: string | null;
+  calories: number | null;
+  protein_g: number | null;
+  carbs_g: number | null;
+  fat_g: number | null;
+  is_recurring: boolean | null;
+  recurring_interval: string | null;
+  direction: "inflow" | "outflow" | null;
+};
+
+/**
+ * Broaden-the-pool query for aggregate intent. Pulls memory_items where
+ * the requested numeric column is populated, scoped to the same orgs (and
+ * optional section / time window) as the main retrieval. Returns rows
+ * directly so the caller doesn't have to thread a complex generic type
+ * back through the supabase builder (which deepens TS recursion).
+ */
+async function buildAggregateQuery(args: {
+  supabase: Awaited<ReturnType<typeof createClient>>;
+  allowedOrgIds: string[];
+  scope: SectionScope | null;
+  sinceISO: string | null;
+  field: "amount_normalized" | "calories";
+}): Promise<AggregateRow[]> {
+  let q = args.supabase
+    .from("memory_items")
+    .select(
+      "id, upload_id, organization_id, title, summary, merchant, amount_value, amount_currency, occurred_at, location, category, section, raw_text, created_at, smart_section, calories, protein_g, carbs_g, fat_g, is_recurring, recurring_interval, direction",
+    )
+    .is("deleted_at", null)
+    .in("organization_id", args.allowedOrgIds)
+    .not(args.field, "is", null);
+  if (args.scope) {
+    if (args.scope.kind === "builtin") q = q.eq("section", args.scope.key);
+    else if (args.scope.kind === "custom")
+      q = q.eq("custom_section_id", args.scope.key);
+    else q = q.eq("smart_section", args.scope.key);
+  }
+  if (args.sinceISO) q = q.gte("occurred_at", args.sinceISO);
+  const { data } = await q
+    .order("occurred_at", { ascending: false, nullsFirst: false })
+    .limit(60);
+  return (data ?? []) as AggregateRow[];
 }

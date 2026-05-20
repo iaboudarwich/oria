@@ -180,6 +180,10 @@ function MealRow({ meal: m }: { meal: DietMeal }) {
  * Horizontal totals strip. Reads as one calm row: today's calories on
  * the left, macros on the right. Replaces the old vertical aside card so
  * the meals list takes the full width and the page breathes.
+ *
+ * Empty state: one short line, no macro chips — fewer dots, less noise.
+ * Partial state (a meal logged but no macros from AI): show calories
+ * and hide the zero-macro chips instead of rendering "·" placeholders.
  */
 function DailyStrip({
   total,
@@ -190,6 +194,42 @@ function DailyStrip({
   hasData: boolean;
   mealCount: number;
 }) {
+  if (!hasData) {
+    return (
+      <div className="flex items-center justify-between rounded-2xl border border-line bg-surface-raised p-4">
+        <div className="flex items-baseline gap-3">
+          <span className="text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
+            Today
+          </span>
+          <span className="text-[13.5px] text-ink-muted">
+            No meals logged yet
+          </span>
+        </div>
+        <span className="text-[11.5px] text-ink-faint">
+          Drop a meal photo above to start.
+        </span>
+      </div>
+    );
+  }
+  const macros: Array<{ label: string; value: number; tint: string }> = [];
+  if (total.protein_g > 0)
+    macros.push({
+      label: "Protein",
+      value: Math.round(total.protein_g),
+      tint: "text-[#7a4a7a]",
+    });
+  if (total.carbs_g > 0)
+    macros.push({
+      label: "Carbs",
+      value: Math.round(total.carbs_g),
+      tint: "text-[#7a5a2a]",
+    });
+  if (total.fat_g > 0)
+    macros.push({
+      label: "Fat",
+      value: Math.round(total.fat_g),
+      tint: "text-[#3a6a8a]",
+    });
   return (
     <div className="flex flex-col gap-3 rounded-2xl border border-line bg-surface-raised p-4 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex items-baseline gap-3">
@@ -197,53 +237,27 @@ function DailyStrip({
           Today
         </span>
         <span className="text-[26px] font-semibold tracking-tight text-ink">
-          {hasData ? Math.round(total.calories).toLocaleString() : "·"}
+          {Math.round(total.calories).toLocaleString()}
         </span>
         <span className="text-[12.5px] text-ink-faint">cal</span>
         <span className="text-[11.5px] text-ink-faint">
-          {mealCount === 0
-            ? "no meals yet"
-            : `${mealCount} meal${mealCount === 1 ? "" : "s"}`}
+          {mealCount} meal{mealCount === 1 ? "" : "s"}
         </span>
       </div>
-      <div className="flex items-baseline gap-4 sm:gap-5">
-        <Macro
-          label="P"
-          value={hasData ? Math.round(total.protein_g) : null}
-          tint="text-[#7a4a7a]"
-        />
-        <Macro
-          label="C"
-          value={hasData ? Math.round(total.carbs_g) : null}
-          tint="text-[#7a5a2a]"
-        />
-        <Macro
-          label="F"
-          value={hasData ? Math.round(total.fat_g) : null}
-          tint="text-[#3a6a8a]"
-        />
-      </div>
+      {macros.length > 0 ? (
+        <div className="flex items-baseline gap-4 sm:gap-5">
+          {macros.map((m) => (
+            <span key={m.label} className="inline-flex items-baseline gap-1">
+              <span className={`text-[14px] font-medium ${m.tint}`}>
+                {m.value}
+              </span>
+              <span className="text-[10.5px] text-ink-faint">g</span>
+              <span className="text-[10.5px] text-ink-muted">{m.label}</span>
+            </span>
+          ))}
+        </div>
+      ) : null}
     </div>
-  );
-}
-
-function Macro({
-  label,
-  value,
-  tint,
-}: {
-  label: string;
-  value: number | null;
-  tint: string;
-}) {
-  return (
-    <span className="inline-flex items-baseline gap-1">
-      <span className={`text-[14px] font-medium ${tint}`}>
-        {value ?? "·"}
-      </span>
-      <span className="text-[10.5px] text-ink-faint">g</span>
-      <span className="text-[10.5px] text-ink-muted">{label}</span>
-    </span>
   );
 }
 
