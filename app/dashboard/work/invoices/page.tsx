@@ -13,7 +13,7 @@ export default async function WorkInvoicesPage() {
       <Topbar title="Invoices" />
 
       <div className="mb-6 max-w-xl px-1 text-[13px] text-ink-muted">
-        Incoming and outgoing invoices for this work space.
+        Incoming and outgoing invoices for this Workspace.
       </div>
 
       <div className="space-y-8 animate-fade-up">

@@ -191,7 +191,7 @@ export function Sidebar({
             collapsed ? "justify-center px-2" : "justify-between px-5"
           }`}
         >
-          {collapsed ? null : <Wordmark href="/dashboard" />}
+          {collapsed ? null : <Wordmark href="/dashboard" onClick={close} />}
           {onToggle ? (
             <button
               type="button"

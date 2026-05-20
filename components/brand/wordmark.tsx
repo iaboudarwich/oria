@@ -4,9 +4,15 @@ type WordmarkProps = {
   href?: string;
   className?: string;
   tone?: "ink" | "ivory";
+  onClick?: () => void;
 };
 
-export function Wordmark({ href = "/", className = "", tone = "ink" }: WordmarkProps) {
+export function Wordmark({
+  href = "/",
+  className = "",
+  tone = "ink",
+  onClick,
+}: WordmarkProps) {
   const color = tone === "ivory" ? "text-surface" : "text-ink";
 
   const inner = (
@@ -20,7 +26,12 @@ export function Wordmark({ href = "/", className = "", tone = "ink" }: WordmarkP
 
   if (!href) return inner;
   return (
-    <Link href={href} className="inline-flex items-center" aria-label="Oria home">
+    <Link
+      href={href}
+      onClick={onClick}
+      className="inline-flex items-center"
+      aria-label="Oria home"
+    >
       {inner}
     </Link>
   );

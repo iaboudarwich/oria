@@ -110,19 +110,34 @@ export async function switchMode(mode: Mode): Promise<SwitchModeResult> {
 }
 
 /**
- * Create a new Work space (org with kind=office) and switch into it.
+ * Create a new Workspace (org with kind=office) and switch into it.
  *
- *   - name (required): "Office Building A", "Parking Revenue", "Property X"
- *   - description (optional): one or two sentences describing the space.
+ * FormData keys (all from the Work setup form):
+ *   - name (required): "Office Building A", "Parking Revenue", "Investment X"
+ *   - purpose (optional): single value — "Business", "Property", "Investment",
+ *     "Company", "Project", "Other".
+ *   - stores (optional): multi-value — "Invoices", "Leases", "Rent",
+ *     "Expenses", "Contracts", "Reports".
+ *
+ * Purpose + stores are folded into the existing `description` text column so
+ * the AI extractor + classifier can use them as Workspace context. No
+ * schema change required.
  */
 export async function createWorkSpace(formData: FormData): Promise<void> {
   const rawName = String(formData.get("name") ?? "").trim().slice(0, 60);
   if (!rawName) return;
 
-  const description =
-    String(formData.get("description") ?? "")
-      .trim()
-      .slice(0, 280) || null;
+  const purpose = String(formData.get("purpose") ?? "").trim().slice(0, 40);
+  const stores = formData
+    .getAll("stores")
+    .map((v) => String(v).trim())
+    .filter(Boolean)
+    .slice(0, 8);
+
+  const descParts: string[] = [];
+  if (purpose) descParts.push(`Purpose: ${purpose}.`);
+  if (stores.length > 0) descParts.push(`Stores: ${stores.join(", ")}.`);
+  const description = descParts.length > 0 ? descParts.join(" ").slice(0, 280) : null;
 
   const ctx = await requireContext();
   const admin = createAdminClient();

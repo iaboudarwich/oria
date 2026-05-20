@@ -33,11 +33,11 @@ const KIND_ICON: Record<OrgKind, React.ComponentType<{ size?: number }>> = {
 function kindSubtitle(active: SpaceSummary): string {
   if (active.kind === "personal") return "Your private space";
   if (active.kind === "circle") return "Shared circle";
-  return "Office";
+  return "Workspace";
 }
 
 function kindLabel(k: OrgKind): string {
-  return k === "personal" ? "Personal" : k === "circle" ? "Circle" : "Office";
+  return k === "personal" ? "Personal" : k === "circle" ? "Circle" : "Workspace";
 }
 
 export function SpaceSwitcher({ active, spaces }: Props) {
@@ -151,7 +151,7 @@ export function SpaceSwitcher({ active, spaces }: Props) {
                 <span className="inline-flex h-4 w-4 items-center justify-center text-[14px] leading-none text-ink-muted">
                   +
                 </span>
-                <span>Create work space</span>
+                <span>Create Workspace</span>
               </Link>
             ) : (
               <>

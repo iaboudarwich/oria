@@ -13,7 +13,7 @@ export default async function WorkFinancePage() {
       <Topbar title="Finance" />
 
       <div className="mb-6 max-w-xl px-1 text-[13px] text-ink-muted">
-        Payments, receivables, and account activity for this work space.
+        Payments, receivables, and account activity for this Workspace.
       </div>
 
       <div className="space-y-8 animate-fade-up">

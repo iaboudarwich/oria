@@ -2,34 +2,54 @@ import Link from "next/link";
 import { Topbar } from "@/components/dashboard/topbar";
 import { createWorkSpace } from "@/lib/data/mode-actions";
 
-export const metadata = { title: "Create work space" };
+export const metadata = { title: "Set up Work" };
 
-const PURPOSE_EXAMPLES = [
+const PURPOSES = [
+  "Business",
+  "Property",
+  "Investment",
+  "Company",
+  "Project",
+  "Other",
+];
+
+const STORE_TYPES = [
+  "Invoices",
+  "Leases",
+  "Rent",
+  "Expenses",
+  "Contracts",
+  "Reports",
+];
+
+const NAME_EXAMPLES = [
   "Office Building A",
-  "Parking Revenue",
-  "Property X",
-  "Investment Y",
-  "Vendor Invoices",
-  "Tenant Leases",
-  "Legal Documents",
+  "Investment X",
   "Company Finance",
 ];
 
 export default function NewWorkSpacePage() {
   return (
     <>
-      <Topbar title="Create a work space" />
+      <Topbar title="Set up Work" />
 
       <div className="mx-auto max-w-xl animate-fade-up">
         <p className="mb-7 px-1 text-[13px] text-ink-muted">
-          A work space is its own operational context. One per office,
+          A Workspace is its own operational context. One per office,
           property, investment, or company. Anything you upload here stays
           inside it.
         </p>
 
         <form action={createWorkSpace} className="space-y-7">
           <Field
-            label="Name this work space"
+            label="What are you using Work for?"
+            hint="Pick the closest fit. This helps Oria tune extraction and summaries for your Workspace."
+          >
+            <ChipRadio name="purpose" options={PURPOSES} defaultIndex={0} />
+          </Field>
+
+          <Field
+            label="Name your first Workspace"
             hint="A short, descriptive name. You can change it later."
           >
             <input
@@ -37,25 +57,12 @@ export default function NewWorkSpacePage() {
               name="name"
               required
               maxLength={60}
-              placeholder="e.g. Office Building A, Property X, Investment Y"
+              placeholder={NAME_EXAMPLES[0]}
               className="block h-11 w-full rounded-xl border border-line-strong bg-surface-raised px-3.5 text-[14px] text-ink placeholder:text-ink-faint outline-none transition-base focus:border-ink"
               autoFocus
             />
-          </Field>
-
-          <Field
-            label="What is this work space for?"
-            hint="A sentence or two. Helps Oria classify uploads and surface the right documents."
-          >
-            <textarea
-              name="description"
-              rows={3}
-              maxLength={280}
-              placeholder="Vendor invoices, tenant leases, monthly financials, contracts and so on."
-              className="block w-full rounded-xl border border-line-strong bg-surface-raised px-3.5 py-2.5 text-[14px] text-ink placeholder:text-ink-faint outline-none transition-base focus:border-ink"
-            />
             <ul className="mt-2 flex flex-wrap gap-1.5">
-              {PURPOSE_EXAMPLES.map((p) => (
+              {NAME_EXAMPLES.map((p) => (
                 <li
                   key={p}
                   className="rounded-full border border-line bg-canvas px-2.5 py-0.5 text-[11px] text-ink-muted"
@@ -66,12 +73,19 @@ export default function NewWorkSpacePage() {
             </ul>
           </Field>
 
+          <Field
+            label="What will you store here?"
+            hint="Pick any that fit. You can always upload other things later."
+          >
+            <ChipCheckbox name="stores" options={STORE_TYPES} />
+          </Field>
+
           <div className="flex items-center gap-3 pt-1">
             <button
               type="submit"
               className="inline-flex h-11 items-center rounded-xl bg-ink px-5 text-[13.5px] text-surface hover:bg-ink-soft transition-base"
             >
-              Create work space
+              Create Workspace
             </button>
             <Link
               href="/dashboard"
@@ -103,5 +117,60 @@ function Field({
       ) : null}
       {children}
     </label>
+  );
+}
+
+function ChipRadio({
+  name,
+  options,
+  defaultIndex = 0,
+}: {
+  name: string;
+  options: string[];
+  defaultIndex?: number;
+}) {
+  return (
+    <div className="flex flex-wrap gap-1.5">
+      {options.map((opt, i) => (
+        <label key={opt} className="relative cursor-pointer">
+          <input
+            type="radio"
+            name={name}
+            value={opt}
+            defaultChecked={i === defaultIndex}
+            className="peer sr-only"
+          />
+          <span className="inline-flex items-center rounded-full border border-line bg-canvas px-3 py-1 text-[12.5px] text-ink-muted transition-base hover:border-line-strong peer-checked:border-ink peer-checked:bg-ink peer-checked:text-surface peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-ink">
+            {opt}
+          </span>
+        </label>
+      ))}
+    </div>
+  );
+}
+
+function ChipCheckbox({
+  name,
+  options,
+}: {
+  name: string;
+  options: string[];
+}) {
+  return (
+    <div className="flex flex-wrap gap-1.5">
+      {options.map((opt) => (
+        <label key={opt} className="relative cursor-pointer">
+          <input
+            type="checkbox"
+            name={name}
+            value={opt}
+            className="peer sr-only"
+          />
+          <span className="inline-flex items-center rounded-full border border-line bg-canvas px-3 py-1 text-[12.5px] text-ink-muted transition-base hover:border-line-strong peer-checked:border-ink peer-checked:bg-ink peer-checked:text-surface peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-ink">
+            {opt}
+          </span>
+        </label>
+      ))}
+    </div>
   );
 }
