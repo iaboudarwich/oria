@@ -279,3 +279,105 @@ export function pickBestSection(
 
   return best?.section ?? null;
 }
+
+const ENRICH_STOPWORDS = new Set([
+  "the", "and", "with", "from", "this", "that", "your", "their",
+  "photo", "scan", "image", "document", "file", "files", "docs",
+  "final", "draft", "copy", "rev", "version", "untitled", "new",
+  "img", "pic", "screenshot", "screen",
+]);
+
+/**
+ * Distil distinctive lowercase tokens from free text (a filename or a
+ * merchant string) for use as section keywords. Conservative on purpose:
+ * skip stopwords, pure-numeric tokens, anything shorter than 4 chars, and
+ * cap the result so a single move can't flood a section's context.
+ */
+export function distinctiveTokens(text: string): string[] {
+  if (!text) return [];
+  return Array.from(
+    new Set(
+      text
+        .toLowerCase()
+        .replace(/\.[a-z0-9]{1,5}$/, "") // drop file extension
+        .replace(/[^a-z0-9\s'-]/g, " ")
+        .split(/\s+/)
+        .map((t) => t.trim().replace(/^[-']+|[-']+$/g, ""))
+        .filter(
+          (t) =>
+            t.length >= 4 &&
+            !ENRICH_STOPWORDS.has(t) &&
+            !/^\d+$/.test(t),
+        ),
+    ),
+  ).slice(0, 4);
+}
+
+const MAX_LEARNED_KEYWORDS_PER_SECTION = 30;
+
+/**
+ * Closes the learning loop for built-in sections (item #8 of the scope
+ * audit). When a user moves an upload out of Unsorted into a built-in
+ * section, this folds a handful of distinctive tokens from the source
+ * text into that section's per-org `section_settings.context.keywords`,
+ * so the classifier picks the right destination next time without
+ * needing a manual move.
+ *
+ * Scope rules:
+ *   • Per-org. Settings are written with `organization_id = orgId`, so
+ *     learning from a move in one space never affects another space.
+ *   • Built-in sections only. Custom sections own their own profile
+ *     (`custom_sections.profile`) and a separate UI for editing it.
+ *   • Best-effort. Any DB error swallowed — the move itself succeeded
+ *     and the user's flow shouldn't break for a telemetry-grade enrich.
+ *   • Bounded growth. Keywords dedup case-insensitively and cap at
+ *     MAX_LEARNED_KEYWORDS_PER_SECTION per section.
+ */
+export async function enrichBuiltinSectionFromMove(input: {
+  organizationId: string;
+  section: Section;
+  sourceText: string;
+}): Promise<void> {
+  const tokens = distinctiveTokens(input.sourceText);
+  if (tokens.length === 0) return;
+
+  try {
+    const supabase = await createClient();
+
+    const { data: existing } = await supabase
+      .from("section_settings")
+      .select("id, context")
+      .eq("organization_id", input.organizationId)
+      .eq("builtin_section", input.section)
+      .maybeSingle();
+
+    type Row = { id: string; context: unknown };
+    const row = existing as Row | null;
+    const prev = parseContext(row?.context);
+    const merged = Array.from(
+      new Set([
+        ...prev.keywords.map((k) => k.toLowerCase()),
+        ...tokens,
+      ]),
+    ).slice(0, MAX_LEARNED_KEYWORDS_PER_SECTION);
+
+    const nextContext = { ...prev, keywords: merged };
+
+    if (row) {
+      await supabase
+        .from("section_settings")
+        .update({ context: nextContext })
+        .eq("id", row.id);
+    } else {
+      await supabase.from("section_settings").insert({
+        organization_id: input.organizationId,
+        builtin_section: input.section,
+        context: nextContext,
+        sort_order: 0,
+        hidden: false,
+      });
+    }
+  } catch {
+    // Best-effort; never block the move.
+  }
+}

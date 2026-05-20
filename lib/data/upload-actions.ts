@@ -5,7 +5,11 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { requireContext } from "./organizations";
 import { processUpload } from "./upload-intelligence";
-import { getOrgSectionContexts, pickBestSection } from "./section-context";
+import {
+  enrichBuiltinSectionFromMove,
+  getOrgSectionContexts,
+  pickBestSection,
+} from "./section-context";
 import { recordLearningEvent } from "./learning";
 import { checkDailyUploadBytes } from "./quotas";
 import { formatBytes } from "@/lib/utils";
@@ -201,7 +205,9 @@ export async function setUploadSection(formData: FormData): Promise<void> {
   // even before RLS runs.
   const cur = await supabase
     .from("uploads")
-    .select("id, uploaded_by, organization_id, section, custom_section_id")
+    .select(
+      "id, uploaded_by, organization_id, section, custom_section_id, filename, title",
+    )
     .eq("id", id)
     .eq("organization_id", ctx.organization.id)
     .maybeSingle();
@@ -211,6 +217,8 @@ export async function setUploadSection(formData: FormData): Promise<void> {
     uploaded_by: string | null;
     section: string | null;
     custom_section_id: string | null;
+    filename: string;
+    title: string | null;
   };
   const isOwner = ctx.membership.role === "owner";
   const isUploader = row.uploaded_by === ctx.profile.id;
@@ -250,6 +258,20 @@ export async function setUploadSection(formData: FormData): Promise<void> {
       to: update,
     },
   });
+
+  // Closes the learning loop: a move from Unsorted to a built-in section
+  // is the strongest "next time, classify like this" signal we get. Add
+  // distinctive tokens from the filename/title into that section's
+  // per-org keyword context so the classifier picks the same destination
+  // on the next similar upload. Per-org, never crosses spaces.
+  const wasUnsorted = row.section === null && row.custom_section_id === null;
+  if (wasUnsorted && kind === "builtin") {
+    void enrichBuiltinSectionFromMove({
+      organizationId: ctx.organization.id,
+      section: key as Section,
+      sourceText: `${row.title ?? ""} ${row.filename}`,
+    });
+  }
 
   revalidatePath("/dashboard");
   revalidatePath(`/dashboard/uploads/${id}`);

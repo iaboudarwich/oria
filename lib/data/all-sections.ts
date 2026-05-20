@@ -40,7 +40,18 @@ export type MergedSection = {
 
 /** Pseudo-section: items Oria couldn't confidently classify. "Unsorted" is
  * the calmest label we tried: descriptive, never alarmist, and the obvious
- * next action is to sort. */
+ * next action is to sort.
+ *
+ * Invariants — DO NOT WEAKEN:
+ *   • Always present in every space (personal, circle, office). Implemented
+ *     by injecting this constant into listAllSections rather than storing a
+ *     row. There is no DELETE path that can remove it.
+ *   • Cannot be hidden by the user. The Settings UI does not expose a
+ *     "hide Unsorted" toggle; we pin `hidden: false` here as the single
+ *     source of truth.
+ *   • Not a database row. RLS, foreign keys, and section_settings have
+ *     nothing to point at, which is the point — there is nothing to scope
+ *     across orgs, nothing to delete by accident, nothing to migrate. */
 export const REVIEW_SECTION: MergedSection = {
   ref: { kind: "review", key: "review" },
   name: "Unsorted",

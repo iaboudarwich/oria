@@ -11,6 +11,12 @@ import { createAdminClient } from "@/lib/supabase/admin";
  * redeploying:
  *   ORIA_DAILY_UPLOAD_BYTES  (default 300MB)
  *   ORIA_DAILY_ASK_REQUESTS  (default 250)
+ *
+ * SCOPE: both checks are PER USER, across every org the user belongs to —
+ * the queries filter by `uploaded_by` / `actor_id`, never by
+ * `organization_id`. A tester who belongs to multiple Workspaces still
+ * shares one daily cap. This is intentional: per-org caps would let a
+ * single user multiply their allowance by joining more spaces.
  */
 const DEFAULT_UPLOAD_BYTES_PER_DAY = 300 * 1024 * 1024;
 const DEFAULT_ASK_REQUESTS_PER_DAY = 250;

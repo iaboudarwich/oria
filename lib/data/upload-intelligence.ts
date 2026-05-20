@@ -235,6 +235,17 @@ export async function processUpload(uploadId: string): Promise<void> {
   });
 
   // ----- AI path: one or more memory_items ----------------------------------
+  // Sorting policy (audit rules #5–#7):
+  //   • The AI reads the actual file content (image / PDF / sheet / text)
+  //     via extractFromUpload above. Sorting is therefore content-based,
+  //     not filename-based, whenever extraction succeeds.
+  //   • Per-item `suggested_section` is only adopted as the auto-section
+  //     when `confidence >= AUTO_FILE_CONFIDENCE`. Below threshold the
+  //     item lands in the active space's Unsorted section so the user
+  //     can place it themselves.
+  //   • Sections live per-org; this whole block runs against
+  //     `upload.organization_id` so an upload in one space is only ever
+  //     auto-filed into one of that space's own sections.
   if (aiResult && aiResult.items.length > 0) {
     const itemRows = aiResult.items.map((item) => {
       const autoSection =

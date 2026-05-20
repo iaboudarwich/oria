@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { requireContext } from "./organizations";
 import { recordLearningEvent } from "./learning";
+import { enrichBuiltinSectionFromMove } from "./section-context";
 import { sortItemsWithInstruction } from "@/lib/ai/sort-items";
 import type { Section } from "@/lib/supabase/types";
 
@@ -70,7 +71,7 @@ export async function setItemSection(formData: FormData): Promise<void> {
   const cur = await supabase
     .from("memory_items")
     .select(
-      "id, organization_id, section, custom_section_id, upload_id, uploads(uploaded_by)",
+      "id, organization_id, section, custom_section_id, upload_id, title, merchant, uploads(uploaded_by, filename)",
     )
     .eq("id", id)
     .eq("organization_id", ctx.organization.id)
@@ -82,11 +83,18 @@ export async function setItemSection(formData: FormData): Promise<void> {
     section: Section | null;
     custom_section_id: string | null;
     upload_id: string | null;
-    uploads: { uploaded_by: string | null }[] | { uploaded_by: string | null } | null;
+    title: string | null;
+    merchant: string | null;
+    uploads:
+      | { uploaded_by: string | null; filename: string | null }[]
+      | { uploaded_by: string | null; filename: string | null }
+      | null;
   };
-  const uploader = Array.isArray(row.uploads)
-    ? row.uploads[0]?.uploaded_by ?? null
-    : row.uploads?.uploaded_by ?? null;
+  const uploadJoin = Array.isArray(row.uploads)
+    ? row.uploads[0] ?? null
+    : row.uploads ?? null;
+  const uploader = uploadJoin?.uploaded_by ?? null;
+  const parentFilename = uploadJoin?.filename ?? null;
 
   const isOwner = ctx.membership.role === "owner";
   const isUploader = uploader === ctx.profile.id;
@@ -110,6 +118,24 @@ export async function setItemSection(formData: FormData): Promise<void> {
       via: "item",
     },
   });
+
+  // Close the learning loop for item-level moves out of Unsorted, same
+  // policy as setUploadSection. Per-org by construction (we pass
+  // ctx.organization.id) so a move in one Workspace never enriches
+  // another space's classifier.
+  const wasUnsorted = row.section === null && row.custom_section_id === null;
+  if (wasUnsorted && target.kind === "builtin") {
+    const sourceText = [row.title, row.merchant, parentFilename]
+      .filter((s): s is string => !!s)
+      .join(" ");
+    if (sourceText) {
+      void enrichBuiltinSectionFromMove({
+        organizationId: ctx.organization.id,
+        section: target.section,
+        sourceText,
+      });
+    }
+  }
 
   if (row.upload_id) revalidatePath(`/dashboard/uploads/${row.upload_id}`);
   revalidatePath("/dashboard");
