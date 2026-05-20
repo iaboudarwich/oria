@@ -1,66 +1,75 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { switchMode } from "@/lib/data/mode-actions";
 import type { Mode } from "@/lib/data/mode";
 
 /**
  * Pill bar at the very top of the sidebar. Two states only: Personal and
- * Work. Clicking the inactive pill flips an optimistic local state so the
- * highlight moves immediately, then fires a server action that sets the
- * active-space cookie and returns the href to navigate to. The client does
- * the routing via router.push so there's no server-redirect flash.
+ * Work. Highlight rules, in order:
  *
- * Quiet by default: the unselected pill is text-only; only the active pill
- * fills, so the toggle reads as a calm context cue rather than a heavy
- * control.
+ *   1. If the user just clicked, show their intent (optimistic) — even
+ *      across multiple re-renders.
+ *   2. Once "settled" (pathname + active cookie) matches that intent,
+ *      drop the optimistic flag. We only drop it when reality has caught
+ *      up; if we dropped it earlier we'd briefly show the stale truth
+ *      (the famous Personal→Work→Personal flash).
+ *   3. With no optimistic intent, the path beats the cookie: any
+ *      /dashboard/work URL is Work, everything else follows `active`.
+ *
+ * Buttons get `cursor-pointer` explicitly because Tailwind v4 dropped the
+ * preflight that used to set it on <button>. Keyboard activation (Space /
+ * Enter) and aria-pressed are inherited from the native button element.
  */
 export function ModeToggle({ active }: { active: Mode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const [isPending, startTransition] = useTransition();
-  // Optimistic override: set on click, cleared during render once reality
-  // catches up. Drives the highlight so it never lags behind the user.
+  const [, startTransition] = useTransition();
   const [optimistic, setOptimistic] = useState<Mode | null>(null);
 
-  // React 19 idiom: reset derived state during render when the underlying
-  // input changes. Cheaper and more predictable than useEffect.
+  // Prefetch both mode homes so the push after a click is instant.
+  useEffect(() => {
+    router.prefetch("/dashboard");
+    router.prefetch("/dashboard/work");
+  }, [router]);
+
+  const onWorkPath = pathname.startsWith("/dashboard/work");
+  const settled: Mode = onWorkPath ? "work" : active;
+
+  // Reality-catch-up, done during render (React 19 idiom for "store info
+  // from previous renders"). The setOptimistic call schedules a re-render;
+  // React discards this in-flight render, so the user never sees a flash.
   // https://react.dev/reference/react/useState#storing-information-from-previous-renders
-  //
-  // Two ways the optimistic flag becomes stale:
-  //   1) The real `active` prop caught up (cookie flipped, layout re-rendered).
-  //   2) The user navigated to a path that contradicts the optimistic intent
-  //      (e.g., clicked Work with no workspace, landed on /dashboard/work/
-  //      spaces/new, then cancelled back to /dashboard).
-  if (optimistic) {
-    const inWorkPath = pathname.startsWith("/dashboard/work");
-    const expectingWork = optimistic === "work";
-    const reconciled = active === optimistic || expectingWork !== inWorkPath;
-    if (reconciled) {
-      setOptimistic(null);
-    }
+  if (optimistic !== null && optimistic === settled) {
+    setOptimistic(null);
   }
 
-  const displayed = optimistic ?? active;
+  const displayed: Mode = optimistic ?? settled;
 
   function switchTo(mode: Mode) {
     if (mode === displayed) return;
-    if (isPending) return;
     setOptimistic(mode);
     startTransition(async () => {
       const result = await switchMode(mode);
-      if (result.ok) {
-        router.push(result.href);
-        router.refresh();
-      } else {
+      if (!result.ok) {
+        // Action failed; revert immediately so the toggle reflects truth.
         setOptimistic(null);
+        return;
       }
+      router.push(result.href);
+      // Intentionally do NOT clear optimistic here — the useEffect above
+      // clears it when `settled` confirms the new state. Clearing now
+      // would flash the old highlight while pathname/active catch up.
     });
   }
 
   return (
-    <div className="mx-3 inline-flex w-[calc(100%-1.5rem)] rounded-lg border border-line bg-canvas/60 p-0.5">
+    <div
+      role="tablist"
+      aria-label="Switch mode"
+      className="mx-3 inline-flex w-[calc(100%-1.5rem)] rounded-lg border border-line bg-canvas/60 p-0.5"
+    >
       <ModePill
         label="Personal"
         active={displayed === "personal"}
@@ -87,9 +96,10 @@ function ModePill({
   return (
     <button
       type="button"
+      role="tab"
       onClick={onClick}
-      aria-pressed={active}
-      className={`flex-1 rounded-md py-1 text-[12px] transition-base ${
+      aria-selected={active}
+      className={`flex-1 cursor-pointer rounded-md py-1 text-[12px] transition-base focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink ${
         active
           ? "bg-surface-raised text-ink shadow-[0_1px_2px_rgba(28,26,23,0.06)]"
           : "text-ink-muted hover:text-ink"
