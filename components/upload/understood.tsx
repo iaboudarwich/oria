@@ -9,6 +9,19 @@ import type { Extraction, UploadStatus } from "@/lib/supabase/types";
 type Props = {
   extraction: Extraction | null;
   status: UploadStatus;
+  /** Optional extraction skip reason from upload.metadata.extraction_skipped. */
+  skipReason?: string | null;
+};
+
+const SKIP_MESSAGES: Record<string, string> = {
+  image_too_large: "The image was too large to read. Oria kept the file.",
+  pdf_too_large: "The PDF was too large for one pass. Oria kept the file and you can still search it by name.",
+  sheet_too_large: "The spreadsheet was too large to read in one go. Oria kept the file.",
+  text_too_large: "The text file was too long for one pass. Oria kept the file.",
+  unsupported_type: "Oria can't read this file type yet. It's safely on file.",
+  model_unavailable: "Claude isn't connected yet. Oria kept the file so it stays searchable by name.",
+  model_error: "Oria couldn't read this file this time. It's safely on file.",
+  empty_result: "Oria didn't find anything to extract. The file is still on hand.",
 };
 
 /**
@@ -17,7 +30,7 @@ type Props = {
  * pipeline today produces classification + section only; richer fields
  * (facts, entities, action_items, language) appear as real OCR is wired.
  */
-export function UnderstoodPanel({ extraction, status }: Props) {
+export function UnderstoodPanel({ extraction, status, skipReason }: Props) {
   if (status === "received" || status === "processing") {
     return (
       <section>
@@ -27,6 +40,19 @@ export function UnderstoodPanel({ extraction, status }: Props) {
         <p className="px-1 text-[12.5px] text-ink-faint">
           Looking at the file. This usually takes a moment.
         </p>
+      </section>
+    );
+  }
+
+  if (skipReason && SKIP_MESSAGES[skipReason]) {
+    return (
+      <section>
+        <h2 className="mb-3 px-1 text-[13px] font-medium text-ink-muted">
+          On file
+        </h2>
+        <div className="rounded-xl border border-line bg-surface-raised p-4">
+          <p className="text-[13px] text-ink">{SKIP_MESSAGES[skipReason]}</p>
+        </div>
       </section>
     );
   }

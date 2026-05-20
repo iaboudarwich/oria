@@ -6,7 +6,11 @@ import {
   toggleSectionHidden,
 } from "@/lib/data/section-settings-actions";
 import { listAllSections, type MergedSection } from "@/lib/data/all-sections";
-import { getCurrentContext } from "@/lib/data/organizations";
+import {
+  getCurrentContext,
+  listUserSpaces,
+  type UserSpace,
+} from "@/lib/data/organizations";
 import {
   ChevronDownIcon,
   ChevronUpIcon,
@@ -17,14 +21,16 @@ import {
   PersonIcon,
 } from "@/components/ui/icon";
 import { SECTION_META, CustomSectionIcon } from "@/lib/sections-meta";
+import { DeleteAccountPanel } from "@/components/settings/delete-account-panel";
 import type { Section } from "@/lib/supabase/types";
 
 export const metadata = { title: "Settings" };
 
 export default async function SettingsPage() {
-  const [sections, ctx] = await Promise.all([
+  const [sections, ctx, spaces] = await Promise.all([
     listAllSections({ includeHidden: true, includeReview: false }),
     getCurrentContext(),
+    listUserSpaces(),
   ]);
 
   const visible = sections.filter((s) => !s.hidden);
@@ -59,8 +65,80 @@ export default async function SettingsPage() {
             />
           ))}
         </GroupedSection>
+
+        <CirclesPanel spaces={spaces} activeOrgId={ctx?.organization.id ?? null} />
+
+        <DeleteAccountPanel />
       </div>
     </>
+  );
+}
+
+function CirclesPanel({
+  spaces,
+  activeOrgId,
+}: {
+  spaces: UserSpace[];
+  activeOrgId: string | null;
+}) {
+  const circles = spaces.filter((s) => s.organization.kind !== "personal");
+  return (
+    <GroupedSection
+      label="Circles"
+      hint={
+        circles.length === 0
+          ? "Invite someone to share what you choose."
+          : `${circles.length} circle${circles.length === 1 ? "" : "s"} you're part of.`
+      }
+      action={
+        <Link
+          href="/dashboard/circles/new"
+          className="inline-flex h-7 items-center rounded-md bg-ink px-2.5 text-[11.5px] text-surface hover:bg-ink-soft transition-base"
+        >
+          New circle
+        </Link>
+      }
+    >
+      {circles.length === 0 ? (
+        <li className="px-4 py-3 text-[12.5px] text-ink-faint">
+          You haven&apos;t joined or created any circles yet.
+        </li>
+      ) : (
+        circles.map((s) => {
+          const isActive = s.organization.id === activeOrgId;
+          return (
+            <li
+              key={s.organization.id}
+              className="flex items-center gap-3 px-3 py-2.5 transition-base hover:bg-canvas/60"
+            >
+              <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-line bg-canvas text-ink-muted">
+                <HeartIcon size={14} />
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-[13.5px] text-ink">
+                  {s.organization.name}
+                  {isActive ? (
+                    <span className="ml-2 inline-flex items-center gap-1 rounded bg-sage/15 px-1.5 py-0.5 text-[10.5px] text-[#3f5240]">
+                      <span className="h-1 w-1 rounded-full bg-sage" />
+                      Active
+                    </span>
+                  ) : null}
+                </p>
+                <p className="text-[11.5px] text-ink-faint">
+                  {s.membership.role === "owner" ? "Owner" : "Member"}
+                </p>
+              </div>
+              <Link
+                href={isActive ? "/dashboard/circle" : "/dashboard"}
+                className="text-[11.5px] text-ink-muted hover:text-ink transition-base"
+              >
+                {isActive ? "Manage" : "Switch to manage"}
+              </Link>
+            </li>
+          );
+        })
+      )}
+    </GroupedSection>
   );
 }
 

@@ -142,38 +142,53 @@ export function SpaceSwitcher({ active, spaces }: Props) {
             })}
           </ul>
           <div className="border-t border-line py-1">
-            <Link
-              href="/dashboard/circles/new"
-              onClick={() => setOpen(false)}
-              className="flex items-center gap-2.5 px-3 py-2 text-[13px] text-ink-soft transition-base hover:bg-canvas/60 hover:text-ink"
-            >
-              <span className="inline-flex h-4 w-4 items-center justify-center text-[14px] leading-none text-ink-muted">
-                +
-              </span>
-              <span>Create circle</span>
-            </Link>
-            <Link
-              href="/invite/code"
-              onClick={() => setOpen(false)}
-              className="flex items-center gap-2.5 px-3 py-2 text-[13px] text-ink-soft transition-base hover:bg-canvas/60 hover:text-ink"
-            >
-              <span className="inline-flex h-4 w-4 items-center justify-center text-ink-muted">
-                <svg
-                  width="12"
-                  height="12"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.75"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
+            {active.kind === "office" ? (
+              <Link
+                href="/dashboard/work/spaces/new"
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-2.5 px-3 py-2 text-[13px] text-ink-soft transition-base hover:bg-canvas/60 hover:text-ink"
+              >
+                <span className="inline-flex h-4 w-4 items-center justify-center text-[14px] leading-none text-ink-muted">
+                  +
+                </span>
+                <span>Create work space</span>
+              </Link>
+            ) : (
+              <>
+                <Link
+                  href="/dashboard/circles/new"
+                  onClick={() => setOpen(false)}
+                  className="flex items-center gap-2.5 px-3 py-2 text-[13px] text-ink-soft transition-base hover:bg-canvas/60 hover:text-ink"
                 >
-                  <path d="M5 12h14" />
-                  <path d="M13 6l6 6-6 6" />
-                </svg>
-              </span>
-              <span>Join a circle</span>
-            </Link>
+                  <span className="inline-flex h-4 w-4 items-center justify-center text-[14px] leading-none text-ink-muted">
+                    +
+                  </span>
+                  <span>Create circle</span>
+                </Link>
+                <Link
+                  href="/invite/code"
+                  onClick={() => setOpen(false)}
+                  className="flex items-center gap-2.5 px-3 py-2 text-[13px] text-ink-soft transition-base hover:bg-canvas/60 hover:text-ink"
+                >
+                  <span className="inline-flex h-4 w-4 items-center justify-center text-ink-muted">
+                    <svg
+                      width="12"
+                      height="12"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.75"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M5 12h14" />
+                      <path d="M13 6l6 6-6 6" />
+                    </svg>
+                  </span>
+                  <span>Join a circle</span>
+                </Link>
+              </>
+            )}
           </div>
         </div>
       ) : null}

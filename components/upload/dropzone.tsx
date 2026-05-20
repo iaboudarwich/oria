@@ -22,6 +22,12 @@ type DropzoneProps = {
   /** Pre-file uploads into a specific built-in section or custom section. */
   defaultSection?: string;
   defaultCustomSectionId?: string;
+  /**
+   * Tag the upload for a Smart Section. When set, the extractor treats the
+   * file as that kind (meal photo / bill / invoice) so classification +
+   * nutrition / recurring detection are applied automatically.
+   */
+  smartSection?: "diet" | "bills";
   /** Optional copy override. */
   heading?: string;
   subheading?: string;
@@ -30,6 +36,7 @@ type DropzoneProps = {
 export function Dropzone({
   defaultSection,
   defaultCustomSectionId,
+  smartSection,
   heading = "Drop anything here",
   subheading = "Nothing gets lost. Click to browse.",
 }: DropzoneProps = {}) {
@@ -56,6 +63,7 @@ export function Dropzone({
       if (defaultSection) formData.append("section", defaultSection);
       if (defaultCustomSectionId)
         formData.append("custom_section_id", defaultCustomSectionId);
+      if (smartSection) formData.append("smart_section", smartSection);
       const note = description.trim();
       if (note) formData.append("description", note);
       startTransition(async () => {
@@ -106,7 +114,7 @@ export function Dropzone({
         setDescription("");
       });
     },
-    [router, defaultSection, defaultCustomSectionId, description],
+    [router, defaultSection, defaultCustomSectionId, smartSection, description],
   );
 
   return (

@@ -4,6 +4,9 @@ import { isAnthropicConfigured } from "@/lib/ai/anthropic";
 import { retrieveForQuery } from "@/lib/ai/retrieve";
 import { streamAnswer, type AgentMessage } from "@/lib/ai/agent";
 import { recordLearningEvent } from "@/lib/data/learning";
+import { checkDailyAskRequests } from "@/lib/data/quotas";
+import type { SectionScope } from "@/lib/data/section-scope";
+import type { Section } from "@/lib/supabase/types";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -29,9 +32,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
-  let body: { query?: string; history?: AgentMessage[] } = {};
+  let body: {
+    query?: string;
+    history?: AgentMessage[];
+    scope?: { kind?: string; key?: string; label?: string } | null;
+  } = {};
   try {
-    body = (await request.json()) as { query?: string; history?: AgentMessage[] };
+    body = (await request.json()) as typeof body;
   } catch {
     return NextResponse.json({ error: "bad_request" }, { status: 400 });
   }
@@ -40,6 +47,30 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "empty_query" }, { status: 400 });
   }
   const history = Array.isArray(body.history) ? body.history.slice(-6) : [];
+
+  // Beta safety net: per-user daily Ask Oria cap. Soft-fails open on DB error.
+  const quota = await checkDailyAskRequests(ctx.profile.id);
+  if (!quota.ok) {
+    return NextResponse.json(
+      { error: "rate_limited", message: quota.message },
+      { status: 429 },
+    );
+  }
+
+  // Optional section scope. When set, retrieval is restricted to this
+  // section (uploads + items + memories) and the agent is told to refuse
+  // to answer cross-section questions.
+  const scope: SectionScope | null = (() => {
+    const s = body.scope;
+    if (!s || typeof s.kind !== "string" || typeof s.key !== "string") return null;
+    const label = typeof s.label === "string" && s.label ? s.label : s.key;
+    if (s.kind === "builtin") return { kind: "builtin", key: s.key as Section, label };
+    if (s.kind === "custom") return { kind: "custom", key: s.key, label };
+    if (s.kind === "smart" && (s.key === "diet" || s.key === "bills")) {
+      return { kind: "smart", key: s.key, label };
+    }
+    return null;
+  })();
 
   const encoder = new TextEncoder();
 
@@ -54,7 +85,7 @@ export async function POST(request: Request) {
     async start(controller) {
       try {
         // 1. Retrieval (works without an API key — useful for the empty case).
-        const sources = await retrieveForQuery(query);
+        const sources = await retrieveForQuery(query, { scope });
         writeEvent(controller, { type: "sources", sources });
 
         // 2. If Claude isn't configured, surface a calm error and stop.
@@ -69,6 +100,7 @@ export async function POST(request: Request) {
           query,
           history,
           sources,
+          scope,
         })) {
           writeEvent(controller, { type: "delta", text });
         }
@@ -84,7 +116,7 @@ export async function POST(request: Request) {
           kind: "search.queried",
           payload: {
             q: query.slice(0, 200),
-            via: "ask",
+            via: scope ? `ask:${scope.kind}:${scope.key}` : "ask",
             hits: { sources: sources.length },
           },
         });

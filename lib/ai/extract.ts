@@ -1,6 +1,7 @@
 import "server-only";
 
 import type Anthropic from "@anthropic-ai/sdk";
+import * as XLSX from "xlsx";
 import { getAnthropic } from "./anthropic";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { DocumentType, Section } from "@/lib/supabase/types";
@@ -35,6 +36,8 @@ export type ExtractionEntities = {
   dates: Array<{ value: string; iso?: string; context?: string }>;
 };
 
+export type SmartSection = "diet" | "bills";
+
 export type ExtractedItem = {
   title: string;
   document_type: DocumentType;
@@ -53,6 +56,21 @@ export type ExtractedItem = {
   payment_method: string | null;
   category: string | null;
   items_purchased: string[];
+  // Diet-only (null on non-food items).
+  calories: number | null;
+  protein_g: number | null;
+  carbs_g: number | null;
+  fat_g: number | null;
+  // Bills-only (null on non-bills).
+  is_recurring: boolean | null;
+  recurring_interval: string | null;
+  // Cash-flow direction. 'outflow' = money the user paid/owes,
+  // 'inflow' = money the user received. Null when not financial / ambiguous.
+  direction: "inflow" | "outflow" | null;
+  // Smart section routing. Extractor sets this when content is clearly
+  // diet-related ("diet") or bills-related ("bills"). Auto-detected from
+  // content; can also be forced by a hint from the upload page.
+  smart_section: SmartSection | null;
   // Universal
   entities: ExtractionEntities;
   action_items: string[];
@@ -106,9 +124,41 @@ const SUPPORTED_IMAGE_MIME = new Set([
   "image/webp",
 ]);
 
+const SPREADSHEET_MIME = new Set([
+  "application/vnd.ms-excel",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+]);
+
+// Per-file caps for the in-prompt path. These cap what we send TO Claude,
+// not what we store — oversize files are still saved and searchable by
+// filename + user note, just without structured extraction. The image cap
+// reflects Anthropic's vision payload ceiling (~5MB per image block).
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
-const MAX_PDF_BYTES = 25 * 1024 * 1024;
-const MAX_TEXT_BYTES = 256 * 1024;
+const MAX_PDF_BYTES = 32 * 1024 * 1024;
+const MAX_TEXT_BYTES = 1 * 1024 * 1024;
+const MAX_SHEET_BYTES = 50 * 1024 * 1024;
+// Max characters of spreadsheet text we send to Claude in one call. Above
+// this we truncate the bottom of the data so the prompt stays focused.
+const MAX_SHEET_PROMPT_CHARS = 200_000;
+
+/**
+ * Reason an extraction call skipped a file. Surfaces in upload metadata so
+ * the UI can show a calm "kept on file, couldn't read" message instead of
+ * silently falling back. `null` here means "no skip — extraction ran".
+ */
+export type SkipReason =
+  | "image_too_large"
+  | "pdf_too_large"
+  | "sheet_too_large"
+  | "text_too_large"
+  | "unsupported_type"
+  | "model_unavailable"
+  | "model_error"
+  | "empty_result";
+
+export type ExtractionOutcome =
+  | { kind: "ok"; result: ExtractionResult }
+  | { kind: "skipped"; reason: SkipReason };
 
 const SYSTEM_PROMPT = `You are Oria's document intelligence engine.
 
@@ -124,6 +174,30 @@ For each item:
 - Suggest a short human title, e.g. "Spinneys, Feb 12 — 47.20 USD" or "Hermès invoice, Beirut — 1,250 EUR".
 - Pick a category in your own words: "groceries", "fashion / luxury shopping", "money transfer", "household maintenance", "fuel", etc.
 - Confidence (0..1) reflects how cleanly you read this specific item.
+
+BUSINESS DOCUMENTS — when the file looks operational (contract, term sheet, bank statement, transaction export, lease, board minutes, financial report), be exhaustive:
+- Pull every named party, vendor, tenant, customer, counterparty into entities.people / entities.companies.
+- Capture every amount with its context: rent, deposit, fee, valuation, ownership %, interest rate, recurring charge, late payment, transaction id, invoice number.
+- Capture every relevant date: signing, closing, due, expiration, renewal, board meeting, transaction date.
+- Note obligations, risks, and commitments in action_items when actionable, or in summary when descriptive.
+- For spreadsheets and bank/transaction exports, return one item per discrete transaction or line. If hundreds of similar rows, produce a single summary item plus a few exemplar rows.
+
+DIRECTION — set direction whenever a document moves money:
+- "outflow" for money the user paid or owes: bills, supplier invoices received, purchase receipts, outgoing wire transfers, lease/rent payments.
+- "inflow" for money the user received: sales invoices issued to customers, customer receipts, refunds, incoming transfers, dividend or interest income.
+- null for non-financial or ambiguous documents (contracts without monetary movement, statements that contain both directions, etc.).
+
+SMART SECTIONS — set smart_section on each item:
+- "diet" when the item is food the user ate (meal photo, restaurant receipt, food description). Estimate calories, protein_g, carbs_g, fat_g — these are best-effort estimates, not lab values; if you genuinely can't tell from the photo or text, leave them null. Suggest a friendly meal title like "Chicken bowl, rice, salad" and set occurred_at to when the meal happened (use upload time if unclear).
+- "bills" when the item is a bill or invoice the user owes or paid (utility, rent, subscription, recurring service). Pull amount + currency + occurred_at (use the DUE DATE if visible, otherwise the issue/payment date). Detect recurrence: set is_recurring=true and recurring_interval ("monthly" / "quarterly" / "yearly" / "weekly") when the bill clearly recurs. Leave is_recurring null when uncertain — don't guess.
+- null when the item is neither (a contract, photo, note, generic receipt that isn't a household bill).
+
+USER CONTEXT may be provided alongside the file. It's a free-form note the user typed before uploading (e.g. "Lunch: chicken, rice, salad" or "Electricity bill for LA apartment"). Use it to:
+- Disambiguate when the image is unclear.
+- Override smart_section when the user clearly meant diet or bills.
+- Improve title / merchant / category accuracy.
+
+SMART_SECTION_HINT may also be provided. If set to "diet" or "bills", treat the file as that kind unless the content clearly says otherwise (e.g. don't classify a contract as a meal just because the hint says diet).
 
 If the image is blurry, dark, partial, or tilted, describe what's wrong in source_quality_notes and still do your best on each item.
 
@@ -165,6 +239,45 @@ const ITEM_SCHEMA: Anthropic.Messages.Tool["input_schema"] = {
         "Free-form human category, e.g. 'groceries', 'luxury shopping', 'money transfer'.",
     },
     items_purchased: { type: "array", items: { type: "string" } },
+    smart_section: {
+      type: ["string", "null"],
+      enum: ["diet", "bills", null],
+      description:
+        "Routes this item to a Smart Section: 'diet' for food, 'bills' for bills/invoices, null otherwise.",
+    },
+    calories: {
+      type: ["number", "null"],
+      description:
+        "Best-effort calorie estimate (kcal). Diet items only. Null when unknown.",
+    },
+    protein_g: {
+      type: ["number", "null"],
+      description: "Grams of protein. Diet items only. Null when unknown.",
+    },
+    carbs_g: {
+      type: ["number", "null"],
+      description: "Grams of carbs. Diet items only. Null when unknown.",
+    },
+    fat_g: {
+      type: ["number", "null"],
+      description: "Grams of fat. Diet items only. Null when unknown.",
+    },
+    is_recurring: {
+      type: ["boolean", "null"],
+      description:
+        "True when this looks like a recurring bill (electricity, rent, subscription). Bills only. Null when uncertain.",
+    },
+    recurring_interval: {
+      type: ["string", "null"],
+      description:
+        "Cadence label when is_recurring is true: 'monthly' / 'quarterly' / 'yearly' / 'weekly'. Null otherwise.",
+    },
+    direction: {
+      type: ["string", "null"],
+      enum: ["inflow", "outflow", null],
+      description:
+        "Cash-flow direction: 'outflow' for money the user paid or owes (bills received, purchase receipts, outgoing transfers), 'inflow' for money received (sales invoices issued, customer receipts, refunds, incoming transfers). Null for non-financial items or when ambiguous.",
+    },
     entities: {
       type: "object",
       properties: {
@@ -240,9 +353,13 @@ export async function extractFromUpload(input: {
   storagePath: string;
   mimeType: string | null;
   filename: string;
-}): Promise<ExtractionResult | null> {
+  /** Free-form note the user typed before uploading. Improves disambiguation. */
+  userDescription?: string | null;
+  /** Forces classification into Diet/Bills when the user uploaded via those pages. */
+  smartSectionHint?: SmartSection | null;
+}): Promise<ExtractionOutcome> {
   const client = getAnthropic();
-  if (!client) return null;
+  if (!client) return { kind: "skipped", reason: "model_unavailable" };
 
   const mime = input.mimeType ?? "";
 
@@ -250,13 +367,24 @@ export async function extractFromUpload(input: {
   const { data: blob, error } = await admin.storage
     .from("uploads")
     .download(input.storagePath);
-  if (error || !blob) return null;
+  if (error || !blob) return { kind: "skipped", reason: "model_error" };
   const buffer = Buffer.from(await blob.arrayBuffer());
+
+  const contextLines: string[] = [`Filename: ${input.filename}`];
+  if (input.userDescription) {
+    contextLines.push(`User context: ${input.userDescription}`);
+  }
+  if (input.smartSectionHint) {
+    contextLines.push(`Smart section hint: ${input.smartSectionHint}`);
+  }
+  const contextHeader = contextLines.join("\n");
 
   let content: Anthropic.Messages.ContentBlockParam[];
 
   if (SUPPORTED_IMAGE_MIME.has(mime)) {
-    if (buffer.byteLength > MAX_IMAGE_BYTES) return null;
+    if (buffer.byteLength > MAX_IMAGE_BYTES) {
+      return { kind: "skipped", reason: "image_too_large" };
+    }
     content = [
       {
         type: "image",
@@ -272,11 +400,13 @@ export async function extractFromUpload(input: {
       },
       {
         type: "text",
-        text: `Filename: ${input.filename}\n\nIf there are multiple receipts/documents visible, return one item per receipt. Call store_extraction.`,
+        text: `${contextHeader}\n\nIf there are multiple receipts/documents visible, return one item per receipt. Call store_extraction.`,
       },
     ];
   } else if (mime === "application/pdf") {
-    if (buffer.byteLength > MAX_PDF_BYTES) return null;
+    if (buffer.byteLength > MAX_PDF_BYTES) {
+      return { kind: "skipped", reason: "pdf_too_large" };
+    }
     content = [
       {
         type: "document",
@@ -288,20 +418,36 @@ export async function extractFromUpload(input: {
       },
       {
         type: "text",
-        text: `Filename: ${input.filename}\n\nReturn one item per discrete document in the PDF. Call store_extraction.`,
+        text: `${contextHeader}\n\nReturn one item per discrete document in the PDF. Call store_extraction.`,
       },
     ];
-  } else if (mime.startsWith("text/")) {
-    if (buffer.byteLength > MAX_TEXT_BYTES) return null;
+  } else if (SPREADSHEET_MIME.has(mime)) {
+    if (buffer.byteLength > MAX_SHEET_BYTES) {
+      return { kind: "skipped", reason: "sheet_too_large" };
+    }
+    const text = spreadsheetToText(buffer);
+    if (!text) return { kind: "skipped", reason: "model_error" };
+    content = [
+      {
+        type: "text",
+        text: `${contextHeader}\n\nSpreadsheet contents (rendered as CSV-like text, one section per sheet):\n${text}\n\nReturn one item per meaningful row when rows are discrete transactions / line items / contracts. If hundreds of similar rows, group sensibly. Call store_extraction.`,
+      },
+    ];
+  } else if (mime.startsWith("text/") || mime === "text/csv") {
+    if (buffer.byteLength > MAX_TEXT_BYTES) {
+      return { kind: "skipped", reason: "text_too_large" };
+    }
     const text = buffer.toString("utf8");
     content = [
       {
         type: "text",
-        text: `Filename: ${input.filename}\n\nDocument contents:\n${text}\n\nCall store_extraction with one or more items.`,
+        text: `${contextHeader}\n\nDocument contents:\n${text}\n\nCall store_extraction with one or more items.`,
       },
     ];
   } else {
-    return null;
+    // Unsupported type (e.g. docx, pptx, audio). File still on storage,
+    // user can search by name + note.
+    return { kind: "skipped", reason: "unsupported_type" };
   }
 
   let response: Anthropic.Messages.Message;
@@ -315,15 +461,22 @@ export async function extractFromUpload(input: {
       messages: [{ role: "user", content }],
     });
   } catch {
-    return null;
+    return { kind: "skipped", reason: "model_error" };
   }
 
   const toolUse = response.content.find(
     (b): b is Anthropic.Messages.ToolUseBlock => b.type === "tool_use",
   );
-  if (!toolUse) return null;
+  if (!toolUse) return { kind: "skipped", reason: "empty_result" };
 
-  return normalize(toolUse.input as Record<string, unknown>, response.model);
+  const result = normalize(
+    toolUse.input as Record<string, unknown>,
+    response.model,
+  );
+  if (result.items.length === 0) {
+    return { kind: "skipped", reason: "empty_result" };
+  }
+  return { kind: "ok", result };
 }
 
 /* ------------------------------------------------------------------------ */
@@ -399,6 +552,23 @@ function normalizeItem(raw: Record<string, unknown>): ExtractedItem | null {
       ? (raw.suggested_section as Section)
       : null;
 
+  const smart_section: SmartSection | null =
+    raw.smart_section === "diet" || raw.smart_section === "bills"
+      ? (raw.smart_section as SmartSection)
+      : null;
+  const calories = typeof raw.calories === "number" ? raw.calories : null;
+  const protein_g = typeof raw.protein_g === "number" ? raw.protein_g : null;
+  const carbs_g = typeof raw.carbs_g === "number" ? raw.carbs_g : null;
+  const fat_g = typeof raw.fat_g === "number" ? raw.fat_g : null;
+  const is_recurring =
+    typeof raw.is_recurring === "boolean" ? raw.is_recurring : null;
+  const recurring_interval =
+    typeof raw.recurring_interval === "string" ? raw.recurring_interval : null;
+  const direction: "inflow" | "outflow" | null =
+    raw.direction === "inflow" || raw.direction === "outflow"
+      ? (raw.direction as "inflow" | "outflow")
+      : null;
+
   return {
     title,
     document_type,
@@ -416,6 +586,14 @@ function normalizeItem(raw: Record<string, unknown>): ExtractedItem | null {
     payment_method,
     category,
     items_purchased,
+    calories,
+    protein_g,
+    carbs_g,
+    fat_g,
+    is_recurring,
+    recurring_interval,
+    direction,
+    smart_section,
     entities: normalizeEntities(raw.entities),
     action_items,
     suggested_section,
@@ -478,3 +656,30 @@ function normalizeEntities(raw: unknown): ExtractionEntities {
 
 /** Threshold used by the upload pipeline to decide whether to auto-file. */
 export const AUTO_FILE_CONFIDENCE = 0.6;
+
+/**
+ * Render an XLSX/XLS workbook as concatenated CSV-like text so we can feed
+ * it to Claude as a single text content block. One CSV section per sheet,
+ * truncated to MAX_SHEET_PROMPT_CHARS so the prompt window stays focused
+ * on the head of the data.
+ */
+function spreadsheetToText(buffer: Buffer): string | null {
+  try {
+    const wb = XLSX.read(buffer, { type: "buffer" });
+    const parts: string[] = [];
+    for (const name of wb.SheetNames) {
+      const sheet = wb.Sheets[name];
+      if (!sheet) continue;
+      parts.push(`# Sheet: ${name}`);
+      parts.push(XLSX.utils.sheet_to_csv(sheet));
+    }
+    const joined = parts.join("\n\n");
+    if (joined.length <= MAX_SHEET_PROMPT_CHARS) return joined;
+    return (
+      joined.slice(0, MAX_SHEET_PROMPT_CHARS) +
+      "\n\n…(spreadsheet truncated; let the user know if you'd need more rows.)"
+    );
+  } catch {
+    return null;
+  }
+}

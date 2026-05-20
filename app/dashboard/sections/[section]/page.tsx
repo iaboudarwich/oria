@@ -3,19 +3,7 @@ import { notFound } from "next/navigation";
 import { Topbar } from "@/components/dashboard/topbar";
 import { Dropzone } from "@/components/upload/dropzone";
 import { Thumbnail } from "@/components/upload/thumbnail";
-import {
-  GiftIcon,
-  HeartIcon,
-  HomeIcon,
-  PersonIcon,
-  PlaneIcon,
-  PropertiesIcon,
-  ScalesIcon,
-  SparkIcon,
-  StaffIcon,
-  TagIcon,
-  WalletIcon,
-} from "@/components/ui/icon";
+import { SparkIcon } from "@/components/ui/icon";
 import {
   getSignedUrlMap,
   listUploadsWithUploader,
@@ -27,6 +15,7 @@ import { listAllSections } from "@/lib/data/all-sections";
 import { displayActor } from "@/lib/data/timeline";
 import { relativeTime } from "@/lib/utils";
 import { MovePicker } from "@/components/upload/move-picker";
+import { SECTION_META } from "@/lib/sections-meta";
 import type { Section } from "@/lib/supabase/types";
 
 type MoveOption = {
@@ -38,22 +27,6 @@ const BUILTIN_SECTIONS: Section[] = [
   "household", "travel", "properties", "staff", "events",
   "finance", "legal", "personal", "vendors", "health",
 ];
-
-const SECTION_META: Record<
-  Section,
-  { label: string; Icon: React.ComponentType<{ size?: number }> }
-> = {
-  household: { label: "Household", Icon: HomeIcon },
-  travel: { label: "Travel", Icon: PlaneIcon },
-  properties: { label: "Properties", Icon: PropertiesIcon },
-  staff: { label: "Staff", Icon: StaffIcon },
-  events: { label: "Events", Icon: GiftIcon },
-  finance: { label: "Finance", Icon: WalletIcon },
-  legal: { label: "Legal", Icon: ScalesIcon },
-  personal: { label: "Personal", Icon: PersonIcon },
-  vendors: { label: "Vendors", Icon: TagIcon },
-  health: { label: "Health", Icon: HeartIcon },
-};
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 

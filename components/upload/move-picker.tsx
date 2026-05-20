@@ -3,13 +3,9 @@
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { setUploadSection } from "@/lib/data/upload-actions";
-import {
-  ArrowRightIcon,
-  ChevronDownIcon,
-  InboxIcon,
-  TagIcon,
-} from "@/components/ui/icon";
+import { ArrowRightIcon, ChevronDownIcon } from "@/components/ui/icon";
 import { useDismissable } from "@/lib/hooks/use-dismissable";
+import { MoveMenu } from "./move-menu";
 
 type SectionItem = {
   ref: { kind: "builtin" | "custom" | "review"; key: string };
@@ -52,8 +48,6 @@ export function MovePicker({
     });
   }
 
-  const isReview = currentRef.kind === "review";
-
   return (
     <div ref={ref} className="relative">
       {variant === "button" ? (
@@ -90,55 +84,13 @@ export function MovePicker({
       )}
 
       {open ? (
-        <div
-          role="menu"
-          className="absolute right-0 top-full z-30 mt-1.5 max-h-[360px] w-[240px] overflow-y-auto rounded-xl border border-line bg-surface-raised shadow-[0_10px_30px_-15px_rgba(28,26,23,0.20)] animate-fade-up"
-        >
-          <ul className="py-1.5">
-            {sections.map((s) => {
-              const active =
-                s.ref.kind === currentRef.kind && s.ref.key === currentRef.key;
-              const Icon = s.ref.kind === "review" ? InboxIcon : TagIcon;
-              return (
-                <li key={`${s.ref.kind}-${s.ref.key}`}>
-                  <button
-                    type="button"
-                    onClick={() => move(s.ref.kind, s.ref.key)}
-                    disabled={active}
-                    className={`flex w-full items-center gap-2.5 px-3 py-2 text-left text-[13px] transition-base ${
-                      active
-                        ? "text-ink-faint cursor-default"
-                        : "text-ink-soft hover:bg-canvas hover:text-ink"
-                    }`}
-                  >
-                    <Icon size={13} />
-                    <span className="flex-1 truncate">{s.name}</span>
-                    {active ? (
-                      <span className="text-[10.5px] text-ink-faint">
-                        Current
-                      </span>
-                    ) : null}
-                  </button>
-                </li>
-              );
-            })}
-            {!isReview ? (
-              <>
-                <li className="my-1 h-px bg-line" />
-                <li>
-                  <button
-                    type="button"
-                    onClick={() => move("review", "review")}
-                    className="flex w-full items-center gap-2.5 px-3 py-2 text-left text-[13px] text-ink-muted transition-base hover:bg-canvas hover:text-ink"
-                  >
-                    <InboxIcon size={13} />
-                    <span className="flex-1 truncate">Move to Unsorted</span>
-                  </button>
-                </li>
-              </>
-            ) : null}
-          </ul>
-        </div>
+        <MoveMenu
+          sections={sections}
+          currentRef={currentRef}
+          onMove={move}
+          width={240}
+          maxHeight={360}
+        />
       ) : null}
     </div>
   );

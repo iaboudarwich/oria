@@ -27,6 +27,8 @@ import { getSignedUrlMap } from "@/lib/data/uploads";
 import { listAllSections } from "@/lib/data/all-sections";
 import { getCustomSectionById } from "@/lib/data/custom-sections";
 import { MovePicker } from "@/components/upload/move-picker";
+import { ItemReviewPanel } from "@/components/upload/item-review-panel";
+import { DescriptionBadge } from "@/components/upload/description-badge";
 import type { EventKind, MemoryItem, Section } from "@/lib/supabase/types";
 
 type Props = { params: Promise<{ id: string }> };
@@ -98,6 +100,13 @@ export default async function UploadDetailPage({ params }: Props) {
     name: s.name,
   }));
 
+  // Lookup map of custom section id → name so the review panel can render
+  // the friendly section label for items already filed in a custom section.
+  const customNames: Record<string, string> = {};
+  for (const s of allSections) {
+    if (s.ref.kind === "custom") customNames[s.ref.key] = s.name;
+  }
+
   return (
     <>
       <Topbar title={upload.title ?? upload.filename} />
@@ -130,9 +139,23 @@ export default async function UploadDetailPage({ params }: Props) {
         </div>
 
         <aside className="space-y-6">
-          {items.length > 1 ? <ItemsPanel items={items} /> : null}
+          <DescriptionBadge metadata={upload.metadata} />
 
-          <UnderstoodPanel extraction={extraction} status={upload.status} />
+          {items.length > 1 ? (
+            <ItemReviewPanel
+              uploadId={upload.id}
+              items={items}
+              sections={moveOptions}
+              sectionLabels={SECTION_LABEL}
+              customNames={customNames}
+            />
+          ) : null}
+
+          <UnderstoodPanel
+            extraction={extraction}
+            status={upload.status}
+            skipReason={readSkipReason(upload.metadata)}
+          />
 
           {items.length === 1 ? <SingleItemPanel item={items[0]} /> : null}
 
@@ -171,6 +194,12 @@ export default async function UploadDetailPage({ params }: Props) {
   );
 }
 
+function readSkipReason(metadata: unknown): string | null {
+  if (!metadata || typeof metadata !== "object") return null;
+  const v = (metadata as { extraction_skipped?: unknown }).extraction_skipped;
+  return typeof v === "string" ? v : null;
+}
+
 function DeleteSection({ id, filename }: { id: string; filename: string }) {
   return (
     <details className="mt-12 border-t border-line pt-6 max-w-xl group">
@@ -199,45 +228,6 @@ function DeleteSection({ id, filename }: { id: string; filename: string }) {
         </div>
       </div>
     </details>
-  );
-}
-
-function ItemsPanel({ items }: { items: MemoryItem[] }) {
-  const sorted = items.filter((i) => i.section !== null).length;
-  const unsorted = items.length - sorted;
-  return (
-    <section>
-      <div className="mb-3 flex items-baseline gap-2 px-1">
-        <h2 className="text-[13px] font-medium text-ink-muted">
-          Detected items
-        </h2>
-        <span className="text-[11.5px] text-ink-faint">
-          {items.length} found · {sorted} sorted
-          {unsorted > 0 ? ` · ${unsorted} unsorted` : ""}
-        </span>
-      </div>
-      <ul className="rounded-xl border border-line bg-surface-raised divide-y divide-line">
-        {items.map((it) => (
-          <li key={it.id} className="px-4 py-3">
-            <p className="truncate text-[13.5px] text-ink">{it.title}</p>
-            <p className="mt-0.5 truncate text-[11.5px] text-ink-faint">
-              {[
-                it.merchant,
-                it.amount_value
-                  ? it.amount_currency
-                    ? `${it.amount_value} ${it.amount_currency}`
-                    : it.amount_value
-                  : null,
-                it.occurred_at ? friendlyDate(it.occurred_at) : null,
-                it.section ? SECTION_LABEL[it.section] : "Unsorted",
-              ]
-                .filter(Boolean)
-                .join(" · ")}
-            </p>
-          </li>
-        ))}
-      </ul>
-    </section>
   );
 }
 

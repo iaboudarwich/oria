@@ -1,9 +1,9 @@
 import Link from "next/link";
-import { CalendarIcon, DocumentIcon } from "@/components/ui/icon";
+import { CalendarIcon, DocumentIcon, SparkIcon } from "@/components/ui/icon";
 
 export type SourceItem = {
   id: number;
-  kind: "upload" | "reminder";
+  kind: "upload" | "reminder" | "memory";
   title: string;
   snippet: string;
   href: string;
@@ -16,14 +16,20 @@ export type SourceItem = {
 };
 
 /**
- * Compact source card. Click to jump to the underlying upload or calendar
- * item. Numbered chip on the left matches the [N] citations in the answer.
- * A small "Reading…" chip appears on pending uploads so the user understands
- * why the answer hedges.
+ * Compact source card. Click to jump to the underlying upload, calendar
+ * item, or section memory. Numbered chip on the left matches the [N]
+ * citations in the answer. A small "Reading…" chip appears on pending
+ * uploads so the user understands why the answer hedges.
  */
 export function SourceCard({ source }: { source: SourceItem }) {
-  const Icon = source.kind === "upload" ? DocumentIcon : CalendarIcon;
+  const Icon =
+    source.kind === "memory"
+      ? SparkIcon
+      : source.kind === "upload"
+        ? DocumentIcon
+        : CalendarIcon;
   const isPending = source.processing_state === "pending";
+  const isMemory = source.kind === "memory";
   return (
     <Link
       href={source.href}
@@ -36,6 +42,11 @@ export function SourceCard({ source }: { source: SourceItem }) {
         <p className="flex items-center gap-1.5 truncate text-[13px] text-ink">
           <Icon size={12} />
           <span className="truncate">{source.title}</span>
+          {isMemory ? (
+            <span className="ml-1 inline-flex shrink-0 items-center rounded-md bg-accent-soft/60 px-1.5 py-0.5 text-[10px] text-[#7a5a2a]">
+              Memory
+            </span>
+          ) : null}
           {isPending ? (
             <span className="ml-1 inline-flex shrink-0 items-center rounded-md bg-accent-soft/60 px-1.5 py-0.5 text-[10px] text-[#7a5a2a]">
               Reading…

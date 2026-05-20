@@ -7,19 +7,33 @@ import { requireContext } from "./organizations";
 import { processUpload } from "./upload-intelligence";
 import { getOrgSectionContexts, pickBestSection } from "./section-context";
 import { recordLearningEvent } from "./learning";
+import { checkDailyUploadBytes } from "./quotas";
 import { formatBytes } from "@/lib/utils";
 import type { Section } from "@/lib/supabase/types";
 
-const ALLOWED_MIME_PREFIXES = ["image/", "audio/"];
+// Broad allowlist. Anything Oria can store safely goes here; the extractor
+// decides whether it can read the contents. For unsupported types we still
+// keep the file and let the user search by filename + note.
+const ALLOWED_MIME_PREFIXES = ["image/", "audio/", "text/"];
 const ALLOWED_MIME_EXACT = [
+  // Documents
   "application/pdf",
-  "text/plain",
   "application/msword",
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  // Spreadsheets
+  "application/vnd.ms-excel",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "text/csv",
+  // Presentations
+  "application/vnd.ms-powerpoint",
+  "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+  // Common fallbacks
+  "application/octet-stream",
+  "application/zip",
 ];
 // Keep below next.config.ts `experimental.serverActions.bodySizeLimit`
 // so users see our friendly message instead of a 413 from the framework.
-const MAX_BYTES = 25 * 1024 * 1024;
+const MAX_BYTES = 50 * 1024 * 1024;
 
 type Result = { ok: true; id: string } | { ok: false; error: string };
 
@@ -41,6 +55,13 @@ export async function uploadFile(formData: FormData): Promise<Result> {
   const ctx = await requireContext();
   const supabase = await createClient();
 
+  // Beta safety net: enforce a per-user daily total. Soft-fails open if the
+  // check itself errors so a transient DB blip doesn't block a tester.
+  const quota = await checkDailyUploadBytes(ctx.profile.id, file.size);
+  if (!quota.ok) {
+    return { ok: false, error: quota.message };
+  }
+
   // Optional explicit destination hints from the Dropzone caller.
   const sectionHint = String(formData.get("section") ?? "").trim() || null;
   const customSectionId = String(formData.get("custom_section_id") ?? "").trim() || null;
@@ -51,6 +72,16 @@ export async function uploadFile(formData: FormData): Promise<Result> {
   // needing a new column.
   const userDescription =
     String(formData.get("description") ?? "").trim().slice(0, 500) || null;
+
+  // Smart Section routing. When a user uploads through /dashboard/diet or
+  // /dashboard/bills, the dropzone tags the upload so the extractor classifies
+  // accordingly. Stored in metadata so processUpload (which runs in after())
+  // can read it without a second parameter pipeline.
+  const smartHintRaw = String(formData.get("smart_section") ?? "").trim();
+  const smartSectionHint: "diet" | "bills" | null =
+    smartHintRaw === "diet" || smartHintRaw === "bills"
+      ? (smartHintRaw as "diet" | "bills")
+      : null;
 
   const uploadId = crypto.randomUUID();
   const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_") || "upload";
@@ -96,7 +127,10 @@ export async function uploadFile(formData: FormData): Promise<Result> {
     custom_section_id: finalCustomId,
     title: file.name,
     status: "received",
-    metadata: userDescription ? { user_description: userDescription } : {},
+    metadata: {
+      ...(userDescription ? { user_description: userDescription } : {}),
+      ...(smartSectionHint ? { smart_section_hint: smartSectionHint } : {}),
+    },
   });
   if (dbError) {
     // Best-effort cleanup of orphaned object.

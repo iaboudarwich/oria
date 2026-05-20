@@ -11,7 +11,7 @@ const nextConfig: NextConfig = {
       // Uploads larger than this never reach the Server Action; the user gets
       // a 413 from the framework instead of our friendly message, so the
       // application validation should stay strictly below this number.
-      bodySizeLimit: "30mb",
+      bodySizeLimit: "55mb",
     },
   },
 };

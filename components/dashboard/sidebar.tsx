@@ -6,10 +6,12 @@ import { useEffect, useState } from "react";
 import { Wordmark } from "@/components/brand/wordmark";
 import {
   CalendarIcon,
+  ChartIcon,
   ChevronDownIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   CloseIcon,
+  DocumentIcon,
   GiftIcon,
   HeartIcon,
   HomeIcon,
@@ -23,7 +25,6 @@ import {
   ScalesIcon,
   SearchIcon,
   SettingsIcon,
-  SparkIcon,
   StaffIcon,
   TagIcon,
   UploadIcon,
@@ -33,6 +34,7 @@ import {
   SpaceSwitcher,
   type SpaceSummary,
 } from "@/components/dashboard/space-switcher";
+import { ModeToggle } from "@/components/dashboard/mode-toggle";
 import { signOut } from "@/lib/auth/actions";
 
 type NavItem = {
@@ -52,12 +54,25 @@ const primaryAction: NavItem = {
   shortcut: "⌘K",
 };
 
-// Secondary verbs + views. Used regularly but each less than Ask.
-const secondaryNav: NavItem[] = [
+// Personal mode: secondary verbs + views below the Sections group.
+const personalSecondaryNav: NavItem[] = [
   { label: "Upload", href: "/dashboard/inbox", icon: UploadIcon },
   { label: "Calendar", href: "/dashboard/calendar", icon: CalendarIcon },
   { label: "Timeline", href: "/dashboard/timeline", icon: PulseIcon },
   { label: "Members", href: "/dashboard/circle", icon: PersonIcon },
+];
+
+// Work mode: business-focused nav. Analysis is the centerpiece of Work
+// (visual operational intelligence), so it sits at the top.
+const workSecondaryNav: NavItem[] = [
+  { label: "Analysis", href: "/dashboard/work/analysis", icon: ChartIcon },
+  { label: "Uploads", href: "/dashboard/inbox", icon: UploadIcon },
+  { label: "Finance", href: "/dashboard/work/finance", icon: WalletIcon },
+  { label: "Contracts", href: "/dashboard/work/contracts", icon: ScalesIcon },
+  { label: "Invoices", href: "/dashboard/work/invoices", icon: DocumentIcon },
+  { label: "Calendar", href: "/dashboard/calendar", icon: CalendarIcon },
+  { label: "Reports", href: "/dashboard/work/reports", icon: PulseIcon },
+  { label: "Team", href: "/dashboard/circle", icon: PersonIcon },
 ];
 
 // System tier, always at the bottom.
@@ -78,6 +93,9 @@ type SidebarSection = {
 export type SidebarProps = {
   user: { name: string; email: string };
   org: { name: string; role: string };
+  /** Current top-level mode. Drives which nav cluster appears below the
+   * Sections group + which spaces show in the switcher. */
+  mode: "personal" | "work";
   sections: SidebarSection[];
   spaces: SpaceSummary[];
   activeSpace: SpaceSummary;
@@ -108,13 +126,14 @@ const SMART_ICONS: Record<string, React.ComponentType<{ size?: number }>> = {
 
 function iconForSection(s: SidebarSection): React.ComponentType<{ size?: number }> {
   if (s.kind === "review") return InboxIcon;
-  if (s.kind === "smart") return SMART_ICONS[s.key] ?? SparkIcon;
+  if (s.kind === "smart") return SMART_ICONS[s.key] ?? TagIcon;
   if (s.kind === "builtin") return BUILTIN_ICONS[s.key] ?? TagIcon;
   return TagIcon;
 }
 
 export function Sidebar({
   user,
+  mode,
   sections,
   spaces,
   activeSpace,
@@ -197,12 +216,21 @@ export function Sidebar({
           </button>
         </div>
 
+        {/* Mode toggle: only visible when expanded. Above the space switcher
+         * so the two reads are stacked correctly (mode, then space within
+         * that mode). */}
+        {!collapsed ? (
+          <div className="mb-3">
+            <ModeToggle active={mode} />
+          </div>
+        ) : null}
+
         {/* Space switcher: hidden when collapsed. */}
         {!collapsed ? (
           <SpaceSwitcher active={activeSpace} spaces={spaces} />
         ) : null}
 
-        {/* The three tiers + a user card at the bottom. */}
+        {/* The tiers + a user card at the bottom. */}
         <nav
           className={`mt-4 flex flex-1 flex-col overflow-y-auto pb-2 ${
             collapsed ? "px-2" : "px-3"
@@ -216,8 +244,9 @@ export function Sidebar({
             collapsed={collapsed}
           />
 
-          {/* TIER 2 — Sections, the user's organized world. Collapsible. */}
-          {!collapsed ? (
+          {/* TIER 2 — Sections, the user's organized world. Personal mode
+           * only — Work mode has its own tightly-scoped nav below. */}
+          {!collapsed && mode === "personal" ? (
             <>
               <Divider />
               <SectionsGroup
@@ -230,19 +259,21 @@ export function Sidebar({
             </>
           ) : null}
 
-          {/* TIER 3 — Other navigation. Quieter than Ask. */}
+          {/* TIER 3 — Mode-specific navigation. */}
           <Divider collapsed={collapsed} />
           <ul className="flex flex-col gap-0.5">
-            {secondaryNav.map((item) => (
-              <li key={item.href}>
-                <NavLink
-                  item={item}
-                  pathname={pathname}
-                  onNavigate={close}
-                  collapsed={collapsed}
-                />
-              </li>
-            ))}
+            {(mode === "work" ? workSecondaryNav : personalSecondaryNav).map(
+              (item) => (
+                <li key={item.href}>
+                  <NavLink
+                    item={item}
+                    pathname={pathname}
+                    onNavigate={close}
+                    collapsed={collapsed}
+                  />
+                </li>
+              ),
+            )}
           </ul>
 
           {/* TIER 4 — System. Pinned to the bottom. */}
@@ -388,14 +419,6 @@ function SectionsGroup({
                     <Icon size={14} />
                   </span>
                   <span className="flex-1 truncate">{s.label}</span>
-                  {isSmart ? (
-                    <span
-                      className="inline-flex h-3.5 w-3.5 items-center justify-center text-[#7a5a2a]"
-                      aria-label="Smart Section"
-                    >
-                      <SparkIcon size={10} />
-                    </span>
-                  ) : null}
                   {s.badge ? (
                     <span className="inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-accent-soft px-1.5 text-[10.5px] font-medium text-[#7a5a2a]">
                       {s.badge}

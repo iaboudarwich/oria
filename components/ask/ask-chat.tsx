@@ -11,6 +11,7 @@ type Turn = {
   sources: SourceItem[];
   state: "streaming" | "done" | "error";
   errorCode?: string;
+  errorMessage?: string;
 };
 
 const SUGGESTIONS = [
@@ -21,16 +22,35 @@ const SUGGESTIONS = [
 ];
 
 /**
+ * Optional section scope. When set, the chat is restricted to one section:
+ * retrieval and the agent both refuse cross-section answers, the empty-state
+ * copy adapts, and the chat is visually framed as "Ask {section}".
+ */
+export type AskScope = {
+  kind: "builtin" | "custom" | "smart";
+  key: string;
+  label: string;
+};
+
+type AskChatProps = {
+  scope?: AskScope | null;
+  /** Custom suggestion chips for the empty state. Defaults to general life
+   *  prompts; section pages pass section-specific examples. */
+  suggestions?: string[];
+};
+
+/**
  * Calm ChatGPT-style chat for Ask Oria. Single-page, no server-side history
  * persistence yet — turns live in client state. Streaming uses an NDJSON
  * protocol from /api/ask: each line is one event.
  */
-export function AskChat() {
+export function AskChat({ scope, suggestions }: AskChatProps = {}) {
   const [input, setInput] = useState("");
   const [turns, setTurns] = useState<Turn[]>([]);
   const [busy, setBusy] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const effectiveSuggestions = suggestions ?? SUGGESTIONS;
 
   const updateTurn = useCallback((id: string, fn: (t: Turn) => Turn) => {
     setTurns((prev) => prev.map((t) => (t.id === id ? fn(t) : t)));
@@ -61,13 +81,21 @@ export function AskChat() {
         const res = await fetch("/api/ask", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ query: trimmed, history }),
+          body: JSON.stringify({ query: trimmed, history, scope: scope ?? null }),
         });
         if (!res.ok || !res.body) {
+          let friendly: string | undefined;
+          try {
+            const data = (await res.clone().json()) as { message?: string };
+            if (typeof data?.message === "string") friendly = data.message;
+          } catch {
+            // body wasn't JSON, fall through to generic message
+          }
           updateTurn(id, (t) => ({
             ...t,
             state: "error",
             errorCode: `http_${res.status}`,
+            errorMessage: friendly,
           }));
           return;
         }
@@ -114,7 +142,7 @@ export function AskChat() {
         setBusy(false);
       }
     },
-    [busy, turns, updateTurn],
+    [busy, turns, updateTurn, scope],
   );
 
   // Auto-scroll on new turn / streaming text.
@@ -135,11 +163,19 @@ export function AskChat() {
     }
   }
 
+  // Section-scoped chats sit inside a page (Diet, Bills, Section detail) so
+  // they take a fixed compact height. The general /dashboard/ask page uses
+  // the full viewport.
+  const containerHeight = scope
+    ? "min-h-[360px] max-h-[560px]"
+    : "h-[calc(100vh-160px)]";
   return (
-    <div className="flex h-[calc(100vh-160px)] flex-col">
+    <div className={`flex ${containerHeight} flex-col`}>
       <div ref={scrollRef} className="flex-1 overflow-y-auto pb-6">
         {turns.length === 0 ? (
           <EmptyState
+            scope={scope}
+            suggestions={effectiveSuggestions}
             onSuggest={(q) => {
               setInput(q);
               textareaRef.current?.focus();
@@ -160,6 +196,7 @@ export function AskChat() {
         ref={textareaRef}
         value={input}
         busy={busy}
+        placeholder={scope ? `Ask about ${scope.label}…` : undefined}
         onChange={setInput}
         onKeyDown={onKeyDown}
         onSubmit={() => send(input)}
@@ -180,7 +217,10 @@ function TurnView({ turn }: { turn: Turn }) {
           <span>Oria</span>
         </div>
         {turn.state === "error" ? (
-          <ErrorMessage code={turn.errorCode ?? "stream_failed"} />
+          <ErrorMessage
+            code={turn.errorCode ?? "stream_failed"}
+            message={turn.errorMessage}
+          />
         ) : turn.answer.length === 0 && turn.state === "streaming" ? (
           <Thinking />
         ) : (
@@ -255,7 +295,13 @@ function Thinking() {
   );
 }
 
-function ErrorMessage({ code }: { code: string }) {
+function ErrorMessage({
+  code,
+  message,
+}: {
+  code: string;
+  message?: string;
+}) {
   if (code === "no_key") {
     return (
       <p className="text-[13px] text-ink-muted">
@@ -267,6 +313,9 @@ function ErrorMessage({ code }: { code: string }) {
       </p>
     );
   }
+  if (message) {
+    return <p className="text-[13px] text-ink-muted">{message}</p>;
+  }
   return (
     <p className="text-[13px] text-claret">
       Something went wrong. Try again in a moment.
@@ -274,22 +323,34 @@ function ErrorMessage({ code }: { code: string }) {
   );
 }
 
-function EmptyState({ onSuggest }: { onSuggest: (q: string) => void }) {
+function EmptyState({
+  scope,
+  suggestions,
+  onSuggest,
+}: {
+  scope?: AskScope | null;
+  suggestions: string[];
+  onSuggest: (q: string) => void;
+}) {
+  const label = scope ? `Ask ${scope.label}` : "Ask Oria";
+  const headline = scope
+    ? `What do you want to know about ${scope.label}?`
+    : "What would you like to remember?";
+  const sub = scope
+    ? `Scoped to your ${scope.label} section. Answers come from items in this section only.`
+    : "Ask anything about what you've uploaded, your reminders, or your calendar. Answers come straight from your own files, with sources.";
   return (
     <div className="mx-auto max-w-xl pt-6 text-center animate-fade-up">
       <p className="text-[11.5px] uppercase tracking-[0.14em] text-ink-faint">
-        Ask Oria
+        {label}
       </p>
       <h1 className="mt-2 text-[24px] font-semibold tracking-tight text-ink">
-        What would you like to remember?
+        {headline}
       </h1>
-      <p className="mt-2 text-[13.5px] text-ink-muted">
-        Ask anything about what you&apos;ve uploaded, your reminders, or your
-        calendar. Answers come straight from your own files, with sources.
-      </p>
+      <p className="mt-2 text-[13.5px] text-ink-muted">{sub}</p>
 
       <ul className="mt-7 flex flex-wrap justify-center gap-1.5">
-        {SUGGESTIONS.map((s) => (
+        {suggestions.map((s) => (
           <li key={s}>
             <button
               type="button"
@@ -308,13 +369,14 @@ function EmptyState({ onSuggest }: { onSuggest: (q: string) => void }) {
 type ComposerProps = {
   value: string;
   busy: boolean;
+  placeholder?: string;
   onChange: (v: string) => void;
   onKeyDown: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
   onSubmit: () => void;
 };
 
 const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
-  function Composer({ value, busy, onChange, onKeyDown, onSubmit }, ref) {
+  function Composer({ value, busy, placeholder, onChange, onKeyDown, onSubmit }, ref) {
     return (
       <form
         onSubmit={(e) => {
@@ -331,7 +393,7 @@ const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
             onKeyDown={onKeyDown}
             rows={1}
             autoFocus
-            placeholder="Ask Oria anything…"
+            placeholder={placeholder ?? "Ask Oria anything…"}
             className="block min-h-[40px] flex-1 resize-none bg-transparent px-2 py-2 text-[14.5px] text-ink placeholder:text-ink-faint outline-none"
           />
           <button

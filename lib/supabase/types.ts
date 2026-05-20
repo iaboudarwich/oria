@@ -233,6 +233,8 @@ export interface SectionSetting {
   updated_at: TimestampString;
 }
 
+export type SmartSection = "diet" | "bills";
+
 export interface MemoryItem {
   id: UUID;
   organization_id: UUID;
@@ -257,6 +259,19 @@ export interface MemoryItem {
   raw_text: string | null;
   entities: Json;
   facts: Json;
+  // Diet-only structured nutrition (best-effort estimates).
+  calories: number | null;
+  protein_g: number | null;
+  carbs_g: number | null;
+  fat_g: number | null;
+  // Bills-only structured pattern hints.
+  is_recurring: boolean | null;
+  recurring_interval: string | null;
+  // Cash-flow direction. Set by the extractor when clear, null otherwise.
+  direction: "inflow" | "outflow" | null;
+  // Smart section routing. Set by the extractor when the content is clearly
+  // diet-related or bills-related.
+  smart_section: SmartSection | null;
   deleted_at: TimestampString | null;
   deleted_by: UUID | null;
   created_at: TimestampString;

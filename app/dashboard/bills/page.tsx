@@ -1,56 +1,48 @@
+import Link from "next/link";
 import { Topbar } from "@/components/dashboard/topbar";
 import { Dropzone } from "@/components/upload/dropzone";
-import { SparkIcon, WalletIcon } from "@/components/ui/icon";
+import { WalletIcon } from "@/components/ui/icon";
+import { AskChat } from "@/components/ask/ask-chat";
+import { SectionMemoryPanel } from "@/components/section/section-memory-panel";
+import {
+  listBills,
+  summarizeRecurring,
+  type BillItem,
+  type RecurringSummary,
+} from "@/lib/data/smart-sections";
+import { listSectionMemories } from "@/lib/data/section-memory";
+import type { SectionScope } from "@/lib/data/section-scope";
 
 export const metadata = { title: "Bills" };
 
-// Placeholder data — wired to real extractions in a follow-up.
-const UPCOMING = [
-  {
-    name: "Con Edison electricity",
-    location: "LA apartment",
-    due_in_days: 4,
-    amount: 184,
-    currency: "USD",
-  },
-  {
-    name: "Spectrum internet",
-    location: "LA apartment",
-    due_in_days: 9,
-    amount: 65,
-    currency: "USD",
-  },
-  {
-    name: "Rent",
-    location: "Monaco summer house",
-    due_in_days: 14,
-    amount: 3200,
-    currency: "EUR",
-  },
+const SCOPE: SectionScope = { kind: "smart", key: "bills", label: "Bills" };
+const SUGGESTIONS = [
+  "When is my next electricity bill?",
+  "How much do I usually pay for electricity?",
+  "Which bills are recurring?",
+  "What payments are due this week?",
 ];
 
-const RECURRING = [
-  { name: "Electricity (LA)", cadence: "Monthly", average: 178, currency: "USD" },
-  { name: "Internet (LA)", cadence: "Monthly", average: 65, currency: "USD" },
-  { name: "Rent (Monaco)", cadence: "Monthly", average: 3200, currency: "EUR" },
-  { name: "AICO maintenance", cadence: "Quarterly", average: 240, currency: "USD" },
-  { name: "Phone (Verizon)", cadence: "Monthly", average: 92, currency: "USD" },
-];
+export default async function BillsPage() {
+  const [bills, memories] = await Promise.all([
+    listBills(200),
+    listSectionMemories(SCOPE),
+  ]);
+  const now = new Date();
 
-const RECENT = [
-  { name: "Con Edison electricity", paid_on: "Mar 28", amount: 172, currency: "USD" },
-  { name: "Spectrum internet", paid_on: "Mar 21", amount: 65, currency: "USD" },
-  { name: "Rent (Monaco)", paid_on: "Mar 1", amount: 3200, currency: "EUR" },
-  { name: "Whish Money transfer", paid_on: "Feb 26", amount: 450, currency: "USD" },
-];
+  const upcoming = bills
+    .filter((b) => b.occurred_at && new Date(b.occurred_at) >= now)
+    .sort((a, b) =>
+      (a.occurred_at ?? "").localeCompare(b.occurred_at ?? ""),
+    );
+  const recent = bills
+    .filter((b) => b.occurred_at && new Date(b.occurred_at) < now)
+    .slice(0, 12);
+  const recurring = summarizeRecurring(bills);
+  const forecast = forecastNextMonth(recurring);
 
-const FORECAST_NEXT_MONTH = {
-  total: 3915,
-  currency: "USD",
-  vs_last_month: -2.1, // %
-};
+  const empty = bills.length === 0;
 
-export default function BillsPage() {
   return (
     <>
       <Topbar title="Bills" />
@@ -69,46 +61,38 @@ export default function BillsPage() {
             Add a bill
           </h2>
           <Dropzone
+            smartSection="bills"
             heading="Drop a bill or invoice"
             subheading="Add a short note (e.g. ‘Electricity bill for LA apartment’). Click to browse."
           />
         </section>
+
+        {empty ? (
+          <p className="px-1 text-[13px] text-ink-faint">
+            Your bills will appear here as you upload them.
+          </p>
+        ) : null}
 
         <div className="grid gap-6 lg:grid-cols-3">
           <section className="lg:col-span-2">
             <h2 className="mb-3 px-1 text-[13px] font-medium text-ink-muted">
               Upcoming
             </h2>
-            <ul className="rounded-2xl border border-line bg-surface-raised divide-y divide-line">
-              {UPCOMING.map((b, i) => (
-                <li
-                  key={i}
-                  className="flex items-center gap-3 px-4 py-3"
-                >
-                  <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-canvas text-ink-soft">
-                    <WalletIcon size={14} />
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-[13.5px] text-ink">{b.name}</p>
-                    <p className="truncate text-[11.5px] text-ink-faint">
-                      {b.location}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-[13px] text-ink">
-                      {b.amount.toLocaleString()} {b.currency}
-                    </p>
-                    <p className="text-[11px] text-ink-faint">
-                      due in {b.due_in_days} {b.due_in_days === 1 ? "day" : "days"}
-                    </p>
-                  </div>
-                </li>
-              ))}
-            </ul>
+            {upcoming.length === 0 ? (
+              <p className="px-1 text-[12.5px] text-ink-faint">
+                Nothing with a future due date yet.
+              </p>
+            ) : (
+              <ul className="rounded-2xl border border-line bg-surface-raised divide-y divide-line">
+                {upcoming.map((b) => (
+                  <BillRow key={b.id} bill={b} kind="upcoming" />
+                ))}
+              </ul>
+            )}
           </section>
 
           <aside className="space-y-6">
-            <ForecastCard f={FORECAST_NEXT_MONTH} />
+            <ForecastCard f={forecast} />
             <UnusualCard />
           </aside>
         </div>
@@ -117,49 +101,52 @@ export default function BillsPage() {
           <h2 className="mb-3 px-1 text-[13px] font-medium text-ink-muted">
             Recurring
           </h2>
-          <ul className="rounded-2xl border border-line bg-surface-raised divide-y divide-line">
-            {RECURRING.map((r, i) => (
-              <li
-                key={i}
-                className="flex items-center gap-3 px-4 py-3"
-              >
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-[13.5px] text-ink">{r.name}</p>
-                  <p className="truncate text-[11.5px] text-ink-faint">
-                    {r.cadence}
-                  </p>
-                </div>
-                <p className="text-[12.5px] text-ink">
-                  ~{r.average.toLocaleString()} {r.currency}
-                </p>
-              </li>
-            ))}
-          </ul>
+          {recurring.length === 0 ? (
+            <p className="px-1 text-[12.5px] text-ink-faint">
+              Recurring patterns appear after Oria sees a few bills from the
+              same vendor.
+            </p>
+          ) : (
+            <ul className="rounded-2xl border border-line bg-surface-raised divide-y divide-line">
+              {recurring.map((r, i) => (
+                <RecurringRow key={i} r={r} />
+              ))}
+            </ul>
+          )}
         </section>
 
         <section>
           <h2 className="mb-3 px-1 text-[13px] font-medium text-ink-muted">
             Recent
           </h2>
-          <ul className="rounded-2xl border border-line bg-surface-raised divide-y divide-line">
-            {RECENT.map((r, i) => (
-              <li
-                key={i}
-                className="flex items-center gap-3 px-4 py-3"
-              >
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-[13.5px] text-ink">{r.name}</p>
-                  <p className="truncate text-[11.5px] text-ink-faint">
-                    paid {r.paid_on}
-                  </p>
-                </div>
-                <p className="text-[12.5px] text-ink-soft">
-                  {r.amount.toLocaleString()} {r.currency}
-                </p>
-              </li>
-            ))}
-          </ul>
+          {recent.length === 0 ? (
+            <p className="px-1 text-[12.5px] text-ink-faint">
+              No bills yet.
+            </p>
+          ) : (
+            <ul className="rounded-2xl border border-line bg-surface-raised divide-y divide-line">
+              {recent.map((b) => (
+                <BillRow key={b.id} bill={b} kind="recent" />
+              ))}
+            </ul>
+          )}
         </section>
+
+        <section>
+          <div className="mb-2 flex items-baseline gap-2 px-1">
+            <h2 className="text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
+              Ask Bills
+            </h2>
+            <span className="text-[11.5px] text-ink-faint">
+              Scoped to your bills
+            </span>
+          </div>
+          <div className="rounded-2xl border border-line bg-surface-raised p-3">
+            <AskChat scope={SCOPE} suggestions={SUGGESTIONS} />
+          </div>
+        </section>
+
+        <SectionMemoryPanel scope={SCOPE} memories={memories} />
 
         <p className="px-1 text-[11.5px] text-ink-faint">
           Forecasts are based on your recent uploads. Treat them as a calm
@@ -170,12 +157,98 @@ export default function BillsPage() {
   );
 }
 
+function BillRow({
+  bill: b,
+  kind,
+}: {
+  bill: BillItem;
+  kind: "upcoming" | "recent";
+}) {
+  const date = b.occurred_at ? new Date(b.occurred_at) : null;
+  const dateLabel = date
+    ? kind === "upcoming"
+      ? `due ${friendlyRelative(date)}`
+      : `paid ${friendlyDate(date)}`
+    : null;
+  const amount =
+    b.amount_value !== null
+      ? b.amount_currency
+        ? `${b.amount_value} ${b.amount_currency}`
+        : b.amount_value
+      : null;
+  return (
+    <li className="flex items-center gap-3 px-4 py-3">
+      <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-canvas text-ink-soft">
+        <WalletIcon size={14} />
+      </span>
+      <div className="min-w-0 flex-1">
+        {b.upload_id ? (
+          <Link
+            href={`/dashboard/uploads/${b.upload_id}`}
+            className="truncate text-[13.5px] text-ink transition-base hover:text-ink-soft"
+          >
+            {b.merchant || b.title}
+          </Link>
+        ) : (
+          <p className="truncate text-[13.5px] text-ink">
+            {b.merchant || b.title}
+          </p>
+        )}
+        <p className="truncate text-[11.5px] text-ink-faint">
+          {b.location || b.category || b.summary || "·"}
+        </p>
+      </div>
+      <div className="text-right">
+        {amount ? <p className="text-[13px] text-ink">{amount}</p> : null}
+        {dateLabel ? (
+          <p className="text-[11px] text-ink-faint">{dateLabel}</p>
+        ) : null}
+      </div>
+    </li>
+  );
+}
+
+function RecurringRow({ r }: { r: RecurringSummary }) {
+  return (
+    <li className="flex items-center gap-3 px-4 py-3">
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-[13.5px] text-ink">{r.merchant}</p>
+        <p className="truncate text-[11.5px] text-ink-faint">
+          {(r.interval ?? "recurring").toLowerCase()}
+          {r.next_expected
+            ? ` · next ${friendlyDate(new Date(r.next_expected))}`
+            : ""}
+          {r.count > 1 ? ` · ${r.count} seen` : ""}
+        </p>
+      </div>
+      {r.average !== null ? (
+        <p className="text-[12.5px] text-ink">
+          ~{r.average.toLocaleString()} {r.currency ?? ""}
+        </p>
+      ) : null}
+    </li>
+  );
+}
+
 function ForecastCard({
   f,
 }: {
-  f: { total: number; currency: string; vs_last_month: number };
+  f: { total: number; currency: string | null } | null;
 }) {
-  const lower = f.vs_last_month <= 0;
+  if (!f) {
+    return (
+      <section>
+        <h2 className="mb-3 px-1 text-[13px] font-medium text-ink-muted">
+          Next month forecast
+        </h2>
+        <div className="rounded-2xl border border-line bg-surface-raised p-5">
+          <p className="text-[12.5px] text-ink-faint">
+            Oria forecasts your next month once it sees a few recurring bills.
+          </p>
+        </div>
+      </section>
+    );
+  }
   return (
     <section>
       <h2 className="mb-3 px-1 text-[13px] font-medium text-ink-muted">
@@ -187,13 +260,14 @@ function ForecastCard({
         </p>
         <p className="mt-1 text-[28px] font-semibold tracking-tight text-ink">
           {f.total.toLocaleString()}{" "}
-          <span className="text-[14px] font-medium text-ink-muted">
-            {f.currency}
-          </span>
+          {f.currency ? (
+            <span className="text-[14px] font-medium text-ink-muted">
+              {f.currency}
+            </span>
+          ) : null}
         </p>
-        <p className={`mt-1 text-[12px] ${lower ? "text-sage" : "text-claret"}`}>
-          {lower ? "↓" : "↑"} {Math.abs(f.vs_last_month).toFixed(1)}% vs last
-          month
+        <p className="mt-1 text-[12px] text-ink-faint">
+          based on your recurring bills
         </p>
       </div>
     </section>
@@ -218,8 +292,66 @@ function UnusualCard() {
 
 function SmartBadge() {
   return (
-    <span className="inline-flex h-5 items-center gap-1 rounded-full bg-accent-soft/60 px-2 text-[10.5px] font-medium text-[#7a5a2a]">
-      <SparkIcon size={10} /> Smart Section
+    <span className="inline-flex h-5 items-center rounded-full bg-accent-soft/60 px-2 text-[10.5px] font-medium text-[#7a5a2a]">
+      Smart section
     </span>
   );
+}
+
+/* ----- helpers ----------------------------------------------------------- */
+
+function forecastNextMonth(
+  recurring: RecurringSummary[],
+): { total: number; currency: string | null } | null {
+  const items = recurring.filter((r) => r.average !== null);
+  if (items.length === 0) return null;
+  // Sum monthly contribution. Quarterly/yearly are amortised so the number
+  // reads as "what you'll typically pay in a month".
+  let total = 0;
+  for (const r of items) {
+    const a = r.average ?? 0;
+    switch ((r.interval ?? "monthly").toLowerCase()) {
+      case "weekly":
+        total += a * 4;
+        break;
+      case "monthly":
+        total += a;
+        break;
+      case "quarterly":
+        total += a / 3;
+        break;
+      case "yearly":
+        total += a / 12;
+        break;
+      default:
+        total += a;
+    }
+  }
+  // Pick the dominant currency (most-common among recurring items).
+  const counts = new Map<string, number>();
+  const NONE = "__none__";
+  for (const r of items) {
+    const c = r.currency ?? NONE;
+    counts.set(c, (counts.get(c) ?? 0) + 1);
+  }
+  const sorted = Array.from(counts.entries()).sort((a, b) => b[1] - a[1]);
+  const currency = sorted[0]?.[0] === NONE ? null : sorted[0]?.[0] ?? null;
+  return { total: Math.round(total), currency };
+}
+
+function friendlyDate(d: Date): string {
+  return d.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+function friendlyRelative(d: Date): string {
+  const ms = d.getTime() - Date.now();
+  const days = Math.round(ms / (24 * 60 * 60 * 1000));
+  if (days <= 0) return "today";
+  if (days === 1) return "in 1 day";
+  if (days < 14) return `in ${days} days`;
+  return `on ${friendlyDate(d)}`;
 }

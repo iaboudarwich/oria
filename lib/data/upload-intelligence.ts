@@ -4,6 +4,7 @@ import {
   AUTO_FILE_CONFIDENCE,
   extractFromUpload,
   type ExtractionResult,
+  type SkipReason,
 } from "@/lib/ai/extract";
 import type { DocumentType, Section } from "@/lib/supabase/types";
 
@@ -181,7 +182,7 @@ export async function processUpload(uploadId: string): Promise<void> {
   const { data, error: readError } = await supabase
     .from("uploads")
     .select(
-      "id, filename, mime_type, section, custom_section_id, title, storage_path, organization_id",
+      "id, filename, mime_type, section, custom_section_id, title, storage_path, organization_id, metadata",
     )
     .eq("id", uploadId)
     .maybeSingle();
@@ -194,6 +195,7 @@ export async function processUpload(uploadId: string): Promise<void> {
     title: string | null;
     storage_path: string;
     organization_id: string;
+    metadata: Record<string, unknown> | null;
   } | null;
 
   if (readError || !upload) {
@@ -201,11 +203,31 @@ export async function processUpload(uploadId: string): Promise<void> {
     return;
   }
 
-  const aiResult = await extractFromUpload({
+  // Context the user gave at upload time: the optional note + the Smart
+  // Section hint (set when uploading through /dashboard/diet or /bills).
+  const meta = upload.metadata ?? {};
+  const userDescription =
+    typeof meta.user_description === "string" ? meta.user_description : null;
+  const smartHintRaw =
+    typeof meta.smart_section_hint === "string" ? meta.smart_section_hint : null;
+  const smartSectionHint: "diet" | "bills" | null =
+    smartHintRaw === "diet" || smartHintRaw === "bills"
+      ? (smartHintRaw as "diet" | "bills")
+      : null;
+
+  const aiOutcome = await extractFromUpload({
     storagePath: upload.storage_path,
     mimeType: upload.mime_type,
     filename: upload.filename,
-  }).catch(() => null);
+    userDescription,
+    smartSectionHint,
+  }).catch((): { kind: "skipped"; reason: SkipReason } => ({
+    kind: "skipped",
+    reason: "model_error",
+  }));
+
+  const aiResult = aiOutcome.kind === "ok" ? aiOutcome.result : null;
+  const skipReason = aiOutcome.kind === "skipped" ? aiOutcome.reason : null;
 
   const heuristic = classify({
     filename: upload.filename,
@@ -217,6 +239,14 @@ export async function processUpload(uploadId: string): Promise<void> {
     const itemRows = aiResult.items.map((item) => {
       const autoSection =
         item.confidence >= AUTO_FILE_CONFIDENCE ? item.suggested_section : null;
+      // The hint wins when AI didn't classify, so an upload via the Diet
+      // page always lands in Diet even if the model was uncertain.
+      const smartSection = item.smart_section ?? smartSectionHint ?? null;
+      // For meals without an explicit timestamp, fall back to upload time so
+      // "what did I eat today" actually returns today's meals.
+      const occurredAt =
+        item.occurred_at ??
+        (smartSection === "diet" ? new Date().toISOString() : null);
       return {
         organization_id: upload.organization_id,
         upload_id: upload.id,
@@ -231,7 +261,7 @@ export async function processUpload(uploadId: string): Promise<void> {
         amount_value: item.amount_value,
         amount_currency: item.amount_currency,
         amount_normalized: item.amount_normalized,
-        occurred_at: item.occurred_at,
+        occurred_at: occurredAt,
         location: item.location,
         payment_method: item.payment_method,
         category: item.category,
@@ -241,7 +271,16 @@ export async function processUpload(uploadId: string): Promise<void> {
         facts: {
           action_items: item.action_items,
           suggested_section: item.suggested_section,
+          ...(userDescription ? { user_description: userDescription } : {}),
         },
+        calories: item.calories,
+        protein_g: item.protein_g,
+        carbs_g: item.carbs_g,
+        fat_g: item.fat_g,
+        is_recurring: item.is_recurring,
+        recurring_interval: item.recurring_interval,
+        direction: item.direction,
+        smart_section: smartSection,
       };
     });
     await supabase.from("memory_items").insert(itemRows);
@@ -309,6 +348,10 @@ export async function processUpload(uploadId: string): Promise<void> {
     );
   }
 
+  const nextMetadata = skipReason
+    ? { ...(upload.metadata ?? {}), extraction_skipped: skipReason }
+    : null;
+
   await supabase
     .from("uploads")
     .update({
@@ -323,6 +366,7 @@ export async function processUpload(uploadId: string): Promise<void> {
       ...(heuristicTitle && (!upload.title || upload.title === upload.filename)
         ? { title: heuristicTitle }
         : {}),
+      ...(nextMetadata ? { metadata: nextMetadata } : {}),
     })
     .eq("id", uploadId);
 }

@@ -1,8 +1,10 @@
 import "server-only";
 
 import { createClient } from "@/lib/supabase/server";
-import { listUserSpaces } from "@/lib/data/organizations";
+import { listUserSpaces, requireContext } from "@/lib/data/organizations";
 import { sectionLabel } from "@/lib/sections-meta";
+import { listSectionMemories } from "@/lib/data/section-memory";
+import type { SectionScope } from "@/lib/data/section-scope";
 import type { Section } from "@/lib/supabase/types";
 
 /**
@@ -17,7 +19,7 @@ import type { Section } from "@/lib/supabase/types";
  */
 export type RetrievedSource = {
   id: number; // 1-based slot for citations
-  kind: "upload" | "reminder";
+  kind: "upload" | "reminder" | "memory";
   title: string;
   snippet: string;
   href: string;
@@ -129,11 +131,11 @@ export function extractKeywords(query: string): string[] {
  */
 export async function retrieveForQuery(
   query: string,
-  opts: { maxSources?: number } = {},
+  opts: { maxSources?: number; scope?: SectionScope | null } = {},
 ): Promise<RetrievedSource[]> {
-  const { maxSources = 8 } = opts;
+  const { maxSources = 8, scope = null } = opts;
   const keywords = extractKeywords(query);
-  if (keywords.length === 0) return [];
+  if (keywords.length === 0 && !scope) return [];
 
   const supabase = await createClient();
 
@@ -143,6 +145,45 @@ export async function retrieveForQuery(
   const spaceById = new Map(
     userSpaces.map((s) => [s.organization.id, s.organization]),
   );
+  // When scoped to a section, retrieval is restricted to the active org and
+  // filtered to that section. Memories for the section are also pulled and
+  // surfaced as their own source kind so Claude can cite them.
+  const activeOrgId = scope ? (await requireContext()).organization.id : null;
+  const memoryRows: Array<{
+    score: number;
+    src: Omit<RetrievedSource, "id">;
+  }> = [];
+  if (scope && activeOrgId) {
+    const memories = await listSectionMemories(scope);
+    const space = spaceById.get(activeOrgId);
+    for (const m of memories) {
+      // Every memory is included with a small base score so the agent has
+      // it even if the query doesn't keyword-match the memory text.
+      let score = 2;
+      const hay = m.content.toLowerCase();
+      for (const kw of keywords) if (hay.includes(kw)) score += kw.length;
+      memoryRows.push({
+        score,
+        src: {
+          kind: "memory",
+          title: `Memory · ${scope.label}`,
+          snippet: m.content,
+          href:
+            scope.kind === "smart"
+              ? scope.key === "diet"
+                ? "/dashboard/diet"
+                : "/dashboard/bills"
+              : `/dashboard/sections/${scope.key}`,
+          processing_state: "ready",
+          meta: {
+            section_label: scope.label,
+            space_name: space?.name ?? "Personal",
+            date_label: null,
+          },
+        },
+      });
+    }
+  }
 
   // -- Uploads ----------------------------------------------------------------
   // PostgREST `or` with multiple ilike clauses. Each clause matches the title
@@ -155,13 +196,23 @@ export async function retrieveForQuery(
     })
     .join(",");
 
-  const uploadsRes = await supabase
+  let uploadsQ = supabase
     .from("uploads")
     .select(
       "id, title, filename, section, custom_section_id, organization_id, created_at",
     )
-    .is("deleted_at", null)
-    .or(uploadFilters)
+    .is("deleted_at", null);
+  if (keywords.length > 0) uploadsQ = uploadsQ.or(uploadFilters);
+  if (scope && activeOrgId) {
+    uploadsQ = uploadsQ.eq("organization_id", activeOrgId);
+    if (scope.kind === "builtin") uploadsQ = uploadsQ.eq("section", scope.key);
+    else if (scope.kind === "custom")
+      uploadsQ = uploadsQ.eq("custom_section_id", scope.key);
+    // For smart scope, uploads don't carry smart_section directly — we
+    // depend on memory_items below to do that filtering and skip uploads.
+    if (scope.kind === "smart") uploadsQ = uploadsQ.eq("id", "00000000-0000-0000-0000-000000000000");
+  }
+  const uploadsRes = await uploadsQ
     .order("created_at", { ascending: false })
     .limit(40);
 
@@ -245,13 +296,21 @@ export async function retrieveForQuery(
     })
     .join(",");
 
-  const itemsRes = await supabase
+  let itemsQ = supabase
     .from("memory_items")
     .select(
       "id, upload_id, organization_id, title, summary, merchant, amount_value, amount_currency, occurred_at, location, category, section, raw_text, created_at",
     )
-    .is("deleted_at", null)
-    .or(itemFilter)
+    .is("deleted_at", null);
+  if (keywords.length > 0) itemsQ = itemsQ.or(itemFilter);
+  if (scope && activeOrgId) {
+    itemsQ = itemsQ.eq("organization_id", activeOrgId);
+    if (scope.kind === "builtin") itemsQ = itemsQ.eq("section", scope.key);
+    else if (scope.kind === "custom")
+      itemsQ = itemsQ.eq("custom_section_id", scope.key);
+    else itemsQ = itemsQ.eq("smart_section", scope.key);
+  }
+  const itemsRes = await itemsQ
     .order("created_at", { ascending: false })
     .limit(20);
 
@@ -277,11 +336,17 @@ export async function retrieveForQuery(
   const reminderFilter = keywords
     .map((k) => `title.ilike.*${k.replace(/[%,]/g, "")}*`)
     .join(",");
-  const remindersRes = await supabase
+  let remindersQ = supabase
     .from("reminders")
-    .select("id, title, due_at, upload_id, organization_id, done, created_at")
-    .or(reminderFilter)
-    .limit(20);
+    .select("id, title, due_at, upload_id, organization_id, done, created_at");
+  if (keywords.length > 0) remindersQ = remindersQ.or(reminderFilter);
+  if (scope && activeOrgId) {
+    // Reminders aren't sectioned today. When scoped, the safest behaviour
+    // is to skip them entirely — the section-scoped agent should answer
+    // only from section-scoped sources.
+    remindersQ = remindersQ.eq("id", "00000000-0000-0000-0000-000000000000");
+  }
+  const remindersRes = await remindersQ.limit(20);
 
   type ReminderRow = {
     id: string;
@@ -398,6 +463,10 @@ export async function retrieveForQuery(
       },
     });
   }
+
+  // Saved section memories always join the pool so the agent has them as
+  // grounded context, even if no keyword matched the memory text.
+  for (const m of memoryRows) scored.push(m);
 
   scored.sort((a, b) => b.score - a.score);
 
