@@ -137,8 +137,113 @@ export async function setItemSection(formData: FormData): Promise<void> {
     }
   }
 
-  if (row.upload_id) revalidatePath(`/dashboard/uploads/${row.upload_id}`);
+  // Propagate up to the parent upload: once every item of a multi-item
+  // upload has a section, the source file should leave Unsorted. If all
+  // items landed in the same section, mirror it onto the upload so the
+  // section page shows one entry, not many; otherwise stamp
+  // metadata.items_sorted_at so the Unsorted listing skips it (the
+  // source still lives in /dashboard/inbox — the Uploads archive).
+  if (row.upload_id) {
+    await propagateUploadSectionFromItems(row.upload_id, ctx.organization.id);
+    revalidatePath(`/dashboard/uploads/${row.upload_id}`);
+  }
   revalidatePath("/dashboard");
+  revalidatePath("/dashboard/sections/review");
+}
+
+/**
+ * Re-derive a multi-item upload's section from its current items.
+ *
+ *   • Some items still in Unsorted → no-op. The upload stays where it is.
+ *   • All items share one built-in section → upload.section = that section.
+ *   • All items share one custom section → upload.custom_section_id = that.
+ *   • Items span multiple sections → leave section/custom_section_id null
+ *     but stamp metadata.items_sorted_at so Unsorted excludes it.
+ *
+ * Per-org by construction (caller passes the active org id; the update
+ * is filtered on it too). Best-effort: any failure leaves the row
+ * unchanged rather than half-updated.
+ */
+async function propagateUploadSectionFromItems(
+  uploadId: string,
+  organizationId: string,
+): Promise<void> {
+  try {
+    const supabase = await createClient();
+    const { data: itemRows } = await supabase
+      .from("memory_items")
+      .select("section, custom_section_id")
+      .eq("upload_id", uploadId)
+      .eq("organization_id", organizationId)
+      .is("deleted_at", null);
+
+    type ItemSlim = {
+      section: Section | null;
+      custom_section_id: string | null;
+    };
+    const items = (itemRows ?? []) as ItemSlim[];
+    if (items.length === 0) return; // nothing to propagate from
+
+    const anyUnsorted = items.some(
+      (i) => i.section === null && i.custom_section_id === null,
+    );
+    if (anyUnsorted) return; // still has work pending
+
+    const builtins = new Set(items.map((i) => i.section).filter((s): s is Section => !!s));
+    const customs = new Set(
+      items.map((i) => i.custom_section_id).filter((s): s is string => !!s),
+    );
+
+    const { data: uploadRow } = await supabase
+      .from("uploads")
+      .select("section, custom_section_id, metadata")
+      .eq("id", uploadId)
+      .eq("organization_id", organizationId)
+      .maybeSingle();
+    if (!uploadRow) return;
+    const current = uploadRow as {
+      section: Section | null;
+      custom_section_id: string | null;
+      metadata: Record<string, unknown> | null;
+    };
+
+    const nowIso = new Date().toISOString();
+    let patch: {
+      section?: Section | null;
+      custom_section_id?: string | null;
+      metadata?: Record<string, unknown>;
+    } | null = null;
+
+    if (builtins.size === 1 && customs.size === 0) {
+      const only = Array.from(builtins)[0];
+      if (current.section !== only || current.custom_section_id !== null) {
+        patch = { section: only, custom_section_id: null };
+      }
+    } else if (customs.size === 1 && builtins.size === 0) {
+      const only = Array.from(customs)[0];
+      if (current.custom_section_id !== only || current.section !== null) {
+        patch = { section: null, custom_section_id: only };
+      }
+    } else {
+      // Items span multiple destinations. Leave the upload sectionless
+      // but stamp metadata so Unsorted excludes it. The source still
+      // appears in /dashboard/inbox (the per-space Uploads archive).
+      const md = current.metadata ?? {};
+      if (!("items_sorted_at" in md)) {
+        patch = { metadata: { ...md, items_sorted_at: nowIso } };
+      }
+    }
+
+    if (patch) {
+      await supabase
+        .from("uploads")
+        .update(patch)
+        .eq("id", uploadId)
+        .eq("organization_id", organizationId);
+    }
+  } catch {
+    // Best-effort: never block the move.
+  }
 }
 
 /**
