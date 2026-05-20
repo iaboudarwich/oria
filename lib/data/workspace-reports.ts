@@ -9,11 +9,28 @@ export type ReportChartSeries = {
   data: Array<{ x: string; y: number }>;
 };
 
-export type ReportChart = {
-  kind: "bar" | "line";
+export type ReportTable = {
   caption?: string;
-  series: ReportChartSeries[];
+  columns: string[];
+  rows: string[][];
 };
+
+export type ReportChart =
+  | {
+      kind: "bar";
+      caption?: string;
+      series: ReportChartSeries[];
+    }
+  | {
+      kind: "line";
+      caption?: string;
+      series: ReportChartSeries[];
+    }
+  | {
+      kind: "table";
+      caption?: string;
+      table: ReportTable;
+    };
 
 export type ReportSection = {
   heading: string;

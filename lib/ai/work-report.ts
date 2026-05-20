@@ -64,12 +64,14 @@ const REPORT_TOOL: Anthropic.Messages.Tool = {
             chart: {
               type: "object",
               description:
-                "Optional simple chart. 'bar' for categorical comparisons, 'line' for time series. x values are plain text labels; y values are numbers.",
+                "Optional visual. Pick the kind that best fits the question: 'bar' for categorical comparisons (vendors, sections), 'line' for time series (monthly trends, forecast curves), 'table' for breakdowns and lists (top tenants, late payments, lease expirations). For bar/line, x values are plain text labels and y values are numbers. For table, provide columns and rows.",
               properties: {
-                kind: { type: "string", enum: ["bar", "line"] },
+                kind: { type: "string", enum: ["bar", "line", "table"] },
                 caption: { type: "string" },
                 series: {
                   type: "array",
+                  description:
+                    "Required for bar/line. Omit for table.",
                   items: {
                     type: "object",
                     properties: {
@@ -89,8 +91,27 @@ const REPORT_TOOL: Anthropic.Messages.Tool = {
                     required: ["label", "data"],
                   },
                 },
+                table: {
+                  type: "object",
+                  description:
+                    "Required for kind=table. 2–6 columns, ≤20 rows. Cells are short plain strings — money like '$1,243', dates like 'Mar 12', percentages like '14%'.",
+                  properties: {
+                    columns: {
+                      type: "array",
+                      items: { type: "string" },
+                    },
+                    rows: {
+                      type: "array",
+                      items: {
+                        type: "array",
+                        items: { type: "string" },
+                      },
+                    },
+                  },
+                  required: ["columns", "rows"],
+                },
               },
-              required: ["kind", "series"],
+              required: ["kind"],
             },
           },
           required: ["heading"],
@@ -262,15 +283,25 @@ export async function generateWorkReport(
   contextLines.push(`LINE ITEMS (most recent first, up to 200 rows):`);
   for (const r of rows) contextLines.push(formatRowForPrompt(r));
 
-  const systemPrompt = `You are the Work AI Agent for the "${ctx.organization.name}" Workspace, generating a structured operational report.
+  const systemPrompt = `You are the in-house analyst for the "${ctx.organization.name}" Workspace, generating a structured operational analysis.
 
 You MUST call the save_report tool exactly once. Don't reply with prose.
 
-Rules:
-- Use only the data the user provided. If something is missing, say so in the relevant section rather than invent.
-- Numbers must come from the LINE ITEMS, TOTALS, or RECURRING blocks. Never fabricate dollar figures.
-- Prefer specifics over generalities. Name merchants, dates, and amounts.
-- If you include a chart, base its data on the line items provided. Bar for categorical comparisons (e.g. top vendors), line for time series (e.g. monthly outflow).
+Think like an analyst, not a document reader. The user is asking for INSIGHT, not a recap of files.
+
+Compose the report like this:
+- 2–4 sentence executive summary that LEADS WITH THE ANSWER. Headline number first.
+- key_metrics: 2–6 headline figures the executive cares about (Net, Revenue, Cost/Revenue %, Top vendor, Largest line, etc.). Include a delta when the data supports it.
+- sections: pick the visual that best fits the question. Use:
+  • TABLE for breakdowns, lists, late payments, top tenants, lease expirations — anything that reads naturally as rows of fields.
+  • BAR for categorical comparisons (top vendors, expenses by section, building A vs B).
+  • LINE for time series (monthly revenue, expense trend, forecast curves).
+  • Prose only when the analysis is qualitative.
+
+Hard rules:
+- Use only the data the user provided. If something is missing, say so explicitly ("I don't have May utilities yet"); never invent figures.
+- Numbers must come from LINE ITEMS, TOTALS, or RECURRING. Cite them at the right precision (no decimals on round-number totals; one decimal on percentages).
+- If amounts span multiple currencies, separate them. Don't pretend they add.
 - Skip a section rather than pad with filler. A report with 2 strong sections beats one with 5 weak ones.
 - Honour STANDING INSTRUCTIONS and PREFERRED METRICS when present.`;
 
@@ -358,6 +389,30 @@ function normalizeChart(
 ): NonNullable<ReportPayload["sections"][number]["chart"]> | null {
   if (!raw || typeof raw !== "object") return null;
   const o = raw as Record<string, unknown>;
+  const caption = typeof o.caption === "string" ? o.caption : undefined;
+
+  // table — for breakdowns and lists
+  if (o.kind === "table") {
+    const tableIn = o.table as Record<string, unknown> | undefined;
+    if (!tableIn || typeof tableIn !== "object") return null;
+    const columns = Array.isArray(tableIn.columns)
+      ? tableIn.columns.filter((c): c is string => typeof c === "string")
+      : [];
+    const rowsIn = Array.isArray(tableIn.rows) ? tableIn.rows : [];
+    const rows = rowsIn
+      .map((r) =>
+        Array.isArray(r) ? r.map((c) => (typeof c === "string" ? c : String(c ?? ""))) : null,
+      )
+      .filter((r): r is string[] => !!r && r.length > 0);
+    if (columns.length === 0 || rows.length === 0) return null;
+    return {
+      kind: "table",
+      table: { columns, rows, ...(caption ? { caption } : {}) },
+      ...(caption ? { caption } : {}),
+    };
+  }
+
+  // bar / line — series-based
   const kind = o.kind === "bar" || o.kind === "line" ? o.kind : null;
   if (!kind) return null;
   const seriesIn = Array.isArray(o.series) ? o.series : [];
@@ -383,6 +438,5 @@ function normalizeChart(
     })
     .filter((s): s is { label: string; data: { x: string; y: number }[] } => !!s);
   if (series.length === 0) return null;
-  const caption = typeof o.caption === "string" ? o.caption : undefined;
   return { kind, series, ...(caption ? { caption } : {}) };
 }

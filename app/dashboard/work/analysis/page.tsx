@@ -1,26 +1,83 @@
 import Link from "next/link";
 import { Topbar } from "@/components/dashboard/topbar";
-import { SparkIcon } from "@/components/ui/icon";
+import { ChartIcon, SparkIcon } from "@/components/ui/icon";
+import { AnalysisPrompt } from "@/components/work/analysis-prompt";
+import { ReportPoller } from "@/components/work/report-poller";
 import { computeAnalysis, type AnalysisAggregates } from "@/lib/data/work";
+import { listWorkspaceReports } from "@/lib/data/workspace-reports";
 
 export const metadata = { title: "Analysis" };
 
 export default async function AnalysisPage() {
-  const data = await computeAnalysis(6);
+  const [data, reports] = await Promise.all([
+    computeAnalysis(6),
+    listWorkspaceReports(20),
+  ]);
+  const analyses = reports.filter(
+    (r) => r.kind === "analysis" || r.kind === "custom" || r.kind === "summary",
+  );
+  const hasPending = analyses.some((r) => r.status === "pending");
 
   return (
     <>
       <Topbar title="Analysis" />
+      <ReportPoller pending={hasPending} />
 
-      <div className="mb-6 flex items-center gap-2 px-1">
-        <SmartBadge />
-        <p className="text-[12.5px] text-ink-faint">
-          A calm read of your operations. Numbers update as you upload.
-        </p>
+      <div className="space-y-8 animate-fade-up">
+        <AnalysisPrompt />
+        {analyses.length > 0 ? <AnalysisList analyses={analyses} /> : null}
+        {!data.hasData ? <EmptyState /> : <AnalysisBoard data={data} />}
       </div>
-
-      {!data.hasData ? <EmptyState /> : <AnalysisBoard data={data} />}
     </>
+  );
+}
+
+function AnalysisList({
+  analyses,
+}: {
+  analyses: Awaited<ReturnType<typeof listWorkspaceReports>>;
+}) {
+  return (
+    <section>
+      <h2 className="mb-2 px-1 text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
+        Recent analyses
+      </h2>
+      <ul className="space-y-2">
+        {analyses.map((a) => (
+          <li key={a.id}>
+            <Link
+              href={`/dashboard/work/agent/reports/${a.id}`}
+              className="group flex items-start gap-3 rounded-xl border border-line bg-surface-raised px-4 py-3 transition-base hover:border-line-strong hover:bg-canvas/40"
+            >
+              <span className="mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-canvas text-ink-soft">
+                <ChartIcon size={14} />
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-[13.5px] text-ink">{a.title}</p>
+                <p className="mt-0.5 truncate text-[11.5px] text-ink-faint">
+                  {a.kind} · {new Date(a.created_at).toLocaleString()}
+                </p>
+              </div>
+              <span
+                className={`mt-1 inline-flex shrink-0 items-center rounded-md px-1.5 py-0.5 text-[10.5px] ${
+                  a.status === "ready"
+                    ? "bg-sage/15 text-[#3f5240]"
+                    : a.status === "failed"
+                      ? "bg-claret/10 text-claret"
+                      : "bg-accent-soft/60 text-[#7a5a2a]"
+                }`}
+              >
+                {a.status === "ready"
+                  ? "Ready"
+                  : a.status === "failed"
+                    ? "Failed"
+                    : "Analyzing"}
+              </span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
 
@@ -365,14 +422,6 @@ function LegendDot({ tint, label }: { tint: string; label: string }) {
     <span className="inline-flex items-center gap-1.5 text-ink-muted">
       <span className={`inline-block h-2 w-2 rounded-full ${tint}`} />
       {label}
-    </span>
-  );
-}
-
-function SmartBadge() {
-  return (
-    <span className="inline-flex h-5 items-center gap-1 rounded-full bg-accent-soft/60 px-2 text-[10.5px] font-medium text-[#7a5a2a]">
-      <SparkIcon size={10} /> Smart view
     </span>
   );
 }
