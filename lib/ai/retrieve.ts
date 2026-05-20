@@ -122,38 +122,75 @@ export function extractKeywords(query: string): string[] {
 /**
  * Retrieve the most relevant uploads + reminders for a query.
  *
- *   • All queries run through the user-scoped supabase client, so RLS does the
- *     permissions work for free — personal items stay private, circle items
- *     respect access levels, limited members only see allowed sections.
- *   • Scoring is intentionally naive (keyword OR + count). Architecture leaves
- *     room for embedding-based scoring later: each source already has a
- *     normalised text payload (snippet) that can be vectorised in-place.
+ * Hard rule: every query is scoped to ONE active organization (or, with the
+ * explicit `crossSpace: true` opt-in, to the user's personal-side spaces
+ * only — personal + circles). RLS alone is not enough here: a member of
+ * multiple orgs (e.g. their Personal space and a Work Workspace) is
+ * authorised to read all of them under RLS, so any unfiltered query leaks
+ * across spaces. The Work AI agent must never see personal data, and a
+ * personal Ask must never see another Workspace's data — that's enforced
+ * here, in the data layer, regardless of how the caller frames the query.
+ *
+ *   • scope set       → restrict to active org AND section (existing behaviour)
+ *   • scope null      → restrict to active org only (default; was the leak)
+ *   • crossSpace true → broaden to every personal/circle org the user has
+ *                       joined, never including office Workspaces. Reserved
+ *                       for an explicit "search across my personal spaces"
+ *                       affordance the UI must request intentionally.
  */
 export async function retrieveForQuery(
   query: string,
-  opts: { maxSources?: number; scope?: SectionScope | null } = {},
+  opts: {
+    maxSources?: number;
+    scope?: SectionScope | null;
+    crossSpace?: boolean;
+  } = {},
 ): Promise<RetrievedSource[]> {
-  const { maxSources = 8, scope = null } = opts;
+  const { maxSources = 8, scope = null, crossSpace = false } = opts;
   const keywords = extractKeywords(query);
   if (keywords.length === 0 && !scope) return [];
 
   const supabase = await createClient();
+  const ctx = await requireContext();
+  const activeOrgId = ctx.organization.id;
 
-  // We need the user's spaces for friendly source labels. RLS already
-  // protects the queries; spaces here are just for the UI.
-  const userSpaces = await listUserSpaces();
+  // Decide the set of org ids retrieval is allowed to touch. This is the
+  // single source of truth — every query below applies it. A leak here is
+  // a data isolation bug, so we hard-pin it rather than rely on RLS.
+  let allowedOrgIds: string[];
+  const userSpacesList = await listUserSpaces();
+  if (crossSpace) {
+    // Universal personal search: span the user's personal + circle orgs
+    // only. Office (Work) orgs are excluded so a personal "ask everything"
+    // never reaches into a Workspace.
+    if (ctx.organization.kind === "office") {
+      // Cross-space doesn't make sense from within a Workspace — fall back
+      // to active-org-only rather than silently broadening into personal
+      // data the Workspace user might not own.
+      allowedOrgIds = [activeOrgId];
+    } else {
+      allowedOrgIds = userSpacesList
+        .filter((s) => s.organization.kind !== "office")
+        .map((s) => s.organization.id);
+      if (!allowedOrgIds.includes(activeOrgId)) {
+        allowedOrgIds.push(activeOrgId);
+      }
+    }
+  } else {
+    allowedOrgIds = [activeOrgId];
+  }
+
   const spaceById = new Map(
-    userSpaces.map((s) => [s.organization.id, s.organization]),
+    userSpacesList.map((s) => [s.organization.id, s.organization]),
   );
-  // When scoped to a section, retrieval is restricted to the active org and
-  // filtered to that section. Memories for the section are also pulled and
-  // surfaced as their own source kind so Claude can cite them.
-  const activeOrgId = scope ? (await requireContext()).organization.id : null;
+
+  // When scoped to a section, also pull section-memories for the section
+  // so Claude sees the user's standing context.
   const memoryRows: Array<{
     score: number;
     src: Omit<RetrievedSource, "id">;
   }> = [];
-  if (scope && activeOrgId) {
+  if (scope) {
     const memories = await listSectionMemories(scope);
     const space = spaceById.get(activeOrgId);
     for (const m of memories) {
@@ -177,7 +214,7 @@ export async function retrieveForQuery(
           processing_state: "ready",
           meta: {
             section_label: scope.label,
-            space_name: space?.name ?? "Personal",
+            space_name: space?.name ?? ctx.organization.name,
             date_label: null,
           },
         },
@@ -201,16 +238,17 @@ export async function retrieveForQuery(
     .select(
       "id, title, filename, section, custom_section_id, organization_id, created_at",
     )
-    .is("deleted_at", null);
+    .is("deleted_at", null)
+    .in("organization_id", allowedOrgIds);
   if (keywords.length > 0) uploadsQ = uploadsQ.or(uploadFilters);
-  if (scope && activeOrgId) {
-    uploadsQ = uploadsQ.eq("organization_id", activeOrgId);
+  if (scope) {
     if (scope.kind === "builtin") uploadsQ = uploadsQ.eq("section", scope.key);
     else if (scope.kind === "custom")
       uploadsQ = uploadsQ.eq("custom_section_id", scope.key);
     // For smart scope, uploads don't carry smart_section directly — we
     // depend on memory_items below to do that filtering and skip uploads.
-    if (scope.kind === "smart") uploadsQ = uploadsQ.eq("id", "00000000-0000-0000-0000-000000000000");
+    if (scope.kind === "smart")
+      uploadsQ = uploadsQ.eq("id", "00000000-0000-0000-0000-000000000000");
   }
   const uploadsRes = await uploadsQ
     .order("created_at", { ascending: false })
@@ -226,10 +264,14 @@ export async function retrieveForQuery(
     created_at: string;
   };
   const uploads = (uploadsRes.data ?? []) as UploadRow[];
+  const allowedOrgSet = new Set(allowedOrgIds);
 
   // Second pass: also include uploads whose extracted text matches, even if
-  // the filename/title doesn't.
-  const extractionRes = await supabase
+  // the filename/title doesn't. Extractions are linked to uploads, so we
+  // re-apply the org filter via the upload table below — but we first prune
+  // the extraction set by joining to upload_id so we don't pull text from
+  // other orgs into memory at all.
+  const extractionMatchRes = await supabase
     .from("extractions")
     .select("upload_id, raw_text")
     .or(
@@ -237,13 +279,40 @@ export async function retrieveForQuery(
         .map((k) => `raw_text.ilike.*${k.replace(/[%,]/g, "")}*`)
         .join(","),
     )
-    .limit(40);
+    .limit(80);
 
   type ExtractionRow = { upload_id: string; raw_text: string | null };
-  const extractions = (extractionRes.data ?? []) as ExtractionRow[];
-  const extractionByUpload = new Map(
-    extractions.map((e) => [e.upload_id, e.raw_text ?? ""]),
+  const extractionMatches = (extractionMatchRes.data ?? []) as ExtractionRow[];
+
+  // -- Verify each extraction belongs to an allowed org --------------------
+  // RLS already prevents reads of other orgs' extractions for non-members,
+  // but the user IS a member of multiple orgs. Filter strictly by upload's
+  // organization_id below.
+  const extractionUploadIds = Array.from(
+    new Set(extractionMatches.map((e) => e.upload_id)),
   );
+  const allowedExtractionUploadIds = new Set<string>();
+  if (extractionUploadIds.length > 0) {
+    const verifyRes = await supabase
+      .from("uploads")
+      .select("id, organization_id")
+      .in("id", extractionUploadIds)
+      .in("organization_id", allowedOrgIds);
+    for (const row of (verifyRes.data ?? []) as {
+      id: string;
+      organization_id: string;
+    }[]) {
+      if (allowedOrgSet.has(row.organization_id)) {
+        allowedExtractionUploadIds.add(row.id);
+      }
+    }
+  }
+  const extractionByUpload = new Map<string, string>();
+  for (const e of extractionMatches) {
+    if (allowedExtractionUploadIds.has(e.upload_id)) {
+      extractionByUpload.set(e.upload_id, e.raw_text ?? "");
+    }
+  }
 
   // Fetch the upload rows referenced only by extraction matches.
   const uploadIdsKnown = new Set(uploads.map((u) => u.id));
@@ -257,6 +326,7 @@ export async function retrieveForQuery(
         "id, title, filename, section, custom_section_id, organization_id, created_at",
       )
       .in("id", extraOnly)
+      .in("organization_id", allowedOrgIds)
       .is("deleted_at", null);
     for (const u of (more.data ?? []) as UploadRow[]) {
       uploads.push(u);
@@ -264,7 +334,9 @@ export async function retrieveForQuery(
   }
 
   // Also pull extractions for the title/filename-matched uploads so the
-  // snippet shown to Claude carries actual content, not just a name.
+  // snippet shown to Claude carries actual content, not just a name. We
+  // can fetch by upload_id directly — those uploads were already org-
+  // verified above.
   const missingExtractionIds = uploads
     .map((u) => u.id)
     .filter((id) => !extractionByUpload.has(id));
@@ -301,10 +373,10 @@ export async function retrieveForQuery(
     .select(
       "id, upload_id, organization_id, title, summary, merchant, amount_value, amount_currency, occurred_at, location, category, section, raw_text, created_at",
     )
-    .is("deleted_at", null);
+    .is("deleted_at", null)
+    .in("organization_id", allowedOrgIds);
   if (keywords.length > 0) itemsQ = itemsQ.or(itemFilter);
-  if (scope && activeOrgId) {
-    itemsQ = itemsQ.eq("organization_id", activeOrgId);
+  if (scope) {
     if (scope.kind === "builtin") itemsQ = itemsQ.eq("section", scope.key);
     else if (scope.kind === "custom")
       itemsQ = itemsQ.eq("custom_section_id", scope.key);
@@ -338,9 +410,10 @@ export async function retrieveForQuery(
     .join(",");
   let remindersQ = supabase
     .from("reminders")
-    .select("id, title, due_at, upload_id, organization_id, done, created_at");
+    .select("id, title, due_at, upload_id, organization_id, done, created_at")
+    .in("organization_id", allowedOrgIds);
   if (keywords.length > 0) remindersQ = remindersQ.or(reminderFilter);
-  if (scope && activeOrgId) {
+  if (scope) {
     // Reminders aren't sectioned today. When scoped, the safest behaviour
     // is to skip them entirely — the section-scoped agent should answer
     // only from section-scoped sources.
@@ -364,6 +437,8 @@ export async function retrieveForQuery(
   const scored: Scored[] = [];
 
   for (const u of uploads) {
+    // Defence in depth: skip anything that somehow snuck through. Cheap.
+    if (!allowedOrgSet.has(u.organization_id)) continue;
     const extractedText = extractionByUpload.get(u.id) ?? "";
     const haystack = [u.title ?? "", u.filename, extractedText]
       .join(" ")
@@ -387,7 +462,7 @@ export async function retrieveForQuery(
           section_label: u.section
             ? sectionLabel(u.section as Section)
             : null,
-          space_name: space?.name ?? "Personal",
+          space_name: space?.name ?? ctx.organization.name,
           date_label: friendlyDate(u.created_at),
         },
       },
@@ -395,6 +470,7 @@ export async function retrieveForQuery(
   }
 
   for (const it of items) {
+    if (!allowedOrgSet.has(it.organization_id)) continue;
     const haystack = [
       it.title,
       it.merchant ?? "",
@@ -426,7 +502,7 @@ export async function retrieveForQuery(
           section_label: it.section
             ? sectionLabel(it.section as Section)
             : it.category,
-          space_name: space?.name ?? "Personal",
+          space_name: space?.name ?? ctx.organization.name,
           date_label: it.occurred_at
             ? friendlyDate(it.occurred_at)
             : friendlyDate(it.created_at),
@@ -436,6 +512,7 @@ export async function retrieveForQuery(
   }
 
   for (const r of reminders) {
+    if (!allowedOrgSet.has(r.organization_id)) continue;
     const haystack = r.title.toLowerCase();
     let score = 0;
     for (const kw of keywords) if (haystack.includes(kw)) score += kw.length;
@@ -457,7 +534,7 @@ export async function retrieveForQuery(
         processing_state: "ready",
         meta: {
           section_label: null,
-          space_name: space?.name ?? "Personal",
+          space_name: space?.name ?? ctx.organization.name,
           date_label: r.due_at ? friendlyDate(r.due_at) : null,
         },
       },

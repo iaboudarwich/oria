@@ -69,8 +69,16 @@ export async function searchUploads(rawQuery: string): Promise<SearchResult[]> {
       : Promise.resolve({ data: [] as Upload[] });
 
   // 3. Extraction matches: raw_text or stringified entities/facts.
-  // We use the JSONB::text cast pattern via a separate query and look up the
-  // uploads afterwards. Cheap for small datasets; swap for a SQL RPC later.
+  // We use the JSONB::text cast pattern via a separate query and look up
+  // the uploads afterwards. Cheap for small datasets; swap for a SQL RPC
+  // later.
+  //
+  // Isolation note: this query selects ONLY upload_id (no content), and
+  // the subsequent uploads fetch at the bottom of this function filters
+  // strictly by `organization_id = orgId`. So even though RLS lets a
+  // multi-org member receive upload_ids from other orgs they belong to,
+  // those ids are dropped at the uploads stage and never surface to the
+  // user. No extraction content ever leaves Supabase here.
   const extractionsQ = supabase
     .from("extractions")
     .select("upload_id")
