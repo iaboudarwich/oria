@@ -73,7 +73,10 @@ export function Dropzone({
           return;
         }
         setStatus({ kind: "reading", name: file.name, id: result.id });
-        router.refresh();
+        // uploadFile already revalidates /dashboard, /dashboard/inbox, and
+        // /dashboard/timeline server-side; no router.refresh() needed here.
+        // We still refresh when polling finishes (the background extraction
+        // doesn't get a chance to revalidate after the response is sent).
         // Poll the status endpoint until extraction finishes or we time out.
         if (pollRef.current) window.clearInterval(pollRef.current);
         let elapsed = 0;

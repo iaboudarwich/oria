@@ -57,26 +57,33 @@ export async function listUploadsWithUploader(opts: {
   }));
 }
 
+const SECTION_KEYS: Section[] = [
+  "household", "travel", "properties", "staff", "events",
+  "finance", "legal", "personal", "vendors", "health",
+];
+
+/**
+ * Per-section upload counts. Issues one head-only COUNT(*) per section in
+ * parallel rather than fetching every row and counting in memory — same
+ * answer, no payload, scales to large orgs.
+ */
 export async function countUploadsBySection(): Promise<Record<Section, number>> {
   const ctx = await requireContext();
   const supabase = await createClient();
-  const { data } = await supabase
-    .from("uploads")
-    .select("section")
-    .eq("organization_id", ctx.organization.id)
-    .is("deleted_at", null);
 
-  const counts: Record<string, number> = {};
-  (data ?? []).forEach((row) => {
-    const k = (row as { section: Section | null }).section ?? "personal";
-    counts[k] = (counts[k] ?? 0) + 1;
-  });
+  const entries = await Promise.all(
+    SECTION_KEYS.map(async (s) => {
+      const { count } = await supabase
+        .from("uploads")
+        .select("id", { count: "exact", head: true })
+        .eq("organization_id", ctx.organization.id)
+        .eq("section", s)
+        .is("deleted_at", null);
+      return [s, count ?? 0] as const;
+    }),
+  );
 
-  const sections: Section[] = [
-    "household", "travel", "properties", "staff", "events",
-    "finance", "legal", "personal", "vendors", "health",
-  ];
-  return Object.fromEntries(sections.map((s) => [s, counts[s] ?? 0])) as Record<Section, number>;
+  return Object.fromEntries(entries) as Record<Section, number>;
 }
 
 /**

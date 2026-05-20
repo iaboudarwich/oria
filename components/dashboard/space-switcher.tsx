@@ -58,11 +58,11 @@ export function SpaceSwitcher({ active, spaces }: Props) {
     startTransition(async () => {
       const result = await switchSpace(target.id);
       if (result.ok) {
-        // Client-side navigation: lands on /dashboard with the new cookie
-        // already set. router.refresh() pulls a fresh RSC tree (sidebar,
-        // counts, etc.).
+        // Client-side navigation lands on /dashboard with the new cookie
+        // set. switchSpace already called revalidatePath("/dashboard",
+        // "layout"), so the RSC tree refetches automatically — no extra
+        // router.refresh() needed.
         router.push("/dashboard");
-        router.refresh();
       } else {
         setPendingId(null);
       }

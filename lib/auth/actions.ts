@@ -1,7 +1,6 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 
 function siteUrl() {
@@ -108,6 +107,7 @@ export async function signInWithMagicLink(formData: FormData) {
 export async function signOut() {
   const supabase = await createClient();
   await supabase.auth.signOut();
-  revalidatePath("/", "layout");
+  // Sign-out lands on /login; the dashboard tree they're leaving doesn't
+  // need a revalidation because they can no longer reach it.
   redirect("/login");
 }

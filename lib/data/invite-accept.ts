@@ -103,7 +103,7 @@ export async function tryAcceptInvite(
       path: "/",
       maxAge: ONE_YEAR_SECONDS,
     });
-    revalidatePath("/", "layout");
+    revalidatePath("/dashboard", "layout");
     return { ok: true, organizationId: orgId };
   }
 

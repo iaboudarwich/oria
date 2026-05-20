@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
 import { uploadFile } from "@/lib/data/upload-actions";
 import { CheckIcon, UploadIcon } from "@/components/ui/icon";
 
@@ -15,7 +14,6 @@ import { CheckIcon, UploadIcon } from "@/components/ui/icon";
  * centerpiece.
  */
 export function DropzoneCompact() {
-  const router = useRouter();
   const [status, setStatus] = useState<
     | { kind: "idle" }
     | { kind: "uploading"; name: string }
@@ -35,14 +33,14 @@ export function DropzoneCompact() {
       startTransition(async () => {
         const result = await uploadFile(formData);
         if (result.ok) {
+          // uploadFile revalidates the relevant routes server-side.
           setStatus({ kind: "done", name: file.name });
-          router.refresh();
         } else {
           setStatus({ kind: "error", message: result.error });
         }
       });
     },
-    [router],
+    [],
   );
 
   const busy = status.kind === "uploading" || isPending;

@@ -1,7 +1,6 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -86,6 +85,7 @@ export async function deleteAccount(
   }
 
   await supabase.auth.signOut();
-  revalidatePath("/", "layout");
+  // Account is gone; clearing the login page is enough — no need to
+  // revalidate the dashboard tree they can no longer access.
   redirect("/login?notice=Your+account+has+been+deleted.");
 }

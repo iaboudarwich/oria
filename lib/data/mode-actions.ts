@@ -89,7 +89,7 @@ export async function switchMode(mode: Mode): Promise<SwitchModeResult> {
 
   if (target) {
     await setActiveCookie(target);
-    revalidatePath("/", "layout");
+    revalidatePath("/dashboard", "layout");
     return {
       ok: true,
       href: mode === "work" ? "/dashboard/work" : "/dashboard",
@@ -105,7 +105,7 @@ export async function switchMode(mode: Mode): Promise<SwitchModeResult> {
   }
   const store = await cookies();
   store.delete(ACTIVE_SPACE_COOKIE);
-  revalidatePath("/", "layout");
+  revalidatePath("/dashboard", "layout");
   return { ok: true, href: "/dashboard" };
 }
 
@@ -166,6 +166,6 @@ export async function createWorkSpace(formData: FormData): Promise<void> {
   });
 
   await setActiveCookie(orgRow.id);
-  revalidatePath("/", "layout");
+  revalidatePath("/dashboard", "layout");
   redirect("/dashboard/work");
 }

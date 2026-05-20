@@ -66,7 +66,7 @@ export async function switchSpace(orgId: string): Promise<SwitchResult> {
   if (!membership) return { ok: false };
 
   await setActiveCookie(id);
-  revalidatePath("/", "layout");
+  revalidatePath("/dashboard", "layout");
   return { ok: true };
 }
 
@@ -116,7 +116,7 @@ export async function createCircle(formData: FormData): Promise<void> {
   });
 
   await setActiveCookie(orgRow.id);
-  revalidatePath("/", "layout");
+  revalidatePath("/dashboard", "layout");
   redirect(`/dashboard/circles/${orgRow.id}/setup`);
 }
 
@@ -144,7 +144,7 @@ export async function deleteCircle(formData: FormData): Promise<void> {
   await admin.from("organizations").delete().eq("id", ctx.organization.id);
 
   await clearActiveCookie();
-  revalidatePath("/", "layout");
+  revalidatePath("/dashboard", "layout");
   redirect("/dashboard");
 }
 
@@ -184,6 +184,6 @@ export async function leaveCircle(): Promise<void> {
   }
 
   await clearActiveCookie();
-  revalidatePath("/", "layout");
+  revalidatePath("/dashboard", "layout");
   redirect("/dashboard");
 }

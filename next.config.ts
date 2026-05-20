@@ -13,6 +13,14 @@ const nextConfig: NextConfig = {
       // application validation should stay strictly below this number.
       bodySizeLimit: "55mb",
     },
+    // Client-cache TTLs. With Next 15+ the default for dynamic pages is 0 —
+    // i.e. every back-navigation refetches. Bumping to 30s makes the
+    // dashboard's back-and-forth navigation feel instant without holding
+    // stale data for long. Static stays at the default 5 min.
+    staleTimes: {
+      dynamic: 30,
+      static: 300,
+    },
   },
 };
 
