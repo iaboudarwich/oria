@@ -69,10 +69,23 @@ export function SpaceSwitcher({ active, spaces }: Props) {
     });
   }
 
+  // Reality-catch-up, React 19 render-body idiom. The Server Action ran,
+  // the cookie flipped, the layout re-rendered with the new `active` —
+  // so the optimistic state has done its job and can step aside. Without
+  // this the row stays "Switching…" forever because no other path
+  // resets pendingId on success.
+  if (pendingId !== null && pendingId === active.id) {
+    setPendingId(null);
+  }
+
   const displayed =
     pendingId ? spaces.find((s) => s.id === pendingId) ?? active : active;
   const DisplayedIcon = KIND_ICON[displayed.kind] ?? HomeIcon;
-  const isPending = pendingId !== null;
+  // Show "Switching…" only while the React transition is actually in
+  // flight (server action + client navigation). Once useTransition's
+  // `pending` drops to false the subtitle returns to the kind label,
+  // even in the rare case `pendingId` hasn't reconciled yet.
+  const isPending = pending && pendingId !== null;
 
   return (
     <div ref={ref} className="relative mx-3">
