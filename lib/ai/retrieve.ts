@@ -153,6 +153,20 @@ export type AggregateIntent = {
   wantsMacros: boolean;
 };
 
+const REVIEW_RE =
+  /\b(review|to\s*review|attention|needs\s*attention|missed|miss|misplaced|messy|unsorted|cleanup|tidy|clean\s*up|to-?do|todo|loose\s*ends|fix\s*up|on\s*deck)\b/;
+
+/**
+ * Detect "what should I review / what did I miss / anything to clean up"
+ * intent. When matched, retrieval supplements keyword matches with
+ * uploads still in Unsorted, failed extractions, and low-confidence
+ * items so the agent can give the user an actual to-do list instead
+ * of trying to keyword-match the question.
+ */
+export function detectReviewIntent(query: string): boolean {
+  return REVIEW_RE.test(query.toLowerCase());
+}
+
 const MONEY_RE =
   /\b(spent|spend|paid|owe|cost|expense|invoice|bill|total|sum|breakdown|how\s*much)\b/;
 const FOOD_RE =
@@ -231,15 +245,22 @@ export async function retrieveForQuery(
   const { scope = null, crossSpace = false } = opts;
   const keywords = extractKeywords(query);
   const intent = detectAggregateIntent(query);
-  // Roll-up questions need a bigger pool of source rows so the agent can
-  // actually sum. Single-target lookups stay tight to keep the prompt fast
-  // and the answer focused.
-  const maxSources = opts.maxSources ?? (intent.isAggregate ? 20 : 8);
-  // Aggregate queries like "how much did I spend today" don't need
-  // keyword matches — they need ALL relevant items. We still bail when
-  // there's literally nothing to work with (no keywords, no scope, no
-  // aggregation intent).
-  if (keywords.length === 0 && !scope && !intent.isAggregate) return [];
+  const reviewIntent = detectReviewIntent(query);
+  // Roll-up + review questions need a bigger pool of source rows so the
+  // agent can actually sum or list. Single-target lookups stay tight to
+  // keep the prompt fast and the answer focused.
+  const maxSources =
+    opts.maxSources ?? (intent.isAggregate || reviewIntent ? 20 : 8);
+  // Aggregate / review queries don't depend on keywords — they need the
+  // candidate set itself. We still bail when there's literally nothing
+  // to work with (no keywords, no scope, no intent).
+  if (
+    keywords.length === 0 &&
+    !scope &&
+    !intent.isAggregate &&
+    !reviewIntent
+  )
+    return [];
 
   const supabase = await createClient();
   const ctx = await requireContext();
@@ -691,6 +712,65 @@ export async function retrieveForQuery(
   // Saved section memories always join the pool so the agent has them as
   // grounded context, even if no keyword matched the memory text.
   for (const m of memoryRows) scored.push(m);
+
+  // "What should I review" — supplement keyword matches with the
+  // review-candidate set: uploads still in Unsorted, files that failed
+  // extraction, and low-confidence items the model couldn't place. Each
+  // joins the pool with a strong base score so the agent always has a
+  // concrete to-do list to lead with.
+  if (reviewIntent && !scope) {
+    const { data: reviewUploads } = await supabase
+      .from("uploads")
+      .select(
+        "id, title, filename, section, custom_section_id, organization_id, status, created_at",
+      )
+      .in("organization_id", allowedOrgIds)
+      .is("deleted_at", null)
+      .or(
+        "section.is.null,status.eq.failed",
+      )
+      .order("created_at", { ascending: false })
+      .limit(20);
+    type ReviewUploadRow = {
+      id: string;
+      title: string | null;
+      filename: string;
+      section: Section | null;
+      custom_section_id: string | null;
+      organization_id: string;
+      status: string | null;
+      created_at: string;
+    };
+    for (const u of (reviewUploads ?? []) as ReviewUploadRow[]) {
+      if (!allowedOrgSet.has(u.organization_id)) continue;
+      // Skip uploads that landed in a custom section — they're filed.
+      // The .or() above asked for section IS NULL, but Postgres treats
+      // NULL on custom_section_id separately; only flag those that are
+      // truly Unsorted (both null) or failed.
+      const unsorted = u.section === null && u.custom_section_id === null;
+      if (!unsorted && u.status !== "failed") continue;
+      const space = spaceById.get(u.organization_id);
+      const reason =
+        u.status === "failed"
+          ? "Extraction failed — Oria couldn't read this."
+          : "In Unsorted — section not yet chosen.";
+      scored.push({
+        score: 12, // strong base so it survives the maxSources cap
+        src: {
+          kind: "upload",
+          title: u.title || u.filename,
+          snippet: reason,
+          href: `/dashboard/uploads/${u.id}`,
+          processing_state: "ready",
+          meta: {
+            section_label: null,
+            space_name: space?.name ?? ctx.organization.name,
+            date_label: friendlyDate(u.created_at),
+          },
+        },
+      });
+    }
+  }
 
   scored.sort((a, b) => b.score - a.score);
 
