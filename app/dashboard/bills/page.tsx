@@ -62,55 +62,44 @@ export default async function BillsPage() {
           </p>
         ) : null}
 
-        <section>
-          <h2 className="mb-2 px-1 text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
-            Upcoming
-          </h2>
-          {upcoming.length === 0 ? (
-            <p className="px-1 text-[12.5px] text-ink-faint">
-              Nothing with a future due date yet.
-            </p>
-          ) : (
+        {upcoming.length > 0 ? (
+          <section>
+            <h2 className="mb-2 px-1 text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
+              Upcoming
+            </h2>
             <ul className="rounded-2xl border border-line bg-surface-raised divide-y divide-line">
               {upcoming.map((b) => (
                 <BillRow key={b.id} bill={b} kind="upcoming" />
               ))}
             </ul>
-          )}
-        </section>
+          </section>
+        ) : null}
 
-        <section>
-          <h2 className="mb-2 px-1 text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
-            Recurring
-          </h2>
-          {recurring.length === 0 ? (
-            <p className="px-1 text-[12.5px] text-ink-faint">
-              Recurring patterns appear after Oria sees a few bills from the
-              same vendor.
-            </p>
-          ) : (
+        {recurring.length > 0 ? (
+          <section>
+            <h2 className="mb-2 px-1 text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
+              Recurring
+            </h2>
             <ul className="rounded-2xl border border-line bg-surface-raised divide-y divide-line">
               {recurring.map((r, i) => (
                 <RecurringRow key={i} r={r} />
               ))}
             </ul>
-          )}
-        </section>
+          </section>
+        ) : null}
 
-        <section>
-          <h2 className="mb-2 px-1 text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
-            Recent
-          </h2>
-          {recent.length === 0 ? (
-            <p className="px-1 text-[12.5px] text-ink-faint">No bills yet.</p>
-          ) : (
+        {recent.length > 0 ? (
+          <section>
+            <h2 className="mb-2 px-1 text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
+              Recent
+            </h2>
             <ul className="rounded-2xl border border-line bg-surface-raised divide-y divide-line">
               {recent.map((b) => (
                 <BillRow key={b.id} bill={b} kind="recent" />
               ))}
             </ul>
-          )}
-        </section>
+          </section>
+        ) : null}
 
         <section>
           <h2 className="mb-2 px-1 text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
@@ -124,8 +113,7 @@ export default async function BillsPage() {
         <SectionMemoryPanel scope={SCOPE} memories={memories} />
 
         <p className="px-1 text-[11px] text-ink-faint">
-          Forecasts are based on your recent uploads. Treat them as a calm
-          reference, not a guarantee.
+          Forecasts are a calm reference, not a guarantee.
         </p>
       </div>
     </>
@@ -143,34 +131,26 @@ function ForecastStrip({
   forecast: { total: number; currency: string | null } | null;
 }) {
   return (
-    <div className="flex flex-col gap-3 rounded-2xl border border-line bg-surface-raised p-4 sm:flex-row sm:items-baseline sm:justify-between">
-      <div className="flex items-baseline gap-3">
-        <span className="text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
-          Next month
-        </span>
-        {forecast ? (
-          <>
-            <span className="text-[26px] font-semibold tracking-tight text-ink">
-              {forecast.total.toLocaleString()}
-            </span>
-            {forecast.currency ? (
-              <span className="text-[12.5px] text-ink-muted">
-                {forecast.currency}
-              </span>
-            ) : null}
-            <span className="text-[11.5px] text-ink-faint">
-              based on your recurring bills
-            </span>
-          </>
-        ) : (
-          <span className="text-[12.5px] text-ink-faint">
-            Forecast fills in once Oria sees a few recurring bills.
-          </span>
-        )}
-      </div>
-      <span className="text-[11.5px] text-ink-faint">
-        Nothing unusual flagged.
+    <div className="flex items-baseline gap-3 rounded-2xl border border-line bg-surface-raised p-4">
+      <span className="text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
+        Next month
       </span>
+      {forecast ? (
+        <>
+          <span className="text-[26px] font-semibold tracking-tight text-ink">
+            {forecast.total.toLocaleString()}
+          </span>
+          {forecast.currency ? (
+            <span className="text-[12.5px] text-ink-muted">
+              {forecast.currency}
+            </span>
+          ) : null}
+        </>
+      ) : (
+        <span className="text-[12.5px] text-ink-faint">
+          Fills in once Oria sees a few recurring bills.
+        </span>
+      )}
     </div>
   );
 }

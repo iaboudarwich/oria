@@ -38,14 +38,7 @@ export default async function CalendarPage() {
     <>
       <Topbar title="Calendar" />
 
-      <div className="mb-6 max-w-xl px-1 text-[13px] text-ink-muted">
-        Your reminders, payments, flights, and events in one place. Scoped to
-        the active space.
-      </div>
-
       <div className="space-y-6 animate-fade-up">
-        <AddReminder activeSpaceName={activeSpace?.name ?? null} />
-
         <CalendarView
           entries={entries}
           spaces={spaces}
@@ -53,6 +46,8 @@ export default async function CalendarPage() {
           crossSpaceAvailable={crossSpaceAvailable}
           initialComingUp={initialComingUp}
         />
+
+        <AddReminder activeSpaceName={activeSpace?.name ?? null} />
       </div>
     </>
   );

@@ -24,9 +24,9 @@ export default async function AnalysisPage() {
       <ReportPoller pending={hasPending} />
 
       <div className="space-y-8 animate-fade-up">
+        {!data.hasData ? <EmptyState /> : <AnalysisBoard data={data} />}
         <AnalysisPrompt />
         {analyses.length > 0 ? <AnalysisList analyses={analyses} /> : null}
-        {!data.hasData ? <EmptyState /> : <AnalysisBoard data={data} />}
       </div>
     </>
   );
@@ -88,7 +88,7 @@ function EmptyState() {
         Analysis fills in as you upload invoices, receipts, and statements.
       </p>
       <p className="mt-2 text-[12.5px] text-ink-muted">
-        Drop a few months of financial documents into{" "}
+        Add documents in{" "}
         <Link
           href="/dashboard/work/finance"
           className="underline decoration-line-strong hover:text-ink"
@@ -101,9 +101,8 @@ function EmptyState() {
           className="underline decoration-line-strong hover:text-ink"
         >
           Invoices
-        </Link>{" "}
-        and Oria will show monthly trends, category breakdowns, anomalies,
-        and forecasts here.
+        </Link>
+        .
       </p>
     </div>
   );
@@ -283,9 +282,7 @@ function AnalysisBoard({ data }: { data: AnalysisAggregates }) {
       </div>
 
       <p className="px-1 text-[11.5px] text-ink-faint">
-        Numbers update as documents are processed. Currency totals mix only
-        items recorded in {currency ?? "the same denomination"}; treat charts
-        as a calm reference, not a closed book.
+        Updates as documents are processed. A calm reference, not a closed book.
       </p>
     </div>
   );

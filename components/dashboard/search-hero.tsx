@@ -11,18 +11,8 @@ import { LiveSearch } from "@/components/search/live-search";
  */
 export function SearchHero() {
   return (
-    <section className="space-y-2">
-      <p className="px-1 text-[11.5px] uppercase tracking-[0.14em] text-ink-faint">
-        Ask Oria
-      </p>
+    <section>
       <LiveSearch placeholder="Find a receipt, see your week, check a reminder…" />
-      <p className="px-1 text-[11.5px] text-ink-faint">
-        Search across your uploads, reminders, and sections.{" "}
-        <kbd className="rounded border border-line bg-surface px-1 py-0.5 text-[10px] text-ink-muted">
-          ⌘K
-        </kbd>{" "}
-        from anywhere.
-      </p>
     </section>
   );
 }

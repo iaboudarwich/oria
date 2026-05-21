@@ -45,10 +45,10 @@ export default async function SettingsPage() {
           <div className="mb-2 flex items-end justify-between px-1">
             <div>
               <h2 className="text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
-                How I organize my life
+                Sections
               </h2>
               <p className="mt-1 text-[12px] text-ink-faint">
-                {`Reorder, hide, or add sections. ${visible.length} of ${total} visible.`}
+                {`${visible.length} of ${total} visible.`}
               </p>
             </div>
             <Link
@@ -92,7 +92,6 @@ function SidebarPrefsPanel({ timelineEnabled }: { timelineEnabled: boolean }) {
   return (
     <GroupedSection
       label="Sidebar"
-      hint="Pin extra rows the sidebar shows by default."
     >
       <li className="flex items-center gap-3 px-3 py-2.5">
         <div className="min-w-0 flex-1">
@@ -130,7 +129,6 @@ function AdminPanel() {
   return (
     <GroupedSection
       label="Admin"
-      hint="Operator-only views. Read-only."
     >
       <li className="flex items-center gap-3 px-3 py-2.5 transition-base hover:bg-canvas/60">
         <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-line bg-canvas text-ink-muted">
@@ -177,10 +175,8 @@ function SpacesPanel({
     : "You haven't joined or created any circles yet.";
   const hint =
     filtered.length === 0
-      ? isWork
-        ? "Create a Workspace for an office, property, investment, or project."
-        : "Invite someone to share what you choose."
-      : `${filtered.length} ${noun}${filtered.length === 1 ? "" : "s"} you're part of.`;
+      ? undefined
+      : `${filtered.length} ${noun}${filtered.length === 1 ? "" : "s"}.`;
 
   return (
     <GroupedSection
@@ -306,8 +302,7 @@ function ModesPanel({ orgKind }: { orgKind: string }) {
 
   return (
     <GroupedSection
-      label="How you use Oria"
-      hint="Individual by default. Add a circle or set up Private Oria when you're ready."
+      label="Modes"
     >
       {modes.map((m) => (
         <li

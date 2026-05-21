@@ -55,13 +55,12 @@ export default async function SectionPage({ params }: Props) {
     return (
       <Layout
         title="Unsorted"
-        explainer="Items Oria couldn't confidently place yet. Tap Move to file them where they belong."
         count={uploads.length}
         dropzoneNode={null}
       >
         {uploads.length === 0 ? (
           <p className="px-1 text-[13px] text-ink-faint">
-            Nothing unsorted. You&apos;re all caught up.
+            All caught up.
           </p>
         ) : (
           <UploadList items={uploads} thumbs={thumbs} moveOptions={moveOptions} />
@@ -93,7 +92,7 @@ export default async function SectionPage({ params }: Props) {
       >
         {entries.length === 0 ? (
           <p className="px-1 text-[13px] text-ink-faint">
-            Nothing in {custom.name} yet. Anything you upload here stays searchable.
+            Nothing here yet.
           </p>
         ) : (
           <EntryList entries={entries} thumbs={thumbs} />
@@ -124,7 +123,7 @@ export default async function SectionPage({ params }: Props) {
     >
       {entries.length === 0 ? (
         <p className="px-1 text-[13px] text-ink-faint">
-          Nothing in {meta.label} yet. Anything you upload here stays searchable.
+          Nothing here yet.
         </p>
       ) : (
         <EntryList entries={entries} thumbs={thumbs} />
@@ -152,36 +151,30 @@ function Layout({
   title,
   count,
   dropzoneNode,
-  explainer,
   children,
 }: {
   title: string;
   count: number;
   dropzoneNode: React.ReactNode;
-  explainer?: string;
   children: React.ReactNode;
 }) {
   return (
     <>
       <Topbar title={title} />
 
-      <div className="mb-4 flex items-center gap-2">
+      <div className="mb-5 flex items-center gap-2 px-1">
         <Link
           href="/dashboard"
-          className="inline-flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-[12.5px] text-ink-muted transition-base hover:bg-surface-raised hover:text-ink"
+          className="text-[12px] text-ink-faint hover:text-ink transition-base"
         >
-          <span className="-ml-0.5">←</span> Home
+          ← Home
         </Link>
         <span className="ml-auto text-[12px] text-ink-faint">
           {count} {count === 1 ? "item" : "items"}
         </span>
       </div>
 
-      {explainer ? (
-        <p className="mb-6 max-w-xl px-1 text-[13px] text-ink-muted">{explainer}</p>
-      ) : null}
-
-      {dropzoneNode ? <div className="mb-8">{dropzoneNode}</div> : null}
+      {dropzoneNode ? <div className="mb-6">{dropzoneNode}</div> : null}
 
       <div className="animate-fade-up">{children}</div>
     </>

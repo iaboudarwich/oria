@@ -40,8 +40,10 @@ export default async function DashboardHome() {
     <>
       <Topbar title={greeting} />
 
-      <div className="space-y-9 animate-fade-up">
+      <div className="space-y-7 animate-fade-up">
         <SearchHero />
+
+        <AddRow />
 
         <TodayPulse activeSpaceId={ctx?.organization.id ?? ""} />
 
@@ -51,69 +53,21 @@ export default async function DashboardHome() {
           <Recent uploads={uploads} thumbs={thumbs} />
         )}
 
-        <AddRow />
-
         <SectionsGrid sections={allSections} counts={sectionCounts} />
       </div>
     </>
   );
 }
 
-/**
- * Compact upload entry point. The full hero dropzone now lives on
- * /dashboard/inbox where uploading is the page's purpose. Here it's just one
- * more way to add something.
- */
 function AddRow() {
-  return (
-    <section>
-      <div className="mb-3 flex items-center justify-between px-1">
-        <h2 className="text-[13px] font-medium text-ink-muted">Add to Oria</h2>
-        <Link
-          href="/dashboard/inbox"
-          className="text-[12px] text-ink-faint hover:text-ink transition-base"
-        >
-          Open upload page
-        </Link>
-      </div>
-      <DropzoneCompact />
-    </section>
-  );
+  return <DropzoneCompact />;
 }
 
 function Onboarding() {
-  const hints = [
-    "Ask Oria to find anything you've added.",
-    "Upload a receipt, PDF, screenshot, or note.",
-    "Sections fill in automatically as you go.",
-  ];
   return (
-    <section>
-      <h2 className="mb-3 px-1 text-[13px] font-medium text-ink-muted">
-        Getting started
-      </h2>
-      <ul className="space-y-1.5">
-        {hints.map((h, i) => (
-          <li
-            key={i}
-            className="flex items-start gap-2.5 px-1 text-[13px] text-ink-soft"
-          >
-            <span className="mt-1.5 inline-block h-1 w-1 shrink-0 rounded-full bg-accent" />
-            <span>{h}</span>
-          </li>
-        ))}
-      </ul>
-      <p className="mt-4 px-1 text-[12px] text-ink-faint">
-        For yourself by default.{" "}
-        <Link
-          href="/dashboard/circle"
-          className="text-ink-muted hover:text-ink transition-base"
-        >
-          Share with your circle
-        </Link>{" "}
-        when you&apos;re ready.
-      </p>
-    </section>
+    <p className="px-1 text-[13px] text-ink-faint">
+      Anything you drop above stays here. Sections fill in automatically.
+    </p>
   );
 }
 

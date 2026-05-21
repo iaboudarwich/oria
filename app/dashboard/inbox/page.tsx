@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Topbar } from "@/components/dashboard/topbar";
-import { Dropzone } from "@/components/upload/dropzone";
+import { DropzoneCompact } from "@/components/upload/dropzone-compact";
 import { InlineTrashButton } from "@/components/upload/inline-trash";
 import { Thumbnail } from "@/components/upload/thumbnail";
 import { SectionsGrid } from "@/components/dashboard/sections-grid";
@@ -35,8 +35,8 @@ export default async function UploadPage() {
     <>
       <Topbar title="Upload" />
 
-      <div className="space-y-10 animate-fade-up">
-        <Dropzone />
+      <div className="space-y-7 animate-fade-up">
+        <DropzoneCompact />
         {reviewCount > 0 ? (
           <Link
             href="/dashboard/sections/review"
@@ -48,8 +48,8 @@ export default async function UploadPage() {
             <span className="text-[12px] text-ink-faint">Open</span>
           </Link>
         ) : null}
-        <SectionsGrid sections={allSections} counts={counts} />
         <RecentList items={uploads} thumbs={thumbs} />
+        <SectionsGrid sections={allSections} counts={counts} />
       </div>
     </>
   );
@@ -63,16 +63,7 @@ function RecentList({
   thumbs: Map<string, string>;
 }) {
   if (items.length === 0) {
-    return (
-      <section>
-        <h2 className="mb-3 px-1 text-[13px] font-medium text-ink-muted">
-          Recent
-        </h2>
-        <p className="px-1 text-[13px] text-ink-faint">
-          Anything you drop above stays here, searchable for the long run.
-        </p>
-      </section>
-    );
+    return null;
   }
   return (
     <section>
