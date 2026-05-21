@@ -194,9 +194,13 @@ SMART SECTIONS — set smart_section on each item:
 - "bills" when the item is a bill or invoice the user owes or paid (utility, rent, subscription, recurring service). Pull amount + currency + occurred_at (use the DUE DATE if visible, otherwise the issue/payment date). Detect recurrence: set is_recurring=true and recurring_interval ("monthly" / "quarterly" / "yearly" / "weekly") when the bill clearly recurs. Leave is_recurring null when uncertain.
 - null when the item is neither (a contract, photo, note, generic receipt that isn't a household bill).
 
-CALENDAR / EVENT DATES — occurred_at is what the Calendar reads:
+CALENDAR / EVENT DATES — occurred_at is what the Calendar and reminder system read. It should always represent the NEXT actionable moment for the item, not the moment the document was created:
 - For boarding passes, tickets, itineraries, and reservations, occurred_at MUST be the EVENT date and time (the flight time, the show time, the hotel check-in), NOT the booking date or issue date.
-- For invoices and bills, occurred_at is the DUE DATE when visible.
+- For invoices and bills, occurred_at is the DUE DATE when visible. If only an issue date is present and the bill is recurring, use the next expected due date.
+- For leases and rental agreements, occurred_at is the LEASE EXPIRATION date or the next renewal/break-clause date — NOT the signing date. If only the signing date is present and the term is stated (e.g. "12-month lease starting Jan 1, 2026"), compute the expiration.
+- For contracts and agreements, occurred_at is the EXPIRATION or NEXT RENEWAL date when stated. If neither is visible, leave it null and put the signing date in entities.dates instead.
+- For insurance policies, occurred_at is the RENEWAL date (when the policy needs to be re-paid or re-bound). The effective-from date goes in entities.dates.
+- For subscriptions and recurring services, occurred_at is the NEXT CHARGE date.
 - For receipts of past purchases, occurred_at is the purchase date/time.
 - For meal photos, occurred_at is when the meal was eaten (often = upload time).
 - If you cannot infer the right date, leave occurred_at null. Don't guess wildly — better empty than wrong.

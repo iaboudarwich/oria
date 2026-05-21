@@ -622,9 +622,16 @@ export async function retrieveForQuery(
       }
     }
     if (score === 0) continue;
-    // Boost items that carry structured fields — they're more likely to be
-    // the "right" answer than a vaguely-matching raw upload.
-    if (it.merchant || it.amount_value) score += 4;
+    // Boost items that carry structured fields. The product's contract is
+    // "answer from structured records first, raw files second" — items
+    // with merchant/amount/macros represent the work the extractor has
+    // already done, so they outrank a keyword-matched upload that's just
+    // a filename hit. A typical "spinneys" upload title scores ~7; a
+    // matching item with merchant+amount lands at +10 on top of its own
+    // multi-field match, so it wins comfortably without crowding out
+    // file-only matches.
+    if (it.merchant || it.amount_value) score += 10;
+    if (typeof it.calories === "number" && it.calories > 0) score += 8;
     const space = spaceById.get(it.organization_id);
     scored.push({
       score,
