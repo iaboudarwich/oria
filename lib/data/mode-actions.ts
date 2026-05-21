@@ -39,14 +39,19 @@ async function setActiveCookie(orgId: string) {
 /**
  * Flip the user's active mode (Personal or Work). Strategy:
  *   • Find the most-recently-joined org of the target mode and activate it.
- *   • If they have no orgs of that mode (typically: no work spaces yet),
- *     return the create-flow href so the toggle feels actionable rather
- *     than silently no-op.
+ *   • If they have no orgs of that mode, AUTO-BOOTSTRAP a private one and
+ *     drop them inside it. Personal already worked this way; Work used to
+ *     force the user through the setup form on first use, which felt
+ *     heavier than Personal for no good reason.
+ *
+ * The mental model:
+ *   • Personal = your private personal space + optional Circles you join.
+ *   • Work     = your private Work area + optional Workspaces you create
+ *                (Office Building A, Investment X, etc.).
  *
  * Does NOT redirect server-side — returns `{ ok, href }` so the client can
- * push() to the new route inside a transition. That keeps the switch feeling
- * instant (no server-redirect blocking on a full layout revalidate before
- * the highlight can move).
+ * push() to the new route inside a transition. That keeps the switch
+ * feeling instant.
  */
 export async function switchMode(mode: Mode): Promise<SwitchModeResult> {
   if (mode !== "personal" && mode !== "work") return { ok: false };
@@ -96,17 +101,64 @@ export async function switchMode(mode: Mode): Promise<SwitchModeResult> {
     };
   }
 
-  // No org of the target mode. Work: send to the create flow without touching
-  // the cookie (user stays "in" personal until a workspace exists). Personal:
-  // clear the cookie so getCurrentContext bootstraps a personal space on the
-  // next render.
+  // No org of the target mode yet — bootstrap one so the user lands in a
+  // real space, not a setup form. Personal was already auto-bootstrapped
+  // inside getCurrentContext; we mirror it for Work here.
   if (mode === "work") {
+    const newOrgId = await bootstrapPrivateWorkSpace(user.id);
+    if (newOrgId) {
+      await setActiveCookie(newOrgId);
+      revalidatePath("/dashboard", "layout");
+      return { ok: true, href: "/dashboard/work" };
+    }
+    // Bootstrap somehow failed (DB error). Fall back to the named-setup
+    // flow rather than silently no-op so the user has a path forward.
     return { ok: true, href: "/dashboard/work/spaces/new" };
   }
+
+  // Personal: clear the cookie so getCurrentContext bootstraps a personal
+  // space on the next render.
   const store = await cookies();
   store.delete(ACTIVE_SPACE_COOKIE);
   revalidatePath("/dashboard", "layout");
   return { ok: true, href: "/dashboard" };
+}
+
+/**
+ * Mint a private Work org named "Work" for the user, owner role. The same
+ * shape every named Workspace uses (kind=office) — we just default the
+ * name and skip the description form. Returns the new org id or null
+ * on failure. Best-effort; the caller falls back to the named-setup
+ * flow if this returns null.
+ */
+async function bootstrapPrivateWorkSpace(
+  userId: string,
+): Promise<string | null> {
+  try {
+    const admin = createAdminClient();
+    const slug = `work-${userId.slice(0, 8)}`;
+    const { data: org, error } = await admin
+      .from("organizations")
+      .insert({
+        slug,
+        name: "Work",
+        kind: "office",
+        description: "Your private Work area",
+        created_by: userId,
+      })
+      .select()
+      .single();
+    if (error || !org) return null;
+    const orgRow = org as { id: string };
+    await admin.from("memberships").insert({
+      organization_id: orgRow.id,
+      user_id: userId,
+      role: "owner",
+    });
+    return orgRow.id;
+  } catch {
+    return null;
+  }
 }
 
 /**

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Topbar } from "@/components/dashboard/topbar";
 import { createWorkSpace } from "@/lib/data/mode-actions";
 
-export const metadata = { title: "Set up Work" };
+export const metadata = { title: "New Workspace" };
 
 const PURPOSES = [
   "Business",
@@ -31,25 +31,25 @@ const NAME_EXAMPLES = [
 export default function NewWorkSpacePage() {
   return (
     <>
-      <Topbar title="Set up Work" />
+      <Topbar title="New Workspace" />
 
       <div className="mx-auto max-w-xl animate-fade-up">
         <p className="mb-7 px-1 text-[13px] text-ink-muted">
-          A Workspace is its own operational context. One per office,
-          property, investment, or company. Anything you upload here stays
-          inside it.
+          A Workspace is its own operational context — one per office,
+          property, investment, or company. Your private Work area already
+          exists; this form is for adding another scoped Workspace on top.
         </p>
 
         <form action={createWorkSpace} className="space-y-7">
           <Field
-            label="What are you using Work for?"
-            hint="Pick the closest fit. This helps Oria tune extraction and summaries for your Workspace."
+            label="What is this Workspace for?"
+            hint="Pick the closest fit. This helps Oria tune extraction and summaries for the Workspace."
           >
             <ChipRadio name="purpose" options={PURPOSES} defaultIndex={0} />
           </Field>
 
           <Field
-            label="Name your first Workspace"
+            label="Workspace name"
             hint="A short, descriptive name. You can change it later."
           >
             <input

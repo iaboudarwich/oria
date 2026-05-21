@@ -45,7 +45,7 @@ export function UserMenu({
         aria-expanded={open}
         aria-haspopup="menu"
         title={collapsed ? user.name : undefined}
-        className={`flex w-full items-center gap-2.5 rounded-xl px-2 py-2 transition-base hover:bg-canvas/60 ${
+        className={`cta flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-2 py-2 transition-base hover:bg-canvas/60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink ${
           collapsed ? "justify-center" : ""
         }`}
       >
