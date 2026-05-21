@@ -6,6 +6,12 @@ import { createClient } from "@/lib/supabase/server";
 import { generateWorkReport } from "@/lib/ai/work-report";
 import { checkDailyAskRequests } from "@/lib/data/quotas";
 import { recordSystemEvent } from "@/lib/data/system-events";
+import {
+  createJob,
+  markJobCompleted,
+  markJobFailed,
+  markJobStarted,
+} from "@/lib/data/jobs";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -70,9 +76,20 @@ export async function POST(request: Request) {
   }
   const reportId = (inserted as { id: string }).id;
 
+  // Open a background-job row alongside the workspace_reports row so
+  // the report's run is visible in the unified jobs log too.
+  const jobId = await createJob({
+    organizationId: ctx.organization.id,
+    actorId: ctx.profile.id,
+    kind: "report.generate",
+    reportId,
+    context: { kind, prompt: prompt.slice(0, 200) },
+  });
+
   // Generate in the background so the POST returns immediately. The UI
   // polls listWorkspaceReports / report detail to pick up the ready row.
   after(async () => {
+    await markJobStarted(jobId);
     const result = await generateWorkReport({ prompt, kind });
     const supabase2 = await createClient();
     if (result.ok) {
@@ -93,6 +110,10 @@ export async function POST(request: Request) {
         organizationId: ctx.organization.id,
         actorId: ctx.profile.id,
       });
+      await markJobCompleted(jobId, {
+        kind,
+        title: finalTitle,
+      });
     } else {
       await supabase2
         .from("workspace_reports")
@@ -110,6 +131,7 @@ export async function POST(request: Request) {
         organizationId: ctx.organization.id,
         actorId: ctx.profile.id,
       });
+      await markJobFailed(jobId, result.error ?? "report_failed");
     }
     revalidatePath("/dashboard/work/agent");
     revalidatePath(`/dashboard/work/agent/reports/${reportId}`);

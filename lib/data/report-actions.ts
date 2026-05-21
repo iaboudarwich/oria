@@ -6,6 +6,12 @@ import { createClient } from "@/lib/supabase/server";
 import { requireContext } from "./organizations";
 import { generateWorkReport } from "@/lib/ai/work-report";
 import { recordSystemEvent } from "./system-events";
+import {
+  createJob,
+  markJobCompleted,
+  markJobFailed,
+  markJobStarted,
+} from "./jobs";
 
 /**
  * Re-run a failed workspace report. Mirrors the upload-retry pattern:
@@ -58,7 +64,20 @@ export async function retryReport(formData: FormData): Promise<void> {
     })
     .eq("id", report.id);
 
+  // Open a fresh job row for this retry. Tracking retries as
+  // distinct job rows (rather than mutating the original) keeps
+  // the audit trail clean: each background_jobs row corresponds to
+  // one run.
+  const jobId = await createJob({
+    organizationId: ctx.organization.id,
+    actorId: ctx.profile.id,
+    kind: "report.generate",
+    reportId: report.id,
+    context: { kind, prompt: prompt.slice(0, 200), retry: true },
+  });
+
   after(async () => {
+    await markJobStarted(jobId);
     const result = await generateWorkReport({ prompt, kind });
     const supabase2 = await createClient();
     if (result.ok) {
@@ -79,6 +98,7 @@ export async function retryReport(formData: FormData): Promise<void> {
         organizationId: ctx.organization.id,
         actorId: ctx.profile.id,
       });
+      await markJobCompleted(jobId, { kind, title: finalTitle, retry: true });
     } else {
       await supabase2
         .from("workspace_reports")
@@ -101,6 +121,7 @@ export async function retryReport(formData: FormData): Promise<void> {
         organizationId: ctx.organization.id,
         actorId: ctx.profile.id,
       });
+      await markJobFailed(jobId, result.error ?? "report_failed");
     }
     revalidatePath("/dashboard/work/agent");
     revalidatePath("/dashboard/work/analysis");
