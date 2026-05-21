@@ -19,6 +19,44 @@ export const CALENDAR_CATEGORY_LABEL: Record<CalendarCategory, string> = {
   reminders: "Reminders",
 };
 
+/**
+ * Operational classification. Categories (above) are the user-facing
+ * coloured buckets; topics are the precise "what kind of thing IS this"
+ * label the filters and the "coming up" rollup hang off of.
+ *
+ * Priority during derivation is: overdue > flight/travel > lease >
+ * insurance > invoice > renewal > payment > recurring > reminder >
+ * event. The first match wins so a single label is always meaningful.
+ */
+export type CalendarTopic =
+  | "overdue"
+  | "flight"
+  | "travel"
+  | "lease"
+  | "contract"
+  | "insurance"
+  | "invoice"
+  | "payment"
+  | "renewal"
+  | "recurring"
+  | "reminder"
+  | "event";
+
+export const CALENDAR_TOPIC_LABEL: Record<CalendarTopic, string> = {
+  overdue: "Overdue",
+  flight: "Flights",
+  travel: "Travel",
+  lease: "Leases",
+  contract: "Contracts",
+  insurance: "Insurance",
+  invoice: "Invoices",
+  payment: "Payments",
+  renewal: "Renewals",
+  recurring: "Recurring",
+  reminder: "Reminders",
+  event: "Other",
+};
+
 export type CalendarSpace = {
   id: string;
   name: string;
@@ -48,6 +86,9 @@ export type CalendarEntry = {
   space_name: string;
   space_kind: OrgKind;
   category: CalendarCategory;
+  /** Operational topic — drives the filter chips and the "coming up"
+   *  rollup. See deriveCalendarTopic in lib/data/calendar.ts. */
+  topic: CalendarTopic;
   /** Item-only display sugar. Null on reminders. */
   meta: {
     merchant: string | null;

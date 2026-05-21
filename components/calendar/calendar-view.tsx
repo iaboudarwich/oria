@@ -7,9 +7,11 @@ import {
 } from "@/components/ui/icon";
 import {
   CALENDAR_CATEGORY_LABEL,
+  CALENDAR_TOPIC_LABEL,
   type CalendarCategory,
   type CalendarEntry,
   type CalendarSpace,
+  type CalendarTopic,
 } from "@/lib/data/calendar-types";
 import {
   CalendarRow,
@@ -32,6 +34,7 @@ type Props = {
 type SpaceFilter = "all" | string;
 type CategoryFilter = "all" | CalendarCategory;
 type KindFilter = "all" | "event" | "reminder";
+type TopicFilter = "all" | CalendarTopic;
 
 type Mode = "list" | "year" | "month" | "week" | "day";
 
@@ -44,16 +47,44 @@ const CATEGORY_ORDER: CalendarCategory[] = [
   "personal",
 ];
 
+// Order in the filter row reflects what people scan for most often.
+// Overdue first (because it's actionable), then payment-shaped buckets,
+// then travel, then long-tail.
+const TOPIC_ORDER: CalendarTopic[] = [
+  "overdue",
+  "payment",
+  "invoice",
+  "renewal",
+  "recurring",
+  "lease",
+  "contract",
+  "insurance",
+  "flight",
+  "travel",
+  "reminder",
+  "event",
+];
+
 export function CalendarView({ entries, spaces, activeSpaceId }: Props) {
   const [spaceFilter, setSpaceFilter] = useState<SpaceFilter>("all");
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>("all");
   const [kindFilter, setKindFilter] = useState<KindFilter>("all");
+  const [topicFilter, setTopicFilter] = useState<TopicFilter>("all");
   const [mode, setMode] = useState<Mode>("list");
   const [cursor, setCursor] = useState<Date>(() => {
     const d = new Date();
     d.setHours(0, 0, 0, 0);
     return d;
   });
+
+  // Topic counts drive the chip row — chips with zero matches in the
+  // current dataset still render so the user can see the full taxonomy,
+  // but disabled so they can't get into an empty-state state by accident.
+  const topicCounts = useMemo(() => {
+    const counts = new Map<CalendarTopic, number>();
+    for (const e of entries) counts.set(e.topic, (counts.get(e.topic) ?? 0) + 1);
+    return counts;
+  }, [entries]);
 
   const filtered = useMemo(() => {
     return entries.filter((e) => {
@@ -63,9 +94,10 @@ export function CalendarView({ entries, spaces, activeSpaceId }: Props) {
       }
       if (kindFilter === "event" && e.kind !== "item") return false;
       if (kindFilter === "reminder" && e.kind !== "reminder") return false;
+      if (topicFilter !== "all" && e.topic !== topicFilter) return false;
       return true;
     });
-  }, [entries, spaceFilter, categoryFilter, kindFilter]);
+  }, [entries, spaceFilter, categoryFilter, kindFilter, topicFilter]);
 
   const showSpacePill = spaceFilter === "all";
 
@@ -122,6 +154,23 @@ export function CalendarView({ entries, spaces, activeSpaceId }: Props) {
                 onClick={() => setCategoryFilter(c)}
               />
             ))}
+          </PillRow>
+          <PillRow muted>
+            <Pill
+              label="Any topic"
+              active={topicFilter === "all"}
+              onClick={() => setTopicFilter("all")}
+            />
+            {TOPIC_ORDER.filter((t) => (topicCounts.get(t) ?? 0) > 0).map(
+              (t) => (
+                <Pill
+                  key={t}
+                  label={`${CALENDAR_TOPIC_LABEL[t]} · ${topicCounts.get(t) ?? 0}`}
+                  active={topicFilter === t}
+                  onClick={() => setTopicFilter(t)}
+                />
+              ),
+            )}
           </PillRow>
         </div>
       ) : null}

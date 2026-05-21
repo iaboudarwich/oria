@@ -1,6 +1,7 @@
 import { Topbar } from "@/components/dashboard/topbar";
 import { CalendarView } from "@/components/calendar/calendar-view";
-import { loadCalendar } from "@/lib/data/calendar";
+import { ComingUpRollup } from "@/components/calendar/coming-up";
+import { groupComingUp, loadCalendar } from "@/lib/data/calendar";
 import { getCurrentContext } from "@/lib/data/organizations";
 import { createReminder } from "@/lib/data/reminder-actions";
 
@@ -16,6 +17,8 @@ export default async function CalendarPage() {
     ? spaces.find((s) => s.id === ctx.organization.id) ?? null
     : null;
 
+  const comingUp = groupComingUp(entries);
+
   return (
     <>
       <Topbar title="Calendar" />
@@ -26,6 +29,8 @@ export default async function CalendarPage() {
       </div>
 
       <div className="space-y-6 animate-fade-up">
+        <ComingUpRollup buckets={comingUp} />
+
         <AddReminder activeSpaceName={activeSpace?.name ?? null} />
 
         <CalendarView
