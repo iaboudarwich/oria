@@ -20,8 +20,15 @@ const QUICK_PROMPTS: Array<{ label: string; prompt: string }> = [
  * can also type freely. Submit POSTs to /api/work/reports/generate with
  * kind="analysis" so it lands in the analyses list. The page picks the
  * row up via revalidatePath + the ReportPoller and renders it inline.
+ *
+ * Personalized chips: when the workspace has recurring questions the
+ * current user keeps asking the Work agent, they appear as their own
+ * row above the canned QUICK_PROMPTS, so a user who repeatedly asks
+ * about parking revenue sees that prompt one click away.
  */
-export function AnalysisPrompt() {
+export function AnalysisPrompt({
+  recentQuestions = [],
+}: { recentQuestions?: string[] } = {}) {
   const router = useRouter();
   const [prompt, setPrompt] = useState("");
   const [pending, startTransition] = useTransition();
@@ -94,6 +101,26 @@ export function AnalysisPrompt() {
           }}
           className="space-y-3"
         >
+          {recentQuestions.length > 0 ? (
+            <div className="space-y-1.5">
+              <p className="text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
+                You&apos;ve asked before
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {recentQuestions.map((q) => (
+                  <button
+                    key={`recent-${q}`}
+                    type="button"
+                    onClick={() => pickChip(q)}
+                    title={q}
+                    className="max-w-[260px] truncate rounded-full border border-ink/30 bg-canvas px-2.5 py-1 text-[11.5px] text-ink transition-base hover:border-ink"
+                  >
+                    {q}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : null}
           <div className="flex flex-wrap gap-1.5">
             {QUICK_PROMPTS.map((q) => (
               <button

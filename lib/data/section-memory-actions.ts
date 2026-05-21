@@ -44,12 +44,46 @@ export async function deleteSectionMemory(formData: FormData): Promise<void> {
   const id = String(formData.get("id") ?? "");
   if (!id) return;
 
+  const ctx = await requireContext();
   const scope = readScope(formData);
   const supabase = await createClient();
+  // Soft-delete, scoped to the active org for defense-in-depth on top
+  // of RLS so a stray id can never remove a memory in another space.
   await supabase
     .from("section_memories")
     .update({ deleted_at: new Date().toISOString() })
-    .eq("id", id);
+    .eq("id", id)
+    .eq("organization_id", ctx.organization.id);
+
+  if (scope) revalidatePathForScope(scope);
+  else revalidatePath("/dashboard");
+}
+
+/**
+ * Edit an existing memory in place. Promotes pattern-source memories
+ * to "user" so they stop reading as "Oria suggested" once the user has
+ * deliberately edited them.
+ */
+export async function updateSectionMemory(formData: FormData): Promise<void> {
+  const id = String(formData.get("id") ?? "");
+  const content = String(formData.get("content") ?? "")
+    .trim()
+    .slice(0, 500);
+  if (!id || !content) return;
+
+  const ctx = await requireContext();
+  const scope = readScope(formData);
+  const supabase = await createClient();
+
+  await supabase
+    .from("section_memories")
+    .update({
+      content,
+      source: "user",
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", id)
+    .eq("organization_id", ctx.organization.id);
 
   if (scope) revalidatePathForScope(scope);
   else revalidatePath("/dashboard");

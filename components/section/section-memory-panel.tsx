@@ -5,15 +5,21 @@ import { useRouter } from "next/navigation";
 import {
   addSectionMemory,
   deleteSectionMemory,
+  updateSectionMemory,
 } from "@/lib/data/section-memory-actions";
 import type { SectionMemory } from "@/lib/data/section-memory";
 import type { SectionScope } from "@/lib/data/section-scope";
-import { CloseIcon } from "@/components/ui/icon";
+import { CloseIcon, SparkIcon } from "@/components/ui/icon";
 
 /**
  * Calm panel that lists what Oria has learned about this section + lets the
- * user add or remove items. Renders nothing intrusive when empty — just a
- * single input row inviting the user to teach Oria a fact.
+ * user add, edit, or remove items. Renders nothing intrusive when empty —
+ * just a single input row inviting the user to teach Oria a fact.
+ *
+ * Pattern memories (source="pattern") get a small "Learned" pill so the
+ * user can tell which ones Oria inferred from their behaviour vs which
+ * they typed themselves. Editing a pattern memory promotes it to a
+ * user-typed memory.
  *
  * Wording deliberately matches Apple Settings style: short labels, no
  * marketing copy, no confetti.
@@ -28,6 +34,8 @@ export function SectionMemoryPanel({
   const router = useRouter();
   const [draft, setDraft] = useState("");
   const [pending, startTransition] = useTransition();
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editDraft, setEditDraft] = useState("");
 
   function save() {
     const text = draft.trim();
@@ -56,6 +64,32 @@ export function SectionMemoryPanel({
     });
   }
 
+  function startEdit(m: SectionMemory) {
+    setEditingId(m.id);
+    setEditDraft(m.content);
+  }
+
+  function cancelEdit() {
+    setEditingId(null);
+    setEditDraft("");
+  }
+
+  function saveEdit() {
+    const text = editDraft.trim();
+    if (!text || !editingId) return;
+    const fd = new FormData();
+    fd.set("id", editingId);
+    fd.set("scope_kind", scope.kind);
+    fd.set("scope_key", scope.key);
+    fd.set("scope_label", scope.label);
+    fd.set("content", text);
+    startTransition(async () => {
+      await updateSectionMemory(fd);
+      cancelEdit();
+      router.refresh();
+    });
+  }
+
   return (
     <section>
       <div className="mb-2 flex items-baseline gap-2 px-1">
@@ -80,18 +114,67 @@ export function SectionMemoryPanel({
                 key={m.id}
                 className="flex items-start gap-3 px-4 py-2.5"
               >
-                <p className="min-w-0 flex-1 text-[13px] text-ink">
-                  {m.content}
-                </p>
-                <button
-                  type="button"
-                  onClick={() => remove(m.id)}
-                  disabled={pending}
-                  aria-label="Forget this"
-                  className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-ink-faint transition-base hover:bg-canvas hover:text-claret disabled:opacity-50"
-                >
-                  <CloseIcon size={12} />
-                </button>
+                {editingId === m.id ? (
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      saveEdit();
+                    }}
+                    className="flex min-w-0 flex-1 items-center gap-2"
+                  >
+                    <input
+                      type="text"
+                      value={editDraft}
+                      onChange={(e) => setEditDraft(e.target.value)}
+                      autoFocus
+                      maxLength={500}
+                      className="block h-8 flex-1 rounded-md bg-canvas/60 px-2.5 text-[13px] text-ink placeholder:text-ink-faint outline-none focus:bg-canvas"
+                    />
+                    <button
+                      type="submit"
+                      disabled={pending || editDraft.trim().length === 0}
+                      className="inline-flex h-8 items-center rounded-md bg-ink px-2.5 text-[11.5px] text-surface transition-base hover:bg-ink-soft disabled:opacity-50"
+                    >
+                      Save
+                    </button>
+                    <button
+                      type="button"
+                      onClick={cancelEdit}
+                      className="inline-flex h-8 items-center rounded-md px-1.5 text-[11.5px] text-ink-faint transition-base hover:text-ink"
+                    >
+                      Cancel
+                    </button>
+                  </form>
+                ) : (
+                  <>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[13px] text-ink">{m.content}</p>
+                      {m.source === "pattern" ? (
+                        <p className="mt-0.5 inline-flex items-center gap-1 text-[10.5px] text-ink-faint">
+                          <SparkIcon size={10} />
+                          Learned from your moves. Edit or remove if not right.
+                        </p>
+                      ) : null}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => startEdit(m)}
+                      disabled={pending}
+                      className="text-[11.5px] text-ink-faint transition-base hover:text-ink disabled:opacity-50"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => remove(m.id)}
+                      disabled={pending}
+                      aria-label="Forget this"
+                      className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-ink-faint transition-base hover:bg-canvas hover:text-claret disabled:opacity-50"
+                    >
+                      <CloseIcon size={12} />
+                    </button>
+                  </>
+                )}
               </li>
             ))}
           </ul>
@@ -117,7 +200,7 @@ export function SectionMemoryPanel({
             disabled={pending || draft.trim().length === 0}
             className="inline-flex h-9 items-center rounded-md bg-ink px-3 text-[12.5px] text-surface transition-base hover:bg-ink-soft disabled:opacity-50"
           >
-            {pending ? "Saving" : "Save"}
+            {pending ? "Saving" : "Remember"}
           </button>
         </form>
       </div>

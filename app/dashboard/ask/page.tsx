@@ -5,13 +5,15 @@ import {
   isAccountOwnerInPersonal,
   listUserSpaces,
 } from "@/lib/data/organizations";
+import { listRecentUserQuestions } from "@/lib/data/recent-questions";
 
 export const metadata = { title: "Ask Oria" };
 
 export default async function AskPage() {
-  const [ctx, spaces] = await Promise.all([
+  const [ctx, spaces, recentQuestions] = await Promise.all([
     getCurrentContext(),
     listUserSpaces(),
+    listRecentUserQuestions({ surface: "ask", limit: 3 }),
   ]);
   // God's Eye toggle only renders when:
   //   • you're currently in your Personal space AND you own that space
@@ -26,7 +28,10 @@ export default async function AskPage() {
     <>
       <Topbar title="Ask Oria" />
       <div className="mx-auto max-w-3xl">
-        <AskChat crossSpaceAvailable={crossSpaceAvailable} />
+        <AskChat
+          crossSpaceAvailable={crossSpaceAvailable}
+          recentQuestions={recentQuestions}
+        />
       </div>
     </>
   );

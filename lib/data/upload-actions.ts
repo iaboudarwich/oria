@@ -11,6 +11,9 @@ import {
   pickBestSection,
 } from "./section-context";
 import { recordLearningEvent } from "./learning";
+import { maybeWritePatternMemoryFromMove } from "./pattern-memories";
+import { getCustomSectionById } from "./custom-sections";
+import { SECTION_LABEL } from "@/lib/sections-meta";
 import { checkDailyUploadBytes } from "./quotas";
 import { formatBytes } from "@/lib/utils";
 import type { Section } from "@/lib/supabase/types";
@@ -272,6 +275,31 @@ export async function setUploadSection(formData: FormData): Promise<void> {
       sourceText: `${row.title ?? ""} ${row.filename}`,
     });
   }
+
+  // Pattern detector: after every move (not just from Unsorted), look
+  // for repeats with overlapping tokens and surface a section memory
+  // the user can confirm or remove. Best-effort, fully background.
+  void (async () => {
+    const sourceText = `${row.title ?? ""} ${row.filename}`;
+    if (kind === "builtin") {
+      await maybeWritePatternMemoryFromMove({
+        organizationId: ctx.organization.id,
+        destination: { kind: "builtin", section: key },
+        sourceText,
+        destinationLabel: SECTION_LABEL[key as Section] ?? key,
+      });
+    } else if (kind === "custom") {
+      const cs = await getCustomSectionById(key);
+      if (cs) {
+        await maybeWritePatternMemoryFromMove({
+          organizationId: ctx.organization.id,
+          destination: { kind: "custom", customSectionId: key },
+          sourceText,
+          destinationLabel: cs.name,
+        });
+      }
+    }
+  })();
 
   revalidatePath("/dashboard");
   revalidatePath(`/dashboard/uploads/${id}`);

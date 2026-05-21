@@ -5,13 +5,15 @@ import { AnalysisPrompt } from "@/components/work/analysis-prompt";
 import { ReportPoller } from "@/components/work/report-poller";
 import { computeAnalysis, type AnalysisAggregates } from "@/lib/data/work";
 import { listWorkspaceReports } from "@/lib/data/workspace-reports";
+import { listRecentUserQuestions } from "@/lib/data/recent-questions";
 
 export const metadata = { title: "Analysis" };
 
 export default async function AnalysisPage() {
-  const [data, reports] = await Promise.all([
+  const [data, reports, recentQuestions] = await Promise.all([
     computeAnalysis(6),
     listWorkspaceReports(20),
+    listRecentUserQuestions({ surface: "work", limit: 3 }),
   ]);
   const analyses = reports.filter(
     (r) => r.kind === "analysis" || r.kind === "custom" || r.kind === "summary",
@@ -25,7 +27,7 @@ export default async function AnalysisPage() {
 
       <div className="space-y-8 animate-fade-up">
         {!data.hasData ? <EmptyState /> : <AnalysisBoard data={data} />}
-        <AnalysisPrompt />
+        <AnalysisPrompt recentQuestions={recentQuestions} />
         {analyses.length > 0 ? <AnalysisList analyses={analyses} /> : null}
       </div>
     </>

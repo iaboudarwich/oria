@@ -41,6 +41,10 @@ type AskChatProps = {
    *  when the active org is Personal — this prop is the visual gate, the
    *  data layer is the security gate. */
   crossSpaceAvailable?: boolean;
+  /** Top recent unique questions the current user has asked in this
+   *  org. Rendered as a separate row above the static suggestions so
+   *  Oria offers the questions they actually return to. */
+  recentQuestions?: string[];
 };
 
 /**
@@ -52,6 +56,7 @@ export function AskChat({
   scope,
   suggestions,
   crossSpaceAvailable = false,
+  recentQuestions = [],
 }: AskChatProps = {}) {
   const [input, setInput] = useState("");
   const [turns, setTurns] = useState<Turn[]>([]);
@@ -196,6 +201,7 @@ export function AskChat({
           <EmptyState
             scope={scope}
             suggestions={effectiveSuggestions}
+            recentQuestions={recentQuestions}
             onSuggest={(q) => {
               setInput(q);
               textareaRef.current?.focus();
@@ -408,10 +414,12 @@ function ErrorMessage({
 function EmptyState({
   scope,
   suggestions,
+  recentQuestions,
   onSuggest,
 }: {
   scope?: AskScope | null;
   suggestions: string[];
+  recentQuestions: string[];
   onSuggest: (q: string) => void;
 }) {
   const label = scope ? `Ask ${scope.label}` : "Ask Oria";
@@ -431,7 +439,28 @@ function EmptyState({
       </h1>
       <p className="mt-2 text-[13.5px] text-ink-muted">{sub}</p>
 
-      <ul className="mt-7 flex flex-wrap justify-center gap-1.5">
+      {recentQuestions.length > 0 ? (
+        <div className="mt-6 space-y-1.5">
+          <p className="text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
+            You&apos;ve asked before
+          </p>
+          <ul className="flex flex-wrap justify-center gap-1.5">
+            {recentQuestions.map((s) => (
+              <li key={`recent-${s}`}>
+                <button
+                  type="button"
+                  onClick={() => onSuggest(s)}
+                  className="inline-flex h-8 items-center rounded-full border border-ink/30 bg-canvas px-3 text-[12px] text-ink transition-base hover:border-ink"
+                >
+                  {s}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
+      <ul className="mt-5 flex flex-wrap justify-center gap-1.5">
         {suggestions.map((s) => (
           <li key={s}>
             <button
