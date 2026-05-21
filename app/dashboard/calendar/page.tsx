@@ -1,11 +1,11 @@
 import { Topbar } from "@/components/dashboard/topbar";
 import { CalendarView } from "@/components/calendar/calendar-view";
+import { AddReminderForm } from "@/components/calendar/add-reminder-form";
 import { groupComingUp, loadCalendar } from "@/lib/data/calendar";
 import {
   getCurrentContext,
   isAccountOwnerInPersonal,
 } from "@/lib/data/organizations";
-import { createReminder } from "@/lib/data/reminder-actions";
 
 export const metadata = { title: "Calendar" };
 
@@ -65,36 +65,7 @@ function AddReminder({ activeSpaceName }: { activeSpaceName: string | null }) {
           </span>
         ) : null}
       </summary>
-      <form
-        action={createReminder}
-        className="flex flex-col gap-2 border-t border-line p-3 sm:flex-row sm:items-center"
-      >
-        <input
-          type="text"
-          name="title"
-          required
-          autoFocus
-          placeholder="What to remember"
-          className="h-10 flex-1 rounded-lg bg-canvas/60 px-3 text-[13.5px] text-ink placeholder:text-ink-faint outline-none focus:bg-canvas"
-        />
-        <input
-          type="date"
-          name="date"
-          required
-          className="h-10 rounded-lg border border-line bg-canvas px-2 text-[12.5px] text-ink-soft outline-none focus:border-ink-muted sm:w-[140px]"
-        />
-        <input
-          type="time"
-          name="time"
-          className="h-10 rounded-lg border border-line bg-canvas px-2 text-[12.5px] text-ink-soft outline-none focus:border-ink-muted sm:w-[110px]"
-        />
-        <button
-          type="submit"
-          className="inline-flex h-10 items-center justify-center rounded-lg bg-ink px-4 text-[13px] text-surface hover:bg-ink-soft transition-base"
-        >
-          Add
-        </button>
-      </form>
+      <AddReminderForm />
     </details>
   );
 }

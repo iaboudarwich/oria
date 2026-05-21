@@ -71,7 +71,7 @@ function AnalysisList({
                   ? "Ready"
                   : a.status === "failed"
                     ? "Failed"
-                    : "Analyzing"}
+                    : `Analyzing · ${analyzingFor(a.created_at)}`}
               </span>
             </Link>
           </li>
@@ -79,6 +79,22 @@ function AnalysisList({
       </ul>
     </section>
   );
+}
+
+/**
+ * Compact "how long has this been Analyzing" label. Long-running
+ * analyses can sit pending for tens of seconds; the user shouldn't
+ * have to guess whether anything is happening. Recomputed per render
+ * (so the poller's revalidate pushes a fresh number every few seconds).
+ */
+function analyzingFor(createdAtISO: string): string {
+  const ms = Date.now() - new Date(createdAtISO).getTime();
+  if (Number.isNaN(ms) || ms < 0) return "just now";
+  const s = Math.round(ms / 1000);
+  if (s < 60) return `${s}s`;
+  const m = Math.floor(s / 60);
+  const r = s % 60;
+  return r === 0 ? `${m}m` : `${m}m ${r}s`;
 }
 
 function EmptyState() {

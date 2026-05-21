@@ -164,6 +164,7 @@ export default async function UploadDetailPage({ params }: Props) {
             uploadId={upload.id}
             currentRef={currentRef}
             sections={moveOptions}
+            autoFiled={detectAutoFiled(upload, items)}
           />
 
           <Metadata
@@ -286,16 +287,47 @@ function friendlyDate(iso: string): string {
   });
 }
 
+/**
+ * Heuristic: did Oria choose this upload's section, or did the user?
+ * We say "auto-filed" when the upload sits in a section AND at least
+ * one extracted item carries that same section with high confidence —
+ * the exact condition that triggers auto-filing in upload-intelligence.
+ * Anything else (user-moved, low-confidence extraction, no items) shows
+ * no badge so we don't claim credit incorrectly.
+ */
+function detectAutoFiled(
+  upload: { section: string | null; custom_section_id: string | null },
+  items: Array<{
+    section: string | null;
+    custom_section_id: string | null;
+    confidence: number | null;
+  }>,
+): boolean {
+  if (!upload.section && !upload.custom_section_id) return false;
+  return items.some((it) => {
+    if (it.confidence === null || it.confidence < 0.7) return false;
+    if (upload.section && it.section === upload.section) return true;
+    if (
+      upload.custom_section_id &&
+      it.custom_section_id === upload.custom_section_id
+    )
+      return true;
+    return false;
+  });
+}
+
 function SectionPanel({
   label,
   uploadId,
   currentRef,
   sections,
+  autoFiled,
 }: {
   label: string;
   uploadId: string;
   currentRef: { kind: "builtin" | "custom" | "review"; key: string };
   sections: { ref: { kind: "builtin" | "custom" | "review"; key: string }; name: string }[];
+  autoFiled: boolean;
 }) {
   const isReview = currentRef.kind === "review";
   return (
@@ -305,7 +337,17 @@ function SectionPanel({
       </h2>
       <div className="flex items-center gap-3 rounded-xl border border-line bg-surface-raised px-4 py-3">
         <div className="min-w-0 flex-1">
-          <p className="truncate text-[13.5px] text-ink">{label}</p>
+          <p className="flex items-center gap-2 truncate text-[13.5px] text-ink">
+            <span className="truncate">{label}</span>
+            {autoFiled && !isReview ? (
+              <span
+                className="shrink-0 rounded-md bg-accent-soft/60 px-1.5 py-0.5 text-[10px] text-[#7a5a2a]"
+                title="Section chosen by Oria from the file contents"
+              >
+                Auto-detected
+              </span>
+            ) : null}
+          </p>
           {isReview ? (
             <p className="text-[11.5px] text-ink-faint">
               Oria couldn&apos;t place this yet. Pick a section to file it.

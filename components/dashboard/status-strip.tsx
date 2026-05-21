@@ -7,7 +7,10 @@ import {
   getCurrentContext,
   listUserSpaces,
 } from "@/lib/data/organizations";
-import { readLastStatusSeenId } from "@/lib/data/status-strip";
+import {
+  readAndClearStatusFlash,
+  readLastStatusSeenId,
+} from "@/lib/data/status-strip";
 import { dismissStatusStrip } from "@/lib/data/status-strip-actions";
 
 /**
@@ -23,12 +26,21 @@ import { dismissStatusStrip } from "@/lib/data/status-strip-actions";
  * strip stays hidden until something newer arrives.
  */
 export async function StatusStrip() {
-  const [ctx, spaces, lastSeen] = await Promise.all([
+  const [ctx, spaces, lastSeen, flash] = await Promise.all([
     getCurrentContext(),
     listUserSpaces(),
     readLastStatusSeenId(),
+    readAndClearStatusFlash(),
   ]);
   if (!ctx) return null;
+
+  // Flash messages win when present: they're a one-shot self-facing
+  // confirmation ("You joined Family Circle") that the database doesn't
+  // model. readAndClearStatusFlash clears the cookie so it never shows
+  // twice. After this render, normal event-based strips resume.
+  if (flash) {
+    return <StatusStripFlashRow message={flash} />;
+  }
 
   const orgIds = spaces.map((s) => s.organization.id);
   const events = await listUserVisibleEvents({
@@ -40,6 +52,18 @@ export async function StatusStrip() {
   if (latest.id === lastSeen) return null;
 
   return <StatusStripRow event={latest} />;
+}
+
+function StatusStripFlashRow({ message }: { message: string }) {
+  return (
+    <div className="mt-3 flex items-center gap-3 rounded-lg border border-sage/30 bg-sage/[0.07] px-3 py-1.5 text-[12px] text-[#3f5240]">
+      <span
+        className="inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-sage"
+        aria-hidden
+      />
+      <span className="min-w-0 flex-1 truncate">{message}</span>
+    </div>
+  );
 }
 
 function StatusStripRow({ event }: { event: SystemEvent }) {

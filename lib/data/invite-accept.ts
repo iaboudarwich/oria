@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { ACTIVE_SPACE_COOKIE } from "./active-space";
 import { recordSystemEvent } from "./system-events";
+import { writeStatusFlash } from "./status-strip";
 
 const ONE_YEAR_SECONDS = 60 * 60 * 24 * 365;
 
@@ -106,33 +107,45 @@ export async function tryAcceptInvite(
     });
 
     // Surface a calm "X joined" status update to the space's other
-    // members. We pull the joining user's display name so the message
-    // reads like "Ana joined" rather than a bare email. Best-effort —
-    // if the lookup fails the event still records with a fallback.
-    void (async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) return;
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("full_name, email")
-        .eq("id", user.id)
-        .maybeSingle();
+    // members + a "You joined SpaceName" flash to the joiner themselves.
+    // The event reaches existing members via the system_events feed;
+    // the flash is a one-shot cookie consumed by the topbar on first
+    // render after the redirect. Best-effort — lookup failures fall
+    // back to generic copy.
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (user) {
+      const [profileRes, orgRes] = await Promise.all([
+        supabase
+          .from("profiles")
+          .select("full_name, email")
+          .eq("id", user.id)
+          .maybeSingle(),
+        supabase
+          .from("organizations")
+          .select("name, kind")
+          .eq("id", orgId)
+          .maybeSingle(),
+      ]);
+      const profile = profileRes.data as {
+        full_name?: string;
+        email?: string;
+      } | null;
+      const org = orgRes.data as { name?: string; kind?: string } | null;
       const name =
-        (profile as { full_name?: string; email?: string } | null)
-          ?.full_name ??
-        (profile as { full_name?: string; email?: string } | null)?.email ??
-        user.email ??
-        "Someone";
-      await recordSystemEvent({
+        profile?.full_name ?? profile?.email ?? user.email ?? "Someone";
+      const spaceName = org?.name ?? "your new space";
+
+      void recordSystemEvent({
         kind: "invite.accepted",
         severity: "info",
         context: { title: name },
         organizationId: orgId,
         actorId: user.id,
       });
-    })();
+      await writeStatusFlash(`You joined ${spaceName}.`);
+    }
 
     revalidatePath("/dashboard", "layout");
     return { ok: true, organizationId: orgId };
