@@ -23,17 +23,21 @@ import {
 import { SECTION_META, CustomSectionIcon } from "@/lib/sections-meta";
 import { DeleteAccountPanel } from "@/components/settings/delete-account-panel";
 import { isCurrentUserAdmin } from "@/lib/data/admin";
+import { readSidebarExtras } from "@/lib/data/sidebar-prefs";
+import { setSidebarExtra } from "@/lib/data/sidebar-prefs-actions";
 import type { OrgKind, Section } from "@/lib/supabase/types";
 
 export const metadata = { title: "Settings" };
 
 export default async function SettingsPage() {
-  const [sections, ctx, spaces, admin] = await Promise.all([
+  const [sections, ctx, spaces, admin, extras] = await Promise.all([
     listAllSections({ includeHidden: true, includeReview: false }),
     getCurrentContext(),
     listUserSpaces(),
     isCurrentUserAdmin(),
+    readSidebarExtras(),
   ]);
+  const timelineEnabled = extras.has("timeline");
 
   const visible = sections.filter((s) => !s.hidden);
   const total = sections.length;
@@ -80,11 +84,54 @@ export default async function SettingsPage() {
           kind="office"
         />
 
+        <SidebarPrefsPanel timelineEnabled={timelineEnabled} />
+
         {admin ? <AdminPanel /> : null}
 
         <DeleteAccountPanel />
       </div>
     </>
+  );
+}
+
+/**
+ * Opt-in sidebar rows the user can pin. Default-off so the sidebar
+ * stays uncluttered for the median user; the toggle posts to
+ * setSidebarExtra which revalidates the dashboard layout.
+ */
+function SidebarPrefsPanel({ timelineEnabled }: { timelineEnabled: boolean }) {
+  return (
+    <GroupedSection
+      label="Sidebar"
+      hint="Pin extra rows the sidebar shows by default."
+    >
+      <li className="flex items-center gap-3 px-3 py-2.5">
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-[13.5px] text-ink">Timeline</p>
+          <p className="text-[11.5px] text-ink-faint">
+            Recent activity across the active space.
+          </p>
+        </div>
+        <form action={setSidebarExtra}>
+          <input type="hidden" name="extra" value="timeline" />
+          <input
+            type="hidden"
+            name="enabled"
+            value={timelineEnabled ? "off" : "on"}
+          />
+          <button
+            type="submit"
+            className={`inline-flex h-7 cursor-pointer items-center rounded-md border px-2.5 text-[11.5px] transition-base ${
+              timelineEnabled
+                ? "border-ink bg-ink text-surface"
+                : "border-line bg-canvas text-ink-muted hover:border-line-strong hover:text-ink"
+            }`}
+          >
+            {timelineEnabled ? "On" : "Off"}
+          </button>
+        </form>
+      </li>
+    </GroupedSection>
   );
 }
 

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { signOut } from "@/lib/auth/actions";
 import {
   LockIcon,
+  PersonIcon,
   SettingsIcon,
   SparkIcon,
 } from "@/components/ui/icon";
@@ -22,10 +23,15 @@ import { useDismissable } from "@/lib/hooks/use-dismissable";
 export function UserMenu({
   user,
   isAdmin,
+  orgKind,
   collapsed,
 }: {
   user: { name: string; email: string };
   isAdmin: boolean;
+  /** Drives the Members link inside the menu. Personal is solo, so
+   *  there's nothing to manage; Circles and Workspaces both have a
+   *  members surface. */
+  orgKind: "personal" | "circle" | "office";
   collapsed?: boolean;
 }) {
   const { ref, open, toggle, setOpen } = useDismissable<HTMLDivElement>();
@@ -82,6 +88,14 @@ export function UserMenu({
           </div>
 
           <ul className="py-1">
+            {orgKind !== "personal" ? (
+              <MenuLink
+                href="/dashboard/circle"
+                icon={PersonIcon}
+                label={orgKind === "office" ? "Team" : "Members"}
+                onSelect={() => setOpen(false)}
+              />
+            ) : null}
             <MenuLink
               href="/dashboard/settings"
               icon={SettingsIcon}

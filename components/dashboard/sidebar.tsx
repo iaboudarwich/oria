@@ -55,15 +55,17 @@ const primaryAction: NavItem = {
 };
 
 // Personal mode: secondary verbs + views below the Sections group.
+// Timeline + Members used to live here too. Timeline is now an opt-in
+// extra (Settings → Sidebar), and Members moved into the account menu
+// since it's a per-space management thing, not a place you visit often.
 const personalSecondaryNav: NavItem[] = [
   { label: "Upload", href: "/dashboard/inbox", icon: UploadIcon },
   { label: "Calendar", href: "/dashboard/calendar", icon: CalendarIcon },
-  { label: "Timeline", href: "/dashboard/timeline", icon: PulseIcon },
-  { label: "Members", href: "/dashboard/circle", icon: PersonIcon },
 ];
 
 // Work mode: business-focused nav. AI Agent sits right under Ask Oria as
-// the persistent operational brain for the Workspace.
+// the persistent operational brain for the Workspace. Team has moved
+// to the account menu, same logic as Personal/Members.
 const workSecondaryNav: NavItem[] = [
   { label: "AI Agent", href: "/dashboard/work/agent", icon: SparkIcon },
   { label: "Analysis", href: "/dashboard/work/analysis", icon: ChartIcon },
@@ -73,8 +75,18 @@ const workSecondaryNav: NavItem[] = [
   { label: "Invoices", href: "/dashboard/work/invoices", icon: DocumentIcon },
   { label: "Calendar", href: "/dashboard/calendar", icon: CalendarIcon },
   { label: "Reports", href: "/dashboard/work/reports", icon: PulseIcon },
-  { label: "Team", href: "/dashboard/circle", icon: PersonIcon },
 ];
+
+// Optional rows the user can opt into from Settings → Sidebar. Layout
+// resolves which ones are enabled and concatenates them onto whichever
+// secondary nav matches the active mode.
+export const SIDEBAR_EXTRA_ITEMS: Record<string, NavItem> = {
+  timeline: {
+    label: "Timeline",
+    href: "/dashboard/timeline",
+    icon: PulseIcon,
+  },
+};
 
 // System tier, always at the bottom. Settings used to live here too,
 // but it moved into the account menu (UserMenu) so the sidebar stays
@@ -105,6 +117,12 @@ export type SidebarProps = {
    *  Admin link inside the account menu. Resolved server-side in the
    *  layout so the menu never has to make its own decision. */
   isAdmin: boolean;
+  /** Active org kind drives Members/Team visibility in the account
+   *  menu — there's nothing to manage in a Personal space. */
+  orgKind: "personal" | "circle" | "office";
+  /** Opt-in sidebar rows the user has enabled (Settings → Sidebar).
+   *  Layout resolves these from a cookie; sidebar just renders them. */
+  extras: string[];
   /** Desktop only. Mobile sidebar always shows full content when open. */
   collapsed?: boolean;
   onToggle?: () => void;
@@ -144,6 +162,8 @@ export function Sidebar({
   spaces,
   activeSpace,
   isAdmin,
+  orgKind,
+  extras,
   collapsed = false,
   onToggle,
   sectionsOpen = true,
@@ -271,10 +291,16 @@ export function Sidebar({
             </>
           ) : null}
 
-          {/* TIER 3 — Mode-specific navigation. */}
+          {/* TIER 3 — Mode-specific navigation, plus any opt-in extras
+           * the user has enabled (Settings → Sidebar). */}
           <Divider collapsed={collapsed} />
           <ul className="flex flex-col gap-0.5">
-            {(mode === "work" ? workSecondaryNav : personalSecondaryNav).map(
+            {[
+              ...(mode === "work" ? workSecondaryNav : personalSecondaryNav),
+              ...extras
+                .map((k) => SIDEBAR_EXTRA_ITEMS[k])
+                .filter((it): it is NavItem => !!it),
+            ].map(
               (item) => (
                 <li key={item.href}>
                   <NavLink
@@ -307,7 +333,12 @@ export function Sidebar({
           </div>
         </nav>
 
-        <UserMenu user={user} isAdmin={isAdmin} collapsed={collapsed} />
+        <UserMenu
+          user={user}
+          isAdmin={isAdmin}
+          orgKind={orgKind}
+          collapsed={collapsed}
+        />
       </aside>
     </>
   );

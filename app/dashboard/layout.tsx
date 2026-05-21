@@ -9,6 +9,7 @@ import { listAllSections } from "@/lib/data/all-sections";
 import { countReviewUploads } from "@/lib/data/sections";
 import {
   readSectionsMode,
+  readSidebarExtras,
   readSidebarMode,
   readSidebarWidth,
 } from "@/lib/data/sidebar-prefs";
@@ -41,6 +42,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
     sidebarMode,
     sectionsMode,
     sidebarWidth,
+    sidebarExtras,
     isAdmin,
   ] = await Promise.all([
     listAllSections({ includeHidden: false }),
@@ -49,6 +51,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
     readSidebarMode(),
     readSectionsMode(),
     readSidebarWidth(),
+    readSidebarExtras(),
     isCurrentUserAdmin(),
   ]);
 
@@ -119,6 +122,8 @@ export default async function DashboardLayout({ children }: { children: ReactNod
     spaces: spaceSummaries,
     activeSpace,
     isAdmin,
+    orgKind: ctx.organization.kind,
+    extras: Array.from(sidebarExtras),
   };
 
   return (

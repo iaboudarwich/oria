@@ -1,4 +1,4 @@
-import { BellIcon, SearchIcon } from "@/components/ui/icon";
+import { SearchIcon } from "@/components/ui/icon";
 import { getCurrentContext } from "@/lib/data/organizations";
 
 type TopbarProps = {
@@ -40,14 +40,6 @@ export async function Topbar({ title, subtitle }: TopbarProps) {
           >
             <SearchIcon />
           </a>
-          <button
-            type="button"
-            className="relative inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg border border-line bg-surface-raised text-ink-muted transition-base hover:text-ink hover:border-line-strong focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
-            aria-label="Notifications"
-          >
-            <BellIcon />
-            <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-accent" />
-          </button>
         </div>
       </div>
     </header>
