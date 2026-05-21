@@ -473,14 +473,14 @@ function SectionsGroup({
           })}
           <li>
             <Link
-              href="/dashboard/settings/sections/new"
+              href="/dashboard/settings/sections"
               onClick={onNavigate}
               className="group flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-[12.5px] text-ink-faint transition-base hover:bg-canvas/60 hover:text-ink-muted"
             >
-              <span className="inline-flex h-4 w-4 items-center justify-center text-[13px] leading-none">
-                +
+              <span className="inline-flex h-4 w-4 items-center justify-center text-[11px] leading-none">
+                ⚙
               </span>
-              <span className="flex-1 truncate">New section</span>
+              <span className="flex-1 truncate">Edit sections</span>
             </Link>
           </li>
         </ul>

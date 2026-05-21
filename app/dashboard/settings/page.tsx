@@ -1,31 +1,22 @@
 import Link from "next/link";
 import { Topbar } from "@/components/dashboard/topbar";
-import { deleteCustomSection } from "@/lib/data/custom-section-actions";
-import {
-  moveSection,
-  toggleSectionHidden,
-} from "@/lib/data/section-settings-actions";
-import { listAllSections, type MergedSection } from "@/lib/data/all-sections";
+import { listAllSections } from "@/lib/data/all-sections";
 import {
   getCurrentContext,
   listUserSpaces,
   type UserSpace,
 } from "@/lib/data/organizations";
 import {
-  ChevronDownIcon,
-  ChevronUpIcon,
-  EyeIcon,
-  EyeOffIcon,
   HeartIcon,
   LockIcon,
   PersonIcon,
 } from "@/components/ui/icon";
-import { SECTION_META, CustomSectionIcon } from "@/lib/sections-meta";
 import { DeleteAccountPanel } from "@/components/settings/delete-account-panel";
+import { SectionsEditor } from "@/components/settings/sections-editor";
 import { isCurrentUserAdmin } from "@/lib/data/admin";
 import { readSidebarExtras } from "@/lib/data/sidebar-prefs";
 import { setSidebarExtra } from "@/lib/data/sidebar-prefs-actions";
-import type { OrgKind, Section } from "@/lib/supabase/types";
+import type { OrgKind } from "@/lib/supabase/types";
 
 export const metadata = { title: "Settings" };
 
@@ -50,27 +41,25 @@ export default async function SettingsPage() {
       <div className="mx-auto max-w-2xl space-y-9 animate-fade-up">
         <ModesPanel orgKind={orgKind} />
 
-        <GroupedSection
-          label="How I organize my life"
-          hint={`Reorder, hide, or add sections. ${visible.length} of ${total} visible.`}
-          action={
+        <section>
+          <div className="mb-2 flex items-end justify-between px-1">
+            <div>
+              <h2 className="text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
+                How I organize my life
+              </h2>
+              <p className="mt-1 text-[12px] text-ink-faint">
+                {`Reorder, hide, or add sections. ${visible.length} of ${total} visible.`}
+              </p>
+            </div>
             <Link
               href="/dashboard/settings/sections/new"
               className="inline-flex h-7 items-center rounded-md bg-ink px-2.5 text-[11.5px] text-surface hover:bg-ink-soft transition-base"
             >
               Add section
             </Link>
-          }
-        >
-          {sections.map((s, i) => (
-            <SectionRow
-              key={`${s.ref.kind}-${s.ref.key}`}
-              section={s}
-              isFirst={i === 0}
-              isLast={i === sections.length - 1}
-            />
-          ))}
-        </GroupedSection>
+          </div>
+          <SectionsEditor sections={sections} />
+        </section>
 
         <SpacesPanel
           spaces={spaces}
@@ -352,112 +341,3 @@ function ModesPanel({ orgKind }: { orgKind: string }) {
   );
 }
 
-function SectionRow({
-  section,
-  isFirst,
-  isLast,
-}: {
-  section: MergedSection;
-  isFirst: boolean;
-  isLast: boolean;
-}) {
-  const Icon =
-    section.ref.kind === "builtin"
-      ? SECTION_META[section.ref.key as Section].Icon
-      : CustomSectionIcon;
-  const isCustom = section.ref.kind === "custom";
-
-  return (
-    <li
-      className={`flex items-center gap-2 px-2 py-2 transition-base hover:bg-canvas/60 ${
-        section.hidden ? "opacity-55" : ""
-      }`}
-    >
-      <MoveButton target={section.ref} dir="up" disabled={isFirst} />
-      <MoveButton target={section.ref} dir="down" disabled={isLast} />
-
-      <span className="ml-1 inline-flex h-7 w-7 shrink-0 items-center justify-center text-ink-muted">
-        <Icon size={14} />
-      </span>
-
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-[13.5px] text-ink">{section.name}</p>
-        <p className="text-[11.5px] text-ink-faint">
-          {section.ref.kind === "builtin" ? "Built in" : "Custom"}
-          {section.hidden ? " · hidden" : ""}
-        </p>
-      </div>
-
-      <HideButton target={section.ref} hidden={section.hidden} />
-
-      {isCustom ? (
-        <>
-          <Link
-            href={`/dashboard/settings/sections/${section.ref.key}/edit`}
-            className="text-[11.5px] text-ink-muted hover:text-ink transition-base"
-          >
-            Edit
-          </Link>
-          <form action={deleteCustomSection}>
-            <input type="hidden" name="id" value={section.ref.key} />
-            <button
-              type="submit"
-              className="text-[11.5px] text-ink-faint hover:text-claret transition-base"
-            >
-              Remove
-            </button>
-          </form>
-        </>
-      ) : null}
-    </li>
-  );
-}
-
-function MoveButton({
-  target,
-  dir,
-  disabled,
-}: {
-  target: { kind: string; key: string };
-  dir: "up" | "down";
-  disabled: boolean;
-}) {
-  return (
-    <form action={moveSection}>
-      <input type="hidden" name="kind" value={target.kind} />
-      <input type="hidden" name="key" value={target.key} />
-      <input type="hidden" name="dir" value={dir} />
-      <button
-        type="submit"
-        disabled={disabled}
-        className="inline-flex h-7 w-7 items-center justify-center rounded-md text-ink-faint transition-base hover:bg-canvas hover:text-ink disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-ink-faint"
-        aria-label={dir === "up" ? "Move up" : "Move down"}
-      >
-        {dir === "up" ? <ChevronUpIcon size={14} /> : <ChevronDownIcon size={14} />}
-      </button>
-    </form>
-  );
-}
-
-function HideButton({
-  target,
-  hidden,
-}: {
-  target: { kind: string; key: string };
-  hidden: boolean;
-}) {
-  return (
-    <form action={toggleSectionHidden}>
-      <input type="hidden" name="kind" value={target.kind} />
-      <input type="hidden" name="key" value={target.key} />
-      <button
-        type="submit"
-        className="inline-flex h-7 items-center gap-1.5 rounded-md px-2 text-[11.5px] text-ink-muted transition-base hover:bg-canvas hover:text-ink"
-        aria-label={hidden ? "Show section" : "Hide section"}
-      >
-        {hidden ? <EyeIcon size={12} /> : <EyeOffIcon size={12} />}
-        {hidden ? "Show" : "Hide"}
-      </button>
-    </form>
-  );
-}
