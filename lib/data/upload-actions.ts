@@ -11,6 +11,7 @@ import {
   pickBestSection,
 } from "./section-context";
 import { recordLearningEvent } from "./learning";
+import { recordSystemEvent } from "./system-events";
 import { maybeWritePatternMemoryFromMove } from "./pattern-memories";
 import { getCustomSectionById } from "./custom-sections";
 import { SECTION_LABEL } from "@/lib/sections-meta";
@@ -122,6 +123,26 @@ export async function uploadFile(formData: FormData): Promise<Result> {
     ? null
     : (sectionHint as Section | null) ?? inferredBuiltin;
 
+  // Cheap duplicate detection: same org, same filename + size, in the
+  // last 24h. We don't block — testers genuinely do re-upload a file
+  // after editing it, and we have no content hash to be certain. Just
+  // tag metadata so the upload detail can show "Looks like a duplicate
+  // of [other]" and emit a status event so the user sees it.
+  const dupCutoff = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
+  const { data: dupRows } = await supabase
+    .from("uploads")
+    .select("id, filename, created_at")
+    .eq("organization_id", ctx.organization.id)
+    .eq("filename", file.name)
+    .eq("size_bytes", file.size)
+    .is("deleted_at", null)
+    .gte("created_at", dupCutoff)
+    .order("created_at", { ascending: false })
+    .limit(1);
+  const dupOf = (dupRows ?? [])[0] as
+    | { id: string; filename: string; created_at: string }
+    | undefined;
+
   const { error: dbError } = await supabase.from("uploads").insert({
     id: uploadId,
     organization_id: ctx.organization.id,
@@ -137,6 +158,9 @@ export async function uploadFile(formData: FormData): Promise<Result> {
     metadata: {
       ...(userDescription ? { user_description: userDescription } : {}),
       ...(smartSectionHint ? { smart_section_hint: smartSectionHint } : {}),
+      ...(dupOf
+        ? { duplicate_of: dupOf.id, duplicate_of_at: dupOf.created_at }
+        : {}),
     },
   });
   if (dbError) {
@@ -154,6 +178,24 @@ export async function uploadFile(formData: FormData): Promise<Result> {
     detail: `Uploaded, ${formatBytes(file.size)}`,
     upload_id: uploadId,
   });
+
+  // 3b. If this looked like a same-day duplicate, surface a calm
+  //     "Looks like a duplicate" status event so the user notices
+  //     without us blocking the action.
+  if (dupOf) {
+    void recordSystemEvent({
+      kind: "upload.processed",
+      severity: "warn",
+      message: "Looks like a duplicate of an upload from earlier today.",
+      context: {
+        uploadId,
+        title: file.name,
+        duplicate_of: dupOf.id,
+      },
+      organizationId: ctx.organization.id,
+      actorId: ctx.profile.id,
+    });
+  }
 
   // 4. Run the intelligence pass AFTER the response is sent so the upload
   //    action returns immediately. Claude reads the file in the background;

@@ -89,6 +89,30 @@ export function UnderstoodPanel({
     );
   }
 
+  // The file went through extraction (status="filed") but the model
+  // couldn't pull a confident document type or any structured fields.
+  // Without this hint the user sees an empty "Understood" panel and
+  // wonders whether anything happened — surface the partial state
+  // calmly so they know the file is on hand and searchable by name.
+  if (
+    status === "filed" &&
+    (!extraction || extraction.document_type === null)
+  ) {
+    return (
+      <section>
+        <h2 className="mb-3 px-1 text-[13px] font-medium text-ink-muted">
+          On file
+        </h2>
+        <div className="rounded-xl border border-line bg-surface-raised p-4">
+          <p className="text-[13px] text-ink">
+            Oria couldn&apos;t pull structured details from this one. The file
+            is safely on hand and still searchable by name.
+          </p>
+        </div>
+      </section>
+    );
+  }
+
   if (!extraction || extraction.document_type === null) {
     return null;
   }

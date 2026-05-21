@@ -6,6 +6,7 @@ import { ReportPoller } from "@/components/work/report-poller";
 import { computeAnalysis, type AnalysisAggregates } from "@/lib/data/work";
 import { listWorkspaceReports } from "@/lib/data/workspace-reports";
 import { listRecentUserQuestions } from "@/lib/data/recent-questions";
+import { retryReport } from "@/lib/data/report-actions";
 
 export const metadata = { title: "Analysis" };
 
@@ -46,22 +47,25 @@ function AnalysisList({
       </h2>
       <ul className="space-y-2">
         {analyses.map((a) => (
-          <li key={a.id}>
+          <li
+            key={a.id}
+            className="group flex items-start gap-3 rounded-xl border border-line bg-surface-raised px-4 py-3 transition-base hover:border-line-strong hover:bg-canvas/40"
+          >
+            <span className="mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-canvas text-ink-soft">
+              <ChartIcon size={14} />
+            </span>
             <Link
               href={`/dashboard/work/agent/reports/${a.id}`}
-              className="group flex items-start gap-3 rounded-xl border border-line bg-surface-raised px-4 py-3 transition-base hover:border-line-strong hover:bg-canvas/40"
+              className="min-w-0 flex-1"
             >
-              <span className="mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-canvas text-ink-soft">
-                <ChartIcon size={14} />
-              </span>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-[13.5px] text-ink">{a.title}</p>
-                <p className="mt-0.5 truncate text-[11.5px] text-ink-faint">
-                  {a.kind} · {new Date(a.created_at).toLocaleString()}
-                </p>
-              </div>
+              <p className="truncate text-[13.5px] text-ink">{a.title}</p>
+              <p className="mt-0.5 truncate text-[11.5px] text-ink-faint">
+                {a.kind} · {new Date(a.created_at).toLocaleString()}
+              </p>
+            </Link>
+            <div className="flex shrink-0 items-center gap-2">
               <span
-                className={`mt-1 inline-flex shrink-0 items-center rounded-md px-1.5 py-0.5 text-[10.5px] ${
+                className={`mt-1 inline-flex items-center rounded-md px-1.5 py-0.5 text-[10.5px] ${
                   a.status === "ready"
                     ? "bg-sage/15 text-[#3f5240]"
                     : a.status === "failed"
@@ -75,7 +79,18 @@ function AnalysisList({
                     ? "Failed"
                     : `Analyzing · ${analyzingFor(a.created_at)}`}
               </span>
-            </Link>
+              {a.status === "failed" ? (
+                <form action={retryReport}>
+                  <input type="hidden" name="id" value={a.id} />
+                  <button
+                    type="submit"
+                    className="mt-1 inline-flex items-center rounded-md border border-line bg-canvas px-1.5 py-0.5 text-[10.5px] text-ink-muted transition-base hover:border-line-strong hover:text-ink"
+                  >
+                    Retry
+                  </button>
+                </form>
+              ) : null}
+            </div>
           </li>
         ))}
       </ul>
