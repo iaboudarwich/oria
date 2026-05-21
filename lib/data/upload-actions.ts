@@ -132,6 +132,24 @@ export async function uploadFile(formData: FormData): Promise<Result> {
   let bodySize = file.size;
 
   if (looksHeic) {
+    // Mark every HEIC attempt unconditionally — so a future "HEIC
+    // didn't convert" report has positive evidence the action was
+    // even invoked (vs. served by a stale Fluid Compute instance from
+    // a prior deploy). Cheap, fire-and-forget.
+    void recordSystemEvent({
+      kind: "upload.processed",
+      severity: "info",
+      message: "heic_detected",
+      context: {
+        stage: "heic_detected",
+        filename: file.name,
+        mime: file.type,
+        size: file.size,
+      },
+      organizationId: ctx.organization.id,
+      actorId: ctx.profile.id,
+    });
+
     try {
       const inputBytes = Buffer.from(await file.arrayBuffer());
       const jpeg = await convertHeicToJpeg(inputBytes);
@@ -145,16 +163,31 @@ export async function uploadFile(formData: FormData): Promise<Result> {
       bodyMime = "image/jpeg";
       bodyName = heicNameToJpeg(file.name);
       bodySize = jpeg.byteLength;
+      void recordSystemEvent({
+        kind: "upload.processed",
+        severity: "info",
+        message: "heic_converted",
+        context: {
+          stage: "heic_converted",
+          filename: file.name,
+          newName: bodyName,
+          oldSize: file.size,
+          newSize: bodySize,
+        },
+        organizationId: ctx.organization.id,
+        actorId: ctx.profile.id,
+      });
     } catch (err) {
       void recordSystemEvent({
         kind: "upload.failed",
-        severity: "warn",
+        severity: "error",
         message:
           err instanceof Error ? err.message : "HEIC conversion failed",
         context: {
           stage: "heic_convert",
           filename: file.name,
           size: file.size,
+          errorName: err instanceof Error ? err.name : null,
         },
         organizationId: ctx.organization.id,
         actorId: ctx.profile.id,

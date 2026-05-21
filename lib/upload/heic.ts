@@ -47,14 +47,12 @@ export function isHeicLike(file: { name: string; type: string }): boolean {
  */
 export async function convertHeicToJpeg(input: Buffer): Promise<Buffer> {
   const convert = (await import("heic-convert")).default;
-  // Slice off the underlying ArrayBuffer so the types stop arguing
-  // about SharedArrayBuffer. heic-decode reads it as bytes either way.
-  const ab = input.buffer.slice(
-    input.byteOffset,
-    input.byteOffset + input.byteLength,
-  ) as ArrayBuffer;
+  // heic-decode internally does `[...buffer]` to read the box header,
+  // so it requires an iterable (Uint8Array / Buffer), NOT a raw
+  // ArrayBuffer. The @types/heic-convert signature claims ArrayBufferLike,
+  // which is wrong at runtime — pass the Buffer through and cast.
   const out = await convert({
-    buffer: ab,
+    buffer: input as unknown as ArrayBufferLike,
     format: "JPEG",
     quality: 0.9, // matches iOS Camera Roll exports
   });
