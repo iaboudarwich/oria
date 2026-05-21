@@ -135,10 +135,15 @@ const SPREADSHEET_MIME = new Set([
 // not what we store — oversize files are still saved and searchable by
 // filename + user note, just without structured extraction. The image cap
 // reflects Anthropic's vision payload ceiling (~5MB per image block).
+//
+// MAX_SHEET_BYTES is well below the 50MB upload max because XLSX.read
+// expands the workbook into JS objects in memory, which can OOM a
+// Fluid Compute instance well before the file itself does. 25MB
+// covers every spreadsheet we've seen in beta with headroom.
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 const MAX_PDF_BYTES = 32 * 1024 * 1024;
 const MAX_TEXT_BYTES = 1 * 1024 * 1024;
-const MAX_SHEET_BYTES = 50 * 1024 * 1024;
+const MAX_SHEET_BYTES = 25 * 1024 * 1024;
 // Max characters of spreadsheet text we send to Claude in one call. Above
 // this we truncate the bottom of the data so the prompt stays focused.
 const MAX_SHEET_PROMPT_CHARS = 200_000;

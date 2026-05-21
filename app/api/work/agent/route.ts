@@ -7,6 +7,7 @@ import { getWorkspaceContext } from "@/lib/data/workspace-context";
 import { recordLearningEvent } from "@/lib/data/learning";
 import { recordSystemEvent } from "@/lib/data/system-events";
 import { checkDailyAskRequests } from "@/lib/data/quotas";
+import { rateLimit, RATE_PRESETS } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -39,6 +40,20 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "empty_query" }, { status: 400 });
   }
   const history = Array.isArray(body.history) ? body.history.slice(-8) : [];
+
+  const burst = rateLimit({
+    key: `work-agent:${ctx.profile.id}`,
+    ...RATE_PRESETS.workAgent(),
+  });
+  if (!burst.ok) {
+    return NextResponse.json(
+      { error: "rate_limited", message: burst.message },
+      {
+        status: 429,
+        headers: { "Retry-After": String(burst.retryAfterSeconds) },
+      },
+    );
+  }
 
   const quota = await checkDailyAskRequests(ctx.profile.id);
   if (!quota.ok) {

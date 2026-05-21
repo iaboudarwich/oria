@@ -6,6 +6,7 @@ import { streamAnswer, type AgentMessage } from "@/lib/ai/agent";
 import { recordLearningEvent } from "@/lib/data/learning";
 import { recordSystemEvent } from "@/lib/data/system-events";
 import { checkDailyAskRequests } from "@/lib/data/quotas";
+import { rateLimit, RATE_PRESETS } from "@/lib/rate-limit";
 import type { SectionScope } from "@/lib/data/section-scope";
 import type { Section } from "@/lib/supabase/types";
 
@@ -49,6 +50,23 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "empty_query" }, { status: 400 });
   }
   const history = Array.isArray(body.history) ? body.history.slice(-6) : [];
+
+  // Burst limit: stop someone holding Enter or a script firing dozens
+  // of questions per second. Cheaper to bounce here than to spin up
+  // retrieval + Claude.
+  const burst = rateLimit({
+    key: `ask:${ctx.profile.id}`,
+    ...RATE_PRESETS.ask(),
+  });
+  if (!burst.ok) {
+    return NextResponse.json(
+      { error: "rate_limited", message: burst.message },
+      {
+        status: 429,
+        headers: { "Retry-After": String(burst.retryAfterSeconds) },
+      },
+    );
+  }
 
   // Beta safety net: per-user daily Ask Oria cap. Soft-fails open on DB error.
   const quota = await checkDailyAskRequests(ctx.profile.id);

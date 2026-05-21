@@ -207,3 +207,152 @@ export async function listRecentJobs(input: {
     return [];
   }
 }
+
+export type JobsHealth = {
+  failed24h: number;
+  failed7d: number;
+  completed24h: number;
+  pendingNow: number;
+  processingNow: number;
+  /** processing rows whose started_at is older than 5 minutes — likely stuck. */
+  stuckNow: number;
+  /** average completed-job duration in ms over the past 24h (rough). */
+  avgDurationMs24h: number;
+  recentFailures: Array<{
+    id: string;
+    kind: string;
+    error: string;
+    when: string;
+    organizationId: string;
+  }>;
+};
+
+const STUCK_AGE_MS = 5 * 60 * 1000;
+const DAY_MS = 24 * 60 * 60 * 1000;
+const sinceISO = (ms: number) => new Date(Date.now() - ms).toISOString();
+
+/**
+ * Cross-org background-job health. Service-role only — admin pages
+ * read this; the daily user flow doesn't. Soft-fails open everywhere:
+ * if the count query errors we report 0 rather than break the page.
+ */
+export async function getJobsHealth(): Promise<JobsHealth> {
+  try {
+    const admin = createAdminClient();
+    const dayAgo = sinceISO(DAY_MS);
+    const weekAgo = sinceISO(7 * DAY_MS);
+    const stuckCutoff = sinceISO(STUCK_AGE_MS);
+
+    const [
+      failed24h,
+      failed7d,
+      completed24h,
+      pendingNow,
+      processingNow,
+      stuckNow,
+      recentFailuresRes,
+      durationsRes,
+    ] = await Promise.all([
+      admin
+        .from("background_jobs")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "failed")
+        .gte("updated_at", dayAgo),
+      admin
+        .from("background_jobs")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "failed")
+        .gte("updated_at", weekAgo),
+      admin
+        .from("background_jobs")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "completed")
+        .gte("updated_at", dayAgo),
+      admin
+        .from("background_jobs")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "pending"),
+      admin
+        .from("background_jobs")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "processing"),
+      admin
+        .from("background_jobs")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "processing")
+        .lt("started_at", stuckCutoff),
+      admin
+        .from("background_jobs")
+        .select("id, kind, error_message, updated_at, organization_id")
+        .eq("status", "failed")
+        .gte("updated_at", weekAgo)
+        .order("updated_at", { ascending: false })
+        .limit(10),
+      admin
+        .from("background_jobs")
+        .select("started_at, completed_at")
+        .eq("status", "completed")
+        .gte("updated_at", dayAgo)
+        .not("started_at", "is", null)
+        .not("completed_at", "is", null)
+        .limit(500),
+    ]);
+
+    type DurationRow = {
+      started_at: string | null;
+      completed_at: string | null;
+    };
+    const durations = ((durationsRes.data ?? []) as DurationRow[])
+      .map((r) => {
+        if (!r.started_at || !r.completed_at) return 0;
+        return (
+          new Date(r.completed_at).getTime() -
+          new Date(r.started_at).getTime()
+        );
+      })
+      .filter((n) => n > 0 && n < 10 * 60_000);
+    const avgDurationMs24h =
+      durations.length > 0
+        ? Math.round(durations.reduce((a, b) => a + b, 0) / durations.length)
+        : 0;
+
+    type FailRow = {
+      id: string;
+      kind: string;
+      error_message: string | null;
+      updated_at: string;
+      organization_id: string;
+    };
+    const recentFailures = ((recentFailuresRes.data ?? []) as FailRow[]).map(
+      (r) => ({
+        id: r.id,
+        kind: r.kind,
+        error: r.error_message ?? "Unknown error",
+        when: r.updated_at,
+        organizationId: r.organization_id,
+      }),
+    );
+
+    return {
+      failed24h: failed24h.count ?? 0,
+      failed7d: failed7d.count ?? 0,
+      completed24h: completed24h.count ?? 0,
+      pendingNow: pendingNow.count ?? 0,
+      processingNow: processingNow.count ?? 0,
+      stuckNow: stuckNow.count ?? 0,
+      avgDurationMs24h,
+      recentFailures,
+    };
+  } catch {
+    return {
+      failed24h: 0,
+      failed7d: 0,
+      completed24h: 0,
+      pendingNow: 0,
+      processingNow: 0,
+      stuckNow: 0,
+      avgDurationMs24h: 0,
+      recentFailures: [],
+    };
+  }
+}

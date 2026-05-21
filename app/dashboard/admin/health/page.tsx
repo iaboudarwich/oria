@@ -111,16 +111,101 @@ export default async function AdminHealthPage() {
           />
         </SectionGrid>
 
-        {h.storage.perOrg.length > 0 ? (
-          <Card title="Storage by space">
-            <SimpleList
-              rows={h.storage.perOrg.map((o) => ({
-                left: o.orgName,
-                right: `${formatBytes(o.bytes)} · ${o.files} file${o.files === 1 ? "" : "s"}`,
-              }))}
-            />
+        {h.storage.perOrg.length > 0 || h.storage.topUsers.length > 0 ? (
+          <div className="grid gap-4 lg:grid-cols-2">
+            {h.storage.perOrg.length > 0 ? (
+              <Card title="Storage by space">
+                <SimpleList
+                  rows={h.storage.perOrg.map((o) => ({
+                    left: o.orgName,
+                    right: `${formatBytes(o.bytes)} · ${o.files} file${o.files === 1 ? "" : "s"}`,
+                  }))}
+                />
+              </Card>
+            ) : null}
+            {h.storage.topUsers.length > 0 ? (
+              <Card
+                title={`Top uploaders — cap ${formatBytes(h.storage.userCapBytes)}`}
+              >
+                <SimpleList
+                  rows={h.storage.topUsers.map((u) => ({
+                    left: u.name,
+                    right: `${formatBytes(u.bytes)} (${Math.round(u.capRatio * 100)}%) · ${u.files} file${u.files === 1 ? "" : "s"}`,
+                  }))}
+                />
+              </Card>
+            ) : null}
+          </div>
+        ) : null}
+
+        <SectionGrid title="Background jobs">
+          <Stat
+            label="Completed 24h"
+            value={h.jobs.completed24h.toLocaleString()}
+            hint={
+              h.jobs.avgDurationMs24h > 0
+                ? `avg ${formatDuration(h.jobs.avgDurationMs24h)}`
+                : undefined
+            }
+          />
+          <Stat
+            label="Failed 24h"
+            value={h.jobs.failed24h.toLocaleString()}
+            tone={h.jobs.failed24h > 0 ? "warn" : "ok"}
+            hint={`${h.jobs.failed7d} in past 7d`}
+          />
+          <Stat
+            label="In flight"
+            value={(h.jobs.pendingNow + h.jobs.processingNow).toLocaleString()}
+            hint={`${h.jobs.pendingNow} pending, ${h.jobs.processingNow} running`}
+          />
+          <Stat
+            label="Stuck > 5m"
+            value={h.jobs.stuckNow.toLocaleString()}
+            tone={h.jobs.stuckNow > 0 ? "warn" : "ok"}
+          />
+        </SectionGrid>
+
+        {h.jobs.recentFailures.length > 0 ? (
+          <Card title="Recent job failures">
+            <ul className="space-y-2">
+              {h.jobs.recentFailures.map((f) => (
+                <li key={f.id} className="text-[12.5px]">
+                  <p className="text-ink">
+                    <span className="font-medium">{f.kind}</span>{" "}
+                    <span className="text-ink-muted">— {f.error}</span>
+                  </p>
+                  <p className="mt-0.5 text-[11px] text-ink-faint">
+                    {new Date(f.when).toLocaleString()}
+                  </p>
+                </li>
+              ))}
+            </ul>
           </Card>
         ) : null}
+
+        <SectionGrid title="Per-user quotas (configured)">
+          <Stat
+            label="Daily upload"
+            value={formatBytes(h.quotas.dailyUploadBytes)}
+            hint="ORIA_DAILY_UPLOAD_BYTES"
+          />
+          <Stat
+            label="Lifetime storage"
+            value={formatBytes(h.quotas.userStorageBytes)}
+            hint="ORIA_USER_STORAGE_BYTES"
+          />
+          <Stat
+            label="Daily Ask"
+            value={h.quotas.dailyAskRequests.toLocaleString()}
+            hint="ORIA_DAILY_ASK_REQUESTS"
+          />
+          <Stat
+            label="30d Ask"
+            value={h.quotas.monthlyAskRequests.toLocaleString()}
+            hint="ORIA_MONTHLY_ASK_REQUESTS"
+          />
+        </SectionGrid>
 
         <SectionGrid title="Database">
           <Stat label="Orgs" value={h.db.organizations.toLocaleString()} />
@@ -485,4 +570,12 @@ function formatBytes(bytes: number): string {
   if (bytes < 1024 * 1024 * 1024)
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
+}
+
+function formatDuration(ms: number): string {
+  if (ms < 1000) return `${ms} ms`;
+  const s = ms / 1000;
+  if (s < 60) return `${s.toFixed(1)} s`;
+  const m = s / 60;
+  return `${m.toFixed(1)} m`;
 }

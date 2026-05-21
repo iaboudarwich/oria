@@ -5,6 +5,7 @@ import { getCurrentContext } from "@/lib/data/organizations";
 import { createClient } from "@/lib/supabase/server";
 import { generateWorkReport } from "@/lib/ai/work-report";
 import { checkDailyAskRequests } from "@/lib/data/quotas";
+import { rateLimit, RATE_PRESETS } from "@/lib/rate-limit";
 import { recordSystemEvent } from "@/lib/data/system-events";
 import {
   createJob,
@@ -45,6 +46,23 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "empty_prompt" }, { status: 400 });
   }
   const kind = typeof body.kind === "string" ? body.kind.trim() || "summary" : "summary";
+
+  // Reports are heavier — one Claude call with retrieval + reasoning.
+  // Use an hourly burst window instead of per-minute so a normal user
+  // can fire off a few in quick succession but not a script-attack volume.
+  const burst = rateLimit({
+    key: `report:${ctx.profile.id}`,
+    ...RATE_PRESETS.report(),
+  });
+  if (!burst.ok) {
+    return NextResponse.json(
+      { error: "rate_limited", message: burst.message },
+      {
+        status: 429,
+        headers: { "Retry-After": String(burst.retryAfterSeconds) },
+      },
+    );
+  }
 
   const quota = await checkDailyAskRequests(ctx.profile.id);
   if (!quota.ok) {

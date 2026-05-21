@@ -7,6 +7,8 @@ import {
   sumEventContext,
   type SystemEvent,
 } from "./system-events";
+import { getJobsHealth, type JobsHealth } from "./jobs";
+import { getQuotaLimits } from "./quotas";
 
 /**
  * Read-only system-health aggregations for the Admin page.
@@ -70,6 +72,17 @@ export type StorageStats = {
   pendingCount: number;
   failedCount: number;
   perOrg: Array<{ orgId: string; orgName: string; bytes: number; files: number }>;
+  /** Top uploaders by lifetime bytes stored. Cross-org. */
+  topUsers: Array<{
+    userId: string;
+    name: string;
+    bytes: number;
+    files: number;
+    /** 0..1 of the per-user storage cap; >= 0.8 → "approaching". */
+    capRatio: number;
+  }>;
+  /** The configured ORIA_USER_STORAGE_BYTES (per-user lifetime cap). */
+  userCapBytes: number;
 };
 
 export type DbStats = {
@@ -112,6 +125,13 @@ export type FailedItem = {
   spaceName: string | null;
 };
 
+export type QuotaSummary = {
+  dailyUploadBytes: number;
+  dailyAskRequests: number;
+  userStorageBytes: number;
+  monthlyAskRequests: number;
+};
+
 export type SystemHealth = {
   ai: AiUsage;
   email: EmailStats;
@@ -120,6 +140,8 @@ export type SystemHealth = {
   env: EnvStatus;
   deploy: DeployInfo;
   vercelLive: VercelLive;
+  jobs: JobsHealth;
+  quotas: QuotaSummary;
   failedUploads: FailedItem[];
   failedReports: FailedItem[];
   warnings: string[];
@@ -141,6 +163,7 @@ export async function getSystemHealth(): Promise<SystemHealth> {
     failedUploads,
     failedReports,
     vercelLive,
+    jobs,
   ] = await Promise.all([
     collectAiUsage(admin),
     collectEmailStats(),
@@ -149,10 +172,12 @@ export async function getSystemHealth(): Promise<SystemHealth> {
     collectFailedUploads(admin, orgById),
     collectFailedReports(admin, orgById),
     collectVercelLive(),
+    getJobsHealth(),
   ]);
 
   const env = collectEnvStatus();
   const deploy = collectDeployInfo();
+  const quotas = getQuotaLimits();
   const warnings = collectWarnings({
     env,
     ai,
@@ -160,6 +185,7 @@ export async function getSystemHealth(): Promise<SystemHealth> {
     storage,
     failedUploads,
     failedReports,
+    jobs,
   });
 
   return {
@@ -170,6 +196,8 @@ export async function getSystemHealth(): Promise<SystemHealth> {
     env,
     deploy,
     vercelLive,
+    jobs,
+    quotas,
     failedUploads,
     failedReports,
     warnings,
@@ -296,7 +324,7 @@ async function collectStorage(
   const [totalsRes, pendingRes, failedRes] = await Promise.all([
     admin
       .from("uploads")
-      .select("size_bytes, organization_id, deleted_at")
+      .select("size_bytes, organization_id, uploaded_by, deleted_at")
       .is("deleted_at", null)
       .limit(20000),
     admin
@@ -314,11 +342,13 @@ async function collectStorage(
   type Row = {
     size_bytes: number | null;
     organization_id: string;
+    uploaded_by: string | null;
   };
   const rows = (totalsRes.data ?? []) as Row[];
 
   let totalBytes = 0;
   const byOrg = new Map<string, { bytes: number; files: number }>();
+  const byUser = new Map<string, { bytes: number; files: number }>();
   for (const r of rows) {
     const size = r.size_bytes ?? 0;
     totalBytes += size;
@@ -326,6 +356,13 @@ async function collectStorage(
     prev.bytes += size;
     prev.files += 1;
     byOrg.set(r.organization_id, prev);
+
+    if (r.uploaded_by) {
+      const u = byUser.get(r.uploaded_by) ?? { bytes: 0, files: 0 };
+      u.bytes += size;
+      u.files += 1;
+      byUser.set(r.uploaded_by, u);
+    }
   }
 
   const perOrg = Array.from(byOrg.entries())
@@ -338,12 +375,42 @@ async function collectStorage(
     .sort((a, b) => b.bytes - a.bytes)
     .slice(0, 8);
 
+  const userCapBytes = getQuotaLimits().userStorageBytes;
+  const topUserIds = Array.from(byUser.entries())
+    .sort((a, b) => b[1].bytes - a[1].bytes)
+    .slice(0, 8);
+
+  let topUsers: StorageStats["topUsers"] = [];
+  if (topUserIds.length > 0) {
+    const ids = topUserIds.map(([id]) => id);
+    const { data: profiles } = await admin
+      .from("profiles")
+      .select("id, email, full_name")
+      .in("id", ids);
+    type ProfileRow = { id: string; email: string; full_name: string | null };
+    const byId = new Map(
+      ((profiles ?? []) as ProfileRow[]).map((p) => [p.id, p] as const),
+    );
+    topUsers = topUserIds.map(([id, v]) => {
+      const p = byId.get(id);
+      return {
+        userId: id,
+        name: p?.full_name?.trim() || p?.email || id.slice(0, 8),
+        bytes: v.bytes,
+        files: v.files,
+        capRatio: userCapBytes > 0 ? Math.min(2, v.bytes / userCapBytes) : 0,
+      };
+    });
+  }
+
   return {
     totalBytes,
     totalFiles: rows.length,
     pendingCount: pendingRes.count ?? 0,
     failedCount: failedRes.count ?? 0,
     perOrg,
+    topUsers,
+    userCapBytes,
   };
 }
 
@@ -542,6 +609,7 @@ function collectWarnings(args: {
   storage: StorageStats;
   failedUploads: FailedItem[];
   failedReports: FailedItem[];
+  jobs: JobsHealth;
 }): string[] {
   const out: string[] = [];
   if (!args.env.hasAnthropicKey) {
@@ -571,5 +639,37 @@ function collectWarnings(args: {
   if (args.email.failed7d >= 3 && args.email.sent7d === 0) {
     out.push(`${args.email.failed7d} email failures and zero successes in the past week — Resend likely misconfigured.`);
   }
+
+  // Background-job pressure signals.
+  if (args.jobs.stuckNow > 0) {
+    out.push(`${args.jobs.stuckNow} background job${args.jobs.stuckNow === 1 ? "" : "s"} stuck in processing for over 5 minutes — likely OOM, timeout, or deploy mid-flight.`);
+  }
+  if (args.jobs.failed24h >= 5) {
+    out.push(`${args.jobs.failed24h} background jobs failed in the past 24h — check Recent job failures below.`);
+  }
+
+  // Storage cap signals (per-user).
+  const userCap = args.storage.userCapBytes;
+  if (userCap > 0) {
+    const atCap = args.storage.topUsers.filter((u) => u.capRatio >= 1);
+    const approaching = args.storage.topUsers.filter(
+      (u) => u.capRatio >= 0.8 && u.capRatio < 1,
+    );
+    if (atCap.length > 0) {
+      out.push(`${atCap.length} user${atCap.length === 1 ? "" : "s"} at or over the ${formatGb(userCap)} storage cap — they can't upload until they delete files or you raise ORIA_USER_STORAGE_BYTES.`);
+    } else if (approaching.length > 0) {
+      out.push(`${approaching.length} user${approaching.length === 1 ? "" : "s"} above 80% of the ${formatGb(userCap)} storage cap.`);
+    }
+  }
+
+  // AI cost signal — visible nudge if estimated 30d spend is starting to matter.
+  if (args.ai.estimatedCostUsd30d >= 20) {
+    out.push(`Estimated Claude spend over the past 30 days is $${args.ai.estimatedCostUsd30d.toFixed(2)} — confirm against console.anthropic.com if it looks off.`);
+  }
+
   return out;
+}
+
+function formatGb(bytes: number): string {
+  return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`;
 }

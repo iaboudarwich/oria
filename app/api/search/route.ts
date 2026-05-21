@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { liveSearch } from "@/lib/data/global-search";
 import { getCurrentContext } from "@/lib/data/organizations";
 import { recordLearningEvent } from "@/lib/data/learning";
+import { rateLimit, RATE_PRESETS } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
@@ -9,6 +10,23 @@ export async function GET(request: Request) {
   const ctx = await getCurrentContext();
   if (!ctx) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  }
+
+  // Search fires on every keystroke past 3 chars, so we allow a high
+  // per-minute ceiling but still bounce obvious scraping. Soft fail —
+  // a 429 here surfaces in the UI as "Search hiccup" via the cache.
+  const burst = rateLimit({
+    key: `search:${ctx.profile.id}`,
+    ...RATE_PRESETS.search(),
+  });
+  if (!burst.ok) {
+    return NextResponse.json(
+      { error: "rate_limited", message: burst.message },
+      {
+        status: 429,
+        headers: { "Retry-After": String(burst.retryAfterSeconds) },
+      },
+    );
   }
 
   const url = new URL(request.url);

@@ -15,7 +15,8 @@ import { recordSystemEvent } from "./system-events";
 import { maybeWritePatternMemoryFromMove } from "./pattern-memories";
 import { getCustomSectionById } from "./custom-sections";
 import { SECTION_LABEL } from "@/lib/sections-meta";
-import { checkDailyUploadBytes } from "./quotas";
+import { checkDailyUploadBytes, checkTotalUserStorage } from "./quotas";
+import { rateLimit, RATE_PRESETS } from "@/lib/rate-limit";
 import { formatBytes } from "@/lib/utils";
 import type { Section } from "@/lib/supabase/types";
 
@@ -63,11 +64,29 @@ export async function uploadFile(formData: FormData): Promise<Result> {
   const ctx = await requireContext();
   const supabase = await createClient();
 
+  // Burst limit so a runaway script or a leaning-on-the-button user can't
+  // queue dozens of uploads per second. Per-user, in-process — best-effort
+  // but enough at beta scale.
+  const burst = rateLimit({
+    key: `upload:${ctx.profile.id}`,
+    ...RATE_PRESETS.upload(),
+  });
+  if (!burst.ok) {
+    return { ok: false, error: burst.message };
+  }
+
   // Beta safety net: enforce a per-user daily total. Soft-fails open if the
   // check itself errors so a transient DB blip doesn't block a tester.
   const quota = await checkDailyUploadBytes(ctx.profile.id, file.size);
   if (!quota.ok) {
     return { ok: false, error: quota.message };
+  }
+
+  // Lifetime storage cap. Stops a single tester from sitting on tens of
+  // GB and pushing us over Supabase's plan limit.
+  const storage = await checkTotalUserStorage(ctx.profile.id, file.size);
+  if (!storage.ok) {
+    return { ok: false, error: storage.message };
   }
 
   // Optional explicit destination hints from the Dropzone caller.
