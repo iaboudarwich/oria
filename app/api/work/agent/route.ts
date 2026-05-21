@@ -5,6 +5,7 @@ import { retrieveForQuery } from "@/lib/ai/retrieve";
 import { streamWorkAgent, type AgentMessage } from "@/lib/ai/work-agent";
 import { getWorkspaceContext } from "@/lib/data/workspace-context";
 import { recordLearningEvent } from "@/lib/data/learning";
+import { recordSystemEvent } from "@/lib/data/system-events";
 import { checkDailyAskRequests } from "@/lib/data/quotas";
 
 export const dynamic = "force-dynamic";
@@ -99,6 +100,14 @@ export async function POST(request: Request) {
         const message = e instanceof Error ? e.message : "unknown";
         writeEvent(controller, { type: "error", code: "stream_failed", message });
         controller.close();
+        void recordSystemEvent({
+          kind: "ai.error",
+          severity: "error",
+          message,
+          context: { surface: "work-agent", query: query.slice(0, 200) },
+          organizationId: ctx.organization.id,
+          actorId: ctx.profile.id,
+        });
       }
     },
   });

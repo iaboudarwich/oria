@@ -7,6 +7,7 @@ import {
   inviteEmailText,
   type InviteEmailData,
 } from "./templates/invite";
+import { recordSystemEvent } from "@/lib/data/system-events";
 import type { AccessLevel } from "@/lib/supabase/types";
 
 export type SendInviteResult =
@@ -73,16 +74,40 @@ export async function sendInviteEmail(input: {
         from,
         to: input.toEmail,
       });
+      void recordSystemEvent({
+        kind: "email.error",
+        severity: "error",
+        message: errWithStatus.message ?? "Resend returned an error",
+        context: {
+          surface: "invite",
+          to: input.toEmail,
+          from,
+          statusCode: errWithStatus.statusCode,
+          name: errWithStatus.name,
+        },
+      });
       return {
         status: "failed",
         reason: friendlyReason(errWithStatus),
         statusCode: errWithStatus.statusCode,
       };
     }
+    void recordSystemEvent({
+      kind: "email.sent",
+      severity: "info",
+      message: "invite",
+      context: { surface: "invite", to: input.toEmail, from },
+    });
     return { status: "sent" };
   } catch (e) {
     const message = e instanceof Error ? e.message : "Send failed";
     console.error("[send-invite] resend SDK threw", { message, from, to: input.toEmail });
+    void recordSystemEvent({
+      kind: "email.error",
+      severity: "error",
+      message,
+      context: { surface: "invite", to: input.toEmail, from, thrown: true },
+    });
     return { status: "failed", reason: message };
   }
 }

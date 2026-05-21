@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Topbar } from "@/components/dashboard/topbar";
 import { isCurrentUserAdmin } from "@/lib/data/admin";
 import { getSystemHealth, type FailedItem } from "@/lib/data/system-health";
+import type { SystemEvent } from "@/lib/data/system-events";
 
 export const metadata = { title: "System Health" };
 export const dynamic = "force-dynamic";
@@ -27,10 +28,48 @@ export default async function AdminHealthPage() {
         {h.warnings.length > 0 ? <WarningsCard warnings={h.warnings} /> : null}
 
         <SectionGrid title="AI usage">
-          <Stat label="Today" value={h.ai.today.toLocaleString()} hint="Ask Oria + Work agent + reports" />
+          <Stat
+            label="Today"
+            value={h.ai.today.toLocaleString()}
+            hint="Ask + Work agent + reports"
+          />
           <Stat label="Past 7 days" value={h.ai.past7.toLocaleString()} />
           <Stat label="Past 30 days" value={h.ai.past30.toLocaleString()} />
+          <Stat
+            label="Errors today"
+            value={h.ai.errorsToday.toLocaleString()}
+            tone={h.ai.errorsToday > 0 ? "warn" : "ok"}
+            hint={`${h.ai.errors7d} in past 7d`}
+          />
         </SectionGrid>
+
+        <SectionGrid title="AI cost (estimated, past 30d)">
+          <Stat
+            label="Input tokens"
+            value={h.ai.inputTokens30d.toLocaleString()}
+          />
+          <Stat
+            label="Output tokens"
+            value={h.ai.outputTokens30d.toLocaleString()}
+          />
+          <Stat
+            label="Estimated USD"
+            value={`$${h.ai.estimatedCostUsd30d.toFixed(2)}`}
+            hint="Rough; streaming chat usage not captured."
+          />
+          <Stat
+            label="Source of truth"
+            value="console.anthropic.com"
+            hint="Login for invoiced billing."
+          />
+        </SectionGrid>
+
+        {h.ai.recentErrors.length > 0 ? (
+          <EventsCard
+            title="Recent AI errors"
+            events={h.ai.recentErrors}
+          />
+        ) : null}
 
         {h.ai.topActors.length > 0 || h.ai.byVia.length > 0 ? (
           <div className="grid gap-4 lg:grid-cols-2">
@@ -105,11 +144,23 @@ export default async function AdminHealthPage() {
             tone={h.env.hasResendFrom ? "ok" : "warn"}
           />
           <Stat
-            label="Send failures"
-            value="See Vercel logs"
-            hint="Filter for [send-invite]"
+            label="Sent today"
+            value={h.email.sentToday.toLocaleString()}
+            hint={`${h.email.sent7d} in past 7d`}
+          />
+          <Stat
+            label="Failed (7d)"
+            value={h.email.failed7d.toLocaleString()}
+            tone={h.email.failed7d > 0 ? "warn" : "ok"}
           />
         </SectionGrid>
+
+        {h.email.recentFailures.length > 0 ? (
+          <EventsCard
+            title="Recent email failures"
+            events={h.email.recentFailures}
+          />
+        ) : null}
 
         <SectionGrid title="Vercel deployment">
           <Stat label="Environment" value={h.deploy.env ?? "—"} />
@@ -122,6 +173,44 @@ export default async function AdminHealthPage() {
             Last commit: {h.deploy.commitMessage}
           </p>
         ) : null}
+
+        {h.vercelLive.configured ? (
+          <SectionGrid title="Vercel live status">
+            <Stat
+              label="State"
+              value={h.vercelLive.state ?? "—"}
+              tone={
+                h.vercelLive.state === "READY" || h.vercelLive.state === "ready"
+                  ? "ok"
+                  : "warn"
+              }
+              hint={h.vercelLive.reason}
+            />
+            <Stat label="Branch" value={h.vercelLive.branch ?? "—"} />
+            <Stat
+              label="URL"
+              value={
+                h.vercelLive.url
+                  ? h.vercelLive.url.replace(/^https?:\/\//, "")
+                  : "—"
+              }
+            />
+            <Stat
+              label="Deployed"
+              value={
+                h.vercelLive.createdAt
+                  ? new Date(h.vercelLive.createdAt).toLocaleString()
+                  : "—"
+              }
+            />
+          </SectionGrid>
+        ) : (
+          <p className="px-1 text-[12px] text-ink-faint">
+            Set <code>VERCEL_API_TOKEN</code> + <code>VERCEL_PROJECT_ID</code>{" "}
+            (and optionally <code>VERCEL_TEAM_ID</code>) on Vercel to surface
+            live deployment status here.
+          </p>
+        )}
 
         <SectionGrid title="Environment">
           <Stat
@@ -266,6 +355,48 @@ function Card({
       </div>
     </section>
   );
+}
+
+/**
+ * Recent system_events list. Shows kind/message + a short context line
+ * (status code, surface, target). Keeps the layout calm; no JSON dumps.
+ */
+function EventsCard({
+  title,
+  events,
+}: {
+  title: string;
+  events: SystemEvent[];
+}) {
+  return (
+    <section>
+      <h2 className="mb-2 px-1 text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
+        {title}
+      </h2>
+      <ul className="rounded-2xl border border-line bg-surface-raised divide-y divide-line">
+        {events.map((e) => (
+          <li key={e.id} className="px-4 py-3">
+            <p className="truncate text-[13px] text-ink">
+              {e.message ?? e.kind}
+            </p>
+            <p className="mt-0.5 text-[11.5px] text-ink-faint">
+              {summarizeContext(e)} · {new Date(e.created_at).toLocaleString()}
+            </p>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+function summarizeContext(e: SystemEvent): string {
+  const c = e.context ?? {};
+  const bits: string[] = [];
+  if (typeof c.surface === "string") bits.push(c.surface);
+  if (typeof c.statusCode === "number") bits.push(`HTTP ${c.statusCode}`);
+  if (typeof c.model === "string") bits.push(c.model);
+  if (typeof c.to === "string") bits.push(`to ${c.to}`);
+  return bits.length > 0 ? bits.join(" · ") : e.kind;
 }
 
 function SimpleList({

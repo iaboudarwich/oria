@@ -4,6 +4,7 @@ import { isAnthropicConfigured } from "@/lib/ai/anthropic";
 import { retrieveForQuery } from "@/lib/ai/retrieve";
 import { streamAnswer, type AgentMessage } from "@/lib/ai/agent";
 import { recordLearningEvent } from "@/lib/data/learning";
+import { recordSystemEvent } from "@/lib/data/system-events";
 import { checkDailyAskRequests } from "@/lib/data/quotas";
 import type { SectionScope } from "@/lib/data/section-scope";
 import type { Section } from "@/lib/supabase/types";
@@ -132,6 +133,17 @@ export async function POST(request: Request) {
         const message = e instanceof Error ? e.message : "unknown";
         writeEvent(controller, { type: "error", code: "stream_failed", message });
         controller.close();
+        void recordSystemEvent({
+          kind: "ai.error",
+          severity: "error",
+          message,
+          context: {
+            surface: scope ? `ask:${scope.kind}:${scope.key}` : "ask",
+            query: query.slice(0, 200),
+          },
+          organizationId: ctx.organization.id,
+          actorId: ctx.profile.id,
+        });
       }
     },
   });

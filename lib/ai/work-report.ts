@@ -2,9 +2,11 @@ import "server-only";
 
 import type Anthropic from "@anthropic-ai/sdk";
 import { getAnthropic } from "./anthropic";
+import { estimatedCostUSD } from "./pricing";
 import { createClient } from "@/lib/supabase/server";
 import { requireContext } from "@/lib/data/organizations";
 import { getWorkspaceContext } from "@/lib/data/workspace-context";
+import { recordSystemEvent } from "@/lib/data/system-events";
 import type { ReportPayload } from "@/lib/data/workspace-reports";
 
 /**
@@ -319,8 +321,42 @@ Hard rules:
       messages: [{ role: "user", content: contextLines.join("\n") }],
     });
   } catch (e) {
-    const message = e instanceof Error ? e.message : "unknown";
-    return { ok: false, error: `Claude error: ${message}` };
+    const err = e as { status?: number; message?: string; name?: string };
+    void recordSystemEvent({
+      kind: "ai.error",
+      severity: "error",
+      message: err.message ?? "Anthropic messages.create threw",
+      context: {
+        surface: "work-report",
+        prompt: input.prompt.slice(0, 200),
+        statusCode: err.status,
+        name: err.name,
+      },
+      organizationId: ctx.organization.id,
+      actorId: ctx.profile.id,
+    });
+    return { ok: false, error: `Claude error: ${err.message ?? "unknown"}` };
+  }
+
+  if (response.usage) {
+    void recordSystemEvent({
+      kind: "ai.request",
+      severity: "info",
+      message: "work-report",
+      context: {
+        surface: "work-report",
+        model: response.model,
+        input_tokens: response.usage.input_tokens,
+        output_tokens: response.usage.output_tokens,
+        cost_usd: estimatedCostUSD(
+          response.model,
+          response.usage.input_tokens,
+          response.usage.output_tokens,
+        ),
+      },
+      organizationId: ctx.organization.id,
+      actorId: ctx.profile.id,
+    });
   }
 
   const toolUse = response.content.find(

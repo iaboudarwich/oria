@@ -7,6 +7,7 @@ import {
   type SkipReason,
 } from "@/lib/ai/extract";
 import { proposeAutoReminders } from "./auto-reminders";
+import { recordSystemEvent } from "./system-events";
 import type { DocumentType, Section } from "@/lib/supabase/types";
 
 /**
@@ -201,6 +202,12 @@ export async function processUpload(uploadId: string): Promise<void> {
 
   if (readError || !upload) {
     await supabase.from("uploads").update({ status: "failed" }).eq("id", uploadId);
+    void recordSystemEvent({
+      kind: "upload.failed",
+      severity: "error",
+      message: "Could not read upload row for processing",
+      context: { uploadId, supabaseError: readError?.message ?? null },
+    });
     return;
   }
 
@@ -229,6 +236,23 @@ export async function processUpload(uploadId: string): Promise<void> {
 
   const aiResult = aiOutcome.kind === "ok" ? aiOutcome.result : null;
   const skipReason = aiOutcome.kind === "skipped" ? aiOutcome.reason : null;
+
+  if (skipReason) {
+    void recordSystemEvent({
+      kind: "extraction.skipped",
+      severity:
+        skipReason === "model_error" || skipReason === "empty_result"
+          ? "error"
+          : "warn",
+      message: skipReason,
+      context: {
+        uploadId: upload.id,
+        filename: upload.filename,
+        mime: upload.mime_type,
+      },
+      organizationId: upload.organization_id,
+    });
+  }
 
   const heuristic = classify({
     filename: upload.filename,

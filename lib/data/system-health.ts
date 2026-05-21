@@ -1,6 +1,12 @@
 import "server-only";
 
 import { createAdminClient } from "@/lib/supabase/admin";
+import {
+  countEvents,
+  listRecentEvents,
+  sumEventContext,
+  type SystemEvent,
+} from "./system-events";
 
 /**
  * Read-only system-health aggregations for the Admin page.
@@ -26,6 +32,36 @@ export type AiUsage = {
   past30: number;
   topActors: Array<{ actor: string; count: number }>;
   byVia: Array<{ via: string; count: number }>;
+  /** Errors logged by the AI pipeline. Captured via system_events. */
+  errorsToday: number;
+  errors7d: number;
+  /** Token totals over the last 30 days (extract + report; streaming
+   *  chat usage isn't captured yet). */
+  inputTokens30d: number;
+  outputTokens30d: number;
+  /** Sum of estimated costs we attached at log time. Treat as rough. */
+  estimatedCostUsd30d: number;
+  recentErrors: SystemEvent[];
+};
+
+export type EmailStats = {
+  sentToday: number;
+  sent7d: number;
+  failed7d: number;
+  recentFailures: SystemEvent[];
+};
+
+export type VercelLive = {
+  configured: boolean;
+  state?: string;
+  url?: string;
+  createdAt?: string;
+  branch?: string;
+  reason?: string;
+};
+
+export type AuthStats = {
+  totalProfiles: number;
 };
 
 export type StorageStats = {
@@ -78,10 +114,12 @@ export type FailedItem = {
 
 export type SystemHealth = {
   ai: AiUsage;
+  email: EmailStats;
   storage: StorageStats;
   db: DbStats;
   env: EnvStatus;
   deploy: DeployInfo;
+  vercelLive: VercelLive;
   failedUploads: FailedItem[];
   failedReports: FailedItem[];
   warnings: string[];
@@ -97,22 +135,28 @@ export async function getSystemHealth(): Promise<SystemHealth> {
 
   const [
     ai,
+    email,
     storage,
     db,
     failedUploads,
     failedReports,
+    vercelLive,
   ] = await Promise.all([
     collectAiUsage(admin),
+    collectEmailStats(),
     collectStorage(admin, orgById),
     collectDbStats(admin),
     collectFailedUploads(admin, orgById),
     collectFailedReports(admin, orgById),
+    collectVercelLive(),
   ]);
 
   const env = collectEnvStatus();
   const deploy = collectDeployInfo();
   const warnings = collectWarnings({
     env,
+    ai,
+    email,
     storage,
     failedUploads,
     failedReports,
@@ -120,10 +164,12 @@ export async function getSystemHealth(): Promise<SystemHealth> {
 
   return {
     ai,
+    email,
     storage,
     db,
     env,
     deploy,
+    vercelLive,
     failedUploads,
     failedReports,
     warnings,
@@ -212,12 +258,34 @@ async function collectAiUsage(admin: AdminClient): Promise<AiUsage> {
     .sort((a, b) => b.count - a.count)
     .slice(0, 6);
 
+  const [
+    errorsToday,
+    errors7d,
+    inputTokens30d,
+    outputTokens30d,
+    estimatedCostUsd30d,
+    recentErrors,
+  ] = await Promise.all([
+    countEvents({ kind: "ai.error", sinceISO: todayStart() }),
+    countEvents({ kind: "ai.error", sinceISO: sinceDays(7) }),
+    sumEventContext({ kind: "ai.request", field: "input_tokens", sinceISO: sinceDays(30) }),
+    sumEventContext({ kind: "ai.request", field: "output_tokens", sinceISO: sinceDays(30) }),
+    sumEventContext({ kind: "ai.request", field: "cost_usd", sinceISO: sinceDays(30) }),
+    listRecentEvents({ kind: "ai.error", limit: 10 }),
+  ]);
+
   return {
     today: todayRes.count ?? 0,
     past7: week.count ?? 0,
     past30: month.count ?? 0,
     topActors,
     byVia: byViaArr,
+    errorsToday,
+    errors7d,
+    inputTokens30d,
+    outputTokens30d,
+    estimatedCostUsd30d: Math.round(estimatedCostUsd30d * 10000) / 10000,
+    recentErrors,
   };
 }
 
@@ -401,8 +469,76 @@ async function collectFailedReports(
   }));
 }
 
+async function collectEmailStats(): Promise<EmailStats> {
+  const [sentToday, sent7d, failed7d, recentFailures] = await Promise.all([
+    countEvents({ kind: "email.sent", sinceISO: todayStart() }),
+    countEvents({ kind: "email.sent", sinceISO: sinceDays(7) }),
+    countEvents({ kind: "email.error", sinceISO: sinceDays(7) }),
+    listRecentEvents({ kind: "email.error", limit: 5 }),
+  ]);
+  return { sentToday, sent7d, failed7d, recentFailures };
+}
+
+/**
+ * Try to fetch the most recent deployment from Vercel's REST API.
+ * Requires VERCEL_API_TOKEN (a personal or team token) and the standard
+ * Vercel project envs. Without those, returns { configured: false } and
+ * the page falls back to the env-var-only Deploy info card. We never
+ * call this for non-prod runs (it'd just hit the token's rate limit).
+ */
+async function collectVercelLive(): Promise<VercelLive> {
+  const token = process.env.VERCEL_API_TOKEN;
+  const projectId = process.env.VERCEL_PROJECT_ID;
+  if (!token || !projectId) return { configured: false };
+
+  try {
+    const url = new URL("https://api.vercel.com/v6/deployments");
+    url.searchParams.set("projectId", projectId);
+    url.searchParams.set("limit", "1");
+    if (process.env.VERCEL_TEAM_ID) {
+      url.searchParams.set("teamId", process.env.VERCEL_TEAM_ID);
+    }
+    const res = await fetch(url, {
+      headers: { Authorization: `Bearer ${token}` },
+      cache: "no-store",
+    });
+    if (!res.ok) {
+      return {
+        configured: true,
+        state: "unknown",
+        reason: `Vercel API ${res.status}`,
+      };
+    }
+    const data = (await res.json()) as {
+      deployments?: Array<{
+        state?: string;
+        url?: string;
+        created?: number;
+        meta?: { githubCommitRef?: string };
+      }>;
+    };
+    const d = data.deployments?.[0];
+    if (!d) return { configured: true, state: "unknown", reason: "No deployments" };
+    return {
+      configured: true,
+      state: d.state ?? "unknown",
+      url: d.url,
+      createdAt: d.created ? new Date(d.created).toISOString() : undefined,
+      branch: d.meta?.githubCommitRef,
+    };
+  } catch (e) {
+    return {
+      configured: true,
+      state: "unknown",
+      reason: e instanceof Error ? e.message : "fetch error",
+    };
+  }
+}
+
 function collectWarnings(args: {
   env: EnvStatus;
+  ai: AiUsage;
+  email: EmailStats;
   storage: StorageStats;
   failedUploads: FailedItem[];
   failedReports: FailedItem[];
@@ -424,10 +560,16 @@ function collectWarnings(args: {
     out.push(`${args.storage.pendingCount} uploads stuck in processing — background extraction may be lagging.`);
   }
   if (args.failedUploads.length >= 5) {
-    out.push(`${args.failedUploads.length}+ uploads failed extraction recently — check Vercel logs for the Resend / Claude error.`);
+    out.push(`${args.failedUploads.length}+ uploads failed extraction recently — see Recent failed uploads below.`);
   }
   if (args.failedReports.length >= 3) {
     out.push(`${args.failedReports.length}+ Work reports failed recently — check the report detail for the model error.`);
+  }
+  if (args.ai.errorsToday >= 5) {
+    out.push(`${args.ai.errorsToday} AI errors today — check Claude key, rate limits, and the Recent AI errors list.`);
+  }
+  if (args.email.failed7d >= 3 && args.email.sent7d === 0) {
+    out.push(`${args.email.failed7d} email failures and zero successes in the past week — Resend likely misconfigured.`);
   }
   return out;
 }

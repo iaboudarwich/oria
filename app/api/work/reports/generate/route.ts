@@ -5,6 +5,7 @@ import { getCurrentContext } from "@/lib/data/organizations";
 import { createClient } from "@/lib/supabase/server";
 import { generateWorkReport } from "@/lib/ai/work-report";
 import { checkDailyAskRequests } from "@/lib/data/quotas";
+import { recordSystemEvent } from "@/lib/data/system-events";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -93,6 +94,14 @@ export async function POST(request: Request) {
           updated_at: new Date().toISOString(),
         })
         .eq("id", reportId);
+      void recordSystemEvent({
+        kind: "report.failed",
+        severity: "error",
+        message: result.error,
+        context: { reportId, prompt: prompt.slice(0, 200), kind },
+        organizationId: ctx.organization.id,
+        actorId: ctx.profile.id,
+      });
     }
     revalidatePath("/dashboard/work/agent");
     revalidatePath(`/dashboard/work/agent/reports/${reportId}`);
