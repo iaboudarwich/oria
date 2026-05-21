@@ -17,6 +17,11 @@ import { getCustomSectionById } from "./custom-sections";
 import { SECTION_LABEL } from "@/lib/sections-meta";
 import { checkDailyUploadBytes, checkTotalUserStorage } from "./quotas";
 import { rateLimit, RATE_PRESETS } from "@/lib/rate-limit";
+import {
+  convertHeicToJpeg,
+  heicNameToJpeg,
+  isHeicLike,
+} from "@/lib/upload/heic";
 import { formatBytes } from "@/lib/utils";
 import type { Section } from "@/lib/supabase/types";
 
@@ -40,6 +45,9 @@ const ALLOWED_MIME_EXACT = [
   "application/octet-stream",
   "application/zip",
 ];
+// HEIC/HEIF aren't in either list above because we convert them to JPEG
+// in this action before they ever touch storage. isHeicLike() catches
+// the case where iOS labels the upload as application/octet-stream.
 // Keep below next.config.ts `experimental.serverActions.bodySizeLimit`
 // so users see our friendly message instead of a 413 from the framework.
 const MAX_BYTES = 50 * 1024 * 1024;
@@ -54,7 +62,9 @@ export async function uploadFile(formData: FormData): Promise<Result> {
   if (file.size > MAX_BYTES) {
     return { ok: false, error: `File too large. Max ${formatBytes(MAX_BYTES)}` };
   }
+  const looksHeic = isHeicLike({ name: file.name, type: file.type });
   const mimeOk =
+    looksHeic ||
     ALLOWED_MIME_EXACT.includes(file.type) ||
     ALLOWED_MIME_PREFIXES.some((p) => file.type.startsWith(p));
   if (file.type && !mimeOk) {
@@ -111,14 +121,59 @@ export async function uploadFile(formData: FormData): Promise<Result> {
       : null;
 
   const uploadId = crypto.randomUUID();
-  const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_") || "upload";
+
+  // iPhone HEIC → JPEG. Convert before storage so signed-URL
+  // previews work, Anthropic vision (PNG/JPEG/GIF/WebP only) accepts
+  // the file, and the rest of the pipeline treats it as a normal
+  // photo. Bytes/name/mime get rewritten in place.
+  let bodyBytes: Buffer | File = file;
+  let bodyMime = file.type || "application/octet-stream";
+  let bodyName = file.name;
+  let bodySize = file.size;
+
+  if (looksHeic) {
+    try {
+      const inputBytes = Buffer.from(await file.arrayBuffer());
+      const jpeg = await convertHeicToJpeg(inputBytes);
+      if (jpeg.byteLength > MAX_BYTES) {
+        return {
+          ok: false,
+          error: `Photo is too large after conversion. Max ${formatBytes(MAX_BYTES)}.`,
+        };
+      }
+      bodyBytes = jpeg;
+      bodyMime = "image/jpeg";
+      bodyName = heicNameToJpeg(file.name);
+      bodySize = jpeg.byteLength;
+    } catch (err) {
+      void recordSystemEvent({
+        kind: "upload.failed",
+        severity: "warn",
+        message:
+          err instanceof Error ? err.message : "HEIC conversion failed",
+        context: {
+          stage: "heic_convert",
+          filename: file.name,
+          size: file.size,
+        },
+        organizationId: ctx.organization.id,
+        actorId: ctx.profile.id,
+      });
+      return {
+        ok: false,
+        error: "Couldn't read this iPhone photo. Try sharing it as JPEG instead.",
+      };
+    }
+  }
+
+  const safeName = bodyName.replace(/[^a-zA-Z0-9._-]/g, "_") || "upload";
   const path = `${ctx.organization.id}/${uploadId}/${safeName}`;
 
   // 1. Upload bytes to storage.
   const { error: storageError } = await supabase.storage
     .from("uploads")
-    .upload(path, file, {
-      contentType: file.type || "application/octet-stream",
+    .upload(path, bodyBytes, {
+      contentType: bodyMime,
       upsert: false,
     });
   if (storageError) {
@@ -132,7 +187,7 @@ export async function uploadFile(formData: FormData): Promise<Result> {
   let inferredCustomId: string | null = null;
   if (!sectionHint && !customSectionId) {
     const sections = await getOrgSectionContexts(ctx.organization.id);
-    const pick = pickBestSection(file.name, sections);
+    const pick = pickBestSection(bodyName, sections);
     if (pick?.kind === "builtin") inferredBuiltin = pick.key;
     if (pick?.kind === "custom") inferredCustomId = pick.key;
   }
@@ -147,13 +202,15 @@ export async function uploadFile(formData: FormData): Promise<Result> {
   // after editing it, and we have no content hash to be certain. Just
   // tag metadata so the upload detail can show "Looks like a duplicate
   // of [other]" and emit a status event so the user sees it.
+  // Compares against the post-conversion (name, size) so a re-uploaded
+  // HEIC still pattern-matches against the previous one.
   const dupCutoff = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
   const { data: dupRows } = await supabase
     .from("uploads")
     .select("id, filename, created_at")
     .eq("organization_id", ctx.organization.id)
-    .eq("filename", file.name)
-    .eq("size_bytes", file.size)
+    .eq("filename", bodyName)
+    .eq("size_bytes", bodySize)
     .is("deleted_at", null)
     .gte("created_at", dupCutoff)
     .order("created_at", { ascending: false })
@@ -167,12 +224,12 @@ export async function uploadFile(formData: FormData): Promise<Result> {
     organization_id: ctx.organization.id,
     uploaded_by: ctx.profile.id,
     storage_path: path,
-    filename: file.name,
-    mime_type: file.type || null,
-    size_bytes: file.size,
+    filename: bodyName,
+    mime_type: bodyMime || null,
+    size_bytes: bodySize,
     section: finalSection,
     custom_section_id: finalCustomId,
-    title: file.name,
+    title: bodyName,
     status: "received",
     metadata: {
       ...(userDescription ? { user_description: userDescription } : {}),
@@ -193,8 +250,8 @@ export async function uploadFile(formData: FormData): Promise<Result> {
     organization_id: ctx.organization.id,
     actor_id: ctx.profile.id,
     kind: "upload",
-    title: file.name,
-    detail: `Uploaded, ${formatBytes(file.size)}`,
+    title: bodyName,
+    detail: `Uploaded, ${formatBytes(bodySize)}`,
     upload_id: uploadId,
   });
 
@@ -208,7 +265,7 @@ export async function uploadFile(formData: FormData): Promise<Result> {
       message: "Looks like a duplicate of an upload from earlier today.",
       context: {
         uploadId,
-        title: file.name,
+        title: bodyName,
         duplicate_of: dupOf.id,
       },
       organizationId: ctx.organization.id,
