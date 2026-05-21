@@ -24,15 +24,24 @@ export default async function DashboardHome() {
     ? `Hi, ${ctx.profile.full_name.split(" ")[0]}`
     : "Hi";
 
-  const [uploads, sectionCounts, allSections] = await Promise.all([
-    listUploadsWithUploader({ limit: 4 }),
-    countUploadsBySection(),
-    listAllSections({ includeHidden: false, includeReview: false }),
+  // Section counts and section settings are independent of uploads.
+  // Fetch uploads first (we need their ids for the signed-url batch),
+  // but kick off section work in parallel with the URL signing so the
+  // home page doesn't pay for the round-trip twice.
+  const uploadsP = listUploadsWithUploader({ limit: 4 });
+  const sectionCountsP = countUploadsBySection();
+  const allSectionsP = listAllSections({
+    includeHidden: false,
+    includeReview: false,
+  });
+  const uploads = await uploadsP;
+  const [sectionCounts, allSections, thumbs] = await Promise.all([
+    sectionCountsP,
+    allSectionsP,
+    getSignedUrlMap(
+      uploads.map((u) => ({ id: u.id, storage_path: u.storage_path })),
+    ),
   ]);
-
-  const thumbs = await getSignedUrlMap(
-    uploads.map((u) => ({ id: u.id, storage_path: u.storage_path })),
-  );
 
   const isEmpty = uploads.length === 0;
 

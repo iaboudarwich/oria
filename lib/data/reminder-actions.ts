@@ -51,8 +51,10 @@ export async function createReminder(formData: FormData): Promise<void> {
     source: "manual",
   });
 
-  revalidatePath("/dashboard");
-  revalidatePath("/dashboard/reminders");
+  // Narrow scope: calendar is the only surface that lists reminders.
+  // Hitting "/dashboard" used to invalidate the entire layout (sidebar
+  // chrome, sections list, etc.) which made the action feel heavy.
+  revalidatePath("/dashboard/calendar");
   if (upload_id) revalidatePath(`/dashboard/uploads/${upload_id}`);
 }
 
@@ -88,9 +90,7 @@ export async function toggleReminderDone(formData: FormData): Promise<void> {
     .eq("id", id)
     .in("organization_id", allowedOrgIds);
 
-  revalidatePath("/dashboard");
   revalidatePath("/dashboard/calendar");
-  revalidatePath("/dashboard/reminders");
 }
 
 export async function deleteReminder(formData: FormData): Promise<void> {
@@ -136,9 +136,7 @@ export async function deleteReminder(formData: FormData): Promise<void> {
     });
   }
 
-  revalidatePath("/dashboard");
   revalidatePath("/dashboard/calendar");
-  revalidatePath("/dashboard/reminders");
 }
 
 export async function confirmReminder(formData: FormData): Promise<void> {
@@ -169,5 +167,4 @@ export async function confirmReminder(formData: FormData): Promise<void> {
   });
 
   revalidatePath("/dashboard/calendar");
-  revalidatePath("/dashboard/reminders");
 }

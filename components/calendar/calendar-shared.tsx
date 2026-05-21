@@ -3,7 +3,6 @@
 import Link from "next/link";
 import {
   CalendarIcon,
-  CheckIcon,
   ClockIcon,
   GiftIcon,
   HeartIcon,
@@ -15,8 +14,8 @@ import {
 import {
   confirmReminder,
   deleteReminder,
-  toggleReminderDone,
 } from "@/lib/data/reminder-actions";
+import { ReminderCheckbox } from "./reminder-checkbox";
 import type {
   CalendarCategory,
   CalendarEntry,
@@ -152,23 +151,12 @@ export function CalendarRow({
       }`}
     >
       {/* Checkbox: only for reminders. Items are passive (a flight isn't
-       * something you "mark done"). */}
+       * something you "mark done"). Optimistic flip on click so the
+       * calendar never feels like it's waiting on the server. */}
       {isReminder ? (
-        <form action={toggleReminderDone} className="mt-0.5">
-          <input type="hidden" name="id" value={rawId} />
-          <input type="hidden" name="done" value={String(!!e.done)} />
-          <button
-            type="submit"
-            aria-label={e.done ? "Mark not done" : "Mark done"}
-            className={`inline-flex h-4 w-4 items-center justify-center rounded border transition-base ${
-              e.done
-                ? "border-sage bg-sage text-surface"
-                : "border-line-strong bg-surface hover:border-ink-muted"
-            }`}
-          >
-            {e.done ? <CheckIcon size={10} /> : null}
-          </button>
-        </form>
+        <div className="mt-0.5">
+          <ReminderCheckbox id={rawId} initialDone={!!e.done} />
+        </div>
       ) : (
         // Spacer keeps the icon column aligned across reminders + items.
         <span className="mt-0.5 inline-block h-4 w-4 shrink-0" aria-hidden />
