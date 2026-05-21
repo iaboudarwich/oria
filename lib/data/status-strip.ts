@@ -30,24 +30,19 @@ export async function writeLastStatusSeenId(id: string): Promise<void> {
 /**
  * One-shot flash messages for self-facing confirmations the database
  * doesn't model (e.g. "You joined Family Circle"). The writer sets it
- * right before redirecting, the topbar reads it on the next render and
- * clears it so it never shows twice.
+ * right before redirecting (in a Server Action). The topbar reads it
+ * on the next render.
  *
- * Format: a JSON-ish string is overkill for one message — we use plain
- * text. Cleared the same way it was set, on the next read.
+ * We DON'T clear the cookie in the read path — Next.js only permits
+ * cookie writes inside Server Actions or Route Handlers, and the
+ * topbar is a Server Component during render. Instead the cookie has
+ * a tight 20-second TTL, which is more than enough for the redirect →
+ * dashboard hop and short enough that a deliberate refresh a moment
+ * later won't show the message twice in practice.
  */
-export async function readAndClearStatusFlash(): Promise<string | null> {
+export async function readStatusFlash(): Promise<string | null> {
   const store = await cookies();
-  const value = store.get(FLASH_COOKIE)?.value ?? null;
-  if (value) {
-    store.set(FLASH_COOKIE, "", {
-      httpOnly: false,
-      sameSite: "lax",
-      path: "/",
-      maxAge: 0,
-    });
-  }
-  return value || null;
+  return store.get(FLASH_COOKIE)?.value || null;
 }
 
 export async function writeStatusFlash(message: string): Promise<void> {
@@ -56,7 +51,9 @@ export async function writeStatusFlash(message: string): Promise<void> {
     httpOnly: false,
     sameSite: "lax",
     path: "/",
-    // Short lifetime: the next dashboard render consumes and clears it.
-    maxAge: 60,
+    // Short lifetime so the message disappears even without an explicit
+    // dismissal. The user sees it on the redirect render; subsequent
+    // navigations stay clean.
+    maxAge: 20,
   });
 }

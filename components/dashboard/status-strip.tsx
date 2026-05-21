@@ -8,8 +8,8 @@ import {
   listUserSpaces,
 } from "@/lib/data/organizations";
 import {
-  readAndClearStatusFlash,
   readLastStatusSeenId,
+  readStatusFlash,
 } from "@/lib/data/status-strip";
 import { dismissStatusStrip } from "@/lib/data/status-strip-actions";
 
@@ -30,14 +30,15 @@ export async function StatusStrip() {
     getCurrentContext(),
     listUserSpaces(),
     readLastStatusSeenId(),
-    readAndClearStatusFlash(),
+    readStatusFlash(),
   ]);
   if (!ctx) return null;
 
   // Flash messages win when present: they're a one-shot self-facing
   // confirmation ("You joined Family Circle") that the database doesn't
-  // model. readAndClearStatusFlash clears the cookie so it never shows
-  // twice. After this render, normal event-based strips resume.
+  // model. The cookie has a 20-second TTL so it disappears without us
+  // needing to write during render (Next.js disallows that). After it
+  // expires, normal event-based strips resume.
   if (flash) {
     return <StatusStripFlashRow message={flash} />;
   }
