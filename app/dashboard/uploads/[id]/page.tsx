@@ -152,6 +152,7 @@ export default async function UploadDetailPage({ params }: Props) {
           ) : null}
 
           <UnderstoodPanel
+            uploadId={upload.id}
             extraction={extraction}
             status={upload.status}
             skipReason={readSkipReason(upload.metadata)}

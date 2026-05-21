@@ -4,7 +4,7 @@ import { after } from "next/server";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { requireContext } from "./organizations";
-import { processUpload } from "./upload-intelligence";
+import { runProcessUploadSafely } from "./upload-process-safe";
 import {
   enrichBuiltinSectionFromMove,
   getOrgSectionContexts,
@@ -160,7 +160,7 @@ export async function uploadFile(formData: FormData): Promise<Result> {
   //    Ask Oria already surfaces in-flight uploads as PENDING with a
   //    "Reading…" chip, so the rest of the UI stays snappy.
   after(async () => {
-    await processUpload(uploadId).catch(() => {});
+    await runProcessUploadSafely(uploadId, ctx.organization.id);
   });
 
   revalidatePath("/dashboard");
@@ -169,9 +169,50 @@ export async function uploadFile(formData: FormData): Promise<Result> {
   return { ok: true, id: uploadId };
 }
 
+
 export async function recordUploadOpened(uploadId: string): Promise<void> {
   const supabase = await createClient();
   await supabase.rpc("mark_upload_opened", { p_upload_id: uploadId });
+}
+
+/**
+ * Re-run the AI pipeline for an upload that's stuck or failed. Returns
+ * the upload's current state so the caller can revalidate. Idempotent:
+ * processUpload itself flips the upload back to status=processing
+ * before running, then to filed or failed.
+ */
+export async function retryUploadProcessing(
+  formData: FormData,
+): Promise<void> {
+  const id = String(formData.get("id") ?? "").trim();
+  if (!id) return;
+  const ctx = await requireContext();
+  const supabase = await createClient();
+
+  // Scope guard: the user must be in the org that owns this upload.
+  const { data: row } = await supabase
+    .from("uploads")
+    .select("id, organization_id, status")
+    .eq("id", id)
+    .eq("organization_id", ctx.organization.id)
+    .maybeSingle();
+  if (!row) return;
+  const upload = row as {
+    id: string;
+    organization_id: string;
+    status: string | null;
+  };
+
+  // Only retry stuck/failed rows. Don't blow up a healthy "filed"
+  // record by accident.
+  if (upload.status !== "failed" && upload.status !== "processing") return;
+
+  after(async () => {
+    await runProcessUploadSafely(upload.id, upload.organization_id);
+  });
+
+  revalidatePath(`/dashboard/uploads/${id}`);
+  revalidatePath("/dashboard/inbox");
 }
 
 const BUILTIN_SECTIONS = new Set([

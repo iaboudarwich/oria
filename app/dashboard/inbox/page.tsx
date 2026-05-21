@@ -3,6 +3,7 @@ import { Topbar } from "@/components/dashboard/topbar";
 import { DropzoneCompact } from "@/components/upload/dropzone-compact";
 import { InlineTrashButton } from "@/components/upload/inline-trash";
 import { Thumbnail } from "@/components/upload/thumbnail";
+import { UploadsPoller } from "@/components/upload/uploads-poller";
 import { SectionsGrid } from "@/components/dashboard/sections-grid";
 import {
   countUploadsBySection,
@@ -12,6 +13,7 @@ import {
 } from "@/lib/data/uploads";
 import { listAllSections } from "@/lib/data/all-sections";
 import { countReviewUploads } from "@/lib/data/sections";
+import { recoverStuckUploads } from "@/lib/data/stuck-uploads";
 import { displayActor } from "@/lib/data/timeline";
 import { sectionLabel } from "@/lib/sections-meta";
 import { relativeTime } from "@/lib/utils";
@@ -20,6 +22,10 @@ import type { Section } from "@/lib/supabase/types";
 export const metadata = { title: "Upload" };
 
 export default async function UploadPage() {
+  // Best-effort: recover any uploads stuck in "processing" before we
+  // list them, so the row either flips fast or shows a real Failed
+  // pill instead of pretending it's still reading.
+  await recoverStuckUploads();
   const [counts, uploads, allSections, reviewCount] = await Promise.all([
     countUploadsBySection(),
     listUploadsWithUploader({ limit: 50 }),
@@ -31,9 +37,14 @@ export default async function UploadPage() {
     uploads.map((u) => ({ id: u.id, storage_path: u.storage_path })),
   );
 
+  const anyProcessing = uploads.some(
+    (u) => u.status === "processing" || u.status === "received",
+  );
+
   return (
     <>
       <Topbar title="Upload" />
+      <UploadsPoller pending={anyProcessing} />
 
       <div className="space-y-7 animate-fade-up">
         <DropzoneCompact />

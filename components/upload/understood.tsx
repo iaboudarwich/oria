@@ -4,9 +4,11 @@ import {
   factsToRows,
   languageName,
 } from "@/lib/data/upload-intelligence";
+import { retryUploadProcessing } from "@/lib/data/upload-actions";
 import type { Extraction, UploadStatus } from "@/lib/supabase/types";
 
 type Props = {
+  uploadId: string;
   extraction: Extraction | null;
   status: UploadStatus;
   /** Optional extraction skip reason from upload.metadata.extraction_skipped. */
@@ -30,7 +32,12 @@ const SKIP_MESSAGES: Record<string, string> = {
  * pipeline today produces classification + section only; richer fields
  * (facts, entities, action_items, language) appear as real OCR is wired.
  */
-export function UnderstoodPanel({ extraction, status, skipReason }: Props) {
+export function UnderstoodPanel({
+  uploadId,
+  extraction,
+  status,
+  skipReason,
+}: Props) {
   if (status === "received" || status === "processing") {
     return (
       <section>
@@ -40,6 +47,31 @@ export function UnderstoodPanel({ extraction, status, skipReason }: Props) {
         <p className="px-1 text-[12.5px] text-ink-faint">
           Looking at the file. This usually takes a moment.
         </p>
+      </section>
+    );
+  }
+
+  if (status === "failed") {
+    return (
+      <section>
+        <h2 className="mb-3 px-1 text-[13px] font-medium text-ink-muted">
+          Couldn&apos;t read this one
+        </h2>
+        <div className="flex items-center gap-3 rounded-xl border border-claret/30 bg-claret/[0.05] p-4">
+          <p className="flex-1 text-[13px] text-ink">
+            Extraction didn&apos;t finish. The file is still on hand —
+            try again or move it manually.
+          </p>
+          <form action={retryUploadProcessing}>
+            <input type="hidden" name="id" value={uploadId} />
+            <button
+              type="submit"
+              className="inline-flex h-8 items-center rounded-md bg-ink px-2.5 text-[11.5px] text-surface transition-base hover:bg-ink-soft"
+            >
+              Retry
+            </button>
+          </form>
+        </div>
       </section>
     );
   }
