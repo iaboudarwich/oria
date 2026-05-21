@@ -22,15 +22,17 @@ import {
 } from "@/components/ui/icon";
 import { SECTION_META, CustomSectionIcon } from "@/lib/sections-meta";
 import { DeleteAccountPanel } from "@/components/settings/delete-account-panel";
+import { isCurrentUserAdmin } from "@/lib/data/admin";
 import type { OrgKind, Section } from "@/lib/supabase/types";
 
 export const metadata = { title: "Settings" };
 
 export default async function SettingsPage() {
-  const [sections, ctx, spaces] = await Promise.all([
+  const [sections, ctx, spaces, admin] = await Promise.all([
     listAllSections({ includeHidden: true, includeReview: false }),
     getCurrentContext(),
     listUserSpaces(),
+    isCurrentUserAdmin(),
   ]);
 
   const visible = sections.filter((s) => !s.hidden);
@@ -78,9 +80,40 @@ export default async function SettingsPage() {
           kind="office"
         />
 
+        {admin ? <AdminPanel /> : null}
+
         <DeleteAccountPanel />
       </div>
     </>
+  );
+}
+
+/** Only rendered when the signed-in user's email is on ADMIN_EMAILS.
+ *  Non-admins never see the link; the page itself also re-checks. */
+function AdminPanel() {
+  return (
+    <GroupedSection
+      label="Admin"
+      hint="Operator-only views. Read-only."
+    >
+      <li className="flex items-center gap-3 px-3 py-2.5 transition-base hover:bg-canvas/60">
+        <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-line bg-canvas text-ink-muted">
+          <LockIcon size={14} />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-[13.5px] text-ink">System Health</p>
+          <p className="text-[11.5px] text-ink-faint">
+            AI usage, storage, database, deploy, warnings.
+          </p>
+        </div>
+        <Link
+          href="/dashboard/admin/health"
+          className="text-[11.5px] text-ink-muted hover:text-ink transition-base"
+        >
+          Open
+        </Link>
+      </li>
+    </GroupedSection>
   );
 }
 
