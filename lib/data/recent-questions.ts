@@ -2,6 +2,7 @@ import "server-only";
 
 import { createClient } from "@/lib/supabase/server";
 import { requireContext } from "./organizations";
+import type { SectionScope } from "./section-scope";
 
 /**
  * The user's most repeated recent Ask / Work-agent questions, in the
@@ -12,6 +13,12 @@ import { requireContext } from "./organizations";
  *
  * Scoped to organization_id + actor_id so a Personal-space owner
  * doesn't see Work prompts bleed in (and vice versa).
+ *
+ * When `scope` is supplied, only questions that were originally asked
+ * inside that exact section scope are returned. The Ask Oria API
+ * tags learning events with `via: "ask:builtin:finance"` etc., so we
+ * match against that tag — a Diet question never shows up as a
+ * recent Bills suggestion and vice versa.
  */
 export async function listRecentUserQuestions(input: {
   /** "ask" for Ask Oria, "work" for the Work agent. */
@@ -19,6 +26,8 @@ export async function listRecentUserQuestions(input: {
   limit?: number;
   /** Lookback window in days. */
   windowDays?: number;
+  /** Restrict to questions asked inside a specific section scope. */
+  scope?: SectionScope | null;
 }): Promise<string[]> {
   const ctx = await requireContext();
   const limit = input.limit ?? 3;
@@ -59,6 +68,18 @@ export async function listRecentUserQuestions(input: {
       const isWork = viaStr.startsWith("work");
       if (input.surface === "work" && !isWork) continue;
       if (input.surface === "ask" && isWork) continue;
+
+      // Section-scope match. The Ask API records `via` as either
+      // "ask" (no scope) or `ask:<kind>:<key>` — so we filter on the
+      // exact compound tag when the caller supplied a scope.
+      if (input.scope) {
+        const wantTag = `ask:${input.scope.kind}:${input.scope.key}`;
+        if (viaStr !== wantTag) continue;
+      } else if (input.surface === "ask") {
+        // The general /dashboard/ask page should NOT surface
+        // section-scoped recents — those belong to their section.
+        if (viaStr.startsWith("ask:")) continue;
+      }
 
       const key = text.toLowerCase();
       const existing = counts.get(key);

@@ -10,6 +10,7 @@ import {
   type DietTotals,
 } from "@/lib/data/smart-sections";
 import { listSectionMemories } from "@/lib/data/section-memory";
+import { listRecentUserQuestions } from "@/lib/data/recent-questions";
 import type { SectionScope } from "@/lib/data/section-scope";
 
 export const metadata = { title: "Diet" };
@@ -27,9 +28,10 @@ export default async function DietPage() {
   const today = startOfDay(new Date());
   const sevenDaysAgo = new Date(today);
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
-  const [meals, memories] = await Promise.all([
+  const [meals, memories, recentQuestions] = await Promise.all([
     listDietMeals({ since: sevenDaysAgo, limit: 200 }),
     listSectionMemories(SCOPE),
+    listRecentUserQuestions({ surface: "ask", scope: SCOPE, limit: 3 }),
   ]);
   const todayMeals = meals.filter((m) => occurredOn(m, today));
   const todayTotals = sumMacros(todayMeals);
@@ -111,7 +113,11 @@ export default async function DietPage() {
             Ask Diet
           </h2>
           <div className="rounded-2xl border border-line bg-surface-raised p-3">
-            <AskChat scope={SCOPE} suggestions={SUGGESTIONS} />
+            <AskChat
+              scope={SCOPE}
+              suggestions={SUGGESTIONS}
+              recentQuestions={recentQuestions}
+            />
           </div>
         </section>
 

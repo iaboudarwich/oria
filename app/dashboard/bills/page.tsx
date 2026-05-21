@@ -11,6 +11,7 @@ import {
   type RecurringSummary,
 } from "@/lib/data/smart-sections";
 import { listSectionMemories } from "@/lib/data/section-memory";
+import { listRecentUserQuestions } from "@/lib/data/recent-questions";
 import type { SectionScope } from "@/lib/data/section-scope";
 
 export const metadata = { title: "Bills" };
@@ -24,9 +25,10 @@ const SUGGESTIONS = [
 ];
 
 export default async function BillsPage() {
-  const [bills, memories] = await Promise.all([
+  const [bills, memories, recentQuestions] = await Promise.all([
     listBills(200),
     listSectionMemories(SCOPE),
+    listRecentUserQuestions({ surface: "ask", scope: SCOPE, limit: 3 }),
   ]);
   const now = new Date();
 
@@ -106,7 +108,11 @@ export default async function BillsPage() {
             Ask Bills
           </h2>
           <div className="rounded-2xl border border-line bg-surface-raised p-3">
-            <AskChat scope={SCOPE} suggestions={SUGGESTIONS} />
+            <AskChat
+              scope={SCOPE}
+              suggestions={SUGGESTIONS}
+              recentQuestions={recentQuestions}
+            />
           </div>
         </section>
 
