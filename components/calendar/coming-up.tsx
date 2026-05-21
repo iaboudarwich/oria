@@ -18,11 +18,11 @@ export function ComingUpRollup({ buckets }: { buckets: ComingUpBucket[] }) {
       <h2 className="mb-2 px-1 text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
         Coming up
       </h2>
-      <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
+      <ul className="grid grid-cols-2 gap-1.5 sm:grid-cols-3 sm:gap-2 md:grid-cols-4 lg:grid-cols-5">
         {buckets.map((b) => (
           <li
             key={b.key}
-            className={`rounded-2xl border bg-surface-raised p-3 ${
+            className={`rounded-2xl border bg-surface-raised p-2.5 sm:p-3 ${
               b.tone === "alert" ? "border-claret/30" : "border-line"
             }`}
           >

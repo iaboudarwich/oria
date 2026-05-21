@@ -18,7 +18,7 @@ export async function Topbar({ title, subtitle }: TopbarProps) {
   const ctx = await getCurrentContext();
   const spaceName = ctx?.organization.name ?? null;
   return (
-    <header className="sticky top-0 z-20 -mx-6 mb-6 border-b border-line bg-canvas/85 px-6 pt-5 pb-4 backdrop-blur sm:-mx-10 sm:px-10">
+    <header className="sticky top-0 z-20 -mx-6 mb-6 border-b border-line bg-canvas/85 px-6 pt-4 pb-3 backdrop-blur sm:-mx-10 sm:px-10 sm:pt-5 sm:pb-4">
       <div className="flex items-center justify-between gap-4">
         <div className="min-w-0 pl-12 lg:pl-0">
           {spaceName ? (

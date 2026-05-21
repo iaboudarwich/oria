@@ -309,13 +309,13 @@ function ModesPanel({ orgKind }: { orgKind: string }) {
       {modes.map((m) => (
         <li
           key={m.id}
-          className="flex items-center gap-3 px-3 py-2.5 transition-base hover:bg-canvas/60"
+          className="flex items-center gap-3 px-3 py-2 transition-base hover:bg-canvas/60"
         >
-          <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-line bg-canvas text-ink-muted">
-            <m.Icon size={14} />
+          <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-line bg-canvas text-ink-muted">
+            <m.Icon size={13} />
           </span>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-[13.5px] text-ink">
+            <p className="truncate text-[13px] text-ink">
               {m.label}
               {m.active ? (
                 <span className="ml-2 inline-flex items-center gap-1 rounded bg-sage/15 px-1.5 py-0.5 text-[10.5px] text-[#3f5240]">
@@ -324,7 +324,7 @@ function ModesPanel({ orgKind }: { orgKind: string }) {
                 </span>
               ) : null}
             </p>
-            <p className="text-[11.5px] text-ink-faint">{m.body}</p>
+            <p className="truncate text-[11px] text-ink-faint">{m.body}</p>
           </div>
           <Link
             href={m.cta.href}

@@ -57,7 +57,7 @@ export async function StatusStrip() {
 
 function StatusStripFlashRow({ message }: { message: string }) {
   return (
-    <div className="mt-3 flex items-center gap-3 rounded-lg border border-sage/30 bg-sage/[0.07] px-3 py-1.5 text-[12px] text-[#3f5240]">
+    <div className="mt-2 flex items-center gap-3 rounded-lg border border-sage/30 bg-sage/[0.07] px-3 py-1.5 text-[12px] text-[#3f5240]">
       <span
         className="inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-sage"
         aria-hidden
@@ -75,7 +75,7 @@ function StatusStripRow({ event }: { event: SystemEvent }) {
   const message = formatEventMessage(event);
   return (
     <div
-      className={`mt-3 flex items-center gap-3 rounded-lg border px-3 py-1.5 text-[12px] ${tone}`}
+      className={`mt-2 flex items-center gap-3 rounded-lg border px-3 py-1.5 text-[12px] ${tone}`}
     >
       <span
         className={`inline-block h-1.5 w-1.5 shrink-0 rounded-full ${

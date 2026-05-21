@@ -422,19 +422,15 @@ function EmptyState({
   recentQuestions: string[];
   onSuggest: (q: string) => void;
 }) {
-  const label = scope ? `Ask ${scope.label}` : "Ask Oria";
   const headline = scope
     ? `What do you want to know about ${scope.label}?`
     : "What would you like to remember?";
   const sub = scope
-    ? `Scoped to your ${scope.label} section. Answers come from items in this section only.`
-    : "Ask anything about what you've uploaded, your reminders, or your calendar. Answers come straight from your own files, with sources.";
+    ? `Scoped to ${scope.label}. Answers come from this section only.`
+    : "Ask about anything you've uploaded, your reminders, or your calendar.";
   return (
     <div className="mx-auto max-w-xl pt-6 text-center animate-fade-up">
-      <p className="text-[11.5px] uppercase tracking-[0.14em] text-ink-faint">
-        {label}
-      </p>
-      <h1 className="mt-2 text-[24px] font-semibold tracking-tight text-ink">
+      <h1 className="text-[22px] font-semibold tracking-tight text-ink sm:text-[24px]">
         {headline}
       </h1>
       <p className="mt-2 text-[13.5px] text-ink-muted">{sub}</p>

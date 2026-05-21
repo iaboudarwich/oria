@@ -442,7 +442,7 @@ function SectionsGroup({
                   href={s.href}
                   onClick={onNavigate}
                   title={isSmart ? `${s.label} · Smart Section` : undefined}
-                  className={`group flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-[12.5px] transition-base ${
+                  className={`group flex min-h-[36px] items-center gap-2.5 rounded-lg px-3 py-2 text-[12.5px] transition-base ${
                     active
                       ? "bg-canvas text-ink"
                       : isReview || isSmart
