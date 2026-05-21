@@ -1,5 +1,6 @@
 import { SearchIcon } from "@/components/ui/icon";
 import { getCurrentContext } from "@/lib/data/organizations";
+import { StatusStrip } from "./status-strip";
 
 type TopbarProps = {
   title: string;
@@ -21,8 +22,10 @@ export async function Topbar({ title, subtitle }: TopbarProps) {
       <div className="flex items-center justify-between gap-4">
         <div className="min-w-0 pl-12 lg:pl-0">
           {spaceName ? (
-            <p className="truncate text-[11px] uppercase tracking-[0.14em] text-ink-faint">
-              {spaceName}
+            <p className="truncate text-[11.5px] text-ink-faint">
+              <span className="text-ink-muted">{spaceName}</span>
+              <span className="mx-1.5 text-ink-faint">›</span>
+              <span>{title}</span>
             </p>
           ) : null}
           <h1 className="text-[20px] font-semibold tracking-tight text-ink sm:text-[22px]">
@@ -42,6 +45,7 @@ export async function Topbar({ title, subtitle }: TopbarProps) {
           </a>
         </div>
       </div>
+      <StatusStrip />
     </header>
   );
 }

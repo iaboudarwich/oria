@@ -76,15 +76,23 @@ export async function POST(request: Request) {
     const result = await generateWorkReport({ prompt, kind });
     const supabase2 = await createClient();
     if (result.ok) {
+      const finalTitle = result.title || prompt.slice(0, 80);
       await supabase2
         .from("workspace_reports")
         .update({
-          title: result.title || prompt.slice(0, 80),
+          title: finalTitle,
           payload: result.payload,
           status: "ready",
           updated_at: new Date().toISOString(),
         })
         .eq("id", reportId);
+      void recordSystemEvent({
+        kind: "report.ready",
+        severity: "info",
+        context: { reportId, title: finalTitle, kind },
+        organizationId: ctx.organization.id,
+        actorId: ctx.profile.id,
+      });
     } else {
       await supabase2
         .from("workspace_reports")

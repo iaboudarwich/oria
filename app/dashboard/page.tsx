@@ -57,7 +57,7 @@ export default async function DashboardHome() {
         <TodayPulse activeSpaceId={ctx?.organization.id ?? ""} />
 
         {isEmpty ? (
-          <Onboarding />
+          <Onboarding orgKind={ctx?.organization.kind ?? "personal"} />
         ) : (
           <Recent uploads={uploads} thumbs={thumbs} />
         )}
@@ -72,11 +72,45 @@ function AddRow() {
   return <DropzoneCompact />;
 }
 
-function Onboarding() {
+function Onboarding({ orgKind }: { orgKind: string }) {
+  const steps: Array<{ title: string; href: string }> = [
+    { title: "Upload your first file", href: "/dashboard/inbox" },
+    { title: "Ask Oria a question", href: "/dashboard/ask" },
+    orgKind === "personal"
+      ? {
+          title: "Invite a family member to a Circle",
+          href: "/dashboard/circles/new",
+        }
+      : { title: "Invite a teammate", href: "/dashboard/circle" },
+    orgKind === "personal"
+      ? {
+          title: "Create a Workspace for work or property",
+          href: "/dashboard/work/spaces/new",
+        }
+      : { title: "Switch to Personal", href: "/dashboard" },
+  ];
   return (
-    <p className="px-1 text-[13px] text-ink-faint">
-      Anything you drop above stays here. Sections fill in automatically.
-    </p>
+    <section>
+      <h2 className="mb-2 px-1 text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
+        Get started
+      </h2>
+      <ul className="rounded-2xl border border-line bg-surface-raised divide-y divide-line">
+        {steps.map((s, i) => (
+          <li key={s.href}>
+            <Link
+              href={s.href}
+              className="flex items-center gap-3 px-4 py-3 transition-base hover:bg-canvas/60"
+            >
+              <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-line text-[11.5px] text-ink-muted">
+                {i + 1}
+              </span>
+              <span className="flex-1 text-[13.5px] text-ink">{s.title}</span>
+              <span className="text-[11.5px] text-ink-faint">Open</span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
 

@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { ACTIVE_SPACE_COOKIE } from "./active-space";
+import { recordSystemEvent } from "./system-events";
 
 const ONE_YEAR_SECONDS = 60 * 60 * 24 * 365;
 
@@ -103,6 +104,36 @@ export async function tryAcceptInvite(
       path: "/",
       maxAge: ONE_YEAR_SECONDS,
     });
+
+    // Surface a calm "X joined" status update to the space's other
+    // members. We pull the joining user's display name so the message
+    // reads like "Ana joined" rather than a bare email. Best-effort —
+    // if the lookup fails the event still records with a fallback.
+    void (async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("full_name, email")
+        .eq("id", user.id)
+        .maybeSingle();
+      const name =
+        (profile as { full_name?: string; email?: string } | null)
+          ?.full_name ??
+        (profile as { full_name?: string; email?: string } | null)?.email ??
+        user.email ??
+        "Someone";
+      await recordSystemEvent({
+        kind: "invite.accepted",
+        severity: "info",
+        context: { title: name },
+        organizationId: orgId,
+        actorId: user.id,
+      });
+    })();
+
     revalidatePath("/dashboard", "layout");
     return { ok: true, organizationId: orgId };
   }

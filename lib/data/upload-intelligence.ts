@@ -367,6 +367,17 @@ export async function processUpload(uploadId: string): Promise<void> {
       organizationId: upload.organization_id,
     }).catch(() => undefined);
 
+    void recordSystemEvent({
+      kind: "upload.processed",
+      severity: "info",
+      context: {
+        uploadId: upload.id,
+        title: newTitle ?? upload.title ?? upload.filename,
+        items: aiResult.items.length,
+      },
+      organizationId: upload.organization_id,
+    });
+
     return;
   }
 
@@ -413,6 +424,17 @@ export async function processUpload(uploadId: string): Promise<void> {
       ...(nextMetadata ? { metadata: nextMetadata } : {}),
     })
     .eq("id", uploadId);
+
+  void recordSystemEvent({
+    kind: "upload.processed",
+    severity: "info",
+    context: {
+      uploadId: upload.id,
+      title: heuristicTitle ?? upload.title ?? upload.filename,
+      heuristic: true,
+    },
+    organizationId: upload.organization_id,
+  });
 }
 
 function multiItemTitle(items: ExtractionResult["items"]): string {

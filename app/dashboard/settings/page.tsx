@@ -170,9 +170,11 @@ function SpacesPanel({
   const label = isWork ? "Workspaces" : "Circles";
   const noun = isWork ? "Workspace" : "circle";
   const newHref = isWork ? "/dashboard/work/spaces/new" : "/dashboard/circles/new";
+  // Circles get personal-language onboarding ("invite someone close");
+  // Workspaces get team-language ("set up an office or property").
   const emptyMessage = isWork
-    ? "You haven't created any Workspaces yet."
-    : "You haven't joined or created any circles yet.";
+    ? "Set up a Workspace for an office, property, or project."
+    : "Invite a family member, partner, or assistant to share what you choose.";
   const hint =
     filtered.length === 0
       ? undefined

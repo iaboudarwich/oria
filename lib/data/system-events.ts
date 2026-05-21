@@ -29,12 +29,68 @@ export type SystemEventKind =
   | "email.sent"
   | "email.error"
   // Upload extraction
+  | "upload.processed"
   | "upload.failed"
   | "extraction.skipped"
   // Reports
+  | "report.ready"
   | "report.failed"
+  // Invites
+  | "invite.accepted"
   // Auto-scheduling
   | "reminder.failed";
+
+/**
+ * Kinds that show up in the user-facing status strip. Most events in
+ * this table are ops-shaped and shouldn't ping the user. These are the
+ * ones we surface.
+ */
+export const USER_VISIBLE_EVENT_KINDS: SystemEventKind[] = [
+  "upload.processed",
+  "upload.failed",
+  "report.ready",
+  "report.failed",
+  "invite.accepted",
+  "email.error",
+];
+
+/**
+ * Friendly, calm copy keyed by event kind. The status strip in the
+ * topbar consumes this — context can override the trailing label when
+ * an event carries a useful detail (e.g. the upload title).
+ */
+export function formatEventMessage(e: {
+  kind: string;
+  context: Record<string, unknown>;
+  message: string | null;
+}): string {
+  const detail =
+    typeof e.context?.title === "string"
+      ? String(e.context.title)
+      : typeof e.context?.name === "string"
+        ? String(e.context.name)
+        : null;
+  switch (e.kind) {
+    case "upload.processed":
+      return detail ? `Processed ${detail}` : "Upload processed";
+    case "upload.failed":
+      return detail
+        ? `Couldn't process ${detail}`
+        : (e.message ?? "Upload failed");
+    case "report.ready":
+      return detail ? `${detail} is ready` : "Report ready";
+    case "report.failed":
+      return detail
+        ? `Couldn't finish ${detail}`
+        : (e.message ?? "Report failed");
+    case "invite.accepted":
+      return detail ? `${detail} joined` : "Invite accepted";
+    case "email.error":
+      return e.message ?? "Email didn't go through";
+    default:
+      return e.message ?? e.kind;
+  }
+}
 
 export type SystemEvent = {
   id: string;
@@ -91,6 +147,38 @@ export async function countEvents(input: {
     return count ?? 0;
   } catch {
     return 0;
+  }
+}
+
+/**
+ * Recent events the user should see in the topbar status strip. Scoped
+ * to the orgs they belong to + the kinds we surface (USER_VISIBLE_EVENT_KINDS).
+ * Default: last 24 hours, newest first, limit 10.
+ */
+export async function listUserVisibleEvents(input: {
+  organizationIds: string[];
+  sinceISO?: string;
+  limit?: number;
+}): Promise<SystemEvent[]> {
+  if (input.organizationIds.length === 0) return [];
+  try {
+    const admin = createAdminClient();
+    const since =
+      input.sinceISO ?? new Date(Date.now() - 24 * 3600 * 1000).toISOString();
+    const { data } = await admin
+      .from("system_events")
+      .select("*")
+      .in("organization_id", input.organizationIds)
+      .in("kind", USER_VISIBLE_EVENT_KINDS)
+      .gte("created_at", since)
+      .order("created_at", { ascending: false })
+      .limit(input.limit ?? 10);
+    return ((data ?? []) as SystemEvent[]).map((e) => ({
+      ...e,
+      context: (e.context ?? {}) as Record<string, unknown>,
+    }));
+  } catch {
+    return [];
   }
 }
 
