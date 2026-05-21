@@ -1,5 +1,6 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import {
   AUTO_FILE_CONFIDENCE,
   extractFromUpload,
@@ -172,9 +173,16 @@ function classify(file: {
  *   4. Always insert an extractions row so Ask Oria can see it. Always
  *      mark the upload "filed" at the end, even when we landed in Unsorted.
  *   5. Suggest a reminder for document types that almost always need one.
+ *
+ * IMPORTANT: This runs inside Next's after() callback, after the HTTP
+ * response has already been sent. Cookies/headers are no longer
+ * accessible at that point, so we use the service-role admin client
+ * instead of the cookie-bound server client. The org/user scoping is
+ * preserved by the upload row's own organization_id (which the caller
+ * validated against the user's active org before we got here).
  */
 export async function processUpload(uploadId: string): Promise<void> {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   await supabase
     .from("uploads")
@@ -558,7 +566,9 @@ async function matchCustomSection(
   filename: string,
   organizationId: string,
 ): Promise<string | null> {
-  const supabase = await createClient();
+  // Called from processUpload, which runs in after() — must use the
+  // admin client (no cookies post-response).
+  const supabase = createAdminClient();
   const { data } = await supabase
     .from("custom_sections")
     .select("id, name, profile")

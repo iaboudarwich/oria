@@ -1,6 +1,6 @@
 import "server-only";
 
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import type { DocumentType } from "@/lib/supabase/types";
 
 /**
@@ -70,7 +70,10 @@ export async function proposeAutoReminders(input: {
   uploadId: string;
   organizationId: string;
 }): Promise<number> {
-  const supabase = await createClient();
+  // Called inside Next after() (post-response), so we can't read
+  // cookies. Use the admin client. Org scoping is enforced by the
+  // explicit organizationId on every read/write below.
+  const supabase = createAdminClient();
   const { data: itemRows, error } = await supabase
     .from("memory_items")
     .select(

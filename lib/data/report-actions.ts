@@ -3,6 +3,7 @@
 import { after } from "next/server";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { requireContext } from "./organizations";
 import { generateWorkReport } from "@/lib/ai/work-report";
 import { recordSystemEvent } from "./system-events";
@@ -76,10 +77,24 @@ export async function retryReport(formData: FormData): Promise<void> {
     context: { kind, prompt: prompt.slice(0, 200), retry: true },
   });
 
+  // after() runs after the response is gone — cookies aren't readable
+  // there. Use the admin client and pass org info into the generator
+  // explicitly; scope is preserved by report.id + the captured orgId.
+  const orgId = ctx.organization.id;
+  const orgName = ctx.organization.name;
+  const actorId = ctx.profile.id;
+  const reportId = report.id;
+
   after(async () => {
     await markJobStarted(jobId);
-    const result = await generateWorkReport({ prompt, kind });
-    const supabase2 = await createClient();
+    const result = await generateWorkReport({
+      prompt,
+      kind,
+      organizationId: orgId,
+      organizationName: orgName,
+      actorId,
+    });
+    const supabase2 = createAdminClient();
     if (result.ok) {
       const finalTitle = result.title || prompt.slice(0, 80);
       await supabase2
@@ -90,13 +105,13 @@ export async function retryReport(formData: FormData): Promise<void> {
           status: "ready",
           updated_at: new Date().toISOString(),
         })
-        .eq("id", report.id);
+        .eq("id", reportId);
       void recordSystemEvent({
         kind: "report.ready",
         severity: "info",
-        context: { reportId: report.id, title: finalTitle, kind, retry: true },
-        organizationId: ctx.organization.id,
-        actorId: ctx.profile.id,
+        context: { reportId, title: finalTitle, kind, retry: true },
+        organizationId: orgId,
+        actorId,
       });
       await markJobCompleted(jobId, { kind, title: finalTitle, retry: true });
     } else {
@@ -107,25 +122,25 @@ export async function retryReport(formData: FormData): Promise<void> {
           error_message: result.error,
           updated_at: new Date().toISOString(),
         })
-        .eq("id", report.id);
+        .eq("id", reportId);
       void recordSystemEvent({
         kind: "report.failed",
         severity: "error",
         message: result.error,
         context: {
-          reportId: report.id,
+          reportId,
           prompt: prompt.slice(0, 200),
           kind,
           retry: true,
         },
-        organizationId: ctx.organization.id,
-        actorId: ctx.profile.id,
+        organizationId: orgId,
+        actorId,
       });
       await markJobFailed(jobId, result.error ?? "report_failed");
     }
     revalidatePath("/dashboard/work/agent");
     revalidatePath("/dashboard/work/analysis");
-    revalidatePath(`/dashboard/work/agent/reports/${report.id}`);
+    revalidatePath(`/dashboard/work/agent/reports/${reportId}`);
   });
 
   revalidatePath("/dashboard/work/agent");

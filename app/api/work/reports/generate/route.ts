@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 import { after } from "next/server";
 import { getCurrentContext } from "@/lib/data/organizations";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { generateWorkReport } from "@/lib/ai/work-report";
 import { checkDailyAskRequests } from "@/lib/data/quotas";
 import { rateLimit, RATE_PRESETS } from "@/lib/rate-limit";
@@ -106,10 +107,26 @@ export async function POST(request: Request) {
 
   // Generate in the background so the POST returns immediately. The UI
   // polls listWorkspaceReports / report detail to pick up the ready row.
+  //
+  // after() runs after the response is sent, so cookies are no longer
+  // accessible — use the service-role admin client for the row update,
+  // and pass org info into generateWorkReport explicitly (it no longer
+  // calls requireContext internally). Capture the small bag of values
+  // we need here so the closure doesn't depend on request state.
+  const orgId = ctx.organization.id;
+  const orgName = ctx.organization.name;
+  const actorId = ctx.profile.id;
+
   after(async () => {
     await markJobStarted(jobId);
-    const result = await generateWorkReport({ prompt, kind });
-    const supabase2 = await createClient();
+    const result = await generateWorkReport({
+      prompt,
+      kind,
+      organizationId: orgId,
+      organizationName: orgName,
+      actorId,
+    });
+    const supabase2 = createAdminClient();
     if (result.ok) {
       const finalTitle = result.title || prompt.slice(0, 80);
       await supabase2
@@ -125,8 +142,8 @@ export async function POST(request: Request) {
         kind: "report.ready",
         severity: "info",
         context: { reportId, title: finalTitle, kind },
-        organizationId: ctx.organization.id,
-        actorId: ctx.profile.id,
+        organizationId: orgId,
+        actorId,
       });
       await markJobCompleted(jobId, {
         kind,
@@ -146,8 +163,8 @@ export async function POST(request: Request) {
         severity: "error",
         message: result.error,
         context: { reportId, prompt: prompt.slice(0, 200), kind },
-        organizationId: ctx.organization.id,
-        actorId: ctx.profile.id,
+        organizationId: orgId,
+        actorId,
       });
       await markJobFailed(jobId, result.error ?? "report_failed");
     }

@@ -1,6 +1,7 @@
 import "server-only";
 
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { requireContext } from "./organizations";
 
 export type WorkspaceContext = {
@@ -18,6 +19,9 @@ export type WorkspaceContext = {
  * if the row hasn't been created yet (the agent will fall back to defaults
  * in that case). Soft-fails on missing table so deploys before the
  * 0020 migration is applied don't crash the page.
+ *
+ * Request-scoped: reads the active org from cookies. Use
+ * `getWorkspaceContextByOrgId` from anything that runs in `after()`.
  */
 export async function getWorkspaceContext(): Promise<WorkspaceContext | null> {
   const ctx = await requireContext();
@@ -28,6 +32,25 @@ export async function getWorkspaceContext(): Promise<WorkspaceContext | null> {
     .from("workspace_context")
     .select("*")
     .eq("organization_id", ctx.organization.id)
+    .maybeSingle();
+  if (error || !data) return null;
+  return normalize(data as RawRow);
+}
+
+/**
+ * Same data, but takes the org id directly and uses the admin client.
+ * Safe to call from background work (after(), background_jobs runners)
+ * where cookies are no longer accessible. Caller is responsible for
+ * making sure the orgId is one the user is allowed to read from.
+ */
+export async function getWorkspaceContextByOrgId(
+  organizationId: string,
+): Promise<WorkspaceContext | null> {
+  const supabase = createAdminClient();
+  const { data, error } = await supabase
+    .from("workspace_context")
+    .select("*")
+    .eq("organization_id", organizationId)
     .maybeSingle();
   if (error || !data) return null;
   return normalize(data as RawRow);

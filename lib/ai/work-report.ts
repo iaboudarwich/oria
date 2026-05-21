@@ -3,9 +3,8 @@ import "server-only";
 import type Anthropic from "@anthropic-ai/sdk";
 import { getAnthropic } from "./anthropic";
 import { estimatedCostUSD } from "./pricing";
-import { createClient } from "@/lib/supabase/server";
-import { requireContext } from "@/lib/data/organizations";
-import { getWorkspaceContext } from "@/lib/data/workspace-context";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { getWorkspaceContextByOrgId } from "@/lib/data/workspace-context";
 import { recordSystemEvent } from "@/lib/data/system-events";
 import type { ReportPayload } from "@/lib/data/workspace-reports";
 
@@ -205,12 +204,13 @@ type Aggregates = {
  * pre-aggregation, the more of the model's budget goes to analysis
  * (trends, ratios, forecasts) instead of arithmetic.
  *
- * Scope: active org only — both queries filter on organization_id and
- * reminders' RLS would catch any cross-org leak anyway.
+ * Scope: caller-supplied organizationId only. Uses the admin client
+ * because this runs from after()-style background work where cookies
+ * are unreadable; the explicit organization_id filter is the only
+ * scoping signal.
  */
-async function collectAggregates(): Promise<Aggregates> {
-  const ctx = await requireContext();
-  const supabase = await createClient();
+async function collectAggregates(organizationId: string): Promise<Aggregates> {
+  const supabase = createAdminClient();
 
   // 12-month window. Trends and forecasts need at least a year of
   // depth; small enough that one query stays cheap.
@@ -225,14 +225,14 @@ async function collectAggregates(): Promise<Aggregates> {
       .select(
         "id, section, document_type, merchant, amount_value, amount_currency, amount_normalized, direction, occurred_at, title, summary, is_recurring, recurring_interval, smart_section",
       )
-      .eq("organization_id", ctx.organization.id)
+      .eq("organization_id", organizationId)
       .gte("occurred_at", sinceISO)
       .order("occurred_at", { ascending: false, nullsFirst: false })
       .limit(2000),
     supabase
       .from("reminders")
       .select("id, title, due_at, done")
-      .eq("organization_id", ctx.organization.id)
+      .eq("organization_id", organizationId)
       .not("due_at", "is", null)
       .order("due_at", { ascending: true })
       .limit(200),
@@ -437,6 +437,10 @@ function formatRowForPrompt(r: AggregateRow): string {
 export type GenerateInput = {
   prompt: string; // user brief — e.g. "March operations for Building A"
   kind: string; // user-picked kind (summary/finance/leases/forecast/custom)
+  /** Org context captured at request time so this can run from after(). */
+  organizationId: string;
+  organizationName: string;
+  actorId?: string | null;
 };
 
 export type GenerateResult =
@@ -451,16 +455,14 @@ export async function generateWorkReport(
     return { ok: false, error: "Claude isn't connected." };
   }
 
-  const ctx = await requireContext();
-  if (ctx.organization.kind !== "office") {
-    return { ok: false, error: "Reports are for Workspaces only." };
-  }
+  const organizationId = input.organizationId;
+  const organizationName = input.organizationName;
 
-  const workspaceContext = await getWorkspaceContext();
-  const agg = await collectAggregates();
+  const workspaceContext = await getWorkspaceContextByOrgId(organizationId);
+  const agg = await collectAggregates(organizationId);
 
   const contextLines: string[] = [];
-  contextLines.push(`WORKSPACE: ${ctx.organization.name}`);
+  contextLines.push(`WORKSPACE: ${organizationName}`);
   if (workspaceContext?.description) {
     contextLines.push(`PURPOSE: ${workspaceContext.description}`);
   }
@@ -562,7 +564,7 @@ export async function generateWorkReport(
   contextLines.push(`LINE ITEMS (100 most recent, for verification):`);
   for (const r of agg.recentRows) contextLines.push(formatRowForPrompt(r));
 
-  const systemPrompt = `You are the in-house analyst for the "${ctx.organization.name}" Workspace, generating a structured operational analysis.
+  const systemPrompt = `You are the in-house analyst for the "${organizationName}" Workspace, generating a structured operational analysis.
 
 You MUST call the save_report tool exactly once. Don't reply with prose.
 
@@ -621,8 +623,8 @@ Hard rules:
         statusCode: err.status,
         name: err.name,
       },
-      organizationId: ctx.organization.id,
-      actorId: ctx.profile.id,
+      organizationId,
+      actorId: input.actorId ?? null,
     });
     return { ok: false, error: `Claude error: ${err.message ?? "unknown"}` };
   }
@@ -643,8 +645,8 @@ Hard rules:
           response.usage.output_tokens,
         ),
       },
-      organizationId: ctx.organization.id,
-      actorId: ctx.profile.id,
+      organizationId,
+      actorId: input.actorId ?? null,
     });
   }
 

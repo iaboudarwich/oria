@@ -1,6 +1,6 @@
 import "server-only";
 
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { processUpload } from "./upload-intelligence";
 import { recordSystemEvent } from "./system-events";
 import {
@@ -26,6 +26,13 @@ import {
  * Lives in its own module (no "use server") so both the upload action
  * site and the stuck-detector can call it without triggering Next.js's
  * Server Action serialization rules.
+ *
+ * COOKIE SAFETY: this runs inside Next's after() callback. By the
+ * time we get here the HTTP response is gone and cookies/headers
+ * aren't readable. Every DB write below uses the service-role admin
+ * client so we never trip "cookies() called from outside a request".
+ * Scope is preserved by the orgId + uploadId we were handed at
+ * schedule time.
  */
 export async function runProcessUploadSafely(
   uploadId: string,
@@ -47,7 +54,7 @@ export async function runProcessUploadSafely(
       err instanceof Error ? err.message : "Background processing crashed";
     await markJobFailed(jobId, message);
     try {
-      const supabase = await createClient();
+      const supabase = createAdminClient();
       await supabase
         .from("uploads")
         .update({ status: "failed" })

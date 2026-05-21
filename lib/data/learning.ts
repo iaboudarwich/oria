@@ -1,6 +1,6 @@
 import "server-only";
 
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 /**
  * Append-only behavioural signal log. Cheap, never blocks the caller.
@@ -33,7 +33,12 @@ export async function recordLearningEvent(input: {
   payload: Record<string, unknown>;
 }): Promise<void> {
   try {
-    const supabase = await createClient();
+    // Admin client so this is safe to call from background work
+    // (after() callbacks, background_jobs runners) where cookies
+    // can't be read. Caller supplies organizationId/actorId; the
+    // table is append-only and pure telemetry, so service-role
+    // writes are fine.
+    const supabase = createAdminClient();
     await supabase.from("learning_events").insert({
       organization_id: input.organizationId,
       actor_id: input.actorId,
