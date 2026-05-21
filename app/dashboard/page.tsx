@@ -16,6 +16,9 @@ import { listAllSections } from "@/lib/data/all-sections";
 import { displayActor } from "@/lib/data/timeline";
 import { sectionLabel } from "@/lib/sections-meta";
 import { relativeTime } from "@/lib/utils";
+import { computeUserInsights } from "@/lib/data/insights";
+import { readDismissedInsightIds } from "@/lib/data/insights-dismiss";
+import { InsightsCard } from "@/components/dashboard/insights-card";
 import type { Section } from "@/lib/supabase/types";
 
 export default async function DashboardHome() {
@@ -34,14 +37,20 @@ export default async function DashboardHome() {
     includeHidden: false,
     includeReview: false,
   });
+  const insightsP = computeUserInsights();
+  const dismissedP = readDismissedInsightIds();
   const uploads = await uploadsP;
-  const [sectionCounts, allSections, thumbs] = await Promise.all([
-    sectionCountsP,
-    allSectionsP,
-    getSignedUrlMap(
-      uploads.map((u) => ({ id: u.id, storage_path: u.storage_path })),
-    ),
-  ]);
+  const [sectionCounts, allSections, thumbs, rawInsights, dismissed] =
+    await Promise.all([
+      sectionCountsP,
+      allSectionsP,
+      getSignedUrlMap(
+        uploads.map((u) => ({ id: u.id, storage_path: u.storage_path })),
+      ),
+      insightsP,
+      dismissedP,
+    ]);
+  const insights = rawInsights.filter((i) => !dismissed.has(i.id));
 
   const isEmpty = uploads.length === 0;
 
@@ -55,6 +64,8 @@ export default async function DashboardHome() {
         <AddRow />
 
         <TodayPulse activeSpaceId={ctx?.organization.id ?? ""} />
+
+        <InsightsCard insights={insights} />
 
         {isEmpty ? (
           <Onboarding orgKind={ctx?.organization.kind ?? "personal"} />
