@@ -208,7 +208,15 @@ export function CalendarRow({
           ) : null}
           {suggested ? (
             <span className="inline-flex items-center gap-1 rounded bg-accent-soft/60 px-1.5 py-0.5 text-[10.5px] text-[#7a5a2a]">
-              <SparkIcon size={10} /> Suggested
+              <SparkIcon size={10} /> Suggested by Oria
+            </span>
+          ) : null}
+          {!isReminder ? (
+            <span
+              className="inline-flex items-center gap-1 text-ink-faint"
+              title="Detected from an upload by Oria"
+            >
+              <SparkIcon size={10} /> by Oria
             </span>
           ) : null}
         </div>

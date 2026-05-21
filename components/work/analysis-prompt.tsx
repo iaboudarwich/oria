@@ -26,16 +26,19 @@ export function AnalysisPrompt() {
   const [prompt, setPrompt] = useState("");
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [queued, setQueued] = useState(false);
 
   function pickChip(text: string) {
     setPrompt(text);
     setError(null);
+    setQueued(false);
   }
 
   function submit() {
     const text = prompt.trim();
     if (!text || pending) return;
     setError(null);
+    setQueued(false);
     startTransition(async () => {
       const res = await fetch("/api/work/reports/generate", {
         method: "POST",
@@ -43,15 +46,33 @@ export function AnalysisPrompt() {
         body: JSON.stringify({ prompt: text, kind: "analysis" }),
       });
       if (!res.ok) {
+        let detail: string | undefined;
         try {
           const data = (await res.json()) as { message?: string };
-          setError(data?.message ?? "Couldn't start analysis.");
+          if (typeof data?.message === "string") detail = data.message;
         } catch {
-          setError("Couldn't start analysis.");
+          // body wasn't JSON; fall through to status-based copy
+        }
+        if (res.status === 429) {
+          setError(
+            detail ??
+              "Daily analysis limit hit. Try again tomorrow or shorten the question.",
+          );
+        } else if (res.status === 401 || res.status === 403) {
+          setError("Your session expired. Refresh the page and try again.");
+        } else if (res.status >= 500) {
+          setError(
+            "Analysis service is briefly unreachable. Try again in a moment.",
+          );
+        } else {
+          setError(detail ?? "Couldn't start analysis.");
         }
         return;
       }
       setPrompt("");
+      setQueued(true);
+      // Hide the queued confirmation after a beat so the prompt stays calm.
+      window.setTimeout(() => setQueued(false), 4000);
       router.refresh();
     });
   }
@@ -107,6 +128,11 @@ export function AnalysisPrompt() {
           </div>
           {error ? (
             <p className="text-[11.5px] text-claret">{error}</p>
+          ) : queued ? (
+            <p className="text-[11.5px] text-ink-muted">
+              Queued. The new analysis will appear below as soon as Oria
+              finishes reading.
+            </p>
           ) : null}
         </form>
       </div>

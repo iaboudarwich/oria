@@ -55,6 +55,31 @@ export default async function UploadPage() {
   );
 }
 
+/**
+ * Quiet status pill so the user can see at a glance which uploads
+ * Oria is still reading and which it finished. "Filed" is the calm
+ * default, so we hide it (no badge = ready). Only "processing" and
+ * "failed" surface, both as small chips that don't compete with the
+ * row title.
+ */
+function UploadStatusPill({ status }: { status: string | null | undefined }) {
+  if (status === "processing" || status === "pending") {
+    return (
+      <span className="ml-2 inline-flex shrink-0 items-center rounded-md bg-accent-soft/60 px-1.5 py-0.5 text-[10px] text-[#7a5a2a]">
+        Reading…
+      </span>
+    );
+  }
+  if (status === "failed") {
+    return (
+      <span className="ml-2 inline-flex shrink-0 items-center rounded-md bg-claret/10 px-1.5 py-0.5 text-[10px] text-claret">
+        Failed
+      </span>
+    );
+  }
+  return null;
+}
+
 function RecentList({
   items,
   thumbs,
@@ -96,6 +121,7 @@ function RecentList({
                   {relativeTime(it.created_at)}
                 </p>
               </div>
+              <UploadStatusPill status={it.status} />
             </Link>
             <InlineTrashButton uploadId={it.id} />
           </li>

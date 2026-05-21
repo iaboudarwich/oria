@@ -360,6 +360,9 @@ function ErrorMessage({
   code: string;
   message?: string;
 }) {
+  // Specific, calm copy per known cause. Server-side codes ("no_key",
+  // "rate_limited") match what the API route emits. HTTP-prefixed codes
+  // come from the !res.ok branch.
   if (code === "no_key") {
     return (
       <p className="text-[13px] text-ink-muted">
@@ -368,6 +371,27 @@ function ErrorMessage({
           ANTHROPIC_API_KEY
         </code>{" "}
         to your environment and reload.
+      </p>
+    );
+  }
+  if (code === "rate_limited" || code === "http_429") {
+    return (
+      <p className="text-[13px] text-ink-muted">
+        {message ?? "You've asked a lot in a short window. Try again in a minute."}
+      </p>
+    );
+  }
+  if (code === "http_401" || code === "http_403") {
+    return (
+      <p className="text-[13px] text-ink-muted">
+        Your session expired. Refresh the page and try again.
+      </p>
+    );
+  }
+  if (code.startsWith("http_5") || code === "stream_failed") {
+    return (
+      <p className="text-[13px] text-ink-muted">
+        Ask Oria is briefly unreachable. Try again in a moment.
       </p>
     );
   }
