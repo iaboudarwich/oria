@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { requireContext } from "./organizations";
+import { listUserSpaces, requireContext } from "./organizations";
 import { recordLearningEvent } from "./learning";
 
 function combineDateTime(date: string, time: string): string | null {
@@ -57,14 +57,21 @@ export async function createReminder(formData: FormData): Promise<void> {
 }
 
 /**
- * Cross-space reminder mutations.
+ * Reminder mutations with explicit scope check.
  *
- * The unified calendar shows reminders from every space the user belongs to,
- * so the reminder you click might not belong to the *active* space. We don't
- * filter by `ctx.organization.id` here — RLS (`reminders_update_v2`,
- * `reminders_delete` policies) already gates access to "creator or member
- * with appropriate access", which is exactly what we want.
+ * The calendar may show reminders from more than one space when the
+ * Personal-owner uses God's Eye. So a mutated reminder might not be
+ * pinned to the *active* org — but it must still belong to a space the
+ * user is a member of. We restrict the update/delete with an explicit
+ * `.in("organization_id", userSpaceIds)` rather than relying solely on
+ * RLS, so a missing/incorrect policy can never silently widen the
+ * blast radius.
  */
+
+async function allowedReminderOrgIds(): Promise<string[]> {
+  const spaces = await listUserSpaces();
+  return spaces.map((s) => s.organization.id);
+}
 
 export async function toggleReminderDone(formData: FormData): Promise<void> {
   const id = String(formData.get("id") ?? "");
@@ -72,7 +79,14 @@ export async function toggleReminderDone(formData: FormData): Promise<void> {
   const done = String(formData.get("done") ?? "") === "true";
 
   const supabase = await createClient();
-  await supabase.from("reminders").update({ done: !done }).eq("id", id);
+  const allowedOrgIds = await allowedReminderOrgIds();
+  if (allowedOrgIds.length === 0) return;
+
+  await supabase
+    .from("reminders")
+    .update({ done: !done })
+    .eq("id", id)
+    .in("organization_id", allowedOrgIds);
 
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/calendar");
@@ -85,18 +99,27 @@ export async function deleteReminder(formData: FormData): Promise<void> {
 
   const ctx = await requireContext();
   const supabase = await createClient();
+  const allowedOrgIds = await allowedReminderOrgIds();
+  if (allowedOrgIds.length === 0) return;
 
   // Capture the row before deletion so we can record a useful learning signal
   // (was it a suggestion the user rejected? a manual entry they cleaned up?)
   // and so we know which org to log against — the reminder may live in a
-  // different org than the active one.
+  // different org than the active one. The .in() filter is the scope guard:
+  // a reminder outside the user's spaces would not be returned even if RLS
+  // somehow let it slip.
   const { data: before } = await supabase
     .from("reminders")
     .select("source, upload_id, title, organization_id")
     .eq("id", id)
+    .in("organization_id", allowedOrgIds)
     .maybeSingle();
 
-  await supabase.from("reminders").delete().eq("id", id);
+  await supabase
+    .from("reminders")
+    .delete()
+    .eq("id", id)
+    .in("organization_id", allowedOrgIds);
 
   if (before) {
     const b = before as {
@@ -124,10 +147,14 @@ export async function confirmReminder(formData: FormData): Promise<void> {
 
   const ctx = await requireContext();
   const supabase = await createClient();
+  const allowedOrgIds = await allowedReminderOrgIds();
+  if (allowedOrgIds.length === 0) return;
+
   const { data: row } = await supabase
     .from("reminders")
     .update({ confirmed_at: new Date().toISOString() })
     .eq("id", id)
+    .in("organization_id", allowedOrgIds)
     .select("organization_id")
     .maybeSingle();
 

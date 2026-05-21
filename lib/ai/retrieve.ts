@@ -1,7 +1,11 @@
 import "server-only";
 
 import { createClient } from "@/lib/supabase/server";
-import { listUserSpaces, requireContext } from "@/lib/data/organizations";
+import {
+  isAccountOwnerInPersonal,
+  listUserSpaces,
+  requireContext,
+} from "@/lib/data/organizations";
 import { sectionLabel } from "@/lib/sections-meta";
 import { listSectionMemories } from "@/lib/data/section-memory";
 import type { SectionScope } from "@/lib/data/section-scope";
@@ -246,23 +250,21 @@ export async function retrieveForQuery(
   // a data isolation bug, so we hard-pin it rather than rely on RLS.
   let allowedOrgIds: string[];
   const userSpacesList = await listUserSpaces();
-  if (crossSpace) {
-    // God's Eye view: the account owner, sitting in their Personal space,
-    // wants to find anything anywhere they have access to. We span every
-    // org the signed-in user is a member of — Personal + Circles + their
-    // own Workspaces. The asymmetry the user designed for stays intact:
-    //   • Work AI always passes `crossSpace: false`, so a Workspace
-    //     agent never sees Personal or other Workspaces.
-    //   • A user sitting inside a Circle or Workspace can't use this —
-    //     it's only allowed when the active org is `personal`, because
-    //     that space is by definition just you.
-    if (ctx.organization.kind !== "personal") {
-      allowedOrgIds = [activeOrgId];
-    } else {
-      allowedOrgIds = userSpacesList.map((s) => s.organization.id);
-      if (!allowedOrgIds.includes(activeOrgId)) {
-        allowedOrgIds.push(activeOrgId);
-      }
+  if (crossSpace && isAccountOwnerInPersonal(ctx)) {
+    // God's Eye view. Only honoured when:
+    //   • the active org is Personal (kind === "personal"), and
+    //   • the signed-in user is the OWNER of that personal org.
+    // Both checks live in isAccountOwnerInPersonal so the rule is one
+    // place. The asymmetry the user designed for stays intact:
+    //   • Work AI always passes crossSpace=false, so a Workspace agent
+    //     never sees Personal, other Workspaces, or any Circle.
+    //   • A non-owner sitting in a shared space can't broaden retrieval
+    //     by forging the flag — server re-checks.
+    // The expanded set spans every org the user is a member of:
+    // Personal + Circles + Workspaces they have access to.
+    allowedOrgIds = userSpacesList.map((s) => s.organization.id);
+    if (!allowedOrgIds.includes(activeOrgId)) {
+      allowedOrgIds.push(activeOrgId);
     }
   } else {
     allowedOrgIds = [activeOrgId];

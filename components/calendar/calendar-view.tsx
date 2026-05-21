@@ -13,6 +13,8 @@ import {
   type CalendarSpace,
   type CalendarTopic,
 } from "@/lib/data/calendar-types";
+import type { ComingUpBucket } from "@/lib/data/calendar";
+import { ComingUpRollup } from "./coming-up";
 import {
   CalendarRow,
   addDays,
@@ -29,8 +31,16 @@ type Props = {
   entries: CalendarEntry[];
   spaces: CalendarSpace[];
   activeSpaceId: string;
+  /** True only when active=Personal AND the user owns it. Controls
+   * whether the "Everywhere I can access" toggle shows. */
+  crossSpaceAvailable: boolean;
+  /** Pre-computed rollup buckets for the active space. We render this
+   * one as-is (no cross-space leak); the cross-space rollup is computed
+   * client-side from cross-space entries when the user toggles. */
+  initialComingUp: ComingUpBucket[];
 };
 
+type SpaceScope = "active" | "all";
 type SpaceFilter = "all" | string;
 type CategoryFilter = "all" | CalendarCategory;
 type KindFilter = "all" | "event" | "reminder";
@@ -47,9 +57,6 @@ const CATEGORY_ORDER: CalendarCategory[] = [
   "personal",
 ];
 
-// Order in the filter row reflects what people scan for most often.
-// Overdue first (because it's actionable), then payment-shaped buckets,
-// then travel, then long-tail.
 const TOPIC_ORDER: CalendarTopic[] = [
   "overdue",
   "payment",
@@ -65,7 +72,17 @@ const TOPIC_ORDER: CalendarTopic[] = [
   "event",
 ];
 
-export function CalendarView({ entries, spaces, activeSpaceId }: Props) {
+export function CalendarView({
+  entries,
+  spaces,
+  activeSpaceId,
+  crossSpaceAvailable,
+  initialComingUp,
+}: Props) {
+  // Default scope is "active" so the calendar is isolated to the
+  // current space — same rule as every other Oria surface. Owner of
+  // Personal can flip to "all" to explore across their own spaces.
+  const [scope, setScope] = useState<SpaceScope>("active");
   const [spaceFilter, setSpaceFilter] = useState<SpaceFilter>("all");
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>("all");
   const [kindFilter, setKindFilter] = useState<KindFilter>("all");
@@ -77,17 +94,29 @@ export function CalendarView({ entries, spaces, activeSpaceId }: Props) {
     return d;
   });
 
+  // First narrowing: by space scope. When "active" we hard-cut to the
+  // active org id; the per-space pill row is hidden because there's
+  // nothing to pick between. When "all" (God's Eye) we show everything
+  // the user can access and let them filter further.
+  const scoped = useMemo(() => {
+    if (scope === "active") {
+      return activeSpaceId
+        ? entries.filter((e) => e.space_id === activeSpaceId)
+        : entries;
+    }
+    return entries;
+  }, [entries, scope, activeSpaceId]);
+
   // Topic counts drive the chip row — chips with zero matches in the
-  // current dataset still render so the user can see the full taxonomy,
-  // but disabled so they can't get into an empty-state state by accident.
+  // current dataset are hidden so the row stays scannable.
   const topicCounts = useMemo(() => {
     const counts = new Map<CalendarTopic, number>();
-    for (const e of entries) counts.set(e.topic, (counts.get(e.topic) ?? 0) + 1);
+    for (const e of scoped) counts.set(e.topic, (counts.get(e.topic) ?? 0) + 1);
     return counts;
-  }, [entries]);
+  }, [scoped]);
 
   const filtered = useMemo(() => {
-    return entries.filter((e) => {
+    return scoped.filter((e) => {
       if (spaceFilter !== "all" && e.space_id !== spaceFilter) return false;
       if (categoryFilter !== "all" && e.category !== categoryFilter) {
         return false;
@@ -97,16 +126,53 @@ export function CalendarView({ entries, spaces, activeSpaceId }: Props) {
       if (topicFilter !== "all" && e.topic !== topicFilter) return false;
       return true;
     });
-  }, [entries, spaceFilter, categoryFilter, kindFilter, topicFilter]);
+  }, [scoped, spaceFilter, categoryFilter, kindFilter, topicFilter]);
 
-  const showSpacePill = spaceFilter === "all";
+  // Show source-space pill on each row when the user could be looking
+  // at items from more than one space. When scope is "active" all rows
+  // are same-space so the pill would be redundant.
+  const showSpacePill = scope === "all" && spaceFilter === "all";
+
+  // Only show the per-space pill row when the user has opted into the
+  // cross-space view and there's more than one space to choose between.
+  const showSpacePills = scope === "all" && spaces.length > 1;
 
   return (
     <div className="space-y-5">
+      {/* Always render the active-space rollup. Cross-space rollup is
+          intentionally not shown to keep the summary clean and avoid a
+          mixed-scope strip that could confuse the user. */}
+      <ComingUpRollup buckets={initialComingUp} />
+
+      {/* God's Eye toggle — Personal-owner only */}
+      {crossSpaceAvailable ? (
+        <div className="flex items-center gap-2 px-1">
+          <button
+            type="button"
+            onClick={() =>
+              setScope((s) => (s === "active" ? "all" : "active"))
+            }
+            aria-pressed={scope === "all"}
+            className={`cursor-pointer rounded-full border px-2.5 py-0.5 text-[11.5px] transition-base focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink ${
+              scope === "all"
+                ? "border-ink bg-ink text-surface"
+                : "border-line bg-canvas text-ink-muted hover:border-line-strong hover:text-ink"
+            }`}
+          >
+            {scope === "all" ? "Everywhere I can access" : "This space"}
+          </button>
+          <span className="text-[11.5px] text-ink-faint">
+            {scope === "all"
+              ? "Showing items across Personal, Circles, and Workspaces."
+              : "Only the active space."}
+          </span>
+        </div>
+      ) : null}
+
       {/* Filters */}
-      {spaces.length > 0 || entries.length > 0 ? (
+      {spaces.length > 0 || scoped.length > 0 ? (
         <div className="flex flex-col gap-2">
-          {spaces.length > 1 ? (
+          {showSpacePills ? (
             <PillRow>
               <Pill
                 label="All spaces"
@@ -185,7 +251,11 @@ export function CalendarView({ entries, spaces, activeSpaceId }: Props) {
 
       {/* Active view */}
       {mode === "list" ? (
-        <ListView entries={filtered} showSpacePill={showSpacePill} activeSpaceId={activeSpaceId} />
+        <ListView
+          entries={filtered}
+          showSpacePill={showSpacePill}
+          activeSpaceId={activeSpaceId}
+        />
       ) : mode === "year" ? (
         <YearGrid
           cursor={cursor}
@@ -581,8 +651,6 @@ type Group = {
 };
 
 function groupList(entries: CalendarEntry[]): Group[] {
-  // Every entry has a due_at (loadCalendar filters out the date-less ones);
-  // the calendar is for things that happen on a date. Bucket by day.
   const buckets = new Map<string, CalendarEntry[]>();
   for (const e of entries) {
     const d = new Date(e.due_at);

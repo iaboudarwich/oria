@@ -173,3 +173,21 @@ export async function requireContext(): Promise<CurrentContext> {
   }
   return ctx;
 }
+
+/**
+ * God's Eye gate. The account owner can search across every space they
+ * belong to — but only while they're sitting in their Personal space.
+ * A Workspace or Circle agent never sees Personal data, and a non-owner
+ * (e.g. a future shared-personal-space member) doesn't get this either.
+ *
+ *   ctx.organization.kind === "personal"   → sitting in Personal
+ *   ctx.membership.role === "owner"        → is the account owner
+ *
+ * Both must be true. Callers that grant cross-space access (Ask Oria's
+ * crossSpace flag, the Calendar "Everywhere" toggle) MUST consult this.
+ */
+export function isAccountOwnerInPersonal(ctx: CurrentContext): boolean {
+  return (
+    ctx.organization.kind === "personal" && ctx.membership.role === "owner"
+  );
+}

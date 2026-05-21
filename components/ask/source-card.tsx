@@ -54,15 +54,17 @@ export function SourceCard({ source }: { source: SourceItem }) {
           ) : null}
         </p>
         <p className="mt-0.5 truncate text-[11.5px] text-ink-faint">
-          {[
-            source.meta.space_name,
-            source.meta.section_label,
-            source.meta.date_label,
-          ]
+          {[source.meta.section_label, source.meta.date_label]
             .filter(Boolean)
             .join(" · ")}
         </p>
       </div>
+      {/* Source-space chip on the right. Always shown so the user can
+          tell at a glance which scope an answer is grounded in — the
+          most important attribution in a cross-space search. */}
+      <span className="ml-2 inline-flex shrink-0 items-center self-start rounded-md border border-line bg-canvas px-1.5 py-0.5 text-[10.5px] text-ink-muted">
+        {source.meta.space_name}
+      </span>
     </Link>
   );
 }

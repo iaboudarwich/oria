@@ -2,6 +2,7 @@ import { Topbar } from "@/components/dashboard/topbar";
 import { AskChat } from "@/components/ask/ask-chat";
 import {
   getCurrentContext,
+  isAccountOwnerInPersonal,
   listUserSpaces,
 } from "@/lib/data/organizations";
 
@@ -13,12 +14,13 @@ export default async function AskPage() {
     listUserSpaces(),
   ]);
   // God's Eye toggle only renders when:
-  //   • you're currently in your Personal space (the only place from
-  //     which a global search is allowed by design), and
+  //   • you're currently in your Personal space AND you own that space
+  //     (the only configuration from which a global search is allowed
+  //     by design), and
   //   • you actually have more than one space — otherwise there's
   //     nothing to span across.
   const crossSpaceAvailable =
-    ctx?.organization.kind === "personal" && spaces.length > 1;
+    !!ctx && isAccountOwnerInPersonal(ctx) && spaces.length > 1;
 
   return (
     <>

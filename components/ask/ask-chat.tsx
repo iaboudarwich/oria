@@ -226,11 +226,12 @@ export function AskChat({
 }
 
 /**
- * Personal-only pill: "This space" ↔ "Everywhere I own". When ON, the
- * server includes every org the user is a member of in retrieval. The
- * page only shows the toggle when the user actually has more than one
- * space; the API also re-checks active-org=personal so a forged flag
- * can never broaden a Circle or Workspace search.
+ * Personal-owner-only pill: "This space" ↔ "Everywhere I can access".
+ * When ON, the server includes every org the user is a member of in
+ * retrieval (Personal + Circles + Workspaces). The page only shows the
+ * toggle when the user actually has more than one space; the API also
+ * re-checks active-org=personal AND role=owner so a forged flag can
+ * never broaden a Circle or Workspace search.
  */
 function CrossSpaceToggle({
   on,
@@ -251,11 +252,11 @@ function CrossSpaceToggle({
             : "border-line bg-canvas text-ink-muted hover:border-line-strong hover:text-ink"
         }`}
       >
-        {on ? "Everywhere I own" : "This space only"}
+        {on ? "Everywhere I can access" : "This space"}
       </button>
       <span className="text-[11.5px] text-ink-faint">
         {on
-          ? "Searching across your Personal, Circles, and Workspaces."
+          ? "Searching across Personal, Circles, and Workspaces."
           : "Only the active space."}
       </span>
     </div>

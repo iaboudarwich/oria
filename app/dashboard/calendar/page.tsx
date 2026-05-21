@@ -1,8 +1,10 @@
 import { Topbar } from "@/components/dashboard/topbar";
 import { CalendarView } from "@/components/calendar/calendar-view";
-import { ComingUpRollup } from "@/components/calendar/coming-up";
 import { groupComingUp, loadCalendar } from "@/lib/data/calendar";
-import { getCurrentContext } from "@/lib/data/organizations";
+import {
+  getCurrentContext,
+  isAccountOwnerInPersonal,
+} from "@/lib/data/organizations";
 import { createReminder } from "@/lib/data/reminder-actions";
 
 export const metadata = { title: "Calendar" };
@@ -16,27 +18,40 @@ export default async function CalendarPage() {
   const activeSpace = ctx
     ? spaces.find((s) => s.id === ctx.organization.id) ?? null
     : null;
+  const activeSpaceId = activeSpace?.id ?? "";
 
-  const comingUp = groupComingUp(entries);
+  // God's Eye for calendar follows the same gate as Ask Oria: only the
+  // Personal-space owner gets a cross-space view. Everyone else sees
+  // only the active space's calendar.
+  const crossSpaceAvailable =
+    !!ctx && isAccountOwnerInPersonal(ctx) && spaces.length > 1;
+
+  // Compute initial "Coming up" rollup against the active-space slice
+  // so the rollup never leaks items from a different space on first
+  // paint. Client takes over when the user toggles the scope.
+  const activeEntries = activeSpaceId
+    ? entries.filter((e) => e.space_id === activeSpaceId)
+    : entries;
+  const initialComingUp = groupComingUp(activeEntries);
 
   return (
     <>
       <Topbar title="Calendar" />
 
       <div className="mb-6 max-w-xl px-1 text-[13px] text-ink-muted">
-        Your reminders, payments, flights, and events in one place. Filter by
-        space or category.
+        Your reminders, payments, flights, and events in one place. Scoped to
+        the active space.
       </div>
 
       <div className="space-y-6 animate-fade-up">
-        <ComingUpRollup buckets={comingUp} />
-
         <AddReminder activeSpaceName={activeSpace?.name ?? null} />
 
         <CalendarView
           entries={entries}
           spaces={spaces}
-          activeSpaceId={activeSpace?.id ?? ""}
+          activeSpaceId={activeSpaceId}
+          crossSpaceAvailable={crossSpaceAvailable}
+          initialComingUp={initialComingUp}
         />
       </div>
     </>
