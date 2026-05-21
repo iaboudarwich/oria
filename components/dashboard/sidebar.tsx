@@ -24,7 +24,6 @@ import {
   PulseIcon,
   ScalesIcon,
   SearchIcon,
-  SettingsIcon,
   SparkIcon,
   StaffIcon,
   TagIcon,
@@ -36,7 +35,7 @@ import {
   type SpaceSummary,
 } from "@/components/dashboard/space-switcher";
 import { ModeToggle } from "@/components/dashboard/mode-toggle";
-import { signOut } from "@/lib/auth/actions";
+import { UserMenu } from "@/components/dashboard/user-menu";
 
 type NavItem = {
   label: string;
@@ -77,9 +76,10 @@ const workSecondaryNav: NavItem[] = [
   { label: "Team", href: "/dashboard/circle", icon: PersonIcon },
 ];
 
-// System tier, always at the bottom.
+// System tier, always at the bottom. Settings used to live here too,
+// but it moved into the account menu (UserMenu) so the sidebar stays
+// focused on places and the account row owns account-level actions.
 const systemNav: NavItem[] = [
-  { label: "Settings", href: "/dashboard/settings", icon: SettingsIcon },
   { label: "Deleted", href: "/dashboard/trash", icon: CloseIcon },
   { label: "Private Oria", href: "/dashboard/private", icon: LockIcon, badge: "Preview" },
 ];
@@ -101,6 +101,10 @@ export type SidebarProps = {
   sections: SidebarSection[];
   spaces: SpaceSummary[];
   activeSpace: SpaceSummary;
+  /** Whether the signed-in user's email is on ADMIN_EMAILS. Drives the
+   *  Admin link inside the account menu. Resolved server-side in the
+   *  layout so the menu never has to make its own decision. */
+  isAdmin: boolean;
   /** Desktop only. Mobile sidebar always shows full content when open. */
   collapsed?: boolean;
   onToggle?: () => void;
@@ -139,6 +143,7 @@ export function Sidebar({
   sections,
   spaces,
   activeSpace,
+  isAdmin,
   collapsed = false,
   onToggle,
   sectionsOpen = true,
@@ -302,7 +307,7 @@ export function Sidebar({
           </div>
         </nav>
 
-        <UserCard user={user} collapsed={collapsed} />
+        <UserMenu user={user} isAdmin={isAdmin} collapsed={collapsed} />
       </aside>
     </>
   );
@@ -513,50 +518,3 @@ function NavLink({
   );
 }
 
-function UserCard({
-  user,
-  collapsed,
-}: {
-  user: { name: string; email: string };
-  collapsed?: boolean;
-}) {
-  const initials = user.name
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((s) => s[0]?.toUpperCase())
-    .join("");
-  if (collapsed) {
-    return (
-      <div className="border-t border-line p-2">
-        <div
-          className="flex justify-center rounded-xl px-1 py-2 hover:bg-canvas/60 transition-base"
-          title={user.name}
-        >
-          <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-sand text-ink-soft text-[11px] font-semibold">
-            {initials || user.email[0].toUpperCase()}
-          </span>
-        </div>
-      </div>
-    );
-  }
-  return (
-    <div className="border-t border-line p-3">
-      <div className="flex items-center gap-2.5 rounded-xl px-2.5 py-2 hover:bg-canvas/60 transition-base">
-        <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-sand text-ink-soft text-[11px] font-semibold">
-          {initials || user.email[0].toUpperCase()}
-        </span>
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-[12.5px] text-ink">{user.name}</p>
-        </div>
-        <form action={signOut}>
-          <button
-            type="submit"
-            className="text-[11px] text-ink-faint hover:text-ink transition-base"
-          >
-            Sign out
-          </button>
-        </form>
-      </div>
-    </div>
-  );
-}

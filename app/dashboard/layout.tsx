@@ -13,6 +13,7 @@ import {
   readSidebarWidth,
 } from "@/lib/data/sidebar-prefs";
 import { kindsForMode, modeForOrgKind } from "@/lib/data/mode";
+import { isCurrentUserAdmin } from "@/lib/data/admin";
 
 export const metadata = {
   title: "Oria",
@@ -40,6 +41,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
     sidebarMode,
     sectionsMode,
     sidebarWidth,
+    isAdmin,
   ] = await Promise.all([
     listAllSections({ includeHidden: false }),
     listUserSpaces(),
@@ -47,6 +49,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
     readSidebarMode(),
     readSectionsMode(),
     readSidebarWidth(),
+    isCurrentUserAdmin(),
   ]);
 
   // Mode follows the active space's kind. Personal/Circle orgs → Personal
@@ -115,6 +118,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
     sections: mode === "personal" ? personalSections : [],
     spaces: spaceSummaries,
     activeSpace,
+    isAdmin,
   };
 
   return (
