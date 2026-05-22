@@ -20,26 +20,66 @@ export function getOriaTzCookieName(): string {
 }
 
 /**
- * Midnight of `d` in the given IANA timezone, returned as a Date.
- * If `tz` is invalid or empty, falls back to UTC.
+ * Midnight of `d` in the given IANA timezone, returned as a Date
+ * pointing at the corresponding UTC instant.
+ *
+ * Naive elapsed-since-midnight subtraction is off by one hour around
+ * DST transitions (the input's wall clock has shifted but midnight
+ * earlier in the day has not). We instead:
+ *   1. Format the input to extract the local YYYY-MM-DD.
+ *   2. Start with a guess of "local YYYY-MM-DD at 00:00 UTC".
+ *   3. Iterate a few times: format the guess in the zone, then nudge
+ *      until the wall clock in the zone reads 00:00 on the right day.
+ *
+ * Converges within 3 iterations for every real timezone, including
+ * DST spring-forward and fall-back. Falls back to UTC midnight on a
+ * bad zone.
  */
 export function startOfDayInTz(d: Date, tz: string | null | undefined): Date {
   const zone = tz && isValidTz(tz) ? tz : "UTC";
   try {
-    const parts = new Intl.DateTimeFormat("en-US", {
+    const dayFmt = new Intl.DateTimeFormat("en-CA", {
       timeZone: zone,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    });
+    const localDay = dayFmt.format(d);
+    let guess = new Date(`${localDay}T00:00:00Z`);
+
+    const fullFmt = new Intl.DateTimeFormat("en-US", {
+      timeZone: zone,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
       hour: "2-digit",
       minute: "2-digit",
       second: "2-digit",
       hour12: false,
-    }).formatToParts(d);
-    const hour = Number(parts.find((p) => p.type === "hour")?.value ?? "0");
-    const minute = Number(parts.find((p) => p.type === "minute")?.value ?? "0");
-    const second = Number(parts.find((p) => p.type === "second")?.value ?? "0");
-    // "24" sometimes appears at midnight; clamp to 0.
-    const h24 = hour === 24 ? 0 : hour;
-    const elapsedSeconds = h24 * 3600 + minute * 60 + second;
-    return new Date(d.getTime() - elapsedSeconds * 1000);
+    });
+
+    for (let i = 0; i < 4; i++) {
+      const parts = fullFmt.formatToParts(guess);
+      const map: Record<string, string> = {};
+      for (const p of parts) map[p.type] = p.value;
+      const guessDay = `${map.year}-${map.month}-${map.day}`;
+      const hour = map.hour === "24" ? 0 : Number(map.hour ?? "0");
+      const minute = Number(map.minute ?? "0");
+      const second = Number(map.second ?? "0");
+      const hms = hour * 3600 + minute * 60 + second;
+      const cmp = guessDay < localDay ? -1 : guessDay > localDay ? 1 : 0;
+      if (cmp === 0 && hms === 0) return guess;
+      if (cmp === 0) {
+        guess = new Date(guess.getTime() - hms * 1000);
+      } else if (cmp < 0) {
+        // Guess is on an earlier local day; push forward by what's
+        // left of that day in zone wall-clock terms.
+        guess = new Date(guess.getTime() + (24 * 3600 - hms) * 1000);
+      } else {
+        guess = new Date(guess.getTime() - (24 * 3600 + hms) * 1000);
+      }
+    }
+    return guess;
   } catch {
     const x = new Date(d);
     x.setUTCHours(0, 0, 0, 0);
