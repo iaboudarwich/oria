@@ -173,6 +173,8 @@ Read the attached file carefully and extract every distinct piece of information
 
 CRITICAL: If the file contains multiple receipts, invoices, or documents laid out together (e.g. a photo of three receipts on a table, a scan with two invoices), return ONE item per receipt/document. Do not merge them. A photo with five receipts should produce five items.
 
+TRAVEL DOCUMENTS — one item per LEG: a multi-leg flight itinerary, a multi-segment train trip, or a multi-stop hotel booking should produce one item per discrete event the user needs on their calendar. A round-trip with two flights produces TWO items, each with occurred_at = the departure datetime, title = "Origin → Destination, <date>", and merchant = the carrier. A booking confirmation covering both an outbound and a return flight is NOT a single item.
+
 For each item:
 - Read in the original language; do not translate.
 - Treat handwriting the same as typed text; set is_handwritten=true if any.
@@ -195,7 +197,7 @@ DIRECTION — set direction whenever a document moves money:
 - null for non-financial or ambiguous documents (contracts without monetary movement, statements that contain both directions, etc.).
 
 SMART SECTIONS — set smart_section on each item:
-- "diet" when the item is food the user ate (meal photo, restaurant receipt, food description). Estimate calories, protein_g, carbs_g, fat_g as plain numbers. Be DECISIVE — a reasonable rough estimate is much more useful than null. Use both the image AND the user_description (e.g. "lunch: chicken bowl, rice, salad" → estimate ~600 cal, 45g protein, 70g carbs, 18g fat). Only leave calories null when the item genuinely contains no food cue at all. Suggest a friendly meal title like "Chicken bowl with rice and salad" and set occurred_at to when the meal happened — use the upload time if no other timestamp is visible (the meal page slices by occurred_at, so an unset value means it won't appear in "Today").
+- "diet" when the item is food the user ate (meal photo, restaurant receipt, food description). Estimate calories, protein_g, carbs_g, fat_g as plain numbers. Be DECISIVE — a reasonable rough estimate is much more useful than null. Use both the image AND the user_description (e.g. "lunch: chicken bowl, rice, salad" → estimate ~600 cal, 45g protein, 70g carbs, 18g fat). Only leave calories null when the item genuinely contains no food cue at all. Suggest a friendly meal title like "Chicken bowl with rice and salad". The downstream pipeline always overrides occurred_at to the upload time for meals (the user uploads when they eat), so you can leave occurred_at null here.
 - "bills" when the item is a bill or invoice the user owes or paid (utility, rent, subscription, recurring service). Pull amount + currency + occurred_at (use the DUE DATE if visible, otherwise the issue/payment date). Detect recurrence: set is_recurring=true and recurring_interval ("monthly" / "quarterly" / "yearly" / "weekly") when the bill clearly recurs. Leave is_recurring null when uncertain.
 - null when the item is neither (a contract, photo, note, generic receipt that isn't a household bill).
 

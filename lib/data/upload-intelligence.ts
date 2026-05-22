@@ -286,11 +286,19 @@ export async function processUpload(uploadId: string): Promise<void> {
       // The hint wins when AI didn't classify, so an upload via the Diet
       // page always lands in Diet even if the model was uncertain.
       const smartSection = item.smart_section ?? smartSectionHint ?? null;
-      // For meals without an explicit timestamp, fall back to upload time so
-      // "what did I eat today" actually returns today's meals.
-      const occurredAt =
-        item.occurred_at ??
-        (smartSection === "diet" ? new Date().toISOString() : null);
+      // For DIET specifically, the user's intent is always "I ate this
+      // now" — the upload time is the meal time. The model often picks
+      // an unrelated date (EXIF, a date printed on the receipt, a label
+      // in the photo), which would file the meal on the wrong day and
+      // break the Today view + "calories today" Ask aggregates. Always
+      // overwrite for diet. Other smart sections (bills) need the real
+      // due date the model extracted, so they're untouched.
+      let occurredAt: string | null;
+      if (smartSection === "diet") {
+        occurredAt = new Date().toISOString();
+      } else {
+        occurredAt = item.occurred_at ?? null;
+      }
       return {
         organization_id: upload.organization_id,
         upload_id: upload.id,
@@ -327,7 +335,35 @@ export async function processUpload(uploadId: string): Promise<void> {
         smart_section: smartSection,
       };
     });
-    await supabase.from("memory_items").insert(itemRows);
+    // Hard-fail on insert error rather than silently filing the upload.
+    // The old behaviour ate RLS / cookie errors here and left uploads
+    // marked "filed" with extractions present but zero memory_items —
+    // sections then showed nothing for that file. Mark the upload
+    // failed so stuck-recovery can retry and the user sees a Failed
+    // pill instead of a misleading green check.
+    const insertRes = await supabase
+      .from("memory_items")
+      .insert(itemRows)
+      .select("id");
+    if (insertRes.error || (insertRes.data ?? []).length === 0) {
+      const msg = insertRes.error?.message ?? "memory_items insert returned 0 rows";
+      await supabase
+        .from("uploads")
+        .update({ status: "failed" })
+        .eq("id", uploadId);
+      void recordSystemEvent({
+        kind: "upload.failed",
+        severity: "error",
+        message: msg,
+        context: {
+          uploadId: upload.id,
+          stage: "memory_items_insert",
+          items_attempted: itemRows.length,
+        },
+        organizationId: upload.organization_id,
+      });
+      throw new Error(`memory_items insert failed: ${msg}`);
+    }
 
     const dominantType = aiResult.items[0].document_type;
     const dominantLanguage = aiResult.items[0].language;
