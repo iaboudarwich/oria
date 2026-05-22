@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Topbar } from "@/components/dashboard/topbar";
 import { DropzoneCompact } from "@/components/upload/dropzone-compact";
+import { TextLogForm } from "@/components/section/text-log-form";
 import { WalletIcon } from "@/components/ui/icon";
 import { AskChat } from "@/components/ask/ask-chat";
 import { SectionMemoryPanel } from "@/components/section/section-memory-panel";
@@ -54,6 +55,12 @@ export default async function BillsPage() {
           smartSection="bills"
           heading="Drop a bill or invoice"
           subheading="add a short note, e.g. ‘Electricity for LA apartment’"
+        />
+
+        <TextLogForm
+          smartSection="bills"
+          placeholder="Or type a bill — ‘Rent $2,500 due June 1, monthly’"
+          label="Log a bill by text"
         />
 
         <ForecastStrip forecast={forecast} />

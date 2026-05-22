@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { redirect } from "next/navigation";
 import { SidebarShell } from "@/components/dashboard/sidebar-shell";
+import { TimezoneCookie } from "@/components/section/timezone-cookie";
 import {
   getCurrentContext,
   listUserSpaces,
@@ -128,6 +129,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
 
   return (
     <div className="min-h-screen bg-canvas">
+      <TimezoneCookie />
       <SidebarShell
         initialCollapsed={sidebarMode === "collapsed"}
         initialSectionsOpen={sectionsMode === "open"}

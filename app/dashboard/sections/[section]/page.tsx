@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Topbar } from "@/components/dashboard/topbar";
 import { DropzoneCompact } from "@/components/upload/dropzone-compact";
+import { TextLogForm } from "@/components/section/text-log-form";
 import { Thumbnail } from "@/components/upload/thumbnail";
 import { SparkIcon } from "@/components/ui/icon";
 import {
@@ -89,6 +90,14 @@ export default async function SectionPage({ params }: Props) {
             subheading="or click to add"
           />
         }
+        textLogNode={
+          <TextLogForm
+            customSectionId={custom.id}
+            customSectionName={custom.name}
+            placeholder={`Type a note for ${custom.name}…`}
+            label="Or log by text"
+          />
+        }
       >
         {entries.length === 0 ? (
           <p className="px-1 text-[13px] text-ink-faint">
@@ -120,6 +129,13 @@ export default async function SectionPage({ params }: Props) {
           subheading="or click to add"
         />
       }
+      textLogNode={
+        <TextLogForm
+          section={sec}
+          placeholder={placeholderForSection(sec)}
+          label="Or log by text"
+        />
+      }
     >
       {entries.length === 0 ? (
         <p className="px-1 text-[13px] text-ink-faint">
@@ -130,6 +146,38 @@ export default async function SectionPage({ params }: Props) {
       )}
     </Layout>
   );
+}
+
+/**
+ * Section-specific placeholder. Nudges the user toward the right kind
+ * of detail without spelling out a schema. Falls back to a generic
+ * line for sections we haven't tuned.
+ */
+function placeholderForSection(sec: Section): string {
+  switch (sec) {
+    case "travel":
+      return "e.g. ‘Flight to Paris July 6 at 8pm, Air France AF331’";
+    case "finance":
+      return "e.g. ‘Spent $500 at Chanel yesterday’";
+    case "legal":
+      return "e.g. ‘Lease for 14 Pine St expires August 30, $3,200/month’";
+    case "health":
+      return "e.g. ‘Dr Patel follow-up June 12 at 10am’";
+    case "household":
+      return "e.g. ‘Plumber Tuesday 9am, $180 estimate’";
+    case "vendors":
+      return "e.g. ‘Hired Acme HVAC, contract through March 2027’";
+    case "properties":
+      return "e.g. ‘Unit 4B occupied — Sarah Chen, lease through Dec 2026’";
+    case "staff":
+      return "e.g. ‘Hired Maria as housekeeper, starts June 1, $25/hr’";
+    case "events":
+      return "e.g. ‘Anniversary dinner June 14, Beirut, table for 4’";
+    case "personal":
+      return "e.g. ‘Call Mom Sunday at 4pm’";
+    default:
+      return "Type a quick note to log into this section.";
+  }
 }
 
 /** Fetch signed thumbnail URLs keyed by entry id. Both uploads and items
@@ -151,11 +199,13 @@ function Layout({
   title,
   count,
   dropzoneNode,
+  textLogNode = null,
   children,
 }: {
   title: string;
   count: number;
   dropzoneNode: React.ReactNode;
+  textLogNode?: React.ReactNode;
   children: React.ReactNode;
 }) {
   return (
@@ -175,6 +225,7 @@ function Layout({
       </div>
 
       {dropzoneNode ? <div className="mb-6">{dropzoneNode}</div> : null}
+      {textLogNode ? <div className="mb-6">{textLogNode}</div> : null}
 
       <div className="animate-fade-up">{children}</div>
     </>

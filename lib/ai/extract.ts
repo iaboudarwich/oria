@@ -223,7 +223,7 @@ If the image is blurry, dark, partial, or tilted, describe what's wrong in sourc
 
 You MUST call the store_extraction tool with your findings. Do not output free-form text.`;
 
-const ITEM_SCHEMA: Anthropic.Messages.Tool["input_schema"] = {
+export const ITEM_SCHEMA: Anthropic.Messages.Tool["input_schema"] = {
   type: "object",
   properties: {
     title: { type: "string" },
@@ -338,7 +338,7 @@ const ITEM_SCHEMA: Anthropic.Messages.Tool["input_schema"] = {
   required: ["title", "document_type", "raw_text", "entities", "confidence"],
 };
 
-const EXTRACTION_TOOL: Anthropic.Messages.Tool = {
+export const EXTRACTION_TOOL: Anthropic.Messages.Tool = {
   name: "store_extraction",
   description:
     "Store the structured information extracted from the document. " +
@@ -361,7 +361,7 @@ const EXTRACTION_TOOL: Anthropic.Messages.Tool = {
   } as Anthropic.Messages.Tool["input_schema"],
 };
 
-function getExtractionModel(): string {
+export function getExtractionModel(): string {
   return (
     process.env.ANTHROPIC_EXTRACTION_MODEL ??
     process.env.ANTHROPIC_MODEL ??
@@ -553,7 +553,7 @@ Call store_extraction.`,
 /* Normalisation                                                             */
 /* ------------------------------------------------------------------------ */
 
-function normalize(
+export function normalize(
   raw: Record<string, unknown>,
   model: string,
 ): ExtractionResult {

@@ -1,6 +1,8 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { Topbar } from "@/components/dashboard/topbar";
 import { DropzoneCompact } from "@/components/upload/dropzone-compact";
+import { TextLogForm } from "@/components/section/text-log-form";
 import { AskChat } from "@/components/ask/ask-chat";
 import { SectionMemoryPanel } from "@/components/section/section-memory-panel";
 import {
@@ -11,6 +13,7 @@ import {
 } from "@/lib/data/smart-sections";
 import { listSectionMemories } from "@/lib/data/section-memory";
 import { listRecentUserQuestions } from "@/lib/data/recent-questions";
+import { sameDayInTz, startOfDayInTz } from "@/lib/utils/tz";
 import type { SectionScope } from "@/lib/data/section-scope";
 
 export const metadata = { title: "Diet" };
@@ -24,18 +27,25 @@ const SUGGESTIONS = [
 ];
 
 export default async function DietPage() {
-  // Pull the last 7 days of meals in one shot; partition below.
-  const today = startOfDay(new Date());
-  const sevenDaysAgo = new Date(today);
-  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+  // Compute day boundaries against the user's local timezone (set by
+  // TimezoneCookie on first dashboard mount), not the server's. Without
+  // this, a meal logged at 11pm Pacific would show up on the wrong
+  // calendar day for the Today view + week chart.
+  const tz = (await cookies()).get("oria_tz")?.value ?? "UTC";
+  const now = new Date();
+  const today = startOfDayInTz(now, tz);
+  const sevenDaysAgo = new Date(today.getTime() - 6 * 24 * 60 * 60 * 1000);
+
   const [meals, memories, recentQuestions] = await Promise.all([
     listDietMeals({ since: sevenDaysAgo, limit: 200 }),
     listSectionMemories(SCOPE),
     listRecentUserQuestions({ surface: "ask", scope: SCOPE, limit: 3 }),
   ]);
-  const todayMeals = meals.filter((m) => occurredOn(m, today));
+  const todayMeals = meals.filter((m) =>
+    m.occurred_at ? sameDayInTz(new Date(m.occurred_at), now, tz) : false,
+  );
   const todayTotals = sumMacros(todayMeals);
-  const week = buildWeek(meals);
+  const week = buildWeek(meals, now, tz);
   const weekMax = Math.max(...week.map((d) => d.calories), 1);
 
   return (
@@ -47,6 +57,12 @@ export default async function DietPage() {
           smartSection="diet"
           heading="Drop a meal photo"
           subheading="add a short note, e.g. ‘Lunch: chicken, rice, salad’"
+        />
+
+        <TextLogForm
+          smartSection="diet"
+          placeholder="Or describe what you ate — ‘1.5 cups pasta with 2 fried eggs and parmesan’"
+          label="Log a meal by text"
         />
 
         <section>
@@ -269,36 +285,28 @@ function DailyStrip({
 
 /* ----- helpers ----------------------------------------------------------- */
 
-function startOfDay(d: Date): Date {
-  const x = new Date(d);
-  x.setHours(0, 0, 0, 0);
-  return x;
-}
-
-function occurredOn(meal: DietMeal, day: Date): boolean {
-  if (!meal.occurred_at) return false;
-  const m = new Date(meal.occurred_at);
-  return (
-    m.getFullYear() === day.getFullYear() &&
-    m.getMonth() === day.getMonth() &&
-    m.getDate() === day.getDate()
-  );
-}
-
 type WeekBucket = { label: string; calories: number };
 
-function buildWeek(meals: DietMeal[]): WeekBucket[] {
-  const today = startOfDay(new Date());
+function buildWeek(meals: DietMeal[], now: Date, tz: string): WeekBucket[] {
+  const todayStart = startOfDayInTz(now, tz);
   const days: WeekBucket[] = [];
   for (let i = 6; i >= 0; i--) {
-    const d = new Date(today);
-    d.setDate(d.getDate() - i);
+    // Step back i*24h, then snap to that day's local midnight in tz so
+    // DST boundaries don't move the bucket edge mid-week.
+    const probe = new Date(todayStart.getTime() - i * 24 * 60 * 60 * 1000);
     const label =
       i === 0
         ? "Today"
-        : d.toLocaleDateString(undefined, { weekday: "short" });
+        : new Intl.DateTimeFormat(undefined, {
+            weekday: "short",
+            timeZone: tz === "" ? "UTC" : tz,
+          }).format(probe);
     const cals = meals
-      .filter((m) => occurredOn(m, d))
+      .filter((m) =>
+        m.occurred_at
+          ? sameDayInTz(new Date(m.occurred_at), probe, tz)
+          : false,
+      )
       .reduce((acc, m) => acc + (m.calories ?? 0), 0);
     days.push({ label, calories: Math.round(cals) });
   }

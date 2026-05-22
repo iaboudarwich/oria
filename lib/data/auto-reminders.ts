@@ -49,7 +49,7 @@ type Proposal = {
   organization_id: string;
   title: string;
   due_at: string;
-  upload_id: string;
+  upload_id: string | null;
   source: "suggested";
 };
 
@@ -82,12 +82,46 @@ export async function proposeAutoReminders(input: {
     .eq("upload_id", input.uploadId)
     .eq("organization_id", input.organizationId)
     .is("deleted_at", null);
-
   if (error || !itemRows || itemRows.length === 0) return 0;
+  return runProposalsForItems(itemRows as ItemRow[], {
+    uploadId: input.uploadId,
+    organizationId: input.organizationId,
+  });
+}
 
-  const items = itemRows as ItemRow[];
+/**
+ * Same logic as proposeAutoReminders but pivots on a list of newly-
+ * inserted memory_items ids. Used by the typed-text logging path
+ * where items have no upload_id.
+ */
+export async function proposeAutoRemindersForItems(input: {
+  itemIds: string[];
+  organizationId: string;
+}): Promise<number> {
+  if (input.itemIds.length === 0) return 0;
+  const supabase = createAdminClient();
+  const { data: itemRows, error } = await supabase
+    .from("memory_items")
+    .select(
+      "id, title, merchant, document_type, occurred_at, is_recurring, recurring_interval, confidence, smart_section, summary",
+    )
+    .in("id", input.itemIds)
+    .eq("organization_id", input.organizationId)
+    .is("deleted_at", null);
+  if (error || !itemRows || itemRows.length === 0) return 0;
+  return runProposalsForItems(itemRows as ItemRow[], {
+    uploadId: null,
+    organizationId: input.organizationId,
+  });
+}
+
+async function runProposalsForItems(
+  items: ItemRow[],
+  scope: { uploadId: string | null; organizationId: string },
+): Promise<number> {
+  const supabase = createAdminClient();
   const nowMs = Date.now();
-  const proposals: Proposal[] = [];
+  const proposals: Array<Omit<Proposal, "upload_id"> & { upload_id: string | null }> = [];
 
   for (const it of items) {
     if ((it.confidence ?? 0) < AUTO_REMINDER_CONFIDENCE) continue;
@@ -108,19 +142,15 @@ export async function proposeAutoReminders(input: {
     if (!isActionDoc && !isBill && !isRecurring) continue;
 
     proposals.push({
-      organization_id: input.organizationId,
+      organization_id: scope.organizationId,
       title: composeTitle(it, { isBill, isRecurring }),
       due_at: it.occurred_at,
-      upload_id: input.uploadId,
+      upload_id: scope.uploadId,
       source: "suggested",
     });
   }
 
   if (proposals.length === 0) return 0;
-
-  // No de-dup: processUpload runs once per upload, and each call inserts
-  // a fresh batch tied to a fresh upload_id. Manual re-uploads produce a
-  // new upload_id and a new batch, which is what the user expects.
   const { error: insertError } = await supabase
     .from("reminders")
     .insert(proposals);
