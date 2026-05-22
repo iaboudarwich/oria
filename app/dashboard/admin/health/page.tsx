@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Topbar } from "@/components/dashboard/topbar";
 import { isCurrentUserAdmin } from "@/lib/data/admin";
 import { getSystemHealth, type FailedItem } from "@/lib/data/system-health";
+import { recoverStuckUploadsAcrossOrgs } from "@/lib/data/stuck-uploads";
 import type { SystemEvent } from "@/lib/data/system-events";
 
 export const metadata = { title: "System Health" };
@@ -12,6 +13,11 @@ export default async function AdminHealthPage() {
   if (!admin) {
     return <NotAuthorized />;
   }
+
+  // Janitor sweep: any operator visit doubles as a cross-org stuck-
+  // upload recovery pass. Fires in after() so it doesn't block the
+  // page, scoped to ops only because this is an admin route.
+  await recoverStuckUploadsAcrossOrgs();
 
   const h = await getSystemHealth();
 

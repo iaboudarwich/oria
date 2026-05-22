@@ -355,8 +355,15 @@ export async function retryUploadProcessing(
   };
 
   // Only retry stuck/failed rows. Don't blow up a healthy "filed"
-  // record by accident.
-  if (upload.status !== "failed" && upload.status !== "processing") return;
+  // record by accident. "received" rows are orphans where the original
+  // after() never fired — the retry button is the user's escape hatch.
+  if (
+    upload.status !== "failed" &&
+    upload.status !== "processing" &&
+    upload.status !== "received"
+  ) {
+    return;
+  }
 
   after(async () => {
     await runProcessUploadSafely(upload.id, upload.organization_id);
