@@ -448,7 +448,19 @@ export async function extractFromUpload(input: {
     content = [
       {
         type: "text",
-        text: `${contextHeader}\n\nSpreadsheet contents (rendered as CSV-like text, one section per sheet):\n${text}\n\nReturn one item per meaningful row when rows are discrete transactions / line items / contracts. If hundreds of similar rows, group sensibly. Call store_extraction.`,
+        text: `${contextHeader}
+
+Spreadsheet contents (rendered as CSV-like text, one section per sheet, with header detection):
+${text}
+
+INSTRUCTIONS FOR SPREADSHEETS:
+- Return AT MOST 8 items total. Summarize, don't enumerate.
+- One item per logical group: one per sheet for multi-sheet workbooks; or one per category (e.g. "Income by Property", "Maintenance Costs Q1", "Tenant Roster").
+- Put the most useful queryable facts into raw_text: totals, key columns, time range, a few exemplar rows. The Work analysis layer will read raw_text to answer downstream questions, so it must be rich enough to compare files later.
+- Capture meaningful numeric totals (sum, count, average) in the item's amount fields when one figure summarizes the group.
+- For a single-sheet file with discrete transactions/line items, you may return one item per row only if the total row count is below 20.
+
+Call store_extraction.`,
       },
     ];
   } else if (mime.startsWith("text/") || mime === "text/csv") {
@@ -472,12 +484,12 @@ export async function extractFromUpload(input: {
   try {
     response = await client.messages.create({
       model: getExtractionModel(),
-      // Was 6144 — a real stacking-plan spreadsheet hit the cap exactly
-      // and produced no usable tool_use, so the whole extraction skipped
-      // with empty_result. Sonnet 4 supports 8192+ comfortably and
-      // max_tokens is a CAP, not a fixed bill — small docs still finish
-      // under 1000 tokens, so this only helps the worst case.
-      max_tokens: 8192,
+      // 6144 → 8192 was step 1 (stacking plan). 8192 also got hit by
+      // the 1.8MB Financials xlsx, so we bump again to 16384. Sonnet 4
+      // supports it. Spreadsheet prompt now caps items at 8, so the
+      // model has less excuse to spend output on enumeration; this
+      // ceiling is the safety net for the long-summary case.
+      max_tokens: 16384,
       system: SYSTEM_PROMPT,
       tools: [EXTRACTION_TOOL],
       tool_choice: { type: "tool", name: "store_extraction" },
@@ -714,28 +726,101 @@ function normalizeEntities(raw: unknown): ExtractionEntities {
 export const AUTO_FILE_CONFIDENCE = 0.6;
 
 /**
- * Render an XLSX/XLS workbook as concatenated CSV-like text so we can feed
- * it to Claude as a single text content block. One CSV section per sheet,
- * truncated to MAX_SHEET_PROMPT_CHARS so the prompt window stays focused
- * on the head of the data.
+ * Render an XLSX/XLS workbook as text for Claude.
+ *
+ * Per sheet we emit:
+ *   - "## Sheet: <name>  (R rows × C cols)" header
+ *   - "## Headers: ..." labelling the first non-empty row when it looks
+ *     like a header (mostly non-numeric, no duplicate empty cells)
+ *   - The raw rows as CSV, capped per-sheet so one huge sheet doesn't
+ *     starve the others
+ *
+ * Total output is capped at MAX_SHEET_PROMPT_CHARS. When a sheet would
+ * overflow on its own, we keep the first ~70% (where headers + totals
+ * usually live) and tail-sample the last 10% so the model still sees
+ * what the bottom of the data looks like instead of being cut off
+ * mid-stream.
  */
 function spreadsheetToText(buffer: Buffer): string | null {
   try {
     const wb = XLSX.read(buffer, { type: "buffer" });
-    const parts: string[] = [];
+    const sheetCount = wb.SheetNames.length;
+    if (sheetCount === 0) return null;
+
+    const perSheetBudget = Math.max(
+      8_000,
+      Math.floor(MAX_SHEET_PROMPT_CHARS / Math.max(1, sheetCount)),
+    );
+
+    const parts: string[] = [
+      `## Workbook (${sheetCount} sheet${sheetCount === 1 ? "" : "s"}: ${wb.SheetNames.join(", ")})`,
+    ];
+
     for (const name of wb.SheetNames) {
       const sheet = wb.Sheets[name];
       if (!sheet) continue;
-      parts.push(`# Sheet: ${name}`);
-      parts.push(XLSX.utils.sheet_to_csv(sheet));
+      const rows = XLSX.utils.sheet_to_json<string[]>(sheet, {
+        header: 1,
+        defval: "",
+        blankrows: false,
+        raw: false,
+      });
+      const rowCount = rows.length;
+      const colCount = rows.reduce((a, r) => Math.max(a, r.length), 0);
+      const header = detectHeaderRow(rows);
+
+      parts.push(
+        `\n## Sheet: ${name}  (${rowCount} rows × ${colCount} cols)`,
+      );
+      if (header) {
+        parts.push(`## Headers: ${header.join(" | ")}`);
+      }
+
+      const csv = XLSX.utils.sheet_to_csv(sheet);
+      if (csv.length <= perSheetBudget) {
+        parts.push(csv);
+      } else {
+        // Keep the head (where totals/labels usually live) plus a tail
+        // sample so the model knows the shape of the bottom rows.
+        const headBudget = Math.floor(perSheetBudget * 0.7);
+        const tailBudget = Math.floor(perSheetBudget * 0.1);
+        parts.push(
+          csv.slice(0, headBudget) +
+            `\n…(sheet truncated, ${csv.length - headBudget - tailBudget} chars omitted)…\n` +
+            csv.slice(csv.length - tailBudget),
+        );
+      }
     }
-    const joined = parts.join("\n\n");
+
+    const joined = parts.join("\n");
     if (joined.length <= MAX_SHEET_PROMPT_CHARS) return joined;
     return (
       joined.slice(0, MAX_SHEET_PROMPT_CHARS) +
-      "\n\n…(spreadsheet truncated; let the user know if you'd need more rows.)"
+      "\n\n…(workbook truncated; let the user know if you'd need more rows.)"
     );
   } catch {
     return null;
   }
+}
+
+/**
+ * Heuristic header detection: pick the first row that looks like
+ * column labels — mostly non-numeric, no empty cells in the middle,
+ * each cell short. Returns null when the sheet doesn't look tabular.
+ */
+function detectHeaderRow(rows: unknown[][]): string[] | null {
+  for (const row of rows.slice(0, 5)) {
+    if (!row || row.length < 2) continue;
+    const cells = row.map((c) => (c == null ? "" : String(c).trim()));
+    const nonEmpty = cells.filter(Boolean);
+    if (nonEmpty.length < 2) continue;
+    const numericCount = nonEmpty.filter((c) =>
+      /^-?[\d,]+(\.\d+)?%?$/.test(c),
+    ).length;
+    const looksHeader =
+      numericCount / nonEmpty.length < 0.3 &&
+      nonEmpty.every((c) => c.length <= 60);
+    if (looksHeader) return cells;
+  }
+  return null;
 }
