@@ -349,6 +349,15 @@ export async function processUpload(uploadId: string): Promise<void> {
       extractionFromAi(upload.id, aiResult, dominantType, dominantLanguage),
     );
 
+    // Clear any stale `extraction_skipped` left over from a prior heuristic
+    // fallback so the upload doesn't keep a "we couldn't read this" tag in
+    // metadata once a re-run finally succeeded.
+    const prevMeta = upload.metadata ?? {};
+    const nextMeta: Record<string, unknown> = { ...prevMeta };
+    delete nextMeta.extraction_skipped;
+    const metaChanged =
+      JSON.stringify(prevMeta) !== JSON.stringify(nextMeta);
+
     await supabase
       .from("uploads")
       .update({
@@ -362,6 +371,7 @@ export async function processUpload(uploadId: string): Promise<void> {
           : {}),
         ...(dominantLanguage ? { language: dominantLanguage } : {}),
         is_handwritten: anyHandwritten,
+        ...(metaChanged ? { metadata: nextMeta } : {}),
       })
       .eq("id", uploadId);
 

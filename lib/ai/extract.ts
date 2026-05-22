@@ -472,7 +472,12 @@ export async function extractFromUpload(input: {
   try {
     response = await client.messages.create({
       model: getExtractionModel(),
-      max_tokens: 6144,
+      // Was 6144 — a real stacking-plan spreadsheet hit the cap exactly
+      // and produced no usable tool_use, so the whole extraction skipped
+      // with empty_result. Sonnet 4 supports 8192+ comfortably and
+      // max_tokens is a CAP, not a fixed bill — small docs still finish
+      // under 1000 tokens, so this only helps the worst case.
+      max_tokens: 8192,
       system: SYSTEM_PROMPT,
       tools: [EXTRACTION_TOOL],
       tool_choice: { type: "tool", name: "store_extraction" },
