@@ -9,6 +9,7 @@ import {
 } from "@/lib/ai/extract";
 import { proposeAutoReminders } from "./auto-reminders";
 import { recordSystemEvent } from "./system-events";
+import { resolveFinalSection } from "./section-routing";
 import type { DocumentType, Section } from "@/lib/supabase/types";
 
 /**
@@ -281,11 +282,19 @@ export async function processUpload(uploadId: string): Promise<void> {
   //     auto-filed into one of that space's own sections.
   if (aiResult && aiResult.items.length > 0) {
     const itemRows = aiResult.items.map((item) => {
-      const autoSection =
-        item.confidence >= AUTO_FILE_CONFIDENCE ? item.suggested_section : null;
-      // The hint wins when AI didn't classify, so an upload via the Diet
-      // page always lands in Diet even if the model was uncertain.
       const smartSection = item.smart_section ?? smartSectionHint ?? null;
+      const suggested =
+        item.confidence >= AUTO_FILE_CONFIDENCE ? item.suggested_section : null;
+      // Bills/invoices/receipts always belong in Finance, regardless of
+      // what the model proposed (a "vehicle registration renewal" got
+      // tagged travel even though the user is paying a bill — same idea
+      // for a healthcare invoice that the model wants in health).
+      const autoSection = resolveFinalSection({
+        suggested,
+        documentType: item.document_type,
+        smartSection,
+        sectionHint: null,
+      });
       // For DIET specifically, the user's intent is always "I ate this
       // now" — the upload time is the meal time. The model often picks
       // an unrelated date (EXIF, a date printed on the receipt, a label
@@ -370,9 +379,18 @@ export async function processUpload(uploadId: string): Promise<void> {
     const anyHandwritten = aiResult.items.some((i) => i.is_handwritten);
     const isSingle = aiResult.items.length === 1;
     const single = aiResult.items[0];
+    const singleSmart = single.smart_section ?? smartSectionHint ?? null;
     const singleAutoSection =
-      isSingle && single.confidence >= AUTO_FILE_CONFIDENCE
-        ? single.suggested_section
+      isSingle
+        ? resolveFinalSection({
+            suggested:
+              single.confidence >= AUTO_FILE_CONFIDENCE
+                ? single.suggested_section
+                : null,
+            documentType: single.document_type,
+            smartSection: singleSmart,
+            sectionHint: null,
+          })
         : null;
     const newTitle =
       isSingle && single.title
@@ -394,12 +412,25 @@ export async function processUpload(uploadId: string): Promise<void> {
     const metaChanged =
       JSON.stringify(prevMeta) !== JSON.stringify(nextMeta);
 
+    // For bills/invoices/receipts, force the parent upload's section
+    // to match the routing helper (Finance) even if a prior auto-run
+    // had stamped a wrong section like "travel" on a vehicle reg
+    // renewal. User-driven moves use setUploadSection() and write a
+    // learning event; that path is unaffected by this override since
+    // setUploadSection runs on a different code path.
+    const isFinancialDoc =
+      singleSmart === "bills" ||
+      single.document_type === "invoice" ||
+      single.document_type === "receipt";
+    const shouldOverrideSection =
+      singleAutoSection && (isFinancialDoc || !upload.section);
+
     await supabase
       .from("uploads")
       .update({
         status: "filed",
         document_type: dominantType,
-        ...(singleAutoSection && !upload.section
+        ...(shouldOverrideSection
           ? { section: singleAutoSection }
           : {}),
         ...(newTitle && (!upload.title || upload.title === upload.filename)

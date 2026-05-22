@@ -64,6 +64,11 @@ export function formatEventMessage(e: {
   context: Record<string, unknown>;
   message: string | null;
 }): string {
+  // Deliberately generic. The global status strip sits in the topbar
+  // across every page — leaking an item title like "Processed Coffee
+  // with 2% milk and stevia" onto the Bills, Travel, and Calendar
+  // pages was the bug the user reported. Friendly section-scoped
+  // detail belongs inside the section view, not in the chrome.
   const detail =
     typeof e.context?.title === "string"
       ? String(e.context.title)
@@ -72,18 +77,15 @@ export function formatEventMessage(e: {
         : null;
   switch (e.kind) {
     case "upload.processed":
-      return detail ? `Processed ${detail}` : "Upload processed";
+      return "Upload processed";
     case "upload.failed":
-      return detail
-        ? `Couldn't process ${detail}`
-        : (e.message ?? "Upload failed");
+      return e.message ?? "Upload failed";
     case "report.ready":
-      return detail ? `${detail} is ready` : "Report ready";
+      return "Report ready";
     case "report.failed":
-      return detail
-        ? `Couldn't finish ${detail}`
-        : (e.message ?? "Report failed");
+      return e.message ?? "Report failed";
     case "invite.accepted":
+      // People joining is rare + worth naming. Keep this one detailed.
       return detail ? `${detail} joined` : "Invite accepted";
     case "email.error":
       return e.message ?? "Email didn't go through";

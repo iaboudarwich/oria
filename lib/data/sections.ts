@@ -32,10 +32,13 @@ export type SectionEntry =
   | {
       kind: "item";
       id: string;
-      upload_id: string;
-      filename: string; // parent upload's filename, for thumbnail
+      /** Null for typed records (no source file). */
+      upload_id: string | null;
+      /** Empty string when typed. */
+      filename: string;
       title: string;
       mime_type: string | null;
+      /** Empty string when typed. */
       storage_path: string;
       created_at: string;
       merchant: string | null;
@@ -139,6 +142,10 @@ export async function listSectionEntries(
   // (so we don't double-show single-item or fully-propagated uploads).
   const knownUploadIds = new Set(uploads.map((u) => u.id));
 
+  // Note: we no longer filter `upload_id is not null` here — typed
+  // records (e.g. "I spent 500 USD at Chanel" logged via the section
+  // text-log form) have upload_id=null and need to show up here too.
+  // The post-processing loop below handles either case.
   let itemsQ = supabase
     .from("memory_items")
     .select(
@@ -146,7 +153,6 @@ export async function listSectionEntries(
     )
     .eq("organization_id", ctx.organization.id)
     .is("deleted_at", null)
-    .not("upload_id", "is", null)
     .order("created_at", { ascending: false })
     .limit(limit);
   if (ref.kind === "builtin") itemsQ = itemsQ.eq("section", ref.key);
@@ -156,7 +162,7 @@ export async function listSectionEntries(
 
   type ItemJoinRow = {
     id: string;
-    upload_id: string;
+    upload_id: string | null;
     title: string;
     merchant: string | null;
     amount_value: string | null;
@@ -183,6 +189,24 @@ export async function listSectionEntries(
 
   const orphanItems: SectionEntry[] = [];
   for (const r of (itemsRes.data ?? []) as ItemJoinRow[]) {
+    if (r.upload_id === null) {
+      // Typed record — no source file. Always show.
+      orphanItems.push({
+        kind: "item",
+        id: r.id,
+        upload_id: null,
+        filename: "",
+        title: r.title,
+        mime_type: null,
+        storage_path: "",
+        created_at: r.created_at,
+        merchant: r.merchant,
+        amount_value: r.amount_value,
+        amount_currency: r.amount_currency,
+        occurred_at: r.occurred_at,
+      });
+      continue;
+    }
     const u = Array.isArray(r.uploads) ? r.uploads[0] : r.uploads;
     if (!u) continue;
     // Skip items whose parent upload is already shown in this section.

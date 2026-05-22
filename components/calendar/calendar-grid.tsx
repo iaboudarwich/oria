@@ -6,6 +6,7 @@ import {
   bucketByDay,
   dayKey,
   isSameDay,
+  shortLabel,
   startOfMonth,
   startOfWeek,
 } from "./calendar-shared";
@@ -76,17 +77,25 @@ export function MonthGrid({
                 {d.getDate()}
               </span>
               {items.length > 0 ? (
-                <div className="mt-auto flex flex-wrap items-center gap-1">
-                  {items.slice(0, 3).map((e) => (
+                <div className="mt-1 flex flex-col gap-0.5">
+                  {items.slice(0, 2).map((e) => (
                     <span
                       key={e.id}
-                      className={`inline-block h-1.5 w-1.5 rounded-full ${CATEGORY_DOT[e.category]}`}
+                      className="flex items-center gap-1 truncate text-[10px] leading-tight"
                       title={e.title}
-                    />
+                    >
+                      <span
+                        className={`inline-block h-1.5 w-1.5 shrink-0 rounded-full ${CATEGORY_DOT[e.category]}`}
+                        aria-hidden
+                      />
+                      <span className="truncate text-ink-soft">
+                        {shortLabel(e)}
+                      </span>
+                    </span>
                   ))}
-                  {items.length > 3 ? (
+                  {items.length > 2 ? (
                     <span className="text-[10px] text-ink-faint">
-                      +{items.length - 3}
+                      +{items.length - 2} more
                     </span>
                   ) : null}
                 </div>

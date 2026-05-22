@@ -298,67 +298,85 @@ function EntryList({
 }) {
   return (
     <ul className="space-y-0.5">
-      {entries.map((e) => (
-        <li
-          key={`${e.kind}-${e.id}`}
-          className="group flex items-center gap-3 rounded-lg px-3 py-2 transition-base hover:bg-surface-raised"
-        >
-          <Link
-            href={`/dashboard/uploads/${e.upload_id}`}
-            className="flex min-w-0 flex-1 items-center gap-3"
-          >
-            <Thumbnail
-              mime={e.mime_type}
-              imageUrl={thumbs.get(e.id) ?? null}
-              filename={e.filename}
-              size={32}
-            />
+      {entries.map((e) => {
+        const isTyped = e.kind === "item" && !e.upload_id;
+        const meta =
+          e.kind === "item"
+            ? [
+                e.amount_value
+                  ? e.amount_currency
+                    ? `${e.amount_value} ${e.amount_currency}`
+                    : e.amount_value
+                  : null,
+                e.occurred_at
+                  ? new Date(e.occurred_at).toLocaleDateString(undefined, {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })
+                  : relativeTime(e.created_at),
+                isTyped ? "typed" : "from a multi-item upload",
+              ]
+                .filter(Boolean)
+                .join(" · ")
+            : `${displayActor(e.uploader)} · ${relativeTime(e.created_at)}`;
+        // Typed items have no source file → render as a non-link card
+        // with the structured fields visible. Uploads + items-from-files
+        // link to the parent upload page so the user can drill in.
+        const Inner = (
+          <>
+            {isTyped ? (
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-canvas text-[10.5px] text-ink-faint">
+                ✎
+              </div>
+            ) : (
+              <Thumbnail
+                mime={e.mime_type}
+                imageUrl={thumbs.get(e.id) ?? null}
+                filename={e.filename}
+                size={32}
+              />
+            )}
             <div className="min-w-0 flex-1">
               {e.kind === "upload" ? (
-                <>
-                  <p className="truncate text-[13.5px] text-ink">
-                    {e.title ?? e.filename}
-                  </p>
-                  <p className="truncate text-[11.5px] text-ink-faint">
-                    {displayActor(e.uploader)} · {relativeTime(e.created_at)}
-                  </p>
-                </>
+                <p className="truncate text-[13.5px] text-ink">
+                  {e.title ?? e.filename}
+                </p>
               ) : (
-                <>
-                  <p className="truncate text-[13.5px] text-ink">
-                    {e.merchant || e.title}
-                  </p>
-                  <p className="truncate text-[11.5px] text-ink-faint">
-                    {[
-                      e.amount_value
-                        ? e.amount_currency
-                          ? `${e.amount_value} ${e.amount_currency}`
-                          : e.amount_value
-                        : null,
-                      e.occurred_at
-                        ? new Date(e.occurred_at).toLocaleDateString(undefined, {
-                            month: "short",
-                            day: "numeric",
-                            year: "numeric",
-                          })
-                        : relativeTime(e.created_at),
-                      "from a multi-item upload",
-                    ]
-                      .filter(Boolean)
-                      .join(" · ")}
-                  </p>
-                </>
+                <p className="truncate text-[13.5px] text-ink">
+                  {e.merchant || e.title}
+                </p>
               )}
+              <p className="truncate text-[11.5px] text-ink-faint">{meta}</p>
             </div>
             {e.kind === "upload" && e.document_type === "unknown" ? (
               <SparkIcon size={12} />
             ) : null}
-          </Link>
-          {e.kind === "upload" ? (
-            <InlineTrashButton uploadId={e.upload_id} />
-          ) : null}
-        </li>
-      ))}
+          </>
+        );
+        return (
+          <li
+            key={`${e.kind}-${e.id}`}
+            className="group flex items-center gap-3 rounded-lg px-3 py-2 transition-base hover:bg-surface-raised"
+          >
+            {isTyped ? (
+              <div className="flex min-w-0 flex-1 items-center gap-3">
+                {Inner}
+              </div>
+            ) : (
+              <Link
+                href={`/dashboard/uploads/${e.upload_id}`}
+                className="flex min-w-0 flex-1 items-center gap-3"
+              >
+                {Inner}
+              </Link>
+            )}
+            {e.kind === "upload" ? (
+              <InlineTrashButton uploadId={e.upload_id} />
+            ) : null}
+          </li>
+        );
+      })}
     </ul>
   );
 }

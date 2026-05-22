@@ -52,6 +52,40 @@ export const CATEGORY_DOT: Record<CalendarCategory, string> = {
   personal: "bg-ink-soft/70",
 };
 
+/**
+ * Render a calendar entry as a tiny line of text fit for a month-grid
+ * day cell. Recognizes common shapes:
+ *   - "BOS → CDG" flight legs become "BOS → CDG"
+ *   - "Pay AICO Abdallah Itani" reminders become "AICO due"
+ *   - "Rent due" / "Lease expires" / etc. pass through trimmed
+ * Falls back to a 20-char truncation when nothing matches.
+ */
+export function shortLabel(e: CalendarEntry): string {
+  const title = (e.title ?? "").trim();
+  if (!title) return "";
+
+  // "Boston → Paris, 05 Jul 2026 (AF 331)" → keep the arrow part if
+  // it's airport-ish, else 3-letter city codes if Unicode-arrow present.
+  const arrow = title.match(/([A-Z][a-zA-Z]{2,})\s*[→–\-]+\s*([A-Z][a-zA-Z]{2,})/);
+  if (arrow) {
+    const a = arrow[1].slice(0, 3).toUpperCase();
+    const b = arrow[2].slice(0, 3).toUpperCase();
+    return `${a} → ${b}`;
+  }
+
+  // "Pay <vendor>" → "<vendor> due"
+  const pay = title.match(/^Pay\s+(.+)$/i);
+  if (pay) {
+    const vendor = pay[1].replace(/\s*[—–\-].*$/, "").trim();
+    const words = vendor.split(/\s+/).slice(0, 2).join(" ");
+    return `${words} due`;
+  }
+
+  // Strip vendor amount/date trailing details after em/en/hyphen separators.
+  const head = title.split(/\s*[—–\-]\s*/)[0].trim();
+  return head.length > 22 ? head.slice(0, 21) + "…" : head;
+}
+
 export function dayKey(d: Date): string {
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, "0");

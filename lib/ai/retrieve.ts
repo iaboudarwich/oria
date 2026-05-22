@@ -486,16 +486,23 @@ export async function retrieveForQuery(
     )
     .is("deleted_at", null)
     .in("organization_id", allowedOrgIds);
-  if (keywords.length > 0) itemsQ = itemsQ.or(itemFilter);
+  // When a scope is set, the scope IS the filter. Don't AND with the
+  // keyword filter — a meal "Penne arrabbiata" doesn't contain the
+  // word "calories", but for "how many calories did I eat today" on
+  // the Diet page the meal IS the answer source. The previous behavior
+  // returned zero items and the agent answered "I don't see a food
+  // diary." Use keywords only when there's no scope (global Ask).
   if (scope) {
     if (scope.kind === "builtin") itemsQ = itemsQ.eq("section", scope.key);
     else if (scope.kind === "custom")
       itemsQ = itemsQ.eq("custom_section_id", scope.key);
     else itemsQ = itemsQ.eq("smart_section", scope.key);
+  } else if (keywords.length > 0) {
+    itemsQ = itemsQ.or(itemFilter);
   }
   const itemsRes = await itemsQ
-    .order("created_at", { ascending: false })
-    .limit(20);
+    .order("occurred_at", { ascending: false, nullsFirst: false })
+    .limit(scope ? 50 : 20);
 
   type ItemRow = {
     id: string;

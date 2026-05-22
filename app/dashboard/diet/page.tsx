@@ -41,12 +41,25 @@ export default async function DietPage() {
     listSectionMemories(SCOPE),
     listRecentUserQuestions({ surface: "ask", scope: SCOPE, limit: 3 }),
   ]);
+  const yesterdayProbe = new Date(today.getTime() - 24 * 60 * 60 * 1000);
   const todayMeals = meals.filter((m) =>
     m.occurred_at ? sameDayInTz(new Date(m.occurred_at), now, tz) : false,
   );
+  const yesterdayMeals = meals.filter((m) =>
+    m.occurred_at
+      ? sameDayInTz(new Date(m.occurred_at), yesterdayProbe, tz)
+      : false,
+  );
   const todayTotals = sumMacros(todayMeals);
+  const yesterdayTotals = sumMacros(yesterdayMeals);
+  const weekTotals = sumMacros(meals);
   const week = buildWeek(meals, now, tz);
   const weekMax = Math.max(...week.map((d) => d.calories), 1);
+  const daysWithMeals = week.filter((d) => d.calories > 0).length;
+  const dailyAverageCalories =
+    daysWithMeals > 0
+      ? Math.round(weekTotals.calories / daysWithMeals)
+      : 0;
 
   return (
     <>
@@ -79,6 +92,54 @@ export default async function DietPage() {
             </ul>
           )}
         </section>
+
+        {yesterdayMeals.length > 0 ? (
+          <section>
+            <h2 className="mb-2 px-1 text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
+              Yesterday
+            </h2>
+            <DaySummary
+              total={yesterdayTotals}
+              mealCount={yesterdayMeals.length}
+            />
+            <ul className="mt-3 rounded-2xl border border-line bg-surface-raised divide-y divide-line">
+              {yesterdayMeals.map((m) => (
+                <MealRow key={m.id} meal={m} />
+              ))}
+            </ul>
+          </section>
+        ) : null}
+
+        {weekTotals.calories > 0 ? (
+          <section>
+            <h2 className="mb-2 px-1 text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
+              Last 7 days, totals
+            </h2>
+            <div className="rounded-2xl border border-line bg-surface-raised p-4">
+              <div className="flex flex-wrap items-baseline gap-x-5 gap-y-1">
+                <span className="text-[26px] font-semibold tracking-tight text-ink">
+                  {weekTotals.calories.toLocaleString()}
+                </span>
+                <span className="text-[12.5px] text-ink-faint">cal total</span>
+                <span className="text-[12.5px] text-ink-muted">
+                  ~{dailyAverageCalories.toLocaleString()} cal/day across{" "}
+                  {daysWithMeals} day{daysWithMeals === 1 ? "" : "s"}
+                </span>
+              </div>
+              <div className="mt-2 flex flex-wrap items-baseline gap-x-5 gap-y-1 text-[12.5px] text-ink-muted">
+                {weekTotals.protein_g > 0 ? (
+                  <span>{Math.round(weekTotals.protein_g)}g protein</span>
+                ) : null}
+                {weekTotals.carbs_g > 0 ? (
+                  <span>{Math.round(weekTotals.carbs_g)}g carbs</span>
+                ) : null}
+                {weekTotals.fat_g > 0 ? (
+                  <span>{Math.round(weekTotals.fat_g)}g fat</span>
+                ) : null}
+              </div>
+            </div>
+          </section>
+        ) : null}
 
         <section>
           <h2 className="mb-2 px-1 text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
@@ -145,6 +206,46 @@ export default async function DietPage() {
         </p>
       </div>
     </>
+  );
+}
+
+/**
+ * Compact one-line totals card for a single past day (Yesterday).
+ * Mirrors the look of DailyStrip but smaller and without the empty
+ * state — only rendered when meals exist.
+ */
+function DaySummary({
+  total,
+  mealCount,
+}: {
+  total: DietTotals;
+  mealCount: number;
+}) {
+  return (
+    <div className="flex flex-col gap-2 rounded-2xl border border-line bg-surface-raised p-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex items-baseline gap-3">
+        <span className="text-[22px] font-semibold tracking-tight text-ink">
+          {Math.round(total.calories).toLocaleString()}
+        </span>
+        <span className="text-[11.5px] text-ink-faint">cal</span>
+        <span className="text-[11.5px] text-ink-muted">
+          {mealCount} meal{mealCount === 1 ? "" : "s"}
+        </span>
+      </div>
+      {total.protein_g > 0 || total.carbs_g > 0 || total.fat_g > 0 ? (
+        <div className="flex items-baseline gap-4 text-[11.5px] text-ink-muted">
+          {total.protein_g > 0 ? (
+            <span>{Math.round(total.protein_g)}g protein</span>
+          ) : null}
+          {total.carbs_g > 0 ? (
+            <span>{Math.round(total.carbs_g)}g carbs</span>
+          ) : null}
+          {total.fat_g > 0 ? (
+            <span>{Math.round(total.fat_g)}g fat</span>
+          ) : null}
+        </div>
+      ) : null}
+    </div>
   );
 }
 

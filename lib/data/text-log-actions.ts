@@ -9,6 +9,7 @@ import {
   AUTO_FILE_CONFIDENCE,
   type SmartSection,
 } from "@/lib/ai/extract";
+import { resolveFinalSection } from "./section-routing";
 import { recordLearningEvent } from "./learning";
 import { recordSystemEvent } from "./system-events";
 import { rateLimit, RATE_PRESETS } from "@/lib/rate-limit";
@@ -131,8 +132,6 @@ export async function logFromText(
   const itemRows = result.result.items.map((item) => {
     // Mirror the rules in upload-intelligence.ts so typed entries
     // and upload-derived entries behave identically downstream.
-    const autoSection =
-      item.confidence >= AUTO_FILE_CONFIDENCE ? item.suggested_section : null;
     const smartSection = item.smart_section ?? smartHint ?? null;
     // For diet, ALWAYS force occurred_at to the user's local "now" —
     // the model can't know when the user actually ate, and the Today
@@ -143,11 +142,16 @@ export async function logFromText(
     } else {
       occurredAt = item.occurred_at ?? null;
     }
-    // Built-in section: if the typed-into section is a built-in and
-    // the model didn't classify, honour the hint. Don't override
-    // confident model picks.
-    const effectiveSection: Section | null =
-      autoSection ?? sectionHint ?? null;
+    // Bills/invoices/receipts always route to Finance, regardless of
+    // what the model suggested. Otherwise honour model > page hint.
+    const suggested =
+      item.confidence >= AUTO_FILE_CONFIDENCE ? item.suggested_section : null;
+    const effectiveSection: Section | null = resolveFinalSection({
+      suggested,
+      documentType: item.document_type,
+      smartSection,
+      sectionHint,
+    });
     const effectiveCustomId = input.custom_section_id ?? null;
 
     return {

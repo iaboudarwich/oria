@@ -269,7 +269,14 @@ function CrossSpaceToggle({
   );
 }
 
+// Words that signal the user wants to see where an answer came from.
+// When the question contains one of these, sources auto-expand;
+// otherwise they're tucked behind a small "Show sources" link.
+const SOURCE_INTENT = /\b(source|sources|file|files|where|which file|origin|proof|show me|attach|attachment|receipt|invoice|document|doc|pdf)\b/i;
+
 function TurnView({ turn }: { turn: Turn }) {
+  const wantsSources = SOURCE_INTENT.test(turn.question);
+  const [sourcesOpen, setSourcesOpen] = useState(wantsSources);
   return (
     <article className="animate-fade-up">
       <p className="text-[13px] text-ink-faint">You asked</p>
@@ -292,18 +299,39 @@ function TurnView({ turn }: { turn: Turn }) {
         )}
       </div>
 
-      {turn.sources.length > 0 ? (
+      {turn.sources.length > 0 && turn.state !== "streaming" ? (
         <div className="mt-3">
-          <p className="mb-2 px-1 text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
-            Sources
-          </p>
-          <ul className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
-            {turn.sources.map((s) => (
-              <li key={s.id}>
-                <SourceCard source={s} />
-              </li>
-            ))}
-          </ul>
+          {sourcesOpen ? (
+            <>
+              <div className="mb-2 flex items-baseline justify-between px-1">
+                <p className="text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
+                  Sources
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setSourcesOpen(false)}
+                  className="cursor-pointer text-[11px] text-ink-faint hover:text-ink transition-base"
+                >
+                  Hide
+                </button>
+              </div>
+              <ul className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
+                {turn.sources.map((s) => (
+                  <li key={s.id}>
+                    <SourceCard source={s} />
+                  </li>
+                ))}
+              </ul>
+            </>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setSourcesOpen(true)}
+              className="cursor-pointer text-[11.5px] text-ink-faint hover:text-ink transition-base"
+            >
+              Show sources ({turn.sources.length})
+            </button>
+          )}
         </div>
       ) : null}
     </article>
