@@ -1,6 +1,7 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import { requireContext } from "./organizations";
+import { enforceActiveOrg } from "./scope";
 import type { Profile, Section, Upload } from "@/lib/supabase/types";
 
 export type UploadWithUploader = Upload & {
@@ -30,7 +31,11 @@ export async function listUploadsWithUploader(opts: {
 
   const { data, error } = await q;
   if (error || !data) return [];
-  const uploads = data as Upload[];
+  const uploads = enforceActiveOrg(
+    data as Upload[],
+    ctx.organization.id,
+    "listUploadsWithUploader",
+  );
 
   const uploaderIds = Array.from(
     new Set(uploads.map((u) => u.uploaded_by).filter((id): id is string => !!id)),

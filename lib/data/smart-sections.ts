@@ -2,6 +2,7 @@ import "server-only";
 
 import { createClient } from "@/lib/supabase/server";
 import { requireContext } from "./organizations";
+import { enforceActiveOrg } from "./scope";
 import type { MemoryItem } from "@/lib/supabase/types";
 
 /**
@@ -46,10 +47,10 @@ export type BillItem = Pick<
 >;
 
 const DIET_COLUMNS =
-  "id, upload_id, title, summary, occurred_at, calories, protein_g, carbs_g, fat_g, items_purchased, confidence, facts";
+  "id, organization_id, upload_id, title, summary, occurred_at, calories, protein_g, carbs_g, fat_g, items_purchased, confidence, facts";
 
 const BILL_COLUMNS =
-  "id, upload_id, title, summary, merchant, amount_value, amount_currency, amount_normalized, occurred_at, location, is_recurring, recurring_interval, category, confidence";
+  "id, organization_id, upload_id, title, summary, merchant, amount_value, amount_currency, amount_normalized, occurred_at, location, is_recurring, recurring_interval, category, confidence";
 
 /**
  * Pull the user's Diet items in the active org. Default window is "today",
@@ -75,7 +76,12 @@ export async function listDietMeals(opts: {
   if (since) q = q.gte("occurred_at", since.toISOString());
 
   const { data } = await q;
-  return (data ?? []) as DietMeal[];
+  type Row = DietMeal & { organization_id: string };
+  return enforceActiveOrg(
+    (data ?? []) as Row[],
+    ctx.organization.id,
+    "listDietMeals",
+  ) as DietMeal[];
 }
 
 export type DietTotals = {
@@ -112,7 +118,12 @@ export async function listBills(limit = 200): Promise<BillItem[]> {
     .is("deleted_at", null)
     .order("occurred_at", { ascending: false, nullsFirst: false })
     .limit(limit);
-  return (data ?? []) as BillItem[];
+  type Row = BillItem & { organization_id: string };
+  return enforceActiveOrg(
+    (data ?? []) as Row[],
+    ctx.organization.id,
+    "listBills",
+  ) as BillItem[];
 }
 
 /**

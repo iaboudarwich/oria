@@ -1,6 +1,7 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import { requireContext } from "./organizations";
+import { enforceActiveOrg } from "./scope";
 import type { Profile, TimelineEvent } from "@/lib/supabase/types";
 
 export type TimelineEventWithActor = TimelineEvent & {
@@ -21,7 +22,11 @@ export async function listTimeline(
     .limit(limit);
   if (error || !data) return [];
 
-  const events = data as TimelineEvent[];
+  const events = enforceActiveOrg(
+    data as TimelineEvent[],
+    ctx.organization.id,
+    "listTimeline",
+  );
   const actorIds = Array.from(
     new Set(events.map((e) => e.actor_id).filter((id): id is string => !!id)),
   );

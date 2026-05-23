@@ -38,12 +38,14 @@ async function clearActiveCookie() {
 /**
  * Switch the active space.
  *
- * Takes a plain orgId and does NOT redirect. The client wraps the call in a
- * transition and runs `router.push("/dashboard")` once we return, which keeps
- * the switch feeling instant (no server-redirect round-trip flash). We still
- * revalidate the layout so the next render reads the fresh cookie.
+ * Privacy-critical: every cached surface must be flushed so the prior
+ * org's data can never paint after the switch. We blow away the entire
+ * /dashboard subtree via the layout revalidation (Next propagates that
+ * to all descendant paths) AND explicitly invalidate the dynamic feeds
+ * that hold stale state most often. router.refresh() on the client
+ * does the rest of the cache eviction in the browser.
  *
- * Silently no-ops on missing org / non-member (the UI gates this anyway).
+ * Silently no-ops on missing org / non-member.
  */
 export type SwitchResult = { ok: true } | { ok: false };
 
@@ -66,9 +68,46 @@ export async function switchSpace(orgId: string): Promise<SwitchResult> {
   if (!membership) return { ok: false };
 
   await setActiveCookie(id);
+
+  // Belt-and-suspenders cache eviction. The layout revalidation alone
+  // would propagate, but explicitly nuking the high-leak surfaces makes
+  // sure neither RSC cache nor client router cache holds prior-org
+  // rows in stale-times window (next.config staleTimes.dynamic = 30s).
   revalidatePath("/dashboard", "layout");
+  for (const path of HIGH_LEAK_SURFACES) {
+    revalidatePath(path);
+  }
   return { ok: true };
 }
+
+/**
+ * Pages that pre-fetch org-scoped data and most need a fresh render
+ * after a switchSpace. The dashboard layout revalidation invalidates
+ * descendants too, but listing the hot paths means a stale chunk
+ * never survives a soft navigation.
+ */
+const HIGH_LEAK_SURFACES = [
+  "/dashboard",
+  "/dashboard/inbox",
+  "/dashboard/calendar",
+  "/dashboard/reminders",
+  "/dashboard/timeline",
+  "/dashboard/diet",
+  "/dashboard/bills",
+  "/dashboard/sections",
+  "/dashboard/work",
+  "/dashboard/work/finance",
+  "/dashboard/work/invoices",
+  "/dashboard/work/contracts",
+  "/dashboard/work/agent",
+  "/dashboard/work/analysis",
+  "/dashboard/work/reports",
+  "/dashboard/search",
+  "/dashboard/ask",
+  "/dashboard/circle",
+  "/dashboard/private",
+  "/dashboard/trash",
+];
 
 /**
  * Step 1 of circle creation: create the org + owner membership and hand off

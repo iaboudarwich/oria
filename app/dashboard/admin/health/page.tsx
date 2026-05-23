@@ -190,6 +190,21 @@ export default async function AdminHealthPage() {
           </Card>
         ) : null}
 
+        <SectionGrid title="Scope isolation">
+          <Stat
+            label="Violations 7d"
+            value={h.scopeViolations.count7d.toLocaleString()}
+            tone={h.scopeViolations.count7d > 0 ? "warn" : "ok"}
+            hint="Should always be 0"
+          />
+        </SectionGrid>
+        {h.scopeViolations.recent.length > 0 ? (
+          <EventsCard
+            title="Recent scope violations"
+            events={h.scopeViolations.recent}
+          />
+        ) : null}
+
         <SectionGrid title="Per-user quotas (configured)">
           <Stat
             label="Daily upload"

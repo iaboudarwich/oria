@@ -132,6 +132,13 @@ export type QuotaSummary = {
   monthlyAskRequests: number;
 };
 
+export type ScopeViolations = {
+  /** Count of scope.violation events in the last 7 days. */
+  count7d: number;
+  /** Latest 10 events for inspection. */
+  recent: SystemEvent[];
+};
+
 export type SystemHealth = {
   ai: AiUsage;
   email: EmailStats;
@@ -142,6 +149,7 @@ export type SystemHealth = {
   vercelLive: VercelLive;
   jobs: JobsHealth;
   quotas: QuotaSummary;
+  scopeViolations: ScopeViolations;
   failedUploads: FailedItem[];
   failedReports: FailedItem[];
   warnings: string[];
@@ -164,6 +172,7 @@ export async function getSystemHealth(): Promise<SystemHealth> {
     failedReports,
     vercelLive,
     jobs,
+    scopeViolations,
   ] = await Promise.all([
     collectAiUsage(admin),
     collectEmailStats(),
@@ -173,6 +182,7 @@ export async function getSystemHealth(): Promise<SystemHealth> {
     collectFailedReports(admin, orgById),
     collectVercelLive(),
     getJobsHealth(),
+    collectScopeViolations(),
   ]);
 
   const env = collectEnvStatus();
@@ -186,6 +196,7 @@ export async function getSystemHealth(): Promise<SystemHealth> {
     failedUploads,
     failedReports,
     jobs,
+    scopeViolations,
   });
 
   return {
@@ -198,6 +209,7 @@ export async function getSystemHealth(): Promise<SystemHealth> {
     vercelLive,
     jobs,
     quotas,
+    scopeViolations,
     failedUploads,
     failedReports,
     warnings,
@@ -536,6 +548,20 @@ async function collectFailedReports(
   }));
 }
 
+/**
+ * Surface recent scope-violation diagnostics. enforceActiveOrg writes
+ * a `scope.violation` system_event whenever a query returns a row that
+ * doesn't belong to the active org — these should ALWAYS be zero. Any
+ * non-zero count is a real bug to investigate.
+ */
+async function collectScopeViolations(): Promise<ScopeViolations> {
+  const [count7d, recent] = await Promise.all([
+    countEvents({ kind: "scope.violation", sinceISO: sinceDays(7) }),
+    listRecentEvents({ kind: "scope.violation", limit: 10 }),
+  ]);
+  return { count7d, recent };
+}
+
 async function collectEmailStats(): Promise<EmailStats> {
   const [sentToday, sent7d, failed7d, recentFailures] = await Promise.all([
     countEvents({ kind: "email.sent", sinceISO: todayStart() }),
@@ -610,6 +636,7 @@ function collectWarnings(args: {
   failedUploads: FailedItem[];
   failedReports: FailedItem[];
   jobs: JobsHealth;
+  scopeViolations: ScopeViolations;
 }): string[] {
   const out: string[] = [];
   if (!args.env.hasAnthropicKey) {
@@ -646,6 +673,14 @@ function collectWarnings(args: {
   }
   if (args.jobs.failed24h >= 5) {
     out.push(`${args.jobs.failed24h} background jobs failed in the past 24h — check Recent job failures below.`);
+  }
+
+  // Scope-violation signal — this should ALWAYS be zero. Any number
+  // is a real privacy bug: a query returned org-scoped rows from the
+  // wrong org and the runtime guard caught it. Investigate the call
+  // site listed in the system_event context.
+  if (args.scopeViolations.count7d > 0) {
+    out.push(`${args.scopeViolations.count7d} scope.violation event${args.scopeViolations.count7d === 1 ? "" : "s"} in the past 7 days — a query returned a row from the wrong organization. See Recent scope violations below.`);
   }
 
   // Storage cap signals (per-user).

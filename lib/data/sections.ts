@@ -1,6 +1,7 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import { requireContext } from "./organizations";
+import { enforceActiveOrg } from "./scope";
 import type { Profile, Section, Upload } from "@/lib/supabase/types";
 import type { UploadWithUploader } from "./uploads";
 
@@ -149,7 +150,7 @@ export async function listSectionEntries(
   let itemsQ = supabase
     .from("memory_items")
     .select(
-      "id, upload_id, title, merchant, amount_value, amount_currency, occurred_at, created_at, uploads(filename, mime_type, storage_path, section, custom_section_id)",
+      "id, organization_id, upload_id, title, merchant, amount_value, amount_currency, occurred_at, created_at, uploads(filename, mime_type, storage_path, section, custom_section_id)",
     )
     .eq("organization_id", ctx.organization.id)
     .is("deleted_at", null)
@@ -162,6 +163,7 @@ export async function listSectionEntries(
 
   type ItemJoinRow = {
     id: string;
+    organization_id: string;
     upload_id: string | null;
     title: string;
     merchant: string | null;
@@ -188,7 +190,12 @@ export async function listSectionEntries(
   };
 
   const orphanItems: SectionEntry[] = [];
-  for (const r of (itemsRes.data ?? []) as ItemJoinRow[]) {
+  const itemRowsSafe = enforceActiveOrg(
+    (itemsRes.data ?? []) as ItemJoinRow[],
+    ctx.organization.id,
+    "listSectionEntries:items",
+  );
+  for (const r of itemRowsSafe) {
     if (r.upload_id === null) {
       // Typed record — no source file. Always show.
       orphanItems.push({
