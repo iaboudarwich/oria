@@ -382,17 +382,25 @@ export async function retrieveForQuery(
   // re-apply the org filter via the upload table below — but we first prune
   // the extraction set by joining to upload_id so we don't pull text from
   // other orgs into memory at all.
-  const extractionMatchRes = await supabase
-    .from("extractions")
-    .select("upload_id, raw_text")
-    .or(
-      keywords
-        .map((k) => `raw_text.ilike.*${k.replace(/[%,]/g, "")}*`)
-        .join(","),
-    )
-    .limit(80);
-
+  //
+  // SKIP when scope is set. In a section-scoped Ask (Diet, Bills, finance),
+  // structured items are the source of truth. Pulling in random uploads
+  // whose raw_text happens to contain a question keyword leaks unrelated
+  // docs into the answer — a "Practice Problem" textbook scan was appearing
+  // as a Diet source because its raw_text contained the word "today".
   type ExtractionRow = { upload_id: string; raw_text: string | null };
+  const extractionMatchRes = scope
+    ? { data: [] as ExtractionRow[] }
+    : await supabase
+        .from("extractions")
+        .select("upload_id, raw_text")
+        .or(
+          keywords
+            .map((k) => `raw_text.ilike.*${k.replace(/[%,]/g, "")}*`)
+            .join(","),
+        )
+        .limit(80);
+
   const extractionMatches = (extractionMatchRes.data ?? []) as ExtractionRow[];
 
   // -- Verify each extraction belongs to an allowed org --------------------
@@ -650,6 +658,16 @@ export async function retrieveForQuery(
       if ((intent.wantsAmounts && hasAmount) || (intent.wantsMacros && hasMacros) || (hasAmount && !intent.wantsMacros)) {
         score = 3; // base relevance for roll-up
       }
+    }
+    // SCOPE IS THE FILTER. When the user is on the Diet page and asks
+    // "what did I eat today", the meal title "Penne arrabbiata" doesn't
+    // contain the words "what", "eat", or "today" — so the keyword
+    // score is 0 and the meal would be dropped. But the scope itself
+    // already qualified it (smart_section=diet), so every in-scope item
+    // must reach the agent. Give them a base score; structured-field
+    // boosts below still order them sensibly.
+    if (score === 0 && scope) {
+      score = 2;
     }
     if (score === 0) continue;
     // Boost items that carry structured fields. The product's contract is
