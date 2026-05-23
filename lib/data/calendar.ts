@@ -1,7 +1,12 @@
 import "server-only";
 
 import { createClient } from "@/lib/supabase/server";
-import { listUserSpaces } from "./organizations";
+import {
+  getCurrentContext,
+  isAccountOwnerInPersonal,
+  listUserSpaces,
+} from "./organizations";
+import { recordSystemEvent } from "./system-events";
 import type {
   DocumentType,
   MemoryItem,
@@ -114,37 +119,63 @@ function deriveCalendarTopic(input: {
 }
 
 /**
- * Pull every calendar-worthy thing visible to the current user, across every
- * space they belong to. Two sources:
+ * Pull calendar-worthy entries for the user. Two sources:
+ *   • reminders with a real due_at
+ *   • memory_items with a real occurred_at
  *
- *   • reminders with a real due_at — tasks the user can mark done
- *   • memory_items with a real occurred_at — passive events Oria extracted
- *     from uploads (flights, hotel check-ins, payments due)
+ * SCOPE (privacy-critical):
  *
- * Anything without a real date is excluded: the calendar is for things that
- * happen on a date. Vague tasks live on the upload itself, not here.
+ *   • Default: ACTIVE ORGANIZATION ONLY. A Workspace member never sees
+ *     the owner's Personal calendar items in the Workspace context.
+ *   • Cross-space mode (`crossSpace: true`): only honoured when the
+ *     current user is the Personal-space OWNER and currently sitting
+ *     in their Personal space. Anyone else gets the active-org-only
+ *     view regardless of the flag. This matches Ask Oria's God's Eye
+ *     gate and is the ONLY path that returns multi-space data.
  *
- * RLS scopes per-org for both tables, so this is safe to query without an
- * org filter.
+ * The `spaces` slice returned is for the cross-space toggle UI only;
+ * its presence does not imply data was fetched cross-space. Entries
+ * are also passed through `enforceAllowedOrgs` as a runtime safety net
+ * so a bad query can never widen the blast radius.
  */
-export async function loadCalendar(): Promise<{
+export async function loadCalendar(
+  opts: { crossSpace?: boolean } = {},
+): Promise<{
   entries: CalendarEntry[];
   spaces: CalendarSpace[];
+  scopeMode: "active" | "cross-space";
 }> {
+  const ctx = await getCurrentContext();
+  if (!ctx) return { entries: [], spaces: [], scopeMode: "active" };
   const userSpaces = await listUserSpaces();
-  const spaces: CalendarSpace[] = userSpaces.map((s) => ({
+  const allSpaces: CalendarSpace[] = userSpaces.map((s) => ({
     id: s.organization.id,
     name: s.organization.name,
     kind: s.organization.kind,
   }));
 
-  if (spaces.length === 0) {
-    return { entries: [], spaces: [] };
+  // Decide effective scope. Cross-space is opt-in AND gated by
+  // Personal-owner-in-Personal — exactly the same rule that gates Ask
+  // Oria's God's Eye toggle.
+  const allowCross =
+    opts.crossSpace === true && isAccountOwnerInPersonal(ctx);
+  const scopeMode: "active" | "cross-space" = allowCross
+    ? "cross-space"
+    : "active";
+
+  const orgIds = allowCross
+    ? allSpaces.map((s) => s.id)
+    : [ctx.organization.id];
+  const allowedOrgSet = new Set(orgIds);
+  if (orgIds.length === 0) {
+    return { entries: [], spaces: allSpaces, scopeMode };
   }
 
   const supabase = await createClient();
-
-  const orgIds = spaces.map((s) => s.id);
+  // `spaces` exposed to the UI is still the full membership list — it
+  // powers the (visible only to Personal owners) cross-space toggle.
+  // Data fetched below is constrained to `orgIds`.
+  const spaces = allSpaces;
 
   // Reminders with a real due date.
   const remindersRes = await supabase
@@ -303,7 +334,27 @@ export async function loadCalendar(): Promise<{
     (a, b) => new Date(a.due_at).getTime() - new Date(b.due_at).getTime(),
   );
 
-  return { entries, spaces };
+  // Final safety net. If any entry slipped through with a space_id
+  // outside the allowed set (shouldn't happen — both queries filter
+  // by .in("organization_id", orgIds)), drop it and log a scope
+  // violation. The mapping space_id ≡ organization_id is preserved
+  // upstream.
+  const safeEntries = entries.filter((e) => allowedOrgSet.has(e.space_id));
+  if (safeEntries.length !== entries.length) {
+    void recordSystemEvent({
+      kind: "scope.violation",
+      severity: "error",
+      message: "loadCalendar dropped cross-org entries",
+      context: {
+        callSite: "loadCalendar",
+        dropped: entries.length - safeEntries.length,
+        scopeMode,
+      },
+      organizationId: ctx.organization.id,
+    });
+  }
+
+  return { entries: safeEntries, spaces, scopeMode };
 }
 
 /**

@@ -10,25 +10,27 @@ import {
 export const metadata = { title: "Calendar" };
 
 export default async function CalendarPage() {
-  const [{ entries, spaces }, ctx] = await Promise.all([
-    loadCalendar(),
-    getCurrentContext(),
-  ]);
+  // Fetch context first to decide whether cross-space data is permitted
+  // for this user. Only Personal-owners get the God's-Eye option; everyone
+  // else (including Workspace members) gets active-org-only data so no
+  // Personal/other-Workspace entries can leak into the rendered HTML.
+  const ctx = await getCurrentContext();
+  const allowCross = !!ctx && isAccountOwnerInPersonal(ctx);
+  const { entries, spaces } = await loadCalendar({ crossSpace: allowCross });
 
   const activeSpace = ctx
     ? spaces.find((s) => s.id === ctx.organization.id) ?? null
     : null;
   const activeSpaceId = activeSpace?.id ?? "";
 
-  // God's Eye for calendar follows the same gate as Ask Oria: only the
-  // Personal-space owner gets a cross-space view. Everyone else sees
-  // only the active space's calendar.
-  const crossSpaceAvailable =
-    !!ctx && isAccountOwnerInPersonal(ctx) && spaces.length > 1;
+  // God's Eye visual toggle. Only Personal-owners get to see it. Without
+  // it, the calendar shows ONLY the active org's entries because
+  // loadCalendar refused to fetch anything else.
+  const crossSpaceAvailable = allowCross && spaces.length > 1;
 
-  // Compute initial "Coming up" rollup against the active-space slice
-  // so the rollup never leaks items from a different space on first
-  // paint. Client takes over when the user toggles the scope.
+  // Initial "Coming up" rollup: when cross-space was permitted we got
+  // entries from every space the user owns; otherwise entries are
+  // already active-org-only and this filter is a no-op.
   const activeEntries = activeSpaceId
     ? entries.filter((e) => e.space_id === activeSpaceId)
     : entries;
