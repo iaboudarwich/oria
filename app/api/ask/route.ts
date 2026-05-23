@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import { getCurrentContext } from "@/lib/data/organizations";
 import { isAnthropicConfigured } from "@/lib/ai/anthropic";
 import { retrieveForQuery } from "@/lib/ai/retrieve";
@@ -122,12 +123,17 @@ export async function POST(request: Request) {
           return;
         }
 
-        // 3. Stream the answer.
+        // 3. Stream the answer. Pass the user's TZ so the agent can
+        //    resolve today/yesterday correctly when reasoning over
+        //    record occurred_at dates.
+        const tz = (await cookies()).get("oria_tz")?.value ?? null;
         for await (const text of streamAnswer({
           query,
           history,
           sources,
           scope,
+          timezone: tz,
+          nowISO: new Date().toISOString(),
         })) {
           writeEvent(controller, { type: "delta", text });
         }

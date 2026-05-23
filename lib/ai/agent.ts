@@ -82,6 +82,10 @@ export async function* streamAnswer(input: {
   history?: AgentMessage[];
   sources: RetrievedSource[];
   scope?: SectionScope | null;
+  /** IANA timezone for resolving "today"/"yesterday". Defaults to UTC. */
+  timezone?: string | null;
+  /** Optional user-supplied "now" ISO instant. Defaults to server now. */
+  nowISO?: string | null;
 }): AsyncGenerator<string, void, unknown> {
   const client = getAnthropic();
   if (!client) throw new Error("anthropic_not_configured");
@@ -91,7 +95,29 @@ export async function* streamAnswer(input: {
       ? "(no sources matched the question)"
       : input.sources.map(formatSource).join("\n\n");
 
-  const userMessage = `SOURCES\n${sourceBlock}\n\nQUESTION\n${input.query}`;
+  // Today/yesterday/this-week answers depend on the model knowing what
+  // today actually is in the user's TZ. Without this, "what did I eat
+  // today" answers correctly retrieved a meal dated 2026-05-22 but the
+  // agent didn't realize that 2026-05-22 was today and said "nothing
+  // from today's date."
+  const tz = input.timezone || "UTC";
+  const nowDate = input.nowISO ? new Date(input.nowISO) : new Date();
+  const dateLabel = new Intl.DateTimeFormat("en-US", {
+    timeZone: tz,
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  }).format(nowDate);
+  const isoLocalDay = new Intl.DateTimeFormat("en-CA", {
+    timeZone: tz,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(nowDate);
+  const dateHeader = `TODAY: ${dateLabel} (${isoLocalDay}, timezone ${tz}). Treat any record dated ${isoLocalDay} as TODAY. "Yesterday" = the day before. Compare record occurred_at dates against this when the user says today/yesterday/this week.`;
+
+  const userMessage = `${dateHeader}\n\nSOURCES\n${sourceBlock}\n\nQUESTION\n${input.query}`;
 
   const messages = [
     ...(input.history ?? []).map((m) => ({
