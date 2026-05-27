@@ -212,12 +212,37 @@ export async function listRecentEvents(input: {
 /**
  * Sum a numeric field across event context. Used for: total input/output
  * tokens, total estimated cost, sent/failed email totals.
+ *
+ * Prefer sumEventContextFields() when you need multiple totals over the
+ * same (kind, time-window) — it issues ONE query and sums all fields
+ * locally instead of pulling the same rows back N times.
  */
 export async function sumEventContext(input: {
   kind: SystemEventKind | string;
   field: string;
   sinceISO?: string;
 }): Promise<number> {
+  const result = await sumEventContextFields({
+    kind: input.kind,
+    fields: [input.field],
+    sinceISO: input.sinceISO,
+  });
+  return result[input.field] ?? 0;
+}
+
+/**
+ * Multi-field variant. One round-trip; many sums. The admin-health page
+ * was calling sumEventContext three times back-to-back for AI cost
+ * stats — same rows pulled three times, 15K rows of JSON in flight per
+ * render. This collapses them into one query.
+ */
+export async function sumEventContextFields(input: {
+  kind: SystemEventKind | string;
+  fields: string[];
+  sinceISO?: string;
+}): Promise<Record<string, number>> {
+  const out: Record<string, number> = {};
+  for (const f of input.fields) out[f] = 0;
   try {
     const admin = createAdminClient();
     let q = admin
@@ -227,13 +252,16 @@ export async function sumEventContext(input: {
       .limit(5000);
     if (input.sinceISO) q = q.gte("created_at", input.sinceISO);
     const { data } = await q;
-    let total = 0;
-    for (const row of (data ?? []) as Array<{ context: Record<string, unknown> }>) {
-      const v = row.context?.[input.field];
-      if (typeof v === "number") total += v;
+    for (const row of (data ?? []) as Array<{
+      context: Record<string, unknown>;
+    }>) {
+      for (const f of input.fields) {
+        const v = row.context?.[f];
+        if (typeof v === "number") out[f] += v;
+      }
     }
-    return total;
   } catch {
-    return 0;
+    // Best-effort. Caller already sees zero defaults.
   }
+  return out;
 }

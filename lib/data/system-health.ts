@@ -4,7 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import {
   countEvents,
   listRecentEvents,
-  sumEventContext,
+  sumEventContextFields,
   type SystemEvent,
 } from "./system-events";
 import { getJobsHealth, type JobsHealth } from "./jobs";
@@ -298,19 +298,23 @@ async function collectAiUsage(admin: AdminClient): Promise<AiUsage> {
     .sort((a, b) => b.count - a.count)
     .slice(0, 6);
 
+  // One query for all three numeric totals over the same row set —
+  // previously three separate limit(5000) pulls of the exact same
+  // ai.request rows. At a few thousand events that's the difference
+  // between a snappy admin page and 3–5 seconds of blocking I/O.
   const [
     errorsToday,
     errors7d,
-    inputTokens30d,
-    outputTokens30d,
-    estimatedCostUsd30d,
+    aiTotals,
     recentErrors,
   ] = await Promise.all([
     countEvents({ kind: "ai.error", sinceISO: todayStart() }),
     countEvents({ kind: "ai.error", sinceISO: sinceDays(7) }),
-    sumEventContext({ kind: "ai.request", field: "input_tokens", sinceISO: sinceDays(30) }),
-    sumEventContext({ kind: "ai.request", field: "output_tokens", sinceISO: sinceDays(30) }),
-    sumEventContext({ kind: "ai.request", field: "cost_usd", sinceISO: sinceDays(30) }),
+    sumEventContextFields({
+      kind: "ai.request",
+      fields: ["input_tokens", "output_tokens", "cost_usd"],
+      sinceISO: sinceDays(30),
+    }),
     listRecentEvents({ kind: "ai.error", limit: 10 }),
   ]);
 
@@ -322,9 +326,9 @@ async function collectAiUsage(admin: AdminClient): Promise<AiUsage> {
     byVia: byViaArr,
     errorsToday,
     errors7d,
-    inputTokens30d,
-    outputTokens30d,
-    estimatedCostUsd30d: Math.round(estimatedCostUsd30d * 10000) / 10000,
+    inputTokens30d: aiTotals.input_tokens,
+    outputTokens30d: aiTotals.output_tokens,
+    estimatedCostUsd30d: Math.round(aiTotals.cost_usd * 10000) / 10000,
     recentErrors,
   };
 }

@@ -3,10 +3,7 @@ import {
   listUserVisibleEvents,
   type SystemEvent,
 } from "@/lib/data/system-events";
-import {
-  getCurrentContext,
-  listUserSpaces,
-} from "@/lib/data/organizations";
+import { getCurrentContext } from "@/lib/data/organizations";
 import {
   readLastStatusSeenId,
   readStatusFlash,
@@ -15,20 +12,24 @@ import { dismissStatusStrip } from "@/lib/data/status-strip-actions";
 
 /**
  * Small calm strip that sits inside the topbar. Shows the single most
- * recent user-visible event (report ready, upload processed, invite
- * accepted, an upload that failed, etc). One row, dismissible.
+ * recent user-visible event from the ACTIVE space (report ready, upload
+ * processed, invite accepted, an upload that failed). One row,
+ * dismissible.
  *
- * No bell, no inbox, no list. The strip is intentionally one-thing-at-
- * a-time so it never becomes its own task. Older events live in
- * /dashboard/admin/health for the operator; users only see the latest.
+ * SCOPE: strictly active org only. The previous version called
+ * listUserSpaces() and queried events across every space the user
+ * belonged to — that meant a workspace user got a Personal-space
+ * "Upload processed" event in their topbar. Messages were generic so
+ * no content leaked, but a notification surfacing in the wrong context
+ * is itself a UX/privacy issue. Now the strip mirrors the rest of the
+ * dashboard: it only ever shows what the active org produced.
  *
  * Dismissal is persisted via a cookie of the last-seen event id — the
  * strip stays hidden until something newer arrives.
  */
 export async function StatusStrip() {
-  const [ctx, spaces, lastSeen, flash] = await Promise.all([
+  const [ctx, lastSeen, flash] = await Promise.all([
     getCurrentContext(),
-    listUserSpaces(),
     readLastStatusSeenId(),
     readStatusFlash(),
   ]);
@@ -43,9 +44,8 @@ export async function StatusStrip() {
     return <StatusStripFlashRow message={flash} />;
   }
 
-  const orgIds = spaces.map((s) => s.organization.id);
   const events = await listUserVisibleEvents({
-    organizationIds: orgIds,
+    organizationIds: [ctx.organization.id],
     limit: 1,
   });
   const latest = events[0];
