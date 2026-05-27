@@ -49,7 +49,7 @@ export default async function WorkAgentPage() {
       </p>
 
       <div className="grid gap-6 lg:grid-cols-3 animate-fade-up">
-        <div className="space-y-6 lg:col-span-2">
+        <div className="min-w-0 space-y-6 lg:col-span-2">
           <section className="rounded-2xl border border-line bg-surface-raised p-4">
             <div className="mb-3 flex items-baseline justify-between px-1">
               <h2 className="text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
@@ -120,7 +120,7 @@ export default async function WorkAgentPage() {
           </section>
         </div>
 
-        <aside className="space-y-6">
+        <aside className="min-w-0 space-y-6">
           <ContextEditor context={workspaceContext} />
           <Suggestions />
         </aside>
