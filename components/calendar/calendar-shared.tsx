@@ -64,9 +64,14 @@ export function shortLabel(e: CalendarEntry): string {
   const title = (e.title ?? "").trim();
   if (!title) return "";
 
-  // "Boston → Paris, 05 Jul 2026 (AF 331)" → keep the arrow part if
-  // it's airport-ish, else 3-letter city codes if Unicode-arrow present.
-  const arrow = title.match(/([A-Z][a-zA-Z]{2,})\s*[→–\-]+\s*([A-Z][a-zA-Z]{2,})/);
+  // "Boston → Paris, 05 Jul 2026 (AF 331)" → 3-letter city codes.
+  // Only match a route-style separator: the Unicode right-arrow OR an
+  // en-dash. Plain hyphens are deliberately excluded — they're
+  // overwhelmingly used in compound words ("Full-Year", "in-house"),
+  // and treating those as route separators produces nonsense labels
+  // like "FUL → YEA" for "Pay Catalina Landing — 2026 Full-Year
+  // Budget".
+  const arrow = title.match(/([A-Z][a-zA-Z]{2,})\s*[→–]+\s*([A-Z][a-zA-Z]{2,})/);
   if (arrow) {
     const a = arrow[1].slice(0, 3).toUpperCase();
     const b = arrow[2].slice(0, 3).toUpperCase();
