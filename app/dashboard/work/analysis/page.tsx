@@ -295,7 +295,7 @@ function AnalysisBoard({ data }: { data: AnalysisAggregates }) {
                     {a.upload_id ? (
                       <Link
                         href={`/dashboard/uploads/${a.upload_id}`}
-                        className="truncate text-[13px] text-ink transition-base hover:text-ink-soft"
+                        className="block truncate text-[13px] text-ink transition-base hover:text-ink-soft"
                       >
                         {a.title}
                       </Link>

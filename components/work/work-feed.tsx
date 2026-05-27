@@ -63,7 +63,7 @@ function FeedRow({ item: it }: { item: WorkFeedItem }) {
         {it.upload_id ? (
           <Link
             href={`/dashboard/uploads/${it.upload_id}`}
-            className="truncate text-[13.5px] text-ink transition-base hover:text-ink-soft"
+            className="block truncate text-[13.5px] text-ink transition-base hover:text-ink-soft"
           >
             {it.merchant || it.title}
           </Link>

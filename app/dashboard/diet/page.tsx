@@ -271,7 +271,7 @@ function MealRow({ meal: m }: { meal: DietMeal }) {
         {m.upload_id ? (
           <Link
             href={`/dashboard/uploads/${m.upload_id}`}
-            className="truncate text-[13.5px] text-ink transition-base hover:text-ink-soft"
+            className="block truncate text-[13.5px] text-ink transition-base hover:text-ink-soft"
           >
             {m.title}
           </Link>

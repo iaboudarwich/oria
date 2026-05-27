@@ -196,7 +196,7 @@ function BillRow({
         {b.upload_id ? (
           <Link
             href={`/dashboard/uploads/${b.upload_id}`}
-            className="truncate text-[13.5px] text-ink transition-base hover:text-ink-soft"
+            className="block truncate text-[13.5px] text-ink transition-base hover:text-ink-soft"
           >
             {b.merchant || b.title}
           </Link>

@@ -46,3 +46,6 @@ supabase/.branches/
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+mobile-test.mts
+mobile-debug.mts
+screenshots/
