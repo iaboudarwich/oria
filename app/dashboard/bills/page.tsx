@@ -144,7 +144,7 @@ function ForecastStrip({
   forecast: { total: number; currency: string | null } | null;
 }) {
   return (
-    <div className="flex items-baseline gap-3 rounded-2xl border border-line bg-surface-raised p-4">
+    <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 rounded-2xl border border-line bg-surface-raised p-4">
       <span className="text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
         Next month
       </span>

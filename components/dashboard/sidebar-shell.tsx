@@ -134,7 +134,7 @@ export function SidebarShell({
       ) : null}
 
       <div className="sidebar-content lg:pl-[var(--sidebar-w)] transition-[padding] duration-200 ease-[cubic-bezier(0.2,0.8,0.2,1)]">
-        <div className="mx-auto max-w-[1200px] px-6 pb-16 sm:px-10">
+        <div className="mx-auto max-w-[1200px] px-4 pb-16 sm:px-6 lg:px-10">
           {children}
         </div>
       </div>

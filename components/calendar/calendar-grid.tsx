@@ -59,7 +59,7 @@ export function MonthGrid({
               key={i}
               type="button"
               onClick={() => onPickDay(d)}
-              className={`flex aspect-square min-h-[78px] flex-col items-stretch gap-1 border-b border-r border-line p-1.5 text-left transition-base hover:bg-canvas/60 last:border-r-0 ${
+              className={`flex min-h-[56px] flex-col items-stretch gap-1 border-b border-r border-line p-1.5 text-left transition-base hover:bg-canvas/60 last:border-r-0 sm:aspect-square sm:min-h-[78px] ${
                 (i + 1) % 7 === 0 ? "border-r-0" : ""
               } ${i >= 35 ? "border-b-0" : ""} ${
                 !isCurrentMonth ? "bg-canvas/30" : ""
@@ -77,28 +77,46 @@ export function MonthGrid({
                 {d.getDate()}
               </span>
               {items.length > 0 ? (
-                <div className="mt-1 flex flex-col gap-0.5">
-                  {items.slice(0, 2).map((e) => (
-                    <span
-                      key={e.id}
-                      className="flex items-center gap-1 truncate text-[10px] leading-tight"
-                      title={e.title}
-                    >
+                <>
+                  {/* Mobile: dot row only — text labels don't fit at ~40px cell width. */}
+                  <div className="mt-auto flex flex-wrap items-center gap-1 sm:hidden">
+                    {items.slice(0, 3).map((e) => (
                       <span
-                        className={`inline-block h-1.5 w-1.5 shrink-0 rounded-full ${CATEGORY_DOT[e.category]}`}
-                        aria-hidden
+                        key={e.id}
+                        className={`inline-block h-1.5 w-1.5 rounded-full ${CATEGORY_DOT[e.category]}`}
+                        title={e.title}
                       />
-                      <span className="truncate text-ink-soft">
-                        {shortLabel(e)}
+                    ))}
+                    {items.length > 3 ? (
+                      <span className="text-[10px] text-ink-faint">
+                        +{items.length - 3}
                       </span>
-                    </span>
-                  ))}
-                  {items.length > 2 ? (
-                    <span className="text-[10px] text-ink-faint">
-                      +{items.length - 2} more
-                    </span>
-                  ) : null}
-                </div>
+                    ) : null}
+                  </div>
+                  {/* sm+: short labels + dots. */}
+                  <div className="mt-1 hidden flex-col gap-0.5 sm:flex">
+                    {items.slice(0, 2).map((e) => (
+                      <span
+                        key={e.id}
+                        className="flex items-center gap-1 truncate text-[10px] leading-tight"
+                        title={e.title}
+                      >
+                        <span
+                          className={`inline-block h-1.5 w-1.5 shrink-0 rounded-full ${CATEGORY_DOT[e.category]}`}
+                          aria-hidden
+                        />
+                        <span className="truncate text-ink-soft">
+                          {shortLabel(e)}
+                        </span>
+                      </span>
+                    ))}
+                    {items.length > 2 ? (
+                      <span className="text-[10px] text-ink-faint">
+                        +{items.length - 2} more
+                      </span>
+                    ) : null}
+                  </div>
+                </>
               ) : null}
             </button>
           );
