@@ -31,26 +31,34 @@ function dedupKey(orgId: string, fileHash: string): string {
   return `dedup:${orgId}:${fileHash}`;
 }
 
-async function redisGet(key: string): Promise<string | null> {
-  const res = await fetch(`${UPSTASH_URL}/get/${encodeURIComponent(key)}`, {
-    headers: { Authorization: `Bearer ${UPSTASH_TOKEN}` },
-    signal: AbortSignal.timeout(3_000),
-  });
-  if (!res.ok) return null;
-  const json = await res.json() as { result: string | null };
-  return json.result ?? null;
-}
-
-async function redisSet(key: string, value: string, ex: number): Promise<void> {
-  await fetch(`${UPSTASH_URL}/set/${encodeURIComponent(key)}`, {
+/**
+ * Execute a single Redis command via the Upstash pipeline endpoint.
+ * Using /pipeline with [["CMD", arg1, arg2, ...]] is the canonical
+ * Upstash REST format that handles TTL options correctly. The simpler
+ * /set/{key} + body-array form treats the body as the literal value.
+ */
+async function redisCmd<T>(parts: (string | number)[]): Promise<T | null> {
+  const res = await fetch(`${UPSTASH_URL}/pipeline`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${UPSTASH_TOKEN}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify([value, "EX", ex]),
+    body: JSON.stringify([parts]),
     signal: AbortSignal.timeout(3_000),
   });
+  if (!res.ok) return null;
+  const json = await res.json() as Array<{ result: T; error?: string }>;
+  if (json[0]?.error) return null;
+  return json[0]?.result ?? null;
+}
+
+async function redisGet(key: string): Promise<string | null> {
+  return redisCmd<string>(["GET", key]);
+}
+
+async function redisSet(key: string, value: string, ex: number): Promise<void> {
+  await redisCmd<string>(["SET", key, value, "EX", ex]);
 }
 
 /**

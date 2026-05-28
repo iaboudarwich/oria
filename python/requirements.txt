@@ -5,7 +5,7 @@ python-multipart==0.0.9
 # Document extraction
 pymupdf4llm==0.0.17
 docling==2.14.0
-# markitdown omitted — requires Python >=3.10; router falls back to BS4/docling on Python 3.9
+markitdown==0.1.6
 pandas==2.2.2
 openpyxl>=3.1.5
 python-docx==1.1.2
