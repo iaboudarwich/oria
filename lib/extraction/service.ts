@@ -6,6 +6,7 @@
  * back to the npm-based extractors when the service is unreachable.
  */
 
+import * as Sentry from "@sentry/nextjs";
 import type { ExtractionServiceResult } from "./types";
 
 const BASE_URL =
@@ -82,6 +83,14 @@ export async function extractViaService(
       charCount: json.char_count ?? 0,
     };
   } catch (err) {
+    // Capture unexpected failures (e.g. malformed response, non-abort errors).
+    // Routine AbortErrors (cold-start timeouts) are expected and not worth paging on.
+    if (!(err instanceof Error && err.name === "AbortError")) {
+      Sentry.captureException(err, {
+        tags: { surface: "sidecar" },
+        extra: { filename },
+      });
+    }
     console.warn("[extraction/service] extract request failed:", err);
     _available = false; // assume down until next probe
     return null;

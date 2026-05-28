@@ -9,6 +9,7 @@
  *   4. Deduplicate and return top-N chunks with their source upload metadata.
  */
 
+import * as Sentry from "@sentry/nextjs";
 import { createClient } from "@/lib/supabase/server";
 import { embedQueryViaService } from "@/lib/extraction/service";
 
@@ -84,6 +85,10 @@ export async function searchChunks(
     }
 
     if (error) {
+      Sentry.captureException(new Error(error.message ?? "match_document_chunks RPC error"), {
+        tags: { surface: "embeddings" },
+        extra: { organizationId },
+      });
       console.warn("[embedding/search] match_document_chunks RPC error:", error);
     }
   }

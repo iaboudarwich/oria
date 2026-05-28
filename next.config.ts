@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { withSentryConfig } from "@sentry/nextjs";
 
 // Allow the Next.js Image Optimizer to fetch upload thumbnails from our
 // Supabase storage bucket. The host is derived from the public Supabase URL
@@ -50,4 +51,36 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+// Wrap the config with Sentry's Next.js plugin. The plugin:
+//   • Injects the client/server/edge Sentry configs automatically.
+//   • Optionally uploads source maps to Sentry for readable stack traces.
+//   • Wraps the Next.js server entry to hook unhandled errors.
+//
+// Source maps: disabled for now (no SENTRY_AUTH_TOKEN configured). Enable
+// later by setting SENTRY_AUTH_TOKEN, SENTRY_ORG, SENTRY_PROJECT in Vercel
+// env vars and flipping `sourcemaps.disable` below.
+export default withSentryConfig(nextConfig, {
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  silent: true, // Suppress noisy CLI output during builds.
+
+  // Tunnel Sentry requests through /monitoring to bypass ad-blockers.
+  tunnelRoute: "/monitoring",
+
+  // Source maps: skip upload until auth token is configured.
+  sourcemaps: {
+    disable: true,
+  },
+
+  // Webpack-based instrumentation options (v10+ namespace).
+  webpack: {
+    // Automatic instrumentation of Next.js data fetching and server components.
+    // We opt into the minimal set: unhandled error capture only.
+    autoInstrumentServerFunctions: true,
+    autoInstrumentMiddleware: false,
+    autoInstrumentAppDirectory: true,
+
+    // Disable the Vercel Cron monitor check-ins (not using Vercel Crons).
+    automaticVercelMonitors: false,
+  },
+});

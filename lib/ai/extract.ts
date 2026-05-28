@@ -2,6 +2,7 @@ import "server-only";
 
 import type Anthropic from "@anthropic-ai/sdk";
 import * as XLSX from "xlsx";
+import * as Sentry from "@sentry/nextjs";
 import { getAnthropic } from "./anthropic";
 import { recordAiCall, recordAiError } from "./telemetry";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -567,6 +568,10 @@ Call store_extraction.`,
       messages: [{ role: "user", content }],
     });
   } catch (e) {
+    Sentry.captureException(e, {
+      tags: { surface: "extraction" },
+      extra: { storagePath: input.storagePath },
+    });
     recordAiError({
       surface: "extract",
       model: getExtractionModel(),

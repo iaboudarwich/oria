@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import * as Sentry from "@sentry/nextjs";
 import { getCurrentContext } from "@/lib/data/organizations";
 import { isAnthropicConfigured } from "@/lib/ai/anthropic";
 import { retrieveForQuery } from "@/lib/ai/retrieve";
@@ -159,6 +160,10 @@ export async function POST(request: Request) {
         });
       } catch (e) {
         const message = e instanceof Error ? e.message : "unknown";
+        Sentry.captureException(e, {
+          tags: { surface: "ask" },
+          extra: { orgId: ctx.organization.id, actorId: ctx.profile.id },
+        });
         writeEvent(controller, { type: "error", code: "stream_failed", message });
         controller.close();
         void recordSystemEvent({

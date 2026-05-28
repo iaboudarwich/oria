@@ -6,6 +6,7 @@
  * stored as text-only and can be re-embedded later.
  */
 
+import * as Sentry from "@sentry/nextjs";
 import { createClient } from "@/lib/supabase/server";
 import { embedViaService } from "@/lib/extraction/service";
 import { splitIntoChunks, estimateTokens } from "@/lib/extraction/chunk";
@@ -66,6 +67,10 @@ export async function storeChunks(
 
     if (error) {
       console.error("[embedding/store] upsert error:", error);
+      Sentry.captureException(new Error(`Failed to store chunks: ${error.message}`), {
+        tags: { surface: "embeddings" },
+        extra: { uploadId, organizationId },
+      });
       throw new Error(`Failed to store chunks: ${error.message}`);
     }
   }

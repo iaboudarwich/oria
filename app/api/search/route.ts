@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import * as Sentry from "@sentry/nextjs";
 import { liveSearch } from "@/lib/data/global-search";
 import { getCurrentContext } from "@/lib/data/organizations";
 import { recordLearningEvent } from "@/lib/data/learning";
@@ -31,7 +32,17 @@ export async function GET(request: Request) {
 
   const url = new URL(request.url);
   const q = url.searchParams.get("q") ?? "";
-  const results = await liveSearch(q);
+
+  let results: Awaited<ReturnType<typeof liveSearch>>;
+  try {
+    results = await liveSearch(q);
+  } catch (e) {
+    Sentry.captureException(e, {
+      tags: { surface: "search" },
+      extra: { orgId: ctx.organization.id, actorId: ctx.profile.id },
+    });
+    return NextResponse.json({ error: "search_failed" }, { status: 500 });
+  }
 
   // Record the query for future retrieval-quality work. Skip very short
   // queries (most are mid-typing). Never blocks the response.

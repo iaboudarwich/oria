@@ -2,6 +2,7 @@
 
 import { after } from "next/server";
 import { revalidatePath } from "next/cache";
+import * as Sentry from "@sentry/nextjs";
 import { createClient } from "@/lib/supabase/server";
 import { requireContext } from "./organizations";
 import { runProcessUploadSafely } from "./upload-process-safe";
@@ -181,6 +182,10 @@ export async function uploadFile(formData: FormData): Promise<Result> {
         actorId: ctx.profile.id,
       });
     } catch (err) {
+      Sentry.captureException(err, {
+        tags: { surface: "upload" },
+        extra: { stage: "heic_convert", orgId: ctx.organization.id, actorId: ctx.profile.id },
+      });
       void recordSystemEvent({
         kind: "upload.failed",
         severity: "error",
@@ -225,6 +230,10 @@ export async function uploadFile(formData: FormData): Promise<Result> {
       upsert: false,
     });
   if (storageError) {
+    Sentry.captureException(new Error(storageError.message), {
+      tags: { surface: "upload" },
+      extra: { stage: "storage_upload", orgId: ctx.organization.id, uploadId },
+    });
     return { ok: false, error: storageError.message };
   }
 
@@ -289,6 +298,10 @@ export async function uploadFile(formData: FormData): Promise<Result> {
     },
   });
   if (dbError) {
+    Sentry.captureException(new Error(dbError.message), {
+      tags: { surface: "upload" },
+      extra: { stage: "db_insert", orgId: ctx.organization.id, uploadId },
+    });
     // Best-effort cleanup of orphaned object.
     await supabase.storage.from("uploads").remove([path]).catch(() => {});
     return { ok: false, error: dbError.message };
