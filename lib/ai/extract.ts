@@ -1,7 +1,9 @@
 import "server-only";
 
 import type Anthropic from "@anthropic-ai/sdk";
-import * as XLSX from "xlsx";
+// xlsx removed (CVE-2023-30533 / CVE-2024-22363 — unpatched high severity).
+// Excel parsing is handled exclusively by the Python sidecar (pandas/openpyxl).
+// When the sidecar is unavailable, spreadsheets are skipped gracefully.
 import * as Sentry from "@sentry/nextjs";
 import { getAnthropic } from "./anthropic";
 import { recordAiCall, recordAiError } from "./telemetry";
@@ -144,17 +146,12 @@ const SPREADSHEET_MIME = new Set([
 // filename + user note, just without structured extraction. The image cap
 // reflects Anthropic's vision payload ceiling (~5MB per image block).
 //
-// MAX_SHEET_BYTES is well below the 50MB upload max because XLSX.read
-// expands the workbook into JS objects in memory, which can OOM a
-// Fluid Compute instance well before the file itself does. 25MB
-// covers every spreadsheet we've seen in beta with headroom.
+// Spreadsheet uploads are capped at 25MB — above this we skip extraction
+// rather than risking OOM on a Fluid Compute instance.
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 const MAX_PDF_BYTES = 32 * 1024 * 1024;
 const MAX_TEXT_BYTES = 1 * 1024 * 1024;
 const MAX_SHEET_BYTES = 25 * 1024 * 1024;
-// Max characters of spreadsheet text we send to Claude in one call. Above
-// this we truncate the bottom of the data so the prompt stays focused.
-const MAX_SHEET_PROMPT_CHARS = 200_000;
 
 /**
  * Reason an extraction call skipped a file. Surfaces in upload metadata so
@@ -805,101 +802,13 @@ function normalizeEntities(raw: unknown): ExtractionEntities {
 export const AUTO_FILE_CONFIDENCE = 0.6;
 
 /**
- * Render an XLSX/XLS workbook as text for Claude.
- *
- * Per sheet we emit:
- *   - "## Sheet: <name>  (R rows × C cols)" header
- *   - "## Headers: ..." labelling the first non-empty row when it looks
- *     like a header (mostly non-numeric, no duplicate empty cells)
- *   - The raw rows as CSV, capped per-sheet so one huge sheet doesn't
- *     starve the others
- *
- * Total output is capped at MAX_SHEET_PROMPT_CHARS. When a sheet would
- * overflow on its own, we keep the first ~70% (where headers + totals
- * usually live) and tail-sample the last 10% so the model still sees
- * what the bottom of the data looks like instead of being cut off
- * mid-stream.
+ * Stub: xlsx package removed due to unpatched high-severity CVEs
+ * (CVE-2023-30533, CVE-2024-22363). Excel parsing is handled exclusively
+ * by the Python sidecar (pandas / openpyxl). When the sidecar is
+ * unavailable, callers receive null and the item is skipped gracefully.
  */
-function spreadsheetToText(buffer: Buffer): string | null {
-  try {
-    const wb = XLSX.read(buffer, { type: "buffer" });
-    const sheetCount = wb.SheetNames.length;
-    if (sheetCount === 0) return null;
-
-    const perSheetBudget = Math.max(
-      8_000,
-      Math.floor(MAX_SHEET_PROMPT_CHARS / Math.max(1, sheetCount)),
-    );
-
-    const parts: string[] = [
-      `## Workbook (${sheetCount} sheet${sheetCount === 1 ? "" : "s"}: ${wb.SheetNames.join(", ")})`,
-    ];
-
-    for (const name of wb.SheetNames) {
-      const sheet = wb.Sheets[name];
-      if (!sheet) continue;
-      const rows = XLSX.utils.sheet_to_json<string[]>(sheet, {
-        header: 1,
-        defval: "",
-        blankrows: false,
-        raw: false,
-      });
-      const rowCount = rows.length;
-      const colCount = rows.reduce((a, r) => Math.max(a, r.length), 0);
-      const header = detectHeaderRow(rows);
-
-      parts.push(
-        `\n## Sheet: ${name}  (${rowCount} rows × ${colCount} cols)`,
-      );
-      if (header) {
-        parts.push(`## Headers: ${header.join(" | ")}`);
-      }
-
-      const csv = XLSX.utils.sheet_to_csv(sheet);
-      if (csv.length <= perSheetBudget) {
-        parts.push(csv);
-      } else {
-        // Keep the head (where totals/labels usually live) plus a tail
-        // sample so the model knows the shape of the bottom rows.
-        const headBudget = Math.floor(perSheetBudget * 0.7);
-        const tailBudget = Math.floor(perSheetBudget * 0.1);
-        parts.push(
-          csv.slice(0, headBudget) +
-            `\n…(sheet truncated, ${csv.length - headBudget - tailBudget} chars omitted)…\n` +
-            csv.slice(csv.length - tailBudget),
-        );
-      }
-    }
-
-    const joined = parts.join("\n");
-    if (joined.length <= MAX_SHEET_PROMPT_CHARS) return joined;
-    return (
-      joined.slice(0, MAX_SHEET_PROMPT_CHARS) +
-      "\n\n…(workbook truncated; let the user know if you'd need more rows.)"
-    );
-  } catch {
-    return null;
-  }
-}
-
-/**
- * Heuristic header detection: pick the first row that looks like
- * column labels — mostly non-numeric, no empty cells in the middle,
- * each cell short. Returns null when the sheet doesn't look tabular.
- */
-function detectHeaderRow(rows: unknown[][]): string[] | null {
-  for (const row of rows.slice(0, 5)) {
-    if (!row || row.length < 2) continue;
-    const cells = row.map((c) => (c == null ? "" : String(c).trim()));
-    const nonEmpty = cells.filter(Boolean);
-    if (nonEmpty.length < 2) continue;
-    const numericCount = nonEmpty.filter((c) =>
-      /^-?[\d,]+(\.\d+)?%?$/.test(c),
-    ).length;
-    const looksHeader =
-      numericCount / nonEmpty.length < 0.3 &&
-      nonEmpty.every((c) => c.length <= 60);
-    if (looksHeader) return cells;
-  }
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function spreadsheetToText(_buffer: Buffer): string | null {
   return null;
 }
+

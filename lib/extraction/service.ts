@@ -4,8 +4,15 @@
  * Base URL: PYTHON_EXTRACTION_URL env var (default: http://localhost:8000)
  * The sidecar is optional — callers check `isServiceAvailable()` and fall
  * back to the npm-based extractors when the service is unreachable.
+ *
+ * Auth: every request to /extract, /embed, /embed-query carries two headers:
+ *   X-Oria-Timestamp  — Unix seconds (integer)
+ *   X-Oria-Signature  — sha256=HMAC-SHA256(ORIA_SIDECAR_SECRET, "<ts>:<METHOD>:<path>")
+ * The sidecar rejects requests with a missing/wrong signature or a timestamp
+ * older than 60 s.  /health is intentionally unprotected.
  */
 
+import { createHmac } from "node:crypto";
 import * as Sentry from "@sentry/nextjs";
 import type { ExtractionServiceResult } from "./types";
 
@@ -14,6 +21,30 @@ const BASE_URL =
   "http://localhost:8000";
 
 const TIMEOUT_MS = 60_000; // 60 s — Docling on large docs can be slow
+
+// ── HMAC signing ─────────────────────────────────────────────────────────────
+
+/**
+ * Build the X-Oria-Timestamp and X-Oria-Signature headers for a sidecar request.
+ * When ORIA_SIDECAR_SECRET is absent (local dev without secret), returns an
+ * empty object so callers work unchanged in un-secured dev environments.
+ */
+function sidecarAuthHeaders(
+  method: "POST",
+  path: string
+): Record<string, string> {
+  const secret = process.env.ORIA_SIDECAR_SECRET;
+  if (!secret) return {};
+
+  const ts = Math.floor(Date.now() / 1000).toString();
+  const payload = `${ts}:${method}:${path}`;
+  const sig = createHmac("sha256", secret).update(payload).digest("hex");
+
+  return {
+    "X-Oria-Timestamp": ts,
+    "X-Oria-Signature": `sha256=${sig}`,
+  };
+}
 
 /** True when the Python service responded to /health in the last probe. */
 let _available: boolean | null = null;
@@ -58,6 +89,7 @@ export async function extractViaService(
 
     const res = await fetch(`${BASE_URL}/extract`, {
       method: "POST",
+      headers: sidecarAuthHeaders("POST", "/extract"),
       body: form,
       signal: AbortSignal.timeout(TIMEOUT_MS),
     });
@@ -110,7 +142,10 @@ export async function embedViaService(
   try {
     const res = await fetch(`${BASE_URL}/embed`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...sidecarAuthHeaders("POST", "/embed"),
+      },
       body: JSON.stringify({ texts }),
       signal: AbortSignal.timeout(30_000),
     });
@@ -138,7 +173,10 @@ export async function embedQueryViaService(
   try {
     const res = await fetch(`${BASE_URL}/embed-query`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...sidecarAuthHeaders("POST", "/embed-query"),
+      },
       body: JSON.stringify({ text: query }),
       signal: AbortSignal.timeout(10_000),
     });
