@@ -1,0 +1,15 @@
+{
+  // Oria uses ESLint only — no Prettier in this project.
+  // Headwind is disabled: Tailwind v4 uses CSS-first config (no tailwind.config.ts).
+  "editor.formatOnSave": false,
+  "headwind.runOnSave": false,
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  }
+}

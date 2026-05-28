@@ -1,0 +1,64 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Oria: 1 — Install System Deps (brew)",
+      "type": "shell",
+      "command": "bash scripts/install-system-deps.sh",
+      "options": { "cwd": "${workspaceFolder}" },
+      "presentation": {
+        "reveal": "always",
+        "panel": "new",
+        "focus": true
+      },
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Oria: 2a — Install Python Deps",
+      "type": "shell",
+      "command": "bash scripts/install-python-deps.sh",
+      "options": { "cwd": "${workspaceFolder}" },
+      "presentation": {
+        "reveal": "always",
+        "panel": "new",
+        "focus": true
+      },
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Oria: 2b — Start Python Service (port 8000)",
+      "type": "shell",
+      "command": "bash scripts/start-python-service.sh",
+      "options": { "cwd": "${workspaceFolder}" },
+      "presentation": {
+        "reveal": "always",
+        "panel": "new",
+        "focus": true
+      },
+      "isBackground": true,
+      "problemMatcher": {
+        "pattern": { "regexp": "^$" },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "Starting FastAPI",
+          "endsPattern": "Uvicorn running"
+        }
+      }
+    },
+    {
+      "label": "Oria: 4 — DB Migration (supabase db push)",
+      "type": "shell",
+      "command": "bash scripts/run-migration.sh",
+      "options": { "cwd": "${workspaceFolder}" },
+      "presentation": {
+        "reveal": "always",
+        "panel": "new",
+        "focus": true
+      },
+      "group": "build",
+      "problemMatcher": []
+    }
+  ]
+}

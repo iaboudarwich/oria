@@ -49,7 +49,7 @@ describe("enforceActiveOrg", () => {
       { organization_id: ACTIVE, n: 3 },
     ]);
     expect(recordSystemEvent).toHaveBeenCalledTimes(1);
-    const call = recordSystemEvent.mock.calls[0][0] as Record<string, unknown>;
+    const call = (recordSystemEvent.mock.calls[0] as unknown[])[0] as Record<string, unknown>;
     expect(call.kind).toBe("scope.violation");
     expect(call.severity).toBe("error");
     expect(call.organizationId).toBe(ACTIVE);

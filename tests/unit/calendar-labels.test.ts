@@ -20,7 +20,7 @@ function entry(title: string): CalendarEntry {
     space_name: "Test",
     space_kind: "personal",
     category: "reminders",
-    topic: "task",
+    topic: "reminder",
     meta: null,
   };
 }

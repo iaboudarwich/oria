@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Python venv — contains vendored JS that should never be linted
+    "python/.venv/**",
   ]),
 ]);
 

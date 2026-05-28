@@ -49,3 +49,6 @@ next-env.d.ts
 mobile-test.mts
 mobile-debug.mts
 screenshots/
+
+# Python sidecar
+python/.venv/
