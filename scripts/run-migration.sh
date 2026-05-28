@@ -19,7 +19,7 @@ echo ""
 
 cd "$PROJECT_DIR"
 
-npx supabase db push
+npx supabase db push --yes
 
 echo ""
 echo "========================================"
