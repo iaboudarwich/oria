@@ -1,3 +1,4 @@
+import Image from "next/image";
 import {
   ChatIcon,
   DocumentIcon,
@@ -21,15 +22,21 @@ export function Thumbnail({ mime, imageUrl, filename, size = 32 }: ThumbnailProp
   const group = classifyMime(mime).group;
 
   if (group === "image" && imageUrl) {
+    // next/image optimizes the (often multi-MB) original down to a
+    // thumbnail-sized payload + lazy-loads it — a real bandwidth win on
+    // mobile upload grids, where the old <img> shipped full-resolution
+    // bytes only to shrink them in CSS. The signed Supabase host is
+    // allow-listed in next.config.ts.
     return (
       <span
         className="block shrink-0 overflow-hidden rounded-md border border-line bg-canvas"
         style={{ width: size, height: size }}
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+        <Image
           src={imageUrl}
           alt={filename}
+          width={size}
+          height={size}
           className="h-full w-full object-cover"
         />
       </span>

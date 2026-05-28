@@ -1,10 +1,17 @@
 import "server-only";
 
 import { getAnthropic, getModel } from "./anthropic";
+import { recordAiCall, recordAiError } from "./telemetry";
 import type { RetrievedSource } from "./retrieve";
 import type { SectionScope } from "@/lib/data/section-scope";
 
 export type AgentMessage = { role: "user" | "assistant"; content: string };
+
+/** Optional attribution so a streamed answer lands in AI telemetry. */
+export type AgentTelemetry = {
+  organizationId?: string | null;
+  actorId?: string | null;
+};
 
 const BASE_RULES = `Rules:
 - ANSWER FROM STRUCTURED RECORDS FIRST. Sources tagged "Memory" / item records carry the fields the extractor already produced — merchant, amount, date, calories, macros, direction. When such a record matches the question, treat it as authoritative. Files are background; don't make the user re-read them. NEVER say "I don't see a food diary" or "no expenses logged" when matching item records are present in the sources — that's the answer.
@@ -86,6 +93,8 @@ export async function* streamAnswer(input: {
   timezone?: string | null;
   /** Optional user-supplied "now" ISO instant. Defaults to server now. */
   nowISO?: string | null;
+  /** Optional attribution for AI telemetry (cost/latency/errors). */
+  telemetry?: AgentTelemetry;
 }): AsyncGenerator<string, void, unknown> {
   const client = getAnthropic();
   if (!client) throw new Error("anthropic_not_configured");
@@ -131,19 +140,46 @@ export async function* streamAnswer(input: {
     ? sectionSystemPrompt(input.scope)
     : GENERAL_SYSTEM_PROMPT;
 
+  const model = getModel();
+  const startedAt = Date.now();
   const stream = await client.messages.stream({
-    model: getModel(),
+    model,
     max_tokens: 800,
     system,
     messages,
   });
 
-  for await (const chunk of stream) {
-    if (
-      chunk.type === "content_block_delta" &&
-      chunk.delta.type === "text_delta"
-    ) {
-      yield chunk.delta.text;
+  try {
+    for await (const chunk of stream) {
+      if (
+        chunk.type === "content_block_delta" &&
+        chunk.delta.type === "text_delta"
+      ) {
+        yield chunk.delta.text;
+      }
     }
+  } catch (e) {
+    recordAiError({
+      surface: input.scope ? `ask:${input.scope.kind}` : "ask",
+      model,
+      latencyMs: Date.now() - startedAt,
+      error: e,
+      organizationId: input.telemetry?.organizationId ?? null,
+      actorId: input.telemetry?.actorId ?? null,
+    });
+    throw e;
   }
+
+  // Streaming is done; finalMessage() resolves from the buffered stream
+  // and carries the usage totals we couldn't see mid-stream.
+  const final = await stream.finalMessage();
+  recordAiCall({
+    surface: input.scope ? `ask:${input.scope.kind}` : "ask",
+    model: final.model,
+    inputTokens: final.usage.input_tokens,
+    outputTokens: final.usage.output_tokens,
+    latencyMs: Date.now() - startedAt,
+    organizationId: input.telemetry?.organizationId ?? null,
+    actorId: input.telemetry?.actorId ?? null,
+  });
 }

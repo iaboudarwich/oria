@@ -94,6 +94,10 @@ export async function POST(request: Request) {
           sources,
           workspaceName: ctx.organization.name,
           workspaceContext,
+          telemetry: {
+            organizationId: ctx.organization.id,
+            actorId: ctx.profile.id,
+          },
         })) {
           writeEvent(controller, { type: "delta", text });
         }

@@ -14,6 +14,11 @@ type Turn = {
   errorMessage?: string;
 };
 
+/** Prior-turn shape sent back to /api/ask as conversation history.
+ *  Defined locally — the server-side AgentMessage type can't be imported
+ *  into a Client Component. */
+type ChatMessage = { role: "user" | "assistant"; content: string };
+
 const SUGGESTIONS = [
   "What flights do I have coming up?",
   "When did I last pay my electricity bill?",
@@ -70,33 +75,22 @@ export function AskChat({
     setTurns((prev) => prev.map((t) => (t.id === id ? fn(t) : t)));
   }, []);
 
-  const send = useCallback(
-    async (question: string) => {
-      const trimmed = question.trim();
-      if (!trimmed || busy) return;
-
-      const id = crypto.randomUUID();
-      const history = turns.flatMap((t) => [
-        { role: "user" as const, content: t.question },
-        { role: "assistant" as const, content: t.answer },
-      ]);
-      const newTurn: Turn = {
-        id,
-        question: trimmed,
-        answer: "",
-        sources: [],
-        state: "streaming",
-      };
-      setTurns((prev) => [...prev, newTurn]);
-      setInput("");
+  // Open /api/ask and stream the NDJSON events into the turn `id`. Shared
+  // by a fresh send and by Retry, so both follow the exact same protocol.
+  const runStream = useCallback(
+    async (id: string, query: string, history: ChatMessage[]) => {
       setBusy(true);
-
+      // Track whether we saw a terminal frame. A stream that closes
+      // without one (proxy drop, server crash mid-answer) would otherwise
+      // leave the turn stuck on "Thinking…" forever — the hang we're
+      // guarding against. We force it to an error so Retry appears.
+      let settled = false;
       try {
         const res = await fetch("/api/ask", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            query: trimmed,
+            query,
             history,
             scope: scope ?? null,
             crossSpace: crossSpaceAvailable && crossSpace,
@@ -110,6 +104,7 @@ export function AskChat({
           } catch {
             // body wasn't JSON, fall through to generic message
           }
+          settled = true;
           updateTurn(id, (t) => ({
             ...t,
             state: "error",
@@ -141,8 +136,10 @@ export function AskChat({
               } else if (evt.type === "delta") {
                 updateTurn(id, (t) => ({ ...t, answer: t.answer + evt.text }));
               } else if (evt.type === "done") {
+                settled = true;
                 updateTurn(id, (t) => ({ ...t, state: "done" }));
               } else if (evt.type === "error") {
+                settled = true;
                 updateTurn(id, (t) => ({
                   ...t,
                   state: "error",
@@ -154,6 +151,14 @@ export function AskChat({
             }
           }
         }
+        // Stream ended without a done/error frame — don't hang.
+        if (!settled) {
+          updateTurn(id, (t) =>
+            t.state === "streaming"
+              ? { ...t, state: "error", errorCode: "stream_incomplete" }
+              : t,
+          );
+        }
       } catch (e) {
         const message = e instanceof Error ? e.message : "stream_failed";
         updateTurn(id, (t) => ({ ...t, state: "error", errorCode: message }));
@@ -161,7 +166,52 @@ export function AskChat({
         setBusy(false);
       }
     },
-    [busy, turns, updateTurn, scope, crossSpace, crossSpaceAvailable],
+    [updateTurn, scope, crossSpace, crossSpaceAvailable],
+  );
+
+  const send = useCallback(
+    async (question: string) => {
+      const trimmed = question.trim();
+      if (!trimmed || busy) return;
+
+      const id = crypto.randomUUID();
+      const history: ChatMessage[] = turns.flatMap((t) => [
+        { role: "user" as const, content: t.question },
+        { role: "assistant" as const, content: t.answer },
+      ]);
+      setTurns((prev) => [
+        ...prev,
+        { id, question: trimmed, answer: "", sources: [], state: "streaming" },
+      ]);
+      setInput("");
+      await runStream(id, trimmed, history);
+    },
+    [busy, turns, runStream],
+  );
+
+  // Re-run a failed turn in place. History is the turns that preceded it,
+  // so the retry sees the same context the original attempt did.
+  const retry = useCallback(
+    async (turnId: string) => {
+      if (busy) return;
+      const idx = turns.findIndex((t) => t.id === turnId);
+      if (idx === -1) return;
+      const target = turns[idx];
+      const history: ChatMessage[] = turns.slice(0, idx).flatMap((t) => [
+        { role: "user" as const, content: t.question },
+        { role: "assistant" as const, content: t.answer },
+      ]);
+      updateTurn(turnId, (t) => ({
+        ...t,
+        answer: "",
+        sources: [],
+        state: "streaming",
+        errorCode: undefined,
+        errorMessage: undefined,
+      }));
+      await runStream(turnId, target.question, history);
+    },
+    [busy, turns, updateTurn, runStream],
   );
 
   // Auto-scroll on new turn / streaming text.
@@ -211,7 +261,7 @@ export function AskChat({
           <ul className="space-y-8">
             {turns.map((t) => (
               <li key={t.id}>
-                <TurnView turn={t} />
+                <TurnView turn={t} onRetry={() => retry(t.id)} busy={busy} />
               </li>
             ))}
           </ul>
@@ -274,7 +324,15 @@ function CrossSpaceToggle({
 // otherwise they're tucked behind a small "Show sources" link.
 const SOURCE_INTENT = /\b(source|sources|file|files|where|which file|origin|proof|show me|attach|attachment|receipt|invoice|document|doc|pdf)\b/i;
 
-function TurnView({ turn }: { turn: Turn }) {
+function TurnView({
+  turn,
+  onRetry,
+  busy,
+}: {
+  turn: Turn;
+  onRetry: () => void;
+  busy: boolean;
+}) {
   const wantsSources = SOURCE_INTENT.test(turn.question);
   const [sourcesOpen, setSourcesOpen] = useState(wantsSources);
   return (
@@ -282,7 +340,14 @@ function TurnView({ turn }: { turn: Turn }) {
       <p className="text-[13px] text-ink-faint">You asked</p>
       <p className="mt-1 text-[15px] text-ink">{turn.question}</p>
 
-      <div className="mt-4 rounded-2xl border border-line bg-surface-raised px-4 py-3.5">
+      {/* aria-live lets screen readers announce the answer as it streams
+          in; aria-busy flags that more text is still arriving. */}
+      <div
+        className="mt-4 rounded-2xl border border-line bg-surface-raised px-4 py-3.5"
+        role="status"
+        aria-live="polite"
+        aria-busy={turn.state === "streaming"}
+      >
         <div className="mb-1.5 flex items-center gap-1.5 text-[11.5px] text-ink-faint">
           <SparkIcon size={11} />
           <span>Oria</span>
@@ -291,6 +356,8 @@ function TurnView({ turn }: { turn: Turn }) {
           <ErrorMessage
             code={turn.errorCode ?? "stream_failed"}
             message={turn.errorMessage}
+            onRetry={onRetry}
+            busy={busy}
           />
         ) : turn.answer.length === 0 && turn.state === "streaming" ? (
           <Thinking />
@@ -390,13 +457,21 @@ function Thinking() {
 function ErrorMessage({
   code,
   message,
+  onRetry,
+  busy,
 }: {
   code: string;
   message?: string;
+  onRetry: () => void;
+  busy: boolean;
 }) {
   // Specific, calm copy per known cause. Server-side codes ("no_key",
   // "rate_limited") match what the API route emits. HTTP-prefixed codes
-  // come from the !res.ok branch.
+  // come from the !res.ok branch; "stream_incomplete" is the client's
+  // own guard for a stream that closed without a done/error frame.
+  //
+  // `no_key` and an expired session aren't fixed by retrying, so those
+  // skip the Retry button. Everything else offers it.
   if (code === "no_key") {
     return (
       <p className="text-[13px] text-ink-muted">
@@ -408,13 +483,6 @@ function ErrorMessage({
       </p>
     );
   }
-  if (code === "rate_limited" || code === "http_429") {
-    return (
-      <p className="text-[13px] text-ink-muted">
-        {message ?? "You've asked a lot in a short window. Try again in a minute."}
-      </p>
-    );
-  }
   if (code === "http_401" || code === "http_403") {
     return (
       <p className="text-[13px] text-ink-muted">
@@ -422,20 +490,33 @@ function ErrorMessage({
       </p>
     );
   }
-  if (code.startsWith("http_5") || code === "stream_failed") {
-    return (
-      <p className="text-[13px] text-ink-muted">
-        Ask Oria is briefly unreachable. Try again in a moment.
-      </p>
-    );
+
+  let copy: string;
+  if (code === "rate_limited" || code === "http_429") {
+    copy =
+      message ?? "You've asked a lot in a short window. Try again in a minute.";
+  } else if (
+    code.startsWith("http_5") ||
+    code === "stream_failed" ||
+    code === "stream_incomplete"
+  ) {
+    copy = "Ask Oria is briefly unreachable. Try again in a moment.";
+  } else {
+    copy = message ?? "Something went wrong. Try again in a moment.";
   }
-  if (message) {
-    return <p className="text-[13px] text-ink-muted">{message}</p>;
-  }
+
   return (
-    <p className="text-[13px] text-claret">
-      Something went wrong. Try again in a moment.
-    </p>
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+      <p className="text-[13px] text-ink-muted">{copy}</p>
+      <button
+        type="button"
+        onClick={onRetry}
+        disabled={busy}
+        className="inline-flex h-6 cursor-pointer items-center rounded-md border border-line bg-canvas px-2 text-[11.5px] text-ink-soft transition-base hover:border-line-strong hover:text-ink disabled:cursor-default disabled:opacity-40"
+      >
+        Retry
+      </button>
+    </div>
   );
 }
 

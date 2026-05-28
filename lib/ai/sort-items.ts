@@ -2,6 +2,7 @@ import "server-only";
 
 import type Anthropic from "@anthropic-ai/sdk";
 import { getAnthropic, getModel } from "./anthropic";
+import { recordAiCall, recordAiError } from "./telemetry";
 
 type Section =
   | "household"
@@ -109,18 +110,36 @@ export async function sortItemsWithInstruction(input: {
     input.instruction,
   ].join("\n");
 
+  const model = getModel();
   let response: Anthropic.Messages.Message;
+  const startedAt = Date.now();
   try {
     response = await client.messages.create({
-      model: getModel(),
+      model,
       max_tokens: 1024,
       system: SYSTEM_PROMPT,
       tools: [SORT_TOOL],
       tool_choice: { type: "tool", name: "apply_sort" },
       messages: [{ role: "user", content: message }],
     });
-  } catch {
+  } catch (e) {
+    recordAiError({
+      surface: "sort-items",
+      model,
+      latencyMs: Date.now() - startedAt,
+      error: e,
+    });
     return null;
+  }
+
+  if (response.usage) {
+    recordAiCall({
+      surface: "sort-items",
+      model: response.model,
+      inputTokens: response.usage.input_tokens,
+      outputTokens: response.usage.output_tokens,
+      latencyMs: Date.now() - startedAt,
+    });
   }
 
   const toolUse = response.content.find(

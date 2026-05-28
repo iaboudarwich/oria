@@ -2,10 +2,9 @@ import "server-only";
 
 import type Anthropic from "@anthropic-ai/sdk";
 import { getAnthropic } from "./anthropic";
-import { estimatedCostUSD } from "./pricing";
+import { recordAiCall, recordAiError } from "./telemetry";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getWorkspaceContextByOrgId } from "@/lib/data/workspace-context";
-import { recordSystemEvent } from "@/lib/data/system-events";
 import type { ReportPayload } from "@/lib/data/workspace-reports";
 
 /**
@@ -844,13 +843,15 @@ Hard rules:
 - If the brief refers to files and the FILES list has matches, name the files you used in the section bodies (e.g. "From Waterfront 04.26 Stacking Plan.xlsx…"). If FILES is empty, say "No matching files in this Workspace — I'm working from aggregated items only."
 - Honour STANDING INSTRUCTIONS and PREFERRED METRICS when present.`;
 
+  const reportModel =
+    process.env.ANTHROPIC_EXTRACTION_MODEL ??
+    process.env.ANTHROPIC_MODEL ??
+    "claude-sonnet-4-6";
   let response: Anthropic.Messages.Message;
+  const startedAt = Date.now();
   try {
     response = await client.messages.create({
-      model:
-        process.env.ANTHROPIC_EXTRACTION_MODEL ??
-        process.env.ANTHROPIC_MODEL ??
-        "claude-sonnet-4-6",
+      model: reportModel,
       // Bumped from 4096 — file-aware analyses with cross-file tables
       // and multi-section commentary regularly need 5–7K output tokens.
       max_tokens: 8192,
@@ -860,39 +861,26 @@ Hard rules:
       messages: [{ role: "user", content: contextLines.join("\n") }],
     });
   } catch (e) {
-    const err = e as { status?: number; message?: string; name?: string };
-    void recordSystemEvent({
-      kind: "ai.error",
-      severity: "error",
-      message: err.message ?? "Anthropic messages.create threw",
-      context: {
-        surface: "work-report",
-        prompt: input.prompt.slice(0, 200),
-        statusCode: err.status,
-        name: err.name,
-      },
+    recordAiError({
+      surface: "work-report",
+      model: reportModel,
+      latencyMs: Date.now() - startedAt,
+      error: e,
       organizationId,
       actorId: input.actorId ?? null,
+      extra: { prompt: input.prompt.slice(0, 200) },
     });
-    return { ok: false, error: `Claude error: ${err.message ?? "unknown"}` };
+    const msg = e instanceof Error ? e.message : "unknown";
+    return { ok: false, error: `Claude error: ${msg}` };
   }
 
   if (response.usage) {
-    void recordSystemEvent({
-      kind: "ai.request",
-      severity: "info",
-      message: "work-report",
-      context: {
-        surface: "work-report",
-        model: response.model,
-        input_tokens: response.usage.input_tokens,
-        output_tokens: response.usage.output_tokens,
-        cost_usd: estimatedCostUSD(
-          response.model,
-          response.usage.input_tokens,
-          response.usage.output_tokens,
-        ),
-      },
+    recordAiCall({
+      surface: "work-report",
+      model: response.model,
+      inputTokens: response.usage.input_tokens,
+      outputTokens: response.usage.output_tokens,
+      latencyMs: Date.now() - startedAt,
       organizationId,
       actorId: input.actorId ?? null,
     });

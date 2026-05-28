@@ -15,6 +15,10 @@ type Turn = {
   errorMessage?: string;
 };
 
+/** Prior-turn shape sent back as history. Defined locally — the
+ *  server-side AgentMessage type can't be imported into a Client Component. */
+type ChatMessage = { role: "user" | "assistant"; content: string };
+
 /**
  * Persistent Work AI chat. Same NDJSON stream as Ask Oria, different
  * endpoint (/api/work/agent), longer answers, no scope picker — the
@@ -39,35 +43,19 @@ export function WorkAgentChat({
     [],
   );
 
-  const send = useCallback(
-    async (raw: string) => {
-      const text = raw.trim();
-      if (!text || busy) return;
-
-      const history = turns
-        .filter((t) => t.state === "done")
-        .flatMap((t) => [
-          { role: "user" as const, content: t.question },
-          { role: "assistant" as const, content: t.answer },
-        ]);
-
-      const id = crypto.randomUUID();
-      const newTurn: Turn = {
-        id,
-        question: text,
-        answer: "",
-        sources: [],
-        state: "streaming",
-      };
-      setTurns((prev) => [...prev, newTurn]);
-      setInput("");
+  // Stream /api/work/agent into turn `id`. Shared by send + retry.
+  const runStream = useCallback(
+    async (id: string, query: string, history: ChatMessage[]) => {
       setBusy(true);
-
+      // A stream that closes without a done/error frame would leave the
+      // turn stuck on "Thinking…"; track it and force an error so Retry
+      // shows instead of hanging.
+      let settled = false;
       try {
         const res = await fetch("/api/work/agent", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ query: text, history }),
+          body: JSON.stringify({ query, history }),
         });
         if (!res.ok || !res.body) {
           let friendly: string | undefined;
@@ -77,6 +65,7 @@ export function WorkAgentChat({
           } catch {
             // not JSON
           }
+          settled = true;
           updateTurn(id, (t) => ({
             ...t,
             state: "error",
@@ -108,8 +97,10 @@ export function WorkAgentChat({
               } else if (evt.type === "delta") {
                 updateTurn(id, (t) => ({ ...t, answer: t.answer + evt.text }));
               } else if (evt.type === "done") {
+                settled = true;
                 updateTurn(id, (t) => ({ ...t, state: "done" }));
               } else if (evt.type === "error") {
+                settled = true;
                 updateTurn(id, (t) => ({
                   ...t,
                   state: "error",
@@ -120,6 +111,13 @@ export function WorkAgentChat({
               // ignore malformed line
             }
           }
+        }
+        if (!settled) {
+          updateTurn(id, (t) =>
+            t.state === "streaming"
+              ? { ...t, state: "error", errorCode: "stream_incomplete" }
+              : t,
+          );
         }
       } catch (e) {
         const message = e instanceof Error ? e.message : "stream_failed";
@@ -132,7 +130,57 @@ export function WorkAgentChat({
         });
       }
     },
-    [busy, turns, updateTurn],
+    [updateTurn],
+  );
+
+  const send = useCallback(
+    async (raw: string) => {
+      const text = raw.trim();
+      if (!text || busy) return;
+
+      const history: ChatMessage[] = turns
+        .filter((t) => t.state === "done")
+        .flatMap((t) => [
+          { role: "user" as const, content: t.question },
+          { role: "assistant" as const, content: t.answer },
+        ]);
+
+      const id = crypto.randomUUID();
+      setTurns((prev) => [
+        ...prev,
+        { id, question: text, answer: "", sources: [], state: "streaming" },
+      ]);
+      setInput("");
+      await runStream(id, text, history);
+    },
+    [busy, turns, runStream],
+  );
+
+  // Re-run a failed turn in place, with the history that preceded it.
+  const retry = useCallback(
+    async (turnId: string) => {
+      if (busy) return;
+      const idx = turns.findIndex((t) => t.id === turnId);
+      if (idx === -1) return;
+      const target = turns[idx];
+      const history: ChatMessage[] = turns
+        .slice(0, idx)
+        .filter((t) => t.state === "done")
+        .flatMap((t) => [
+          { role: "user" as const, content: t.question },
+          { role: "assistant" as const, content: t.answer },
+        ]);
+      updateTurn(turnId, (t) => ({
+        ...t,
+        answer: "",
+        sources: [],
+        state: "streaming",
+        errorCode: undefined,
+        errorMessage: undefined,
+      }));
+      await runStream(turnId, target.question, history);
+    },
+    [busy, turns, updateTurn, runStream],
   );
 
   function onKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
@@ -184,17 +232,18 @@ export function WorkAgentChat({
                     ))}
                   </ul>
                 ) : null}
-                {t.state === "error" ? (
-                  <p className="text-[13px] text-ink-muted">
-                    {t.errorMessage ?? "Something went wrong. Try again in a moment."}
-                  </p>
-                ) : t.answer ? (
-                  <p className="whitespace-pre-wrap text-[13.5px] leading-[1.55] text-ink">
-                    {t.answer}
-                  </p>
-                ) : (
-                  <p className="text-[13px] text-ink-faint">Thinking…</p>
-                )}
+                {/* aria-live announces the streamed answer to screen readers. */}
+                <div role="status" aria-live="polite" aria-busy={t.state === "streaming"}>
+                  {t.state === "error" ? (
+                    <WorkErrorMessage turn={t} onRetry={() => retry(t.id)} busy={busy} />
+                  ) : t.answer ? (
+                    <p className="whitespace-pre-wrap text-[13.5px] leading-[1.55] text-ink">
+                      {t.answer}
+                    </p>
+                  ) : (
+                    <p className="text-[13px] text-ink-faint">Thinking…</p>
+                  )}
+                </div>
               </li>
             ))}
           </ul>
@@ -225,6 +274,71 @@ export function WorkAgentChat({
           <ArrowRightIcon size={12} />
         </button>
       </form>
+    </div>
+  );
+}
+
+/**
+ * Calm error copy + a Retry affordance for a failed Work AI turn. `no_key`
+ * and an expired session can't be fixed by retrying, so those omit the
+ * button; everything else (rate limit, 5xx, dropped stream) offers it.
+ */
+function WorkErrorMessage({
+  turn,
+  onRetry,
+  busy,
+}: {
+  turn: Turn;
+  onRetry: () => void;
+  busy: boolean;
+}) {
+  const code = turn.errorCode ?? "stream_failed";
+
+  if (code === "no_key") {
+    return (
+      <p className="text-[13px] text-ink-muted">
+        The Work AI isn&apos;t connected to Claude yet. Add an{" "}
+        <code className="rounded border border-line bg-canvas px-1 py-0.5 text-[11px]">
+          ANTHROPIC_API_KEY
+        </code>{" "}
+        and reload.
+      </p>
+    );
+  }
+  if (code === "http_401" || code === "http_403") {
+    return (
+      <p className="text-[13px] text-ink-muted">
+        Your session expired. Refresh the page and try again.
+      </p>
+    );
+  }
+
+  let copy: string;
+  if (code === "rate_limited" || code === "http_429") {
+    copy =
+      turn.errorMessage ??
+      "You've asked a lot in a short window. Try again in a minute.";
+  } else if (
+    code.startsWith("http_5") ||
+    code === "stream_failed" ||
+    code === "stream_incomplete"
+  ) {
+    copy = "The Work AI is briefly unreachable. Try again in a moment.";
+  } else {
+    copy = turn.errorMessage ?? "Something went wrong. Try again in a moment.";
+  }
+
+  return (
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+      <p className="text-[13px] text-ink-muted">{copy}</p>
+      <button
+        type="button"
+        onClick={onRetry}
+        disabled={busy}
+        className="inline-flex h-6 cursor-pointer items-center rounded-md border border-line bg-canvas px-2 text-[11.5px] text-ink-soft transition-base hover:border-line-strong hover:text-ink disabled:cursor-default disabled:opacity-40"
+      >
+        Retry
+      </button>
     </div>
   );
 }

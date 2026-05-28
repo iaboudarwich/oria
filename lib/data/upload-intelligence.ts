@@ -9,6 +9,7 @@ import {
 } from "@/lib/ai/extract";
 import { proposeAutoReminders } from "./auto-reminders";
 import { recordSystemEvent } from "./system-events";
+import { buildMemoryItemRows } from "./build-memory-item-rows";
 import { resolveFinalSection } from "./section-routing";
 import type { DocumentType, Section } from "@/lib/supabase/types";
 
@@ -281,68 +282,15 @@ export async function processUpload(uploadId: string): Promise<void> {
   //     `upload.organization_id` so an upload in one space is only ever
   //     auto-filed into one of that space's own sections.
   if (aiResult && aiResult.items.length > 0) {
-    const itemRows = aiResult.items.map((item) => {
-      const smartSection = item.smart_section ?? smartSectionHint ?? null;
-      const suggested =
-        item.confidence >= AUTO_FILE_CONFIDENCE ? item.suggested_section : null;
-      // Bills/invoices/receipts always belong in Finance, regardless of
-      // what the model proposed (a "vehicle registration renewal" got
-      // tagged travel even though the user is paying a bill — same idea
-      // for a healthcare invoice that the model wants in health).
-      const autoSection = resolveFinalSection({
-        suggested,
-        documentType: item.document_type,
-        smartSection,
-        sectionHint: null,
-      });
-      // For DIET specifically, the user's intent is always "I ate this
-      // now" — the upload time is the meal time. The model often picks
-      // an unrelated date (EXIF, a date printed on the receipt, a label
-      // in the photo), which would file the meal on the wrong day and
-      // break the Today view + "calories today" Ask aggregates. Always
-      // overwrite for diet. Other smart sections (bills) need the real
-      // due date the model extracted, so they're untouched.
-      let occurredAt: string | null;
-      if (smartSection === "diet") {
-        occurredAt = new Date().toISOString();
-      } else {
-        occurredAt = item.occurred_at ?? null;
-      }
-      return {
-        organization_id: upload.organization_id,
-        upload_id: upload.id,
-        document_type: item.document_type,
-        section: autoSection,
-        language: item.language,
-        is_handwritten: item.is_handwritten,
-        confidence: item.confidence,
-        title: item.title,
-        summary: item.summary,
-        merchant: item.merchant,
-        amount_value: item.amount_value,
-        amount_currency: item.amount_currency,
-        amount_normalized: item.amount_normalized,
-        occurred_at: occurredAt,
-        location: item.location,
-        payment_method: item.payment_method,
-        category: item.category,
-        items_purchased: item.items_purchased,
-        raw_text: item.raw_text || null,
-        entities: item.entities,
-        facts: {
-          action_items: item.action_items,
-          suggested_section: item.suggested_section,
-          ...(userDescription ? { user_description: userDescription } : {}),
-        },
-        calories: item.calories,
-        protein_g: item.protein_g,
-        carbs_g: item.carbs_g,
-        fat_g: item.fat_g,
-        is_recurring: item.is_recurring,
-        recurring_interval: item.recurring_interval,
-        direction: item.direction,
-        smart_section: smartSection,
-      };
+    // Pure mapping (org scope, section routing, diet date override) lives
+    // in build-memory-item-rows so it can be unit-tested without a live
+    // Supabase round-trip. See that module for the rules.
+    const itemRows = buildMemoryItemRows({
+      items: aiResult.items,
+      organizationId: upload.organization_id,
+      uploadId: upload.id,
+      smartSectionHint,
+      userDescription,
     });
     // Hard-fail on insert error rather than silently filing the upload.
     // The old behaviour ate RLS / cookie errors here and left uploads

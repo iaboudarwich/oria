@@ -3,9 +3,8 @@ import "server-only";
 import type Anthropic from "@anthropic-ai/sdk";
 import * as XLSX from "xlsx";
 import { getAnthropic } from "./anthropic";
-import { estimatedCostUSD } from "./pricing";
+import { recordAiCall, recordAiError } from "./telemetry";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { recordSystemEvent } from "@/lib/data/system-events";
 import type { DocumentType, Section } from "@/lib/supabase/types";
 
 /**
@@ -483,6 +482,7 @@ Call store_extraction.`,
   }
 
   let response: Anthropic.Messages.Message;
+  const startedAt = Date.now();
   try {
     response = await client.messages.create({
       model: getExtractionModel(),
@@ -498,39 +498,25 @@ Call store_extraction.`,
       messages: [{ role: "user", content }],
     });
   } catch (e) {
-    const err = e as { status?: number; message?: string; name?: string };
-    void recordSystemEvent({
-      kind: "ai.error",
-      severity: "error",
-      message: err.message ?? "Anthropic messages.create threw",
-      context: {
-        surface: "extract",
-        model: getExtractionModel(),
-        statusCode: err.status,
-        name: err.name,
-        filename: input.filename,
-      },
+    recordAiError({
+      surface: "extract",
+      model: getExtractionModel(),
+      latencyMs: Date.now() - startedAt,
+      error: e,
+      extra: { filename: input.filename },
     });
     return { kind: "skipped", reason: "model_error" };
   }
 
   // Capture usage so the admin page can show real numbers.
   if (response.usage) {
-    void recordSystemEvent({
-      kind: "ai.request",
-      severity: "info",
-      message: "extract",
-      context: {
-        surface: "extract",
-        model: response.model,
-        input_tokens: response.usage.input_tokens,
-        output_tokens: response.usage.output_tokens,
-        cost_usd: estimatedCostUSD(
-          response.model,
-          response.usage.input_tokens,
-          response.usage.output_tokens,
-        ),
-      },
+    recordAiCall({
+      surface: "extract",
+      model: response.model,
+      inputTokens: response.usage.input_tokens,
+      outputTokens: response.usage.output_tokens,
+      latencyMs: Date.now() - startedAt,
+      extra: { filename: input.filename },
     });
   }
 

@@ -1,10 +1,17 @@
 import "server-only";
 
 import { getAnthropic, getModel } from "./anthropic";
+import { recordAiCall, recordAiError } from "./telemetry";
 import type { RetrievedSource } from "./retrieve";
 import type { WorkspaceContext } from "@/lib/data/workspace-context";
 
 export type AgentMessage = { role: "user" | "assistant"; content: string };
+
+/** Optional attribution so a streamed answer lands in AI telemetry. */
+export type AgentTelemetry = {
+  organizationId?: string | null;
+  actorId?: string | null;
+};
 
 const BASE_RULES = `Rules:
 - Ground every concrete claim in a SOURCE. Cite inline with the bracket id, e.g. "Building A's rent rose 4% YoY [3]." Never invent a citation.
@@ -77,6 +84,8 @@ export async function* streamWorkAgent(input: {
   sources: RetrievedSource[];
   workspaceName: string;
   workspaceContext: WorkspaceContext | null;
+  /** Optional attribution for AI telemetry (cost/latency/errors). */
+  telemetry?: AgentTelemetry;
 }): AsyncGenerator<string, void, unknown> {
   const client = getAnthropic();
   if (!client) throw new Error("anthropic_not_configured");
@@ -96,19 +105,44 @@ export async function* streamWorkAgent(input: {
     { role: "user" as const, content: userMessage },
   ];
 
+  const model = getModel();
+  const startedAt = Date.now();
   const stream = await client.messages.stream({
-    model: getModel(),
+    model,
     max_tokens: 1200,
     system: buildSystem(input.workspaceName, input.workspaceContext),
     messages,
   });
 
-  for await (const chunk of stream) {
-    if (
-      chunk.type === "content_block_delta" &&
-      chunk.delta.type === "text_delta"
-    ) {
-      yield chunk.delta.text;
+  try {
+    for await (const chunk of stream) {
+      if (
+        chunk.type === "content_block_delta" &&
+        chunk.delta.type === "text_delta"
+      ) {
+        yield chunk.delta.text;
+      }
     }
+  } catch (e) {
+    recordAiError({
+      surface: "work-agent",
+      model,
+      latencyMs: Date.now() - startedAt,
+      error: e,
+      organizationId: input.telemetry?.organizationId ?? null,
+      actorId: input.telemetry?.actorId ?? null,
+    });
+    throw e;
   }
+
+  const final = await stream.finalMessage();
+  recordAiCall({
+    surface: "work-agent",
+    model: final.model,
+    inputTokens: final.usage.input_tokens,
+    outputTokens: final.usage.output_tokens,
+    latencyMs: Date.now() - startedAt,
+    organizationId: input.telemetry?.organizationId ?? null,
+    actorId: input.telemetry?.actorId ?? null,
+  });
 }

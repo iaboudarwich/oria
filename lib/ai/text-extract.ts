@@ -2,7 +2,7 @@ import "server-only";
 
 import type Anthropic from "@anthropic-ai/sdk";
 import { getAnthropic } from "./anthropic";
-import { estimatedCostUSD } from "./pricing";
+import { recordAiCall, recordAiError } from "./telemetry";
 import {
   EXTRACTION_TOOL,
   getExtractionModel,
@@ -10,7 +10,6 @@ import {
   type ExtractionOutcome,
   type SmartSection,
 } from "./extract";
-import { recordSystemEvent } from "@/lib/data/system-events";
 import type { Section } from "@/lib/supabase/types";
 
 /**
@@ -95,6 +94,7 @@ export async function extractFromText(
   const userMessage = `${hintLines.join("\n")}\n\nUSER TYPED:\n${input.text}`;
 
   let response: Anthropic.Messages.Message;
+  const startedAt = Date.now();
   try {
     response = await client.messages.create({
       model: getExtractionModel(),
@@ -105,38 +105,24 @@ export async function extractFromText(
       messages: [{ role: "user", content: userMessage }],
     });
   } catch (e) {
-    const err = e as { status?: number; message?: string; name?: string };
-    void recordSystemEvent({
-      kind: "ai.error",
-      severity: "error",
-      message: err.message ?? "text-extract messages.create threw",
-      context: {
-        surface: "text-extract",
-        model: getExtractionModel(),
-        statusCode: err.status,
-        name: err.name,
-        textLen: input.text.length,
-      },
+    recordAiError({
+      surface: "text-extract",
+      model: getExtractionModel(),
+      latencyMs: Date.now() - startedAt,
+      error: e,
+      extra: { textLen: input.text.length },
     });
     return { kind: "skipped", reason: "model_error" };
   }
 
   if (response.usage) {
-    void recordSystemEvent({
-      kind: "ai.request",
-      severity: "info",
-      message: "text-extract",
-      context: {
-        surface: "text-extract",
-        model: response.model,
-        input_tokens: response.usage.input_tokens,
-        output_tokens: response.usage.output_tokens,
-        cost_usd: estimatedCostUSD(
-          response.model,
-          response.usage.input_tokens,
-          response.usage.output_tokens,
-        ),
-      },
+    recordAiCall({
+      surface: "text-extract",
+      model: response.model,
+      inputTokens: response.usage.input_tokens,
+      outputTokens: response.usage.output_tokens,
+      latencyMs: Date.now() - startedAt,
+      extra: { textLen: input.text.length },
     });
   }
 

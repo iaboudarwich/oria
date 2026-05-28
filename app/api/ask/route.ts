@@ -134,6 +134,10 @@ export async function POST(request: Request) {
           scope,
           timezone: tz,
           nowISO: new Date().toISOString(),
+          telemetry: {
+            organizationId: ctx.organization.id,
+            actorId: ctx.profile.id,
+          },
         })) {
           writeEvent(controller, { type: "delta", text });
         }
