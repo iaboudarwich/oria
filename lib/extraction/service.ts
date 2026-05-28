@@ -1,0 +1,145 @@
+/**
+ * HTTP client for the Python extraction sidecar.
+ *
+ * Base URL: PYTHON_EXTRACTION_URL env var (default: http://localhost:8000)
+ * The sidecar is optional — callers check `isServiceAvailable()` and fall
+ * back to the npm-based extractors when the service is unreachable.
+ */
+
+import type { ExtractionServiceResult } from "./types";
+
+const BASE_URL =
+  process.env.PYTHON_EXTRACTION_URL?.replace(/\/$/, "") ??
+  "http://localhost:8000";
+
+const TIMEOUT_MS = 60_000; // 60 s — Docling on large docs can be slow
+
+/** True when the Python service responded to /health in the last probe. */
+let _available: boolean | null = null;
+let _lastProbe = 0;
+const PROBE_TTL_MS = 30_000;
+
+export async function isServiceAvailable(): Promise<boolean> {
+  const now = Date.now();
+  if (_available !== null && now - _lastProbe < PROBE_TTL_MS) {
+    return _available;
+  }
+  try {
+    const res = await fetch(`${BASE_URL}/health`, {
+      signal: AbortSignal.timeout(2_000),
+    });
+    _available = res.ok;
+  } catch {
+    _available = false;
+  }
+  _lastProbe = now;
+  return _available;
+}
+
+/**
+ * Send a file buffer to the Python service for extraction.
+ * Returns null if the service is unavailable or returns an error.
+ */
+export async function extractViaService(
+  buffer: Buffer,
+  mimeType: string,
+  filename: string
+): Promise<ExtractionServiceResult | null> {
+  const available = await isServiceAvailable();
+  if (!available) return null;
+
+  try {
+    const form = new FormData();
+    const blob = new Blob([new Uint8Array(buffer)], { type: mimeType });
+    form.append("file", blob, filename);
+    form.append("mime_type", mimeType);
+    form.append("filename", filename);
+
+    const res = await fetch(`${BASE_URL}/extract`, {
+      method: "POST",
+      body: form,
+      signal: AbortSignal.timeout(TIMEOUT_MS),
+    });
+
+    if (!res.ok) {
+      console.warn(
+        `[extraction/service] HTTP ${res.status} from /extract for ${filename}`
+      );
+      return null;
+    }
+
+    const json = (await res.json()) as {
+      text: string;
+      method: string;
+      file_hash: string;
+      char_count: number;
+    };
+
+    return {
+      text: json.text ?? "",
+      method: (json.method ?? "failed") as ExtractionServiceResult["method"],
+      fileHash: json.file_hash ?? "",
+      charCount: json.char_count ?? 0,
+    };
+  } catch (err) {
+    console.warn("[extraction/service] extract request failed:", err);
+    _available = false; // assume down until next probe
+    return null;
+  }
+}
+
+/**
+ * Embed a list of text strings via the Python service.
+ * Returns null on failure.
+ */
+export async function embedViaService(
+  texts: string[]
+): Promise<number[][] | null> {
+  const available = await isServiceAvailable();
+  if (!available || texts.length === 0) return null;
+
+  try {
+    const res = await fetch(`${BASE_URL}/embed`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ texts }),
+      signal: AbortSignal.timeout(30_000),
+    });
+
+    if (!res.ok) return null;
+
+    const json = (await res.json()) as { embeddings: number[][] };
+    return json.embeddings ?? null;
+  } catch (err) {
+    console.warn("[extraction/service] embed request failed:", err);
+    return null;
+  }
+}
+
+/**
+ * Embed a single query string for semantic search.
+ * Returns null on failure.
+ */
+export async function embedQueryViaService(
+  query: string
+): Promise<number[] | null> {
+  const available = await isServiceAvailable();
+  if (!available) return null;
+
+  try {
+    const res = await fetch(`${BASE_URL}/embed-query`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: query }),
+      signal: AbortSignal.timeout(10_000),
+    });
+
+    if (!res.ok) return null;
+
+    const json = (await res.json()) as { embedding: number[] };
+    return json.embedding ?? null;
+  } catch (err) {
+    console.warn("[extraction/service] embed-query request failed:", err);
+    return null;
+  }
+}

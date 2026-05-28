@@ -12,6 +12,8 @@ import { recordSystemEvent } from "./system-events";
 import { buildMemoryItemRows } from "./build-memory-item-rows";
 import { findReusableTwinUpload, reuseRecordsFromTwin } from "./upload-reuse";
 import { resolveFinalSection } from "./section-routing";
+import { storeChunks } from "@/lib/embedding/store";
+import { recordDedup } from "@/lib/cache/dedup";
 import type { DocumentType, Section } from "@/lib/supabase/types";
 
 /**
@@ -461,8 +463,38 @@ export async function processUpload(uploadId: string): Promise<void> {
         ...(dominantLanguage ? { language: dominantLanguage } : {}),
         is_handwritten: anyHandwritten,
         ...(metaChanged ? { metadata: nextMeta } : {}),
+        ...(aiResult.extractionMethod
+          ? { extraction_method: aiResult.extractionMethod }
+          : {}),
+        ...(aiResult.fileHash
+          ? { file_hash: aiResult.fileHash }
+          : {}),
       })
       .eq("id", uploadId);
+
+    // ── Semantic chunking ──────────────────────────────────────────────────
+    // Store text chunks + embeddings for semantic search (Ask Oria).
+    // Fire-and-forget: a failure here never blocks the upload from filing.
+    if (aiResult.rawText && aiResult.rawText.trim().length >= 100) {
+      void storeChunks({
+        uploadId: upload.id,
+        organizationId: upload.organization_id,
+        text: aiResult.rawText,
+        section: upload.section ?? undefined,
+        filename: upload.filename,
+      }).catch((err) => {
+        console.error("[upload-intelligence] storeChunks error:", err);
+      });
+
+      // Record dedup entry so future identical uploads skip re-extraction.
+      if (aiResult.fileHash) {
+        void recordDedup(upload.organization_id, aiResult.fileHash, {
+          uploadId: upload.id,
+          extractedAt: new Date().toISOString(),
+          charCount: aiResult.rawText.length,
+        }).catch(() => undefined);
+      }
+    }
 
     // Calendar already surfaces memory_items.occurred_at directly (passive
     // events like flights and hotel check-ins). On top of that, propose

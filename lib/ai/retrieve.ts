@@ -8,6 +8,7 @@ import {
 } from "@/lib/data/organizations";
 import { sectionLabel } from "@/lib/sections-meta";
 import { listSectionMemories } from "@/lib/data/section-memory";
+import { searchChunks } from "@/lib/embedding/search";
 import type { SectionScope } from "@/lib/data/section-scope";
 import type { Section } from "@/lib/supabase/types";
 
@@ -795,6 +796,107 @@ export async function retrieveForQuery(
         },
       });
     }
+  }
+
+  // ── Semantic (vector) search pass ──────────────────────────────────────
+  // Run a pgvector cosine similarity search in parallel with the keyword
+  // results above.  Only fires when the Python service is reachable and
+  // pgvector embeddings exist; degrades gracefully to keyword-only otherwise.
+  //
+  // De-duplicate: if a chunk's uploadId already appeared in the keyword
+  // results, boost the existing entry's score instead of adding a duplicate.
+  try {
+    const semanticResults = await searchChunks({
+      organizationId: activeOrgId,
+      query,
+      topK: 8,
+      similarityThreshold: 0.35,
+      section: scope?.kind === "builtin" ? scope.key : undefined,
+    });
+
+    if (semanticResults.chunks.length > 0) {
+      // Collect uploadIds we need metadata for that aren't already scored
+      const alreadyScoredUploadIds = new Set(
+        scored
+          .filter((s) => s.src.kind === "upload")
+          .map((s) => {
+            const match = s.src.href.match(/\/uploads\/([a-f0-9-]{36})/);
+            return match?.[1] ?? null;
+          })
+          .filter(Boolean) as string[]
+      );
+
+      const newUploadIds = Array.from(
+        new Set(
+          semanticResults.chunks
+            .map((c) => c.uploadId)
+            .filter((id) => !alreadyScoredUploadIds.has(id))
+        )
+      );
+
+      // Fetch upload rows for new IDs
+      type UploadMetaRow = {
+        id: string;
+        title: string | null;
+        filename: string;
+        section: Section | null;
+        organization_id: string;
+        created_at: string;
+      };
+      let semanticUploads: UploadMetaRow[] = [];
+      if (newUploadIds.length > 0) {
+        const { data } = await supabase
+          .from("uploads")
+          .select("id, title, filename, section, organization_id, created_at")
+          .in("id", newUploadIds)
+          .in("organization_id", allowedOrgIds)
+          .is("deleted_at", null);
+        semanticUploads = (data ?? []) as UploadMetaRow[];
+      }
+      const semanticUploadMap = new Map(semanticUploads.map((u) => [u.id, u]));
+
+      for (const chunk of semanticResults.chunks) {
+        // Similarity → score (0.35 → ~7, 0.9 → ~18)
+        const semScore = Math.round(chunk.similarity * 20);
+
+        if (alreadyScoredUploadIds.has(chunk.uploadId)) {
+          // Boost existing entry
+          for (const s of scored) {
+            const match = s.src.href.match(/\/uploads\/([a-f0-9-]{36})/);
+            if (match?.[1] === chunk.uploadId) {
+              s.score += semScore;
+              break;
+            }
+          }
+          continue;
+        }
+
+        const u = semanticUploadMap.get(chunk.uploadId);
+        if (!u) continue;
+        if (!allowedOrgSet.has(u.organization_id)) continue;
+
+        const space = spaceById.get(u.organization_id);
+        scored.push({
+          score: semScore,
+          src: {
+            kind: "upload",
+            title: u.title || u.filename,
+            snippet: buildUploadSnippet(chunk.content, keywords),
+            href: `/dashboard/uploads/${u.id}`,
+            processing_state: "ready",
+            meta: {
+              section_label: u.section ? sectionLabel(u.section as Section) : null,
+              space_name: space?.name ?? ctx.organization.name,
+              date_label: friendlyDate(u.created_at),
+            },
+          },
+        });
+        alreadyScoredUploadIds.add(chunk.uploadId);
+      }
+    }
+  } catch (err) {
+    // Semantic search failure is never fatal — keyword results still return.
+    console.warn("[retrieve] semantic search error (degrading to keyword-only):", err);
   }
 
   scored.sort((a, b) => b.score - a.score);

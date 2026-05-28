@@ -6,6 +6,7 @@ import { getAnthropic } from "./anthropic";
 import { recordAiCall, recordAiError } from "./telemetry";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { DocumentType, Section } from "@/lib/supabase/types";
+import { routeExtraction } from "@/lib/extraction/router";
 
 /**
  * Oria's document intelligence engine.
@@ -83,6 +84,13 @@ export type ExtractionResult = {
   source_quality_notes: string | null;
   items: ExtractedItem[];
   processor: string;
+  /** Full pre-extracted text (for chunking / semantic search). Optional — present
+   *  when the Python extraction service ran, or concatenated from item raw_text otherwise. */
+  rawText?: string;
+  /** Which tool produced the rawText (e.g. "pymupdf4llm", "pandas", "claude"). */
+  extractionMethod?: string;
+  /** SHA-256 of the raw file bytes (for deduplication). Present when Python service ran. */
+  fileHash?: string;
 };
 
 const DOCUMENT_TYPES: DocumentType[] = [
@@ -411,6 +419,24 @@ export async function extractFromUpload(input: {
   if (error || !blob) return { kind: "skipped", reason: "model_error" };
   const buffer = Buffer.from(await blob.arrayBuffer());
 
+  // ── Stage 1: Python extraction service ──────────────────────────────────
+  // Try the multi-stage router first.  On success we substitute a text block
+  // for the heavier vision/document block, cutting Claude input tokens
+  // significantly.  Images are exempt: Claude vision is better for
+  // handwriting, photos, and scanned documents than Tesseract alone.
+  let preExtracted: { text: string; method: string; fileHash: string } | null = null;
+  if (!SUPPORTED_IMAGE_MIME.has(mime)) {
+    try {
+      const routed = await routeExtraction(buffer, mime, input.filename);
+      if (routed && routed.text.trim().length >= 50) {
+        preExtracted = { text: routed.text, method: routed.method, fileHash: routed.fileHash };
+      }
+    } catch (err) {
+      // Router failure is non-fatal — fall through to the original Claude path.
+      console.warn("[extract] routeExtraction error (falling back to Claude):", err);
+    }
+  }
+
   const contextLines: string[] = [`Filename: ${input.filename}`];
   if (input.userDescription) {
     contextLines.push(`User context: ${input.userDescription}`);
@@ -448,25 +474,37 @@ export async function extractFromUpload(input: {
     if (buffer.byteLength > MAX_PDF_BYTES) {
       return { kind: "skipped", reason: "pdf_too_large" };
     }
-    content = [
-      {
-        type: "document",
-        source: {
-          type: "base64",
-          media_type: "application/pdf",
-          data: buffer.toString("base64"),
+    if (preExtracted) {
+      // Pre-extracted text path: much cheaper than sending the raw PDF bytes.
+      content = [
+        {
+          type: "text",
+          text: `${contextHeader}\n\nDocument text (extracted via ${preExtracted.method}):\n${preExtracted.text}\n\nReturn one item per discrete document. Call store_extraction.`,
         },
-      },
-      {
-        type: "text",
-        text: `${contextHeader}\n\nReturn one item per discrete document in the PDF. Call store_extraction.`,
-      },
-    ];
+      ];
+    } else {
+      content = [
+        {
+          type: "document",
+          source: {
+            type: "base64",
+            media_type: "application/pdf",
+            data: buffer.toString("base64"),
+          },
+        },
+        {
+          type: "text",
+          text: `${contextHeader}\n\nReturn one item per discrete document in the PDF. Call store_extraction.`,
+        },
+      ];
+    }
   } else if (SPREADSHEET_MIME.has(mime)) {
     if (buffer.byteLength > MAX_SHEET_BYTES) {
       return { kind: "skipped", reason: "sheet_too_large" };
     }
-    const text = spreadsheetToText(buffer);
+    // Use pre-extracted pandas output when available (better column handling),
+    // otherwise fall back to the existing xlsx → CSV path.
+    const text = preExtracted?.text ?? spreadsheetToText(buffer);
     if (!text) return { kind: "skipped", reason: "model_error" };
     content = [
       {
@@ -490,16 +528,25 @@ Call store_extraction.`,
     if (buffer.byteLength > MAX_TEXT_BYTES) {
       return { kind: "skipped", reason: "text_too_large" };
     }
-    const text = buffer.toString("utf8");
+    const text = preExtracted?.text ?? buffer.toString("utf8");
     content = [
       {
         type: "text",
         text: `${contextHeader}\n\nDocument contents:\n${text}\n\nCall store_extraction with one or more items.`,
       },
     ];
+  } else if (preExtracted) {
+    // DOCX, PPTX, HTML, or any other type that the Python service extracted.
+    // We now have clean text — pass it as a text block to Claude.
+    content = [
+      {
+        type: "text",
+        text: `${contextHeader}\n\nDocument text (extracted via ${preExtracted.method}):\n${preExtracted.text}\n\nCall store_extraction with one or more items.`,
+      },
+    ];
   } else {
-    // Unsupported type (e.g. docx, pptx, audio). File still on storage,
-    // user can search by name + note.
+    // Unsupported type (e.g. audio, unknown binary) and Python service
+    // could not extract text. File still on storage — searchable by name + note.
     return { kind: "skipped", reason: "unsupported_type" };
   }
 
@@ -550,6 +597,9 @@ Call store_extraction.`,
   const result = normalize(
     toolUse.input as Record<string, unknown>,
     response.model,
+    preExtracted
+      ? { rawText: preExtracted.text, extractionMethod: preExtracted.method, fileHash: preExtracted.fileHash }
+      : undefined,
   );
   if (result.items.length === 0) {
     return { kind: "skipped", reason: "empty_result" };
@@ -564,6 +614,7 @@ Call store_extraction.`,
 export function normalize(
   raw: Record<string, unknown>,
   model: string,
+  opts?: { rawText?: string; extractionMethod?: string; fileHash?: string },
 ): ExtractionResult {
   const source_quality_notes =
     typeof raw.source_quality_notes === "string"
@@ -579,10 +630,23 @@ export function normalize(
     )
     .filter((x): x is ExtractedItem => x !== null);
 
+  // When no pre-extracted text was provided, synthesise it from item raw_text
+  // fields so there's always something to chunk for semantic search.
+  const rawText =
+    opts?.rawText ||
+    items
+      .map((i) => i.raw_text)
+      .filter(Boolean)
+      .join("\n\n") ||
+    undefined;
+
   return {
     source_quality_notes,
     items,
     processor: `claude:${model}`,
+    rawText,
+    extractionMethod: opts?.extractionMethod ?? "claude",
+    fileHash: opts?.fileHash,
   };
 }
 
