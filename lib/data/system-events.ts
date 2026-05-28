@@ -32,6 +32,7 @@ export type SystemEventKind =
   | "upload.processed"
   | "upload.failed"
   | "extraction.skipped"
+  | "extraction.reused"
   // Reports
   | "report.ready"
   | "report.failed"

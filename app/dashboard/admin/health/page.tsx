@@ -61,7 +61,12 @@ export default async function AdminHealthPage() {
           <Stat
             label="Estimated USD"
             value={`$${h.ai.estimatedCostUsd30d.toFixed(2)}`}
-            hint="Rough; streaming chat usage not captured."
+            hint="Rough; all Claude surfaces."
+          />
+          <Stat
+            label="Extractions reused"
+            value={h.ai.reused30d.toLocaleString()}
+            hint="Identical re-uploads — Claude calls avoided"
           />
           <Stat
             label="Source of truth"

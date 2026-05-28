@@ -361,10 +361,32 @@ export const EXTRACTION_TOOL: Anthropic.Messages.Tool = {
 };
 
 export function getExtractionModel(): string {
+  // `||` (not `??`) so an env var set to the empty string falls through to
+  // the next option. `??` would treat "" as a real value and break model
+  // selection if a deploy left a stale empty override.
   return (
-    process.env.ANTHROPIC_EXTRACTION_MODEL ??
-    process.env.ANTHROPIC_MODEL ??
+    process.env.ANTHROPIC_EXTRACTION_MODEL ||
+    process.env.ANTHROPIC_MODEL ||
     "claude-sonnet-4-6"
+  );
+}
+
+/**
+ * Model for TYPED quick-logs ("I spent $50 at Chanel", "lunch: chicken
+ * and rice"). These are short, plain-language, and far easier than
+ * reading a blurry multi-receipt photo or a 40-sheet workbook — so they
+ * run on the cheap/fast model by default instead of the heavyweight
+ * extraction model. This is the "cheaper model for simple tasks" half of
+ * task-based routing; file extraction keeps using getExtractionModel().
+ *
+ * Override with ORIA_TEXT_EXTRACTION_MODEL to pin a specific model, or
+ * with the shared ANTHROPIC_MODEL. Falls back to Haiku 4.5.
+ */
+export function getTextExtractionModel(): string {
+  return (
+    process.env.ORIA_TEXT_EXTRACTION_MODEL ||
+    process.env.ANTHROPIC_MODEL ||
+    "claude-haiku-4-5-20251001"
   );
 }
 

@@ -16,6 +16,7 @@ import { maybeWritePatternMemoryFromMove } from "./pattern-memories";
 import { getCustomSectionById } from "./custom-sections";
 import { SECTION_LABEL } from "@/lib/sections-meta";
 import { checkDailyUploadBytes, checkTotalUserStorage } from "./quotas";
+import { contentHashHex } from "./upload-reuse";
 import { rateLimit, RATE_PRESETS } from "@/lib/rate-limit";
 import {
   convertHeicToJpeg,
@@ -52,7 +53,9 @@ const ALLOWED_MIME_EXACT = [
 // so users see our friendly message instead of a 413 from the framework.
 const MAX_BYTES = 50 * 1024 * 1024;
 
-type Result = { ok: true; id: string } | { ok: false; error: string };
+type Result =
+  | { ok: true; id: string; warning?: string }
+  | { ok: false; error: string };
 
 export async function uploadFile(formData: FormData): Promise<Result> {
   const file = formData.get("file");
@@ -202,10 +205,22 @@ export async function uploadFile(formData: FormData): Promise<Result> {
   const safeName = bodyName.replace(/[^a-zA-Z0-9._-]/g, "_") || "upload";
   const path = `${ctx.organization.id}/${uploadId}/${safeName}`;
 
+  // Materialize to a Buffer so we can (a) fingerprint the content for
+  // identical-upload reuse and (b) hand storage a stable body. The File's
+  // bytes are already in memory from the multipart parse, so this is a
+  // transient copy, not a second read. HEIC already produced a Buffer.
+  const buffer: Buffer = Buffer.isBuffer(bodyBytes)
+    ? bodyBytes
+    : Buffer.from(await file.arrayBuffer());
+  // SHA-256 of the bytes Oria actually stores (post-HEIC-conversion). When
+  // an identical file is re-uploaded into the same org, processUpload reuses
+  // the prior extraction instead of paying Claude again.
+  const contentHash = contentHashHex(buffer);
+
   // 1. Upload bytes to storage.
   const { error: storageError } = await supabase.storage
     .from("uploads")
-    .upload(path, bodyBytes, {
+    .upload(path, buffer, {
       contentType: bodyMime,
       upsert: false,
     });
@@ -265,6 +280,7 @@ export async function uploadFile(formData: FormData): Promise<Result> {
     title: bodyName,
     status: "received",
     metadata: {
+      content_hash: contentHash,
       ...(userDescription ? { user_description: userDescription } : {}),
       ...(smartSectionHint ? { smart_section_hint: smartSectionHint } : {}),
       ...(dupOf
@@ -317,7 +333,19 @@ export async function uploadFile(formData: FormData): Promise<Result> {
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/inbox");
   revalidatePath("/dashboard/timeline");
-  return { ok: true, id: uploadId };
+
+  // Calm, non-blocking storage warning once a user crosses 80% of their
+  // lifetime cap. We already passed the hard check above; this just gives
+  // a heads-up before they hit the wall. (storage.ok is narrowed true here
+  // — the !ok case returned earlier.)
+  let warning: string | undefined;
+  if (storage.ok) {
+    const usedAfter = storage.limit - storage.remaining + bodySize;
+    if (usedAfter >= storage.limit * 0.8) {
+      warning = `Storage is at ${formatBytes(usedAfter)} of ${formatBytes(storage.limit)}. Delete older uploads soon to stay under your cap.`;
+    }
+  }
+  return { ok: true, id: uploadId, warning };
 }
 
 

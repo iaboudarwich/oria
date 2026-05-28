@@ -10,6 +10,7 @@ import {
 import { proposeAutoReminders } from "./auto-reminders";
 import { recordSystemEvent } from "./system-events";
 import { buildMemoryItemRows } from "./build-memory-item-rows";
+import { findReusableTwinUpload, reuseRecordsFromTwin } from "./upload-reuse";
 import { resolveFinalSection } from "./section-routing";
 import type { DocumentType, Section } from "@/lib/supabase/types";
 
@@ -232,6 +233,79 @@ export async function processUpload(uploadId: string): Promise<void> {
     smartHintRaw === "diet" || smartHintRaw === "bills"
       ? (smartHintRaw as "diet" | "bills")
       : null;
+
+  // ----- Idempotency guard --------------------------------------------------
+  // If this upload already has an extraction row, it was processed once
+  // already (AI success OR heuristic fallback both write one; a failed
+  // run writes none). A stuck-recovery sweep or a double-fired after()
+  // would otherwise re-download and re-bill Claude. Mark filed and stop.
+  const { count: priorExtractions } = await supabase
+    .from("extractions")
+    .select("id", { count: "exact", head: true })
+    .eq("upload_id", uploadId);
+  if ((priorExtractions ?? 0) > 0) {
+    await supabase
+      .from("uploads")
+      .update({ status: "filed" })
+      .eq("id", uploadId)
+      .neq("status", "filed");
+    return;
+  }
+
+  // ----- Identical-content reuse --------------------------------------------
+  // If the exact same bytes were already filed in THIS org, clone that
+  // upload's structured records instead of paying for a fresh extraction.
+  const contentHash =
+    typeof meta.content_hash === "string" ? meta.content_hash : null;
+  if (contentHash) {
+    const twin = await findReusableTwinUpload(supabase, {
+      organizationId: upload.organization_id,
+      contentHash,
+      excludeUploadId: uploadId,
+    });
+    if (twin) {
+      const reuse = await reuseRecordsFromTwin(supabase, {
+        newUploadId: uploadId,
+        twinUploadId: twin.id,
+        organizationId: upload.organization_id,
+      }).catch(() => ({ reused: false }) as const);
+      if (reuse.reused) {
+        await supabase
+          .from("uploads")
+          .update({
+            status: "filed",
+            ...(reuse.documentType ? { document_type: reuse.documentType } : {}),
+            ...(reuse.language ? { language: reuse.language } : {}),
+            is_handwritten: reuse.isHandwritten,
+            ...(reuse.title && (!upload.title || upload.title === upload.filename)
+              ? { title: reuse.title }
+              : {}),
+          })
+          .eq("id", uploadId);
+
+        // Auto-reminders read memory_items for the upload, so they work
+        // off the cloned rows just like a fresh extraction.
+        await proposeAutoReminders({
+          uploadId: upload.id,
+          organizationId: upload.organization_id,
+        }).catch(() => undefined);
+
+        void recordSystemEvent({
+          kind: "extraction.reused",
+          severity: "info",
+          message: "reused",
+          context: {
+            uploadId: upload.id,
+            title: reuse.title ?? upload.title ?? upload.filename,
+            reused_from: twin.id,
+            items: reuse.itemCount,
+          },
+          organizationId: upload.organization_id,
+        });
+        return;
+      }
+    }
+  }
 
   const aiOutcome = await extractFromUpload({
     storagePath: upload.storage_path,

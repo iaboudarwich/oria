@@ -5,7 +5,7 @@ import { getAnthropic } from "./anthropic";
 import { recordAiCall, recordAiError } from "./telemetry";
 import {
   EXTRACTION_TOOL,
-  getExtractionModel,
+  getTextExtractionModel,
   normalize,
   type ExtractionOutcome,
   type SmartSection,
@@ -93,11 +93,13 @@ export async function extractFromText(
 
   const userMessage = `${hintLines.join("\n")}\n\nUSER TYPED:\n${input.text}`;
 
+  // Typed logs are short + plain — run them on the cheap model (routing).
+  const model = getTextExtractionModel();
   let response: Anthropic.Messages.Message;
   const startedAt = Date.now();
   try {
     response = await client.messages.create({
-      model: getExtractionModel(),
+      model,
       max_tokens: 4096,
       system: TEXT_SYSTEM_PROMPT,
       tools: [EXTRACTION_TOOL],
@@ -107,7 +109,7 @@ export async function extractFromText(
   } catch (e) {
     recordAiError({
       surface: "text-extract",
-      model: getExtractionModel(),
+      model,
       latencyMs: Date.now() - startedAt,
       error: e,
       extra: { textLen: input.text.length },

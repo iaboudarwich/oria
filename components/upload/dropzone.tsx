@@ -59,6 +59,9 @@ export function Dropzone({
   const [isPending, startTransition] = useTransition();
   const [dragging, setDragging] = useState(false);
   const [description, setDescription] = useState("");
+  // Calm "approaching storage cap" note from the upload action. Kept out of
+  // the Status union so it can persist across the reading→done transition.
+  const [storageWarning, setStorageWarning] = useState<string | null>(null);
   const pollRef = useRef<number | null>(null);
   const objectUrlRef = useRef<string | null>(null);
 
@@ -80,6 +83,7 @@ export function Dropzone({
       previewUrl = URL.createObjectURL(file);
       objectUrlRef.current = previewUrl;
     }
+    setStorageWarning(null);
     setStatus({ kind: "ready", file, previewUrl });
   }, []);
 
@@ -119,6 +123,7 @@ export function Dropzone({
         setStatus({ kind: "error", message: result.error });
         return;
       }
+      setStorageWarning(result.warning ?? null);
       // Free the preview URL — file bytes are server-side now.
       if (objectUrlRef.current) {
         URL.revokeObjectURL(objectUrlRef.current);
@@ -288,6 +293,12 @@ export function Dropzone({
   return (
     <div className="space-y-3">
       <StatusBanner status={status} pending={isPending} />
+      {/* Calm storage heads-up once the user crosses 80% of their cap.
+          Shown alongside the success banner so it's visible without
+          interrupting the upload flow. */}
+      {status.kind === "done" && storageWarning ? (
+        <p className="px-1 text-[12px] text-ink-muted">{storageWarning}</p>
+      ) : null}
       {status.kind === "done" || status.kind === "error" ? (
         <button
           type="button"

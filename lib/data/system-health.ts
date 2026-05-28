@@ -37,12 +37,16 @@ export type AiUsage = {
   /** Errors logged by the AI pipeline. Captured via system_events. */
   errorsToday: number;
   errors7d: number;
-  /** Token totals over the last 30 days (extract + report; streaming
-   *  chat usage isn't captured yet). */
+  /** Token totals over the last 30 days across every Claude surface
+   *  (extract, text-extract, report, sort, and the streaming Ask/Work
+   *  agents). Captured via the ai.request telemetry events. */
   inputTokens30d: number;
   outputTokens30d: number;
   /** Sum of estimated costs we attached at log time. Treat as rough. */
   estimatedCostUsd30d: number;
+  /** Identical-content uploads whose extraction was skipped by cloning a
+   *  prior result over the last 30 days — Claude calls avoided. */
+  reused30d: number;
   recentErrors: SystemEvent[];
 };
 
@@ -307,6 +311,7 @@ async function collectAiUsage(admin: AdminClient): Promise<AiUsage> {
     errors7d,
     aiTotals,
     recentErrors,
+    reused30d,
   ] = await Promise.all([
     countEvents({ kind: "ai.error", sinceISO: todayStart() }),
     countEvents({ kind: "ai.error", sinceISO: sinceDays(7) }),
@@ -316,6 +321,9 @@ async function collectAiUsage(admin: AdminClient): Promise<AiUsage> {
       sinceISO: sinceDays(30),
     }),
     listRecentEvents({ kind: "ai.error", limit: 10 }),
+    // Identical-content uploads whose extraction we skipped by cloning a
+    // prior result — Claude calls avoided, money saved.
+    countEvents({ kind: "extraction.reused", sinceISO: sinceDays(30) }),
   ]);
 
   return {
@@ -329,6 +337,7 @@ async function collectAiUsage(admin: AdminClient): Promise<AiUsage> {
     inputTokens30d: aiTotals.input_tokens,
     outputTokens30d: aiTotals.output_tokens,
     estimatedCostUsd30d: Math.round(aiTotals.cost_usd * 10000) / 10000,
+    reused30d,
     recentErrors,
   };
 }
