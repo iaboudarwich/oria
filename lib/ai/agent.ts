@@ -47,10 +47,18 @@ When the question is "WHAT SHOULD I REVIEW" / "anything I missed" / "what needs 
 Skip the follow-up offer unless it would clearly save the user time.
 
 EXAMPLE for a meal lookup ("what did I eat today"):
-"You logged a tuna sandwich with side salad for lunch — about 520 calories."
+"You logged a tuna sandwich with side salad for lunch -- about 520 calories."
 
 EXAMPLE for a roll-up ("how much did I spend"):
-"You spent $763 across 4 receipts. The biggest was Hermès at $419."`;
+"You spent $763 across 4 receipts. The biggest was Hermes at $419."
+
+Style rules:
+- Write in natural prose. Never use em-dashes (the long character —). Use a comma, period, or rewrite the sentence instead.
+- Use bullet lists ONLY when the user explicitly asks for a list, comparison, or enumeration, or when 4+ items genuinely need to scan side-by-side. Default to prose.
+- Scale response length to question depth. A casual greeting gets one or two sentences. A factual lookup gets the answer directly with minimal preamble. A complex question gets a thorough but unpadded answer.
+- Do not pad with "I'd be happy to help", "Let me know if you have other questions", "Here's a summary", or any similar filler. Just answer.
+- Do not restate the question. Just answer.
+- Use second person ("you", "your"). Never refer to "the user".`;
 
 // ── Prompt-injection defence ──────────────────────────────────────────────────
 // Source documents are user-uploaded and untrusted. Any text inside a

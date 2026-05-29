@@ -393,7 +393,7 @@ export function ExtractedEntitiesPanel({
         )}
 
         <p className="mt-3 text-[10.5px] text-ink-faint">
-          Extracted by AI — verify before relying on these details for important
+          Extracted by AI. Verify before relying on these details for important
           decisions.
         </p>
       </div>

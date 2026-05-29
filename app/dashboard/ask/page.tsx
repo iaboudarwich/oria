@@ -51,7 +51,7 @@ export default async function AskPage() {
         hintKey="try_ask_oria"
         shouldShow={!seenHints.has("try_ask_oria")}
         title="Ask Oria anything"
-        body="Type a question in plain English — about your documents, bills, reminders, or anything you've uploaded. Oria finds the answer from your own files."
+        body="Type a question in plain English about your documents, bills, reminders, or anything you've uploaded. Oria finds the answer from your own files."
       />
     </>
   );

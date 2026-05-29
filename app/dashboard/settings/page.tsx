@@ -108,7 +108,7 @@ function DataExportPanel() {
           Your data
         </h2>
         <p className="mt-1 text-[12px] text-ink-faint">
-          Download a copy of all your data as a JSON file — uploads metadata,
+          Download a copy of all your data as a JSON file: uploads metadata,
           reminders, conversations, and more.
         </p>
       </div>
@@ -393,7 +393,7 @@ function StorageBar({
       )}
       {isWarning && (
         <p className="text-[11px] text-amber-600">
-          Approaching your limit — consider deleting older uploads.
+          Approaching your limit. Consider deleting older uploads.
         </p>
       )}
     </div>

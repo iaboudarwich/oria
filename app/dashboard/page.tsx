@@ -88,7 +88,7 @@ export default async function DashboardHome() {
         hintKey="first_upload"
         shouldShow={showFirstUpload}
         title="Add your first file"
-        body="Drop any document, receipt, or photo — Oria reads it, files it, and makes it searchable. Try dragging something onto this page."
+        body="Drop any document, receipt, or photo. Oria reads it, files it, and makes it searchable. Try dragging something onto this page."
       />
       <Hint
         hintKey="create_circle"

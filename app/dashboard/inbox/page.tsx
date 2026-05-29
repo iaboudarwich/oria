@@ -72,7 +72,7 @@ export default async function UploadPage() {
         shouldShow={!seenHints.has("take_photo_mobile")}
         mobileOnly
         title="Snap a receipt or document"
-        body="Tap the camera button in the upload area to photograph a receipt, document, or label — Oria reads it instantly."
+        body="Tap the camera button in the upload area to photograph a receipt, document, or label. Oria reads it instantly."
       />
     </>
   );
