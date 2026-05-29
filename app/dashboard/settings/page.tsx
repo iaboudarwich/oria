@@ -59,7 +59,7 @@ export default async function SettingsPage() {
             </div>
             <Link
               href="/dashboard/settings/sections/new"
-              className="inline-flex h-7 items-center rounded-md bg-ink px-2.5 text-[11.5px] text-surface hover:bg-ink-soft transition-base"
+              className="inline-flex h-9 items-center rounded-md bg-ink px-3 text-[12px] text-surface hover:bg-ink-soft transition-base"
             >
               Add section
             </Link>
@@ -154,7 +154,7 @@ function SidebarPrefsPanel({ timelineEnabled }: { timelineEnabled: boolean }) {
           />
           <button
             type="submit"
-            className={`inline-flex h-7 cursor-pointer items-center rounded-md border px-2.5 text-[11.5px] transition-base ${
+            className={`inline-flex h-9 cursor-pointer items-center rounded-md border px-2.5 text-[11.5px] transition-base ${
               timelineEnabled
                 ? "border-ink bg-ink text-surface"
                 : "border-line bg-canvas text-ink-muted hover:border-line-strong hover:text-ink"

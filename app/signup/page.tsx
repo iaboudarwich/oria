@@ -102,7 +102,7 @@ function Field({
       <span className="mb-1.5 block text-[12px] text-ink-muted">{label}</span>
       <input
         {...rest}
-        className="block h-11 w-full rounded-xl border border-line-strong bg-surface-raised px-3.5 text-[14px] text-ink placeholder:text-ink-faint outline-none transition-base focus:border-ink"
+        className="block h-11 w-full rounded-xl border border-line-strong bg-surface-raised px-3.5 text-[16px] text-ink placeholder:text-ink-faint outline-none transition-base focus:border-ink"
       />
     </label>
   );

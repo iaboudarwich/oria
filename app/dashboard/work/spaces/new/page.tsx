@@ -58,7 +58,7 @@ export default function NewWorkSpacePage() {
               required
               maxLength={60}
               placeholder={NAME_EXAMPLES[0]}
-              className="block h-11 w-full rounded-xl border border-line-strong bg-surface-raised px-3.5 text-[14px] text-ink placeholder:text-ink-faint outline-none transition-base focus:border-ink"
+              className="block h-11 w-full rounded-xl border border-line-strong bg-surface-raised px-3.5 text-[16px] text-ink placeholder:text-ink-faint outline-none transition-base focus:border-ink"
               autoFocus
             />
             <ul className="mt-2 flex flex-wrap gap-1.5">

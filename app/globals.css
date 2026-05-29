@@ -117,6 +117,23 @@
     text-wrap: pretty;
   }
 
+  /* Safe-area padding for notched iPhones (iPhone X and later).
+   * Use pb-safe-bottom on fixed/sticky bottom elements and the main
+   * content wrapper so the home indicator doesn't overlap content. */
+  .pb-safe-bottom {
+    padding-bottom: max(4rem, env(safe-area-inset-bottom));
+  }
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
+  }
+  .px-safe {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+
   /* Sidebar width driven by a CSS variable so the sidebar aside + the main
    * content padding stay in sync as the user toggles. The SidebarShell sets
    * --sidebar-w via inline style; these classes are fallbacks + state

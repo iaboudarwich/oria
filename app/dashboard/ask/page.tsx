@@ -38,7 +38,7 @@ export default async function AskPage() {
   return (
     <>
       <Topbar title="Ask Oria" />
-      <div className="flex gap-6">
+      <div className="flex flex-col-reverse lg:flex-row gap-6">
         <ConversationSidebar conversations={conversations} />
         <div className="min-w-0 flex-1">
           <AskChat
