@@ -1,27 +1,60 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useMemo } from "react";
 import { saveEntityEdits } from "@/lib/data/entity-actions";
+import { SCHEMAS, type DocType } from "@/lib/ai/extraction-schemas";
 import type { ExtractedEntity } from "@/lib/data/upload-detail";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
+/**
+ * Safely coerce any value to a display string.
+ * - Primitives: returned as-is
+ * - Arrays of primitives: joined with ", "
+ * - Arrays of objects: each object joined by its values, then joined with "; "
+ * - Objects: values joined with ", " (e.g. {en: "Name"} → "Name")
+ * Never returns "[object Object]".
+ */
 function str(v: unknown): string {
   if (v == null) return "";
   if (typeof v === "string") return v;
-  if (typeof v === "number") return String(v);
-  return JSON.stringify(v);
+  if (typeof v === "number" || typeof v === "boolean") return String(v);
+  if (Array.isArray(v)) {
+    return v
+      .map((item) => {
+        if (item == null) return "";
+        if (typeof item !== "object") return String(item);
+        // Object in array: join its own values
+        return Object.values(item as Record<string, unknown>)
+          .map((x) => (x == null ? "" : String(x)))
+          .filter(Boolean)
+          .join(" ");
+      })
+      .filter(Boolean)
+      .join(", ");
+  }
+  if (typeof v === "object") {
+    // Object: join non-null values
+    const vals = Object.values(v as Record<string, unknown>)
+      .map((x) => (x == null ? "" : String(x)))
+      .filter(Boolean);
+    return vals.join(", ");
+  }
+  return "";
 }
 
 function formatDate(v: unknown): string {
   if (!v || typeof v !== "string") return "";
+  // Strip time portion for display if it looks like ISO datetime
+  const dateOnly = v.length > 10 ? v.slice(0, 10) : v;
   try {
-    const d = new Date(v);
+    const d = new Date(dateOnly);
     if (isNaN(d.getTime())) return v;
     return d.toLocaleDateString(undefined, {
       year: "numeric",
       month: "long",
       day: "numeric",
+      timeZone: "UTC",
     });
   } catch {
     return v;
@@ -29,12 +62,16 @@ function formatDate(v: unknown): string {
 }
 
 function formatCurrency(amount: unknown, currency: unknown): string {
-  if (amount == null) return "";
+  if (amount == null || amount === "") return "";
   const num = typeof amount === "number" ? amount : parseFloat(str(amount));
   if (isNaN(num)) return str(amount);
-  const cur = typeof currency === "string" && currency.length === 3 ? currency : "USD";
+  const cur =
+    typeof currency === "string" && currency.length === 3 ? currency : "USD";
   try {
-    return new Intl.NumberFormat(undefined, { style: "currency", currency: cur }).format(num);
+    return new Intl.NumberFormat(undefined, {
+      style: "currency",
+      currency: cur,
+    }).format(num);
   } catch {
     return `${cur} ${num.toFixed(2)}`;
   }
@@ -60,13 +97,14 @@ function FieldRow({
   onDraftChange: (key: string, val: string) => void;
 }) {
   const [revealed, setRevealed] = useState(false);
+
+  if (!value && !editing) return null;
+
   const displayVal = editing
     ? str(draft[editKey] ?? value)
     : sensitive && !revealed
     ? value.replace(/./g, (c, i) => (i < value.length - 4 ? "*" : c))
     : value;
-
-  if (!value && !editing) return null;
 
   return (
     <div className="flex items-start gap-2 py-1.5 border-b border-line last:border-0">
@@ -96,15 +134,83 @@ function FieldRow({
   );
 }
 
+/** Render a list of line items (receipt / invoice). */
+function LineItemsRow({ items }: { items: unknown }) {
+  if (!Array.isArray(items) || items.length === 0) return null;
+  return (
+    <div className="py-1.5 border-b border-line last:border-0">
+      <span className="text-[11.5px] text-ink-faint">Items</span>
+      <ul className="mt-1 space-y-0.5">
+        {items.map((item: unknown, i: number) => {
+          if (item == null) return null;
+          if (typeof item !== "object") {
+            return (
+              <li key={i} className="text-[12.5px] text-ink">
+                {String(item)}
+              </li>
+            );
+          }
+          const it = item as Record<string, unknown>;
+          const name = str(it.name ?? it.description ?? "");
+          const qty = it.qty != null ? `x${str(it.qty)}` : "";
+          const price =
+            it.price != null ? formatCurrency(it.price, null) : "";
+          const parts = [name, qty, price].filter(Boolean);
+          return (
+            <li
+              key={i}
+              className="flex items-baseline justify-between gap-3 text-[12.5px]"
+            >
+              <span className="min-w-0 truncate text-ink">{parts[0] ?? ""}</span>
+              <span className="shrink-0 text-ink-faint">
+                {parts.slice(1).join(" ")}
+              </span>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+}
+
 // ── Doc-type renderers ────────────────────────────────────────────────────────
 
 function ReceiptView({ f, editing, draft, onDraftChange }: FieldProps) {
   return (
     <>
-      <FieldRow label="Merchant" value={str(f.merchant)} editKey="merchant" editing={editing} draft={draft} onDraftChange={onDraftChange} />
-      <FieldRow label="Total" value={formatCurrency(f.total, f.currency)} editKey="total" editing={editing} draft={draft} onDraftChange={onDraftChange} />
-      <FieldRow label="Date" value={formatDate(f.date)} editKey="date" editing={editing} draft={draft} onDraftChange={onDraftChange} />
-      <FieldRow label="Category" value={str(f.category_guess)} editKey="category_guess" editing={editing} draft={draft} onDraftChange={onDraftChange} />
+      <FieldRow
+        label="Merchant"
+        value={str(f.merchant)}
+        editKey="merchant"
+        editing={editing}
+        draft={draft}
+        onDraftChange={onDraftChange}
+      />
+      <FieldRow
+        label="Total"
+        value={formatCurrency(f.total, f.currency)}
+        editKey="total"
+        editing={editing}
+        draft={draft}
+        onDraftChange={onDraftChange}
+      />
+      <FieldRow
+        label="Date"
+        value={formatDate(f.date)}
+        editKey="date"
+        editing={editing}
+        draft={draft}
+        onDraftChange={onDraftChange}
+      />
+      <FieldRow
+        label="Category"
+        value={str(f.category_guess)}
+        editKey="category_guess"
+        editing={editing}
+        draft={draft}
+        onDraftChange={onDraftChange}
+      />
+      {!editing && <LineItemsRow items={f.line_items} />}
     </>
   );
 }
@@ -112,54 +218,233 @@ function ReceiptView({ f, editing, draft, onDraftChange }: FieldProps) {
 function InvoiceView({ f, editing, draft, onDraftChange }: FieldProps) {
   return (
     <>
-      <FieldRow label="Vendor" value={str(f.vendor)} editKey="vendor" editing={editing} draft={draft} onDraftChange={onDraftChange} />
-      <FieldRow label="Total" value={formatCurrency(f.total, f.currency)} editKey="total" editing={editing} draft={draft} onDraftChange={onDraftChange} />
-      <FieldRow label="Invoice #" value={str(f.invoice_number)} editKey="invoice_number" editing={editing} draft={draft} onDraftChange={onDraftChange} />
-      <FieldRow label="Issued" value={formatDate(f.issue_date)} editKey="issue_date" editing={editing} draft={draft} onDraftChange={onDraftChange} />
-      <FieldRow label="Due" value={formatDate(f.due_date)} editKey="due_date" editing={editing} draft={draft} onDraftChange={onDraftChange} />
+      <FieldRow
+        label="Vendor"
+        value={str(f.vendor)}
+        editKey="vendor"
+        editing={editing}
+        draft={draft}
+        onDraftChange={onDraftChange}
+      />
+      <FieldRow
+        label="Total"
+        value={formatCurrency(f.total, f.currency)}
+        editKey="total"
+        editing={editing}
+        draft={draft}
+        onDraftChange={onDraftChange}
+      />
+      <FieldRow
+        label="Invoice #"
+        value={str(f.invoice_number)}
+        editKey="invoice_number"
+        editing={editing}
+        draft={draft}
+        onDraftChange={onDraftChange}
+      />
+      <FieldRow
+        label="Issued"
+        value={formatDate(f.issue_date)}
+        editKey="issue_date"
+        editing={editing}
+        draft={draft}
+        onDraftChange={onDraftChange}
+      />
+      <FieldRow
+        label="Due"
+        value={formatDate(f.due_date)}
+        editKey="due_date"
+        editing={editing}
+        draft={draft}
+        onDraftChange={onDraftChange}
+      />
+      {!editing && <LineItemsRow items={f.line_items} />}
     </>
   );
 }
 
 function LeaseView({ f, editing, draft, onDraftChange }: FieldProps) {
-  const tenants = Array.isArray(f.tenants) ? f.tenants.join(", ") : str(f.tenants);
+  const tenants = Array.isArray(f.tenants)
+    ? (f.tenants as unknown[]).map(str).join(", ")
+    : str(f.tenants);
   return (
     <>
-      <FieldRow label="Tenant(s)" value={tenants} editKey="tenants" editing={editing} draft={draft} onDraftChange={onDraftChange} />
-      <FieldRow label="Landlord" value={str(f.landlord)} editKey="landlord" editing={editing} draft={draft} onDraftChange={onDraftChange} />
-      <FieldRow label="Address" value={str(f.property_address)} editKey="property_address" editing={editing} draft={draft} onDraftChange={onDraftChange} />
-      <FieldRow label="Start" value={formatDate(f.start_date)} editKey="start_date" editing={editing} draft={draft} onDraftChange={onDraftChange} />
-      <FieldRow label="End" value={formatDate(f.end_date)} editKey="end_date" editing={editing} draft={draft} onDraftChange={onDraftChange} />
-      <FieldRow label="Monthly rent" value={formatCurrency(f.monthly_rent, f.currency)} editKey="monthly_rent" editing={editing} draft={draft} onDraftChange={onDraftChange} />
-      <FieldRow label="Renewal" value={str(f.renewal_terms)} editKey="renewal_terms" editing={editing} draft={draft} onDraftChange={onDraftChange} />
+      <FieldRow
+        label="Tenant(s)"
+        value={tenants}
+        editKey="tenants"
+        editing={editing}
+        draft={draft}
+        onDraftChange={onDraftChange}
+      />
+      <FieldRow
+        label="Landlord"
+        value={str(f.landlord)}
+        editKey="landlord"
+        editing={editing}
+        draft={draft}
+        onDraftChange={onDraftChange}
+      />
+      <FieldRow
+        label="Address"
+        value={str(f.property_address)}
+        editKey="property_address"
+        editing={editing}
+        draft={draft}
+        onDraftChange={onDraftChange}
+      />
+      <FieldRow
+        label="Start"
+        value={formatDate(f.start_date)}
+        editKey="start_date"
+        editing={editing}
+        draft={draft}
+        onDraftChange={onDraftChange}
+      />
+      <FieldRow
+        label="End"
+        value={formatDate(f.end_date)}
+        editKey="end_date"
+        editing={editing}
+        draft={draft}
+        onDraftChange={onDraftChange}
+      />
+      <FieldRow
+        label="Monthly rent"
+        value={formatCurrency(f.monthly_rent, f.currency)}
+        editKey="monthly_rent"
+        editing={editing}
+        draft={draft}
+        onDraftChange={onDraftChange}
+      />
+      <FieldRow
+        label="Renewal"
+        value={str(f.renewal_terms)}
+        editKey="renewal_terms"
+        editing={editing}
+        draft={draft}
+        onDraftChange={onDraftChange}
+      />
     </>
   );
 }
 
 function ContractView({ f, editing, draft, onDraftChange }: FieldProps) {
-  const parties = Array.isArray(f.parties) ? f.parties.join(", ") : str(f.parties);
+  const parties = Array.isArray(f.parties)
+    ? (f.parties as unknown[]).map(str).join(", ")
+    : str(f.parties);
   return (
     <>
-      <FieldRow label="Parties" value={parties} editKey="parties" editing={editing} draft={draft} onDraftChange={onDraftChange} />
-      <FieldRow label="Type" value={str(f.contract_type)} editKey="contract_type" editing={editing} draft={draft} onDraftChange={onDraftChange} />
-      <FieldRow label="Effective" value={formatDate(f.effective_date)} editKey="effective_date" editing={editing} draft={draft} onDraftChange={onDraftChange} />
-      <FieldRow label="Terminates" value={formatDate(f.termination_date)} editKey="termination_date" editing={editing} draft={draft} onDraftChange={onDraftChange} />
-      <FieldRow label="Renews" value={formatDate(f.renewal_date)} editKey="renewal_date" editing={editing} draft={draft} onDraftChange={onDraftChange} />
-      <FieldRow label="Summary" value={str(f.summary)} editKey="summary" editing={editing} draft={draft} onDraftChange={onDraftChange} />
+      <FieldRow
+        label="Parties"
+        value={parties}
+        editKey="parties"
+        editing={editing}
+        draft={draft}
+        onDraftChange={onDraftChange}
+      />
+      <FieldRow
+        label="Type"
+        value={str(f.contract_type)}
+        editKey="contract_type"
+        editing={editing}
+        draft={draft}
+        onDraftChange={onDraftChange}
+      />
+      <FieldRow
+        label="Effective"
+        value={formatDate(f.effective_date)}
+        editKey="effective_date"
+        editing={editing}
+        draft={draft}
+        onDraftChange={onDraftChange}
+      />
+      <FieldRow
+        label="Terminates"
+        value={formatDate(f.termination_date)}
+        editKey="termination_date"
+        editing={editing}
+        draft={draft}
+        onDraftChange={onDraftChange}
+      />
+      <FieldRow
+        label="Renews"
+        value={formatDate(f.renewal_date)}
+        editKey="renewal_date"
+        editing={editing}
+        draft={draft}
+        onDraftChange={onDraftChange}
+      />
+      <FieldRow
+        label="Summary"
+        value={str(f.summary)}
+        editKey="summary"
+        editing={editing}
+        draft={draft}
+        onDraftChange={onDraftChange}
+      />
     </>
   );
 }
 
 function FlightView({ f, editing, draft, onDraftChange }: FieldProps) {
-  const pax = Array.isArray(f.passenger_names) ? f.passenger_names.join(", ") : str(f.passenger_names);
+  const pax = Array.isArray(f.passenger_names)
+    ? (f.passenger_names as unknown[]).map(str).join(", ")
+    : str(f.passenger_names);
   return (
     <>
-      <FieldRow label="Airline" value={`${str(f.airline)} ${str(f.flight_number)}`} editKey="flight_number" editing={editing} draft={draft} onDraftChange={onDraftChange} />
-      <FieldRow label="Route" value={`${str(f.origin_airport)} → ${str(f.destination_airport)}`} editKey="destination_airport" editing={editing} draft={draft} onDraftChange={onDraftChange} />
-      <FieldRow label="Departs" value={formatDate(f.departure_datetime)} editKey="departure_datetime" editing={editing} draft={draft} onDraftChange={onDraftChange} />
-      <FieldRow label="Arrives" value={formatDate(f.arrival_datetime)} editKey="arrival_datetime" editing={editing} draft={draft} onDraftChange={onDraftChange} />
-      <FieldRow label="Passengers" value={pax} editKey="passenger_names" editing={editing} draft={draft} onDraftChange={onDraftChange} />
-      <FieldRow label="Confirmation" value={str(f.confirmation_code)} editKey="confirmation_code" editing={editing} draft={draft} onDraftChange={onDraftChange} />
+      <FieldRow
+        label="Airline"
+        value={`${str(f.airline)} ${str(f.flight_number)}`.trim()}
+        editKey="flight_number"
+        editing={editing}
+        draft={draft}
+        onDraftChange={onDraftChange}
+      />
+      <FieldRow
+        label="Route"
+        value={
+          str(f.origin_airport) && str(f.destination_airport)
+            ? `${str(f.origin_airport)} to ${str(f.destination_airport)}`
+            : str(f.destination_airport)
+        }
+        editKey="destination_airport"
+        editing={editing}
+        draft={draft}
+        onDraftChange={onDraftChange}
+      />
+      <FieldRow
+        label="Departs"
+        value={formatDate(f.departure_datetime)}
+        editKey="departure_datetime"
+        editing={editing}
+        draft={draft}
+        onDraftChange={onDraftChange}
+      />
+      <FieldRow
+        label="Arrives"
+        value={formatDate(f.arrival_datetime)}
+        editKey="arrival_datetime"
+        editing={editing}
+        draft={draft}
+        onDraftChange={onDraftChange}
+      />
+      <FieldRow
+        label="Passengers"
+        value={pax}
+        editKey="passenger_names"
+        editing={editing}
+        draft={draft}
+        onDraftChange={onDraftChange}
+      />
+      <FieldRow
+        label="Confirmation"
+        value={str(f.confirmation_code)}
+        editKey="confirmation_code"
+        editing={editing}
+        draft={draft}
+        onDraftChange={onDraftChange}
+      />
     </>
   );
 }
@@ -167,22 +452,91 @@ function FlightView({ f, editing, draft, onDraftChange }: FieldProps) {
 function PrescriptionView({ f, editing, draft, onDraftChange }: FieldProps) {
   return (
     <>
-      <FieldRow label="Medication" value={str(f.medication)} editKey="medication" editing={editing} draft={draft} onDraftChange={onDraftChange} />
-      <FieldRow label="Dosage" value={str(f.dosage)} editKey="dosage" editing={editing} draft={draft} onDraftChange={onDraftChange} />
-      <FieldRow label="Prescriber" value={str(f.prescriber)} editKey="prescriber" editing={editing} draft={draft} onDraftChange={onDraftChange} />
-      <FieldRow label="Fill date" value={formatDate(f.fill_date)} editKey="fill_date" editing={editing} draft={draft} onDraftChange={onDraftChange} />
-      <FieldRow label="Refills left" value={str(f.refills_remaining)} editKey="refills_remaining" editing={editing} draft={draft} onDraftChange={onDraftChange} />
+      <FieldRow
+        label="Medication"
+        value={str(f.medication)}
+        editKey="medication"
+        editing={editing}
+        draft={draft}
+        onDraftChange={onDraftChange}
+      />
+      <FieldRow
+        label="Dosage"
+        value={str(f.dosage)}
+        editKey="dosage"
+        editing={editing}
+        draft={draft}
+        onDraftChange={onDraftChange}
+      />
+      <FieldRow
+        label="Prescriber"
+        value={str(f.prescriber)}
+        editKey="prescriber"
+        editing={editing}
+        draft={draft}
+        onDraftChange={onDraftChange}
+      />
+      <FieldRow
+        label="Fill date"
+        value={formatDate(f.fill_date)}
+        editKey="fill_date"
+        editing={editing}
+        draft={draft}
+        onDraftChange={onDraftChange}
+      />
+      <FieldRow
+        label="Refills left"
+        value={str(f.refills_remaining)}
+        editKey="refills_remaining"
+        editing={editing}
+        draft={draft}
+        onDraftChange={onDraftChange}
+      />
     </>
   );
 }
 
 function StatementView({ f, editing, draft, onDraftChange }: FieldProps) {
+  const period =
+    formatDate(f.statement_period_start) && formatDate(f.statement_period_end)
+      ? `${formatDate(f.statement_period_start)} to ${formatDate(f.statement_period_end)}`
+      : formatDate(f.statement_period_start) ||
+        formatDate(f.statement_period_end);
   return (
     <>
-      <FieldRow label="Institution" value={str(f.institution)} editKey="institution" editing={editing} draft={draft} onDraftChange={onDraftChange} />
-      <FieldRow label="Account" value={str(f.account_last_4)} editKey="account_last_4" editing={editing} draft={draft} onDraftChange={onDraftChange} sensitive />
-      <FieldRow label="Period" value={`${formatDate(f.statement_period_start)} – ${formatDate(f.statement_period_end)}`} editKey="statement_period_end" editing={editing} draft={draft} onDraftChange={onDraftChange} />
-      <FieldRow label="Balance" value={formatCurrency(f.ending_balance, f.currency)} editKey="ending_balance" editing={editing} draft={draft} onDraftChange={onDraftChange} />
+      <FieldRow
+        label="Institution"
+        value={str(f.institution)}
+        editKey="institution"
+        editing={editing}
+        draft={draft}
+        onDraftChange={onDraftChange}
+      />
+      <FieldRow
+        label="Account"
+        value={str(f.account_last_4)}
+        editKey="account_last_4"
+        editing={editing}
+        draft={draft}
+        onDraftChange={onDraftChange}
+        sensitive
+      />
+      <FieldRow
+        label="Period"
+        value={period}
+        editKey="statement_period_end"
+        editing={editing}
+        draft={draft}
+        onDraftChange={onDraftChange}
+      />
+      <FieldRow
+        label="Balance"
+        value={formatCurrency(f.ending_balance, f.currency)}
+        editKey="ending_balance"
+        editing={editing}
+        draft={draft}
+        onDraftChange={onDraftChange}
+      />
     </>
   );
 }
@@ -190,10 +544,39 @@ function StatementView({ f, editing, draft, onDraftChange }: FieldProps) {
 function IdDocView({ f, editing, draft, onDraftChange }: FieldProps) {
   return (
     <>
-      <FieldRow label="Type" value={str(f.document_type)} editKey="document_type" editing={editing} draft={draft} onDraftChange={onDraftChange} />
-      <FieldRow label="Name" value={str(f.name_on_document)} editKey="name_on_document" editing={editing} draft={draft} onDraftChange={onDraftChange} />
-      <FieldRow label="Number" value={str(f.number_masked)} editKey="number_masked" editing={editing} draft={draft} onDraftChange={onDraftChange} sensitive />
-      <FieldRow label="Expires" value={formatDate(f.expiration_date)} editKey="expiration_date" editing={editing} draft={draft} onDraftChange={onDraftChange} />
+      <FieldRow
+        label="Type"
+        value={str(f.document_type)}
+        editKey="document_type"
+        editing={editing}
+        draft={draft}
+        onDraftChange={onDraftChange}
+      />
+      <FieldRow
+        label="Name"
+        value={str(f.name_on_document)}
+        editKey="name_on_document"
+        editing={editing}
+        draft={draft}
+        onDraftChange={onDraftChange}
+      />
+      <FieldRow
+        label="Number"
+        value={str(f.number_masked)}
+        editKey="number_masked"
+        editing={editing}
+        draft={draft}
+        onDraftChange={onDraftChange}
+        sensitive
+      />
+      <FieldRow
+        label="Expires"
+        value={formatDate(f.expiration_date)}
+        editKey="expiration_date"
+        editing={editing}
+        draft={draft}
+        onDraftChange={onDraftChange}
+      />
     </>
   );
 }
@@ -203,14 +586,82 @@ function GenericView({ f, editing, draft, onDraftChange }: FieldProps) {
   const keyAmounts = Array.isArray(f.key_amounts) ? f.key_amounts : [];
   return (
     <>
-      <FieldRow label="Title" value={str(f.title)} editKey="title" editing={editing} draft={draft} onDraftChange={onDraftChange} />
-      <FieldRow label="Summary" value={str(f.summary)} editKey="summary" editing={editing} draft={draft} onDraftChange={onDraftChange} />
-      {keyDates.map((kd: { label?: unknown; date?: unknown }, i: number) => (
-        <FieldRow key={i} label={str(kd.label) || "Date"} value={formatDate(kd.date)} editKey={`key_dates_${i}`} editing={false} draft={{}} onDraftChange={() => {}} />
-      ))}
-      {keyAmounts.map((ka: { label?: unknown; amount?: unknown; currency?: unknown }, i: number) => (
-        <FieldRow key={i} label={str(ka.label) || "Amount"} value={formatCurrency(ka.amount, ka.currency)} editKey={`key_amounts_${i}`} editing={false} draft={{}} onDraftChange={() => {}} />
-      ))}
+      <FieldRow
+        label="Title"
+        value={str(f.title)}
+        editKey="title"
+        editing={editing}
+        draft={draft}
+        onDraftChange={onDraftChange}
+      />
+      <FieldRow
+        label="Summary"
+        value={str(f.summary)}
+        editKey="summary"
+        editing={editing}
+        draft={draft}
+        onDraftChange={onDraftChange}
+      />
+      {(keyDates as unknown[]).map(
+        (kd: unknown, i: number) => {
+          const item = kd as Record<string, unknown>;
+          return (
+            <FieldRow
+              key={i}
+              label={str(item.label) || "Date"}
+              value={formatDate(item.date)}
+              editKey={`key_dates_${i}`}
+              editing={false}
+              draft={{}}
+              onDraftChange={() => {}}
+            />
+          );
+        }
+      )}
+      {(keyAmounts as unknown[]).map(
+        (ka: unknown, i: number) => {
+          const item = ka as Record<string, unknown>;
+          return (
+            <FieldRow
+              key={i}
+              label={str(item.label) || "Amount"}
+              value={formatCurrency(item.amount, item.currency)}
+              editKey={`key_amounts_${i}`}
+              editing={false}
+              draft={{}}
+              onDraftChange={() => {}}
+            />
+          );
+        }
+      )}
+    </>
+  );
+}
+
+// Product renderer (added in F5 — vision analysis)
+function ProductView({ f, editing, draft, onDraftChange }: FieldProps) {
+  const attrs = Array.isArray(f.key_attributes)
+    ? (f.key_attributes as unknown[]).map(str).join(", ")
+    : str(f.key_attributes);
+  return (
+    <>
+      <FieldRow label="Product" value={str(f.product_name)} editKey="product_name" editing={editing} draft={draft} onDraftChange={onDraftChange} />
+      <FieldRow label="Brand" value={str(f.brand)} editKey="brand" editing={editing} draft={draft} onDraftChange={onDraftChange} />
+      <FieldRow label="Category" value={str(f.category)} editKey="category" editing={editing} draft={draft} onDraftChange={onDraftChange} />
+      <FieldRow label="Attributes" value={attrs} editKey="key_attributes" editing={editing} draft={draft} onDraftChange={onDraftChange} />
+      <FieldRow label="Purpose" value={str(f.inferred_purpose)} editKey="inferred_purpose" editing={editing} draft={draft} onDraftChange={onDraftChange} />
+    </>
+  );
+}
+
+// Scene renderer (added in F5 — vision analysis)
+function SceneView({ f, editing, draft, onDraftChange }: FieldProps) {
+  return (
+    <>
+      <FieldRow label="Scene" value={str(f.scene_type)} editKey="scene_type" editing={editing} draft={draft} onDraftChange={onDraftChange} />
+      <FieldRow label="Subject" value={str(f.primary_subject)} editKey="primary_subject" editing={editing} draft={draft} onDraftChange={onDraftChange} />
+      <FieldRow label="Location" value={str(f.location_hints)} editKey="location_hints" editing={editing} draft={draft} onDraftChange={onDraftChange} />
+      <FieldRow label="Context" value={str(f.context)} editKey="context" editing={editing} draft={draft} onDraftChange={onDraftChange} />
     </>
   );
 }
@@ -232,6 +683,8 @@ const RENDERER: Record<string, React.ComponentType<FieldProps>> = {
   statement: StatementView,
   id_document: IdDocView,
   generic: GenericView,
+  product: ProductView,
+  scene: SceneView,
 };
 
 const TYPE_LABEL: Record<string, string> = {
@@ -244,6 +697,8 @@ const TYPE_LABEL: Record<string, string> = {
   statement: "Statement",
   id_document: "ID Document",
   generic: "Document",
+  product: "Product",
+  scene: "Scene",
 };
 
 // ── Pending / failed shells ───────────────────────────────────────────────────
@@ -260,7 +715,7 @@ export function ExtractedEntitiesPending() {
           <div className="h-3 w-40 rounded bg-line" />
           <div className="h-3 w-32 rounded bg-line" />
         </div>
-        <p className="mt-3 text-[11.5px] text-ink-faint">Reading this document…</p>
+        <p className="mt-3 text-[11.5px] text-ink-faint">Reading this document...</p>
       </div>
     </section>
   );
@@ -292,21 +747,52 @@ export function ExtractedEntitiesPanel({
   uploadId: string;
   uploadStatus: string;
 }) {
+  // ALL hooks must come before any early returns (rules of hooks).
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState<Record<string, unknown>>({});
   const [saveError, setSaveError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
-  // Still processing
-  if (!entity && (uploadStatus === "received" || uploadStatus === "processing")) {
+  const activeFields = useMemo(
+    () =>
+      entity
+        ? entity.user_verified && entity.user_edited_fields
+          ? { ...entity.fields, ...entity.user_edited_fields }
+          : entity.fields
+        : {},
+    [entity],
+  );
+
+  // Runtime Zod validation — catches LLM schema mismatches before rendering.
+  const validationPassed = useMemo(() => {
+    if (!entity) return true;
+    const schema = SCHEMAS[entity.doc_type as DocType];
+    if (!schema) return true; // unknown doc_type — render via GenericView
+    const result = schema.safeParse(activeFields);
+    if (!result.success) {
+      if (process.env.NODE_ENV === "development") {
+        console.warn(
+          "[ExtractedEntitiesPanel] Zod validation failed for doc_type",
+          entity.doc_type,
+          result.error.flatten(),
+        );
+      }
+      // Allow through unless more than half of fields fail hard validation.
+      const errorCount = result.error.issues.length;
+      const fieldCount = Object.keys(activeFields).length || 1;
+      return errorCount / fieldCount < 0.5;
+    }
+    return true;
+  }, [entity, activeFields]);
+
+  // Early returns — must come AFTER all hooks.
+  if (
+    !entity &&
+    (uploadStatus === "received" || uploadStatus === "processing")
+  ) {
     return <ExtractedEntitiesPending />;
   }
-  // No extraction at all (image, too large, etc.)
   if (!entity) return null;
-
-  const activeFields = entity.user_verified && entity.user_edited_fields
-    ? { ...entity.fields, ...entity.user_edited_fields }
-    : entity.fields;
 
   const Renderer = RENDERER[entity.doc_type] ?? GenericView;
 
@@ -337,7 +823,7 @@ export function ExtractedEntitiesPanel({
         </h2>
         <div className="flex items-center gap-2">
           {entity.user_verified && (
-            <span className="text-[10.5px] text-sage-600">✓ Verified</span>
+            <span className="text-[10.5px] text-sage-600">Verified</span>
           )}
           {!editing ? (
             <button
@@ -358,11 +844,15 @@ export function ExtractedEntitiesPanel({
                 disabled={pending}
                 className="text-[11px] text-ink transition-base hover:underline disabled:opacity-50"
               >
-                {pending ? "Saving…" : "Save"}
+                {pending ? "Saving..." : "Save"}
               </button>
               <button
                 type="button"
-                onClick={() => { setEditing(false); setDraft({}); setSaveError(null); }}
+                onClick={() => {
+                  setEditing(false);
+                  setDraft({});
+                  setSaveError(null);
+                }}
                 className="text-[11px] text-ink-faint transition-base hover:text-ink"
               >
                 Cancel
@@ -374,19 +864,24 @@ export function ExtractedEntitiesPanel({
 
       <div className="rounded-2xl border border-line bg-surface-raised px-4 py-3">
         <p className="mb-3 text-[11.5px] font-medium text-ink-muted">
-          {TYPE_LABEL[entity.doc_type] ?? entity.doc_type}
-          {" "}
+          {TYPE_LABEL[entity.doc_type] ?? entity.doc_type}{" "}
           <span className="font-normal text-ink-faint">
             · {Math.round(entity.confidence * 100)}% confidence
           </span>
         </p>
 
-        <Renderer
-          f={activeFields as Record<string, unknown>}
-          editing={editing}
-          draft={draft}
-          onDraftChange={handleDraftChange}
-        />
+        {validationPassed ? (
+          <Renderer
+            f={activeFields as Record<string, unknown>}
+            editing={editing}
+            draft={draft}
+            onDraftChange={handleDraftChange}
+          />
+        ) : (
+          <p className="text-[12.5px] text-ink-faint">
+            Unable to display extracted details for this document.
+          </p>
+        )}
 
         {saveError && (
           <p className="mt-2 text-[11.5px] text-claret">{saveError}</p>
