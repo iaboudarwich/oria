@@ -3,6 +3,9 @@
 import { forwardRef, useCallback, useEffect, useRef, useState } from "react";
 import { ArrowRightIcon, SparkIcon } from "@/components/ui/icon";
 import { SourceCard, type SourceItem } from "./source-card";
+import { MicButton } from "@/components/ui/mic-button";
+import { useLocale } from "next-intl";
+import type { Locale } from "@/i18n/config";
 
 type Turn = {
   id: string;
@@ -605,6 +608,7 @@ type ComposerProps = {
 
 const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
   function Composer({ value, busy, placeholder, onChange, onKeyDown, onSubmit }, ref) {
+    const locale = useLocale() as Locale;
     return (
       <form
         onSubmit={(e) => {
@@ -623,6 +627,12 @@ const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
             autoFocus
             placeholder={placeholder ?? "Ask Oria anything…"}
             className="block min-h-[40px] flex-1 resize-none bg-transparent px-2 py-2 text-[14.5px] text-ink placeholder:text-ink-faint outline-none"
+          />
+          <MicButton
+            onTranscribed={(text) => onChange(value ? `${value} ${text}` : text)}
+            targetLanguage={locale}
+            size="sm"
+            className="mb-0.5"
           />
           <button
             type="submit"

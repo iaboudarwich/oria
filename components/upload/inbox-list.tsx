@@ -5,9 +5,12 @@ import Link from "next/link";
 import { Thumbnail } from "@/components/upload/thumbnail";
 import { InlineTrashButton } from "@/components/upload/inline-trash";
 import { SearchIcon } from "@/components/ui/icon";
+import { MicButton } from "@/components/ui/mic-button";
 import { sectionLabel } from "@/lib/sections-meta";
 import { relativeTime } from "@/lib/utils";
+import { useLocale } from "next-intl";
 import type { Section } from "@/lib/supabase/types";
+import type { Locale } from "@/i18n/config";
 import type { UploadWithUploader } from "@/lib/data/uploads";
 
 function UploadStatusPill({ status }: { status: string | null | undefined }) {
@@ -36,6 +39,7 @@ export function InboxList({
   thumbs: Map<string, string>;
 }) {
   const [query, setQuery] = useState("");
+  const locale = useLocale() as Locale;
 
   const filtered = query.trim()
     ? items.filter((it) => {
@@ -59,17 +63,24 @@ export function InboxList({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search uploads..."
-          className="block h-9 w-full rounded-xl border border-line bg-surface-raised pl-8 pr-3 text-[13.5px] text-ink placeholder:text-ink-faint outline-none focus:border-ink-soft"
+          className="block h-9 w-full rounded-xl border border-line bg-surface-raised pl-8 pr-16 text-[13.5px] text-ink placeholder:text-ink-faint outline-none focus:border-ink-soft"
         />
-        {query && (
-          <button
-            type="button"
-            onClick={() => setQuery("")}
-            className="absolute inset-y-0 right-2.5 flex items-center text-ink-faint text-[11px] hover:text-ink"
-          >
-            Clear
-          </button>
-        )}
+        <div className="absolute inset-y-0 right-2 flex items-center gap-1">
+          {query && (
+            <button
+              type="button"
+              onClick={() => setQuery("")}
+              className="text-ink-faint text-[11px] hover:text-ink"
+            >
+              Clear
+            </button>
+          )}
+          <MicButton
+            onTranscribed={(text) => setQuery(text)}
+            targetLanguage={locale}
+            size="sm"
+          />
+        </div>
       </div>
 
       {filtered.length === 0 ? (

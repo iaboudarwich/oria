@@ -157,6 +157,9 @@ export default async function SettingsPage({
 
         {tab === "privacy" && (
           <>
+            <div className="rounded-2xl border border-line bg-surface-raised px-4 py-3 text-[12.5px] text-ink-faint">
+              Voice dictation uses OpenAI Whisper. Audio is sent to OpenAI for transcription only and is not retained per their terms of service.
+            </div>
             <DataExportPanel />
             <ResetAccountPanel />
             <DeleteAccountPanel />
