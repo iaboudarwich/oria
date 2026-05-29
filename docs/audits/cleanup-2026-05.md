@@ -408,7 +408,7 @@ Listed here so you can override.
 | Files added | 0 | 2 | `supabase/migrations/0039_org_scoped_indexes.sql`, `components/settings/sections-editor-lazy.tsx` |
 | New env-var docs in `.env.local.example` | 0 | 8 | PYTHON_EXTRACTION_URL, ORIA_SIDECAR_SECRET, ORIA_TEXT_EXTRACTION_MODEL, UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN, SENTRY_DSN, NEXT_PUBLIC_SENTRY_DSN, CRON_SECRET |
 | New migrations | 0 | 1 | `0039_org_scoped_indexes.sql` — 5 indexes |
-| DB indexes added | 0 | 5 | `custom_sections(org)`, `section_settings(org, builtin_section)`, `memberships(org)`, `reminders(org, due_at)`, `document_chunks(org)` |
+| DB indexes added | 0 | **3 newly created, 2 already present** | `supabase db push` reported `NOTICE 42P07` (already exists) for `custom_sections_org_idx` and `memberships_org_idx` — those were already in production. `section_settings_org_idx`, `reminders_org_due_idx`, `document_chunks_org_idx` were created fresh. The `if not exists` guard made the redundant statements no-ops, which is exactly why the migration was written that way. |
 | Lighthouse — Performance | _capture manually before_ | _capture manually after_ | run `npx lighthouse https://heyoria.com --only-categories=performance` |
 | Lighthouse — Accessibility | _capture manually before_ | _capture manually after_ | — |
 | Lighthouse — Best Practices | _capture manually before_ | _capture manually after_ | — |
