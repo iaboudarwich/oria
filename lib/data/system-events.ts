@@ -41,7 +41,9 @@ export type SystemEventKind =
   // Auto-scheduling
   | "reminder.failed"
   // Reminder notifications
-  | "reminder.notified";
+  | "reminder.notified"
+  // Account lifecycle
+  | "account.reset";
 
 /**
  * Kinds that show up in the user-facing status strip. Most events in

@@ -12,6 +12,7 @@ import {
   PersonIcon,
 } from "@/components/ui/icon";
 import { DeleteAccountPanel } from "@/components/settings/delete-account-panel";
+import { ResetAccountPanel } from "@/components/settings/reset-account-panel";
 import { SectionsEditor } from "@/components/settings/sections-editor";
 import { isCurrentUserAdmin } from "@/lib/data/admin";
 import { readSidebarExtras } from "@/lib/data/sidebar-prefs";
@@ -83,6 +84,8 @@ export default async function SettingsPage() {
         {storageStats ? <StorageSection stats={storageStats} /> : null}
 
         {admin ? <AdminPanel /> : null}
+
+        <ResetAccountPanel />
 
         <DeleteAccountPanel />
       </div>
