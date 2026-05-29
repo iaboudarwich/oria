@@ -12,6 +12,7 @@ import { useRouter } from "next/navigation";
 import { uploadFile } from "@/lib/data/upload-actions";
 import {
   ArrowRightIcon,
+  CameraIcon,
   CheckIcon,
   CloseIcon,
   UploadIcon,
@@ -249,6 +250,7 @@ export function DropzoneCompact({
     status.kind === "reading" ||
     isPending;
   const done = status.kind === "done";
+  const cameraInputId = `${inputId}-camera`;
 
   return (
     <div>
@@ -315,6 +317,27 @@ export function DropzoneCompact({
           onChange={(e) => handleFiles(e.target.files)}
         />
       </label>
+
+      {/* Camera capture — mobile only. capture="environment" opens the
+          rear camera on iOS/Android. Hidden on md+ via md:hidden so
+          desktop users never see a confusing fallback button. */}
+      {!busy && !done && (
+        <label
+          htmlFor={cameraInputId}
+          className="mt-1.5 flex cursor-pointer items-center gap-1.5 text-[12px] text-ink-faint transition-base hover:text-ink-muted md:hidden"
+        >
+          <CameraIcon size={13} />
+          Take photo
+          <input
+            id={cameraInputId}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            className="sr-only"
+            onChange={(e) => handleFiles(e.target.files)}
+          />
+        </label>
+      )}
     </div>
   );
 }

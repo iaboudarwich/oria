@@ -1,9 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, useTransition } from "react";
+import { useCallback, useEffect, useId, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { uploadFile } from "@/lib/data/upload-actions";
-import { ArrowRightIcon, CheckIcon, CloseIcon, UploadIcon } from "@/components/ui/icon";
+import { ArrowRightIcon, CameraIcon, CheckIcon, CloseIcon, UploadIcon } from "@/components/ui/icon";
 
 type Status =
   | { kind: "idle" }
@@ -55,6 +55,7 @@ export function Dropzone({
   subheading = "Add a short note if you want, then upload.",
 }: DropzoneProps = {}) {
   const router = useRouter();
+  const uid = useId();
   const [status, setStatus] = useState<Status>({ kind: "idle" });
   const [isPending, startTransition] = useTransition();
   const [dragging, setDragging] = useState(false);
@@ -183,10 +184,12 @@ export function Dropzone({
 
   // -- IDLE: classic dropzone target ------------------------------------------
   if (status.kind === "idle") {
+    const fileInputId = `${uid}-file`;
+    const cameraInputId = `${uid}-camera`;
     return (
       <div className="space-y-3">
         <label
-          htmlFor="oria-upload-input"
+          htmlFor={fileInputId}
           onDragOver={(e) => {
             e.preventDefault();
             setDragging(true);
@@ -211,8 +214,29 @@ export function Dropzone({
             <p className="mt-1 text-[13px] text-ink-muted">{subheading}</p>
           </div>
           <input
-            id="oria-upload-input"
+            id={fileInputId}
             type="file"
+            className="sr-only"
+            onChange={(e) => handleFiles(e.target.files)}
+          />
+        </label>
+
+        {/* Camera capture — shown only on touch/mobile-sized screens.
+            Renders as a tappable secondary button. On mobile browsers
+            capture="environment" opens the rear camera directly; on
+            desktop this element is hidden via md:hidden so it never
+            appears as a confusing fallback. */}
+        <label
+          htmlFor={cameraInputId}
+          className="flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-line bg-surface-raised/60 py-2.5 text-[13px] text-ink-muted transition-base hover:border-line-strong hover:text-ink md:hidden"
+        >
+          <CameraIcon size={15} />
+          Take photo
+          <input
+            id={cameraInputId}
+            type="file"
+            accept="image/*"
+            capture="environment"
             className="sr-only"
             onChange={(e) => handleFiles(e.target.files)}
           />
