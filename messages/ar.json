@@ -1,0 +1,95 @@
+{
+  "nav": {
+    "ask": "اسأل أوريا",
+    "upload": "رفع ملف",
+    "calendar": "التقويم",
+    "things": "الأشياء",
+    "trackables": "المتابعات",
+    "settings": "الإعدادات",
+    "search": "بحث",
+    "timeline": "الجدول الزمني",
+    "diet": "النظام الغذائي",
+    "bills": "الفواتير"
+  },
+  "common": {
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "add": "إضافة",
+    "confirm": "تأكيد",
+    "back": "رجوع",
+    "next": "التالي",
+    "skip": "تخطي",
+    "done": "تم",
+    "create": "إنشاء",
+    "remove": "إزالة",
+    "open": "فتح",
+    "close": "إغلاق",
+    "loading": "جارٍ التحميل...",
+    "saving": "جارٍ الحفظ...",
+    "name": "الاسم",
+    "description": "الوصف",
+    "type": "النوع",
+    "date": "التاريخ",
+    "amount": "المبلغ",
+    "notes": "ملاحظات",
+    "yes": "نعم",
+    "no": "لا"
+  },
+  "errors": {
+    "generic": "حدث خطأ ما. يرجى المحاولة مرة أخرى.",
+    "unauthorized": "غير مخول بتنفيذ هذا الإجراء.",
+    "not_found": "غير موجود.",
+    "network": "خطأ في الشبكة. تحقق من اتصالك."
+  },
+  "empty": {
+    "uploads": "لا توجد ملفات مرفوعة بعد.",
+    "reminders": "لا توجد تذكيرات بعد.",
+    "entities": "لا توجد عناصر بعد.",
+    "trackables": "لا توجد متابعات بعد.",
+    "sections": "لا توجد أقسام بعد."
+  },
+  "settings": {
+    "title": "الإعدادات",
+    "tabs": {
+      "general": "عام",
+      "sections": "الأقسام",
+      "circles": "الحلقات",
+      "workspaces": "مساحات العمل",
+      "storage": "التخزين",
+      "privacy": "الخصوصية"
+    },
+    "language": {
+      "account_label": "لغة الحساب",
+      "account_hint": "تتحكم في لغة الأزرار والقوائم والتنقل.",
+      "workspace_label": "لغة محتوى مساحة العمل",
+      "workspace_hint": "تتحكم في لغة أسماء الأقسام والمحتوى المُنشأ بالذكاء الاصطناعي.",
+      "options": {
+        "en": "English",
+        "ar": "Arabic (العربية)",
+        "fr": "French (Français)",
+        "es": "Spanish (Español)"
+      }
+    }
+  },
+  "onboarding": {
+    "template_title": "لماذا تستخدم أوريا؟",
+    "template_subtitle": "اختر نقطة بداية. يمكنك إضافة المزيد لاحقاً.",
+    "template_skip": "تخطي الآن — ابدأ بمساحة فارغة",
+    "chat_title": "أخبر أوريا عن نفسك",
+    "chat_subtitle": "ستقترح أوريا أقساماً وعناصر وتذكيرات مفيدة.",
+    "chat_skip": "تخطي الآن",
+    "chat_type_instead": "اكتب بدلاً من ذلك",
+    "chat_use_voice": "استخدم الصوت",
+    "chat_placeholder": "اكتب رسالة...",
+    "review_title": "إليك ما أقترحه",
+    "review_apply": "تطبيق المحدد",
+    "review_sections": "الأقسام",
+    "review_entity_types": "أنواع الكيانات",
+    "review_trackables": "فئات المتابعة",
+    "done_title": "أنت جاهز",
+    "done_subtitle": "مساحة عملك جاهزة.",
+    "done_cta": "الذهاب إلى لوحة التحكم"
+  }
+}

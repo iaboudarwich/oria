@@ -1,5 +1,8 @@
 import type { NextConfig } from "next";
 import { withSentryConfig } from "@sentry/nextjs";
+import createNextIntlPlugin from "next-intl/plugin";
+
+const withNextIntl = createNextIntlPlugin("./i18n/request.ts");
 
 // Allow the Next.js Image Optimizer to fetch upload thumbnails from our
 // Supabase storage bucket. The host is derived from the public Supabase URL
@@ -59,7 +62,7 @@ const nextConfig: NextConfig = {
 // Source maps: disabled for now (no SENTRY_AUTH_TOKEN configured). Enable
 // later by setting SENTRY_AUTH_TOKEN, SENTRY_ORG, SENTRY_PROJECT in Vercel
 // env vars and flipping `sourcemaps.disable` below.
-export default withSentryConfig(nextConfig, {
+export default withSentryConfig(withNextIntl(nextConfig), {
   org: process.env.SENTRY_ORG,
   project: process.env.SENTRY_PROJECT,
   silent: true, // Suppress noisy CLI output during builds.

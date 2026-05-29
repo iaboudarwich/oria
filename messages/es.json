@@ -1,0 +1,95 @@
+{
+  "nav": {
+    "ask": "Preguntar a Oria",
+    "upload": "Cargar",
+    "calendar": "Calendario",
+    "things": "Cosas",
+    "trackables": "Seguimientos",
+    "settings": "Configuración",
+    "search": "Buscar",
+    "timeline": "Historial",
+    "diet": "Dieta",
+    "bills": "Facturas"
+  },
+  "common": {
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "add": "Agregar",
+    "confirm": "Confirmar",
+    "back": "Atrás",
+    "next": "Siguiente",
+    "skip": "Omitir",
+    "done": "Listo",
+    "create": "Crear",
+    "remove": "Quitar",
+    "open": "Abrir",
+    "close": "Cerrar",
+    "loading": "Cargando...",
+    "saving": "Guardando...",
+    "name": "Nombre",
+    "description": "Descripción",
+    "type": "Tipo",
+    "date": "Fecha",
+    "amount": "Importe",
+    "notes": "Notas",
+    "yes": "Sí",
+    "no": "No"
+  },
+  "errors": {
+    "generic": "Algo salió mal. Por favor, inténtelo de nuevo.",
+    "unauthorized": "No está autorizado para hacer esto.",
+    "not_found": "No encontrado.",
+    "network": "Error de red. Verifique su conexión."
+  },
+  "empty": {
+    "uploads": "Aún no hay archivos.",
+    "reminders": "Aún no hay recordatorios.",
+    "entities": "Aún no hay elementos.",
+    "trackables": "Aún no hay seguimientos.",
+    "sections": "Aún no hay secciones."
+  },
+  "settings": {
+    "title": "Configuración",
+    "tabs": {
+      "general": "General",
+      "sections": "Secciones",
+      "circles": "Círculos",
+      "workspaces": "Espacios de trabajo",
+      "storage": "Almacenamiento",
+      "privacy": "Privacidad"
+    },
+    "language": {
+      "account_label": "Idioma de la cuenta",
+      "account_hint": "Controla el idioma de los botones, menús y navegación.",
+      "workspace_label": "Idioma del contenido del espacio de trabajo",
+      "workspace_hint": "Controla el idioma de los nombres de secciones y el contenido generado por IA.",
+      "options": {
+        "en": "English",
+        "ar": "Arabic (العربية)",
+        "fr": "French (Français)",
+        "es": "Spanish (Español)"
+      }
+    }
+  },
+  "onboarding": {
+    "template_title": "¿Para qué usas Oria?",
+    "template_subtitle": "Elige un punto de partida. Puedes agregar más secciones después.",
+    "template_skip": "Omitir por ahora — empezar con un espacio en blanco",
+    "chat_title": "Cuéntale a Oria sobre ti",
+    "chat_subtitle": "Oria te sugerirá secciones, entidades y recordatorios útiles.",
+    "chat_skip": "Omitir por ahora",
+    "chat_type_instead": "Escribir en su lugar",
+    "chat_use_voice": "Usar voz",
+    "chat_placeholder": "Escribe un mensaje...",
+    "review_title": "Esto es lo que sugiero",
+    "review_apply": "Aplicar selección",
+    "review_sections": "Secciones",
+    "review_entity_types": "Tipos de entidades",
+    "review_trackables": "Categorías de seguimiento",
+    "done_title": "Todo listo",
+    "done_subtitle": "Tu espacio de trabajo está listo.",
+    "done_cta": "Ir al panel de control"
+  }
+}

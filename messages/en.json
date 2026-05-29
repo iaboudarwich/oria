@@ -1,0 +1,95 @@
+{
+  "nav": {
+    "ask": "Ask Oria",
+    "upload": "Upload",
+    "calendar": "Calendar",
+    "things": "Things",
+    "trackables": "Trackables",
+    "settings": "Settings",
+    "search": "Search",
+    "timeline": "Timeline",
+    "diet": "Diet",
+    "bills": "Bills"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "confirm": "Confirm",
+    "back": "Back",
+    "next": "Next",
+    "skip": "Skip",
+    "done": "Done",
+    "create": "Create",
+    "remove": "Remove",
+    "open": "Open",
+    "close": "Close",
+    "loading": "Loading...",
+    "saving": "Saving...",
+    "name": "Name",
+    "description": "Description",
+    "type": "Type",
+    "date": "Date",
+    "amount": "Amount",
+    "notes": "Notes",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "unauthorized": "You are not authorized to do this.",
+    "not_found": "Not found.",
+    "network": "Network error. Check your connection."
+  },
+  "empty": {
+    "uploads": "No uploads yet.",
+    "reminders": "No reminders yet.",
+    "entities": "No items yet.",
+    "trackables": "No trackables yet.",
+    "sections": "No sections yet."
+  },
+  "settings": {
+    "title": "Settings",
+    "tabs": {
+      "general": "General",
+      "sections": "Sections",
+      "circles": "Circles",
+      "workspaces": "Workspaces",
+      "storage": "Storage",
+      "privacy": "Privacy"
+    },
+    "language": {
+      "account_label": "Account language",
+      "account_hint": "Controls the language of buttons, menus, and navigation.",
+      "workspace_label": "Workspace content language",
+      "workspace_hint": "Controls the language of section names and AI-generated content for this workspace.",
+      "options": {
+        "en": "English",
+        "ar": "Arabic (العربية)",
+        "fr": "French (Français)",
+        "es": "Spanish (Español)"
+      }
+    }
+  },
+  "onboarding": {
+    "template_title": "What are you using Oria for?",
+    "template_subtitle": "Pick a starting point. You can add more sections later.",
+    "template_skip": "Skip for now — start with a blank workspace",
+    "chat_title": "Tell Oria about yourself",
+    "chat_subtitle": "Oria will suggest helpful sections, entities, and reminders.",
+    "chat_skip": "Skip for now",
+    "chat_type_instead": "Type instead",
+    "chat_use_voice": "Use voice",
+    "chat_placeholder": "Type a message...",
+    "review_title": "Here's what I suggest",
+    "review_apply": "Apply selected",
+    "review_sections": "Sections",
+    "review_entity_types": "Entity types",
+    "review_trackables": "Trackable categories",
+    "done_title": "You're all set",
+    "done_subtitle": "Your workspace is ready.",
+    "done_cta": "Go to dashboard"
+  }
+}

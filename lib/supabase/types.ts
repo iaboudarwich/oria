@@ -79,6 +79,8 @@ export interface Profile {
   avatar_url: string | null;
   created_at: TimestampString;
   updated_at: TimestampString;
+  // Added in migration 0037
+  preferred_language?: "en" | "ar" | "fr" | "es";
 }
 
 export interface Organization {
@@ -91,6 +93,8 @@ export interface Organization {
   created_at: TimestampString;
   updated_at: TimestampString;
   archived_at?: TimestampString | null;
+  // Added in migration 0037
+  content_language?: "en" | "ar" | "fr" | "es";
   // Added in migration 0033
   template_key?: "personal" | "investor" | "business" | "family_office" | "custom" | null;
 }
