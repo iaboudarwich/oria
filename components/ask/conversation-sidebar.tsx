@@ -1,12 +1,14 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { StarIcon, TrashIcon } from "@/components/ui/icon";
+import { useState, useTransition, useEffect, useCallback } from "react";
+import { StarIcon, TrashIcon, ChevronDownIcon } from "@/components/ui/icon";
 import {
   deleteConversationAction,
   starConversationAction,
 } from "@/lib/data/conversation-actions";
 import type { Conversation } from "@/lib/data/conversations";
+
+const STORAGE_KEY = "oria:ask:sidebar_collapsed";
 
 function relativeTime(iso: string): string {
   const diffMs = Date.now() - new Date(iso).getTime();
@@ -32,6 +34,30 @@ export function ConversationSidebar({
   const [starredOnly, setStarredOnly] = useState(false);
   const [, startTransition] = useTransition();
 
+  // ── Collapse state ────────────────────────────────────────────────────────
+  // Initialise from localStorage; default collapsed on mobile (< 768px).
+  const [collapsed, setCollapsed] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored !== null) return stored === "true";
+    // Default: collapsed on mobile
+    return window.innerWidth < 768;
+  });
+
+  // Sync collapse state to localStorage on change.
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, String(collapsed));
+    } catch {
+      // localStorage unavailable
+    }
+  }, [collapsed]);
+
+  const toggle = useCallback(() => setCollapsed((v) => !v), []);
+
+  // Close on backdrop click (mobile overlay mode).
+  const handleBackdropClick = useCallback(() => setCollapsed(true), []);
+
   const visible = starredOnly
     ? conversations.filter((c) => c.starred)
     : conversations;
@@ -39,7 +65,7 @@ export function ConversationSidebar({
   function handleStar(id: string, current: boolean) {
     const next = !current;
     setConversations((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, starred: next } : c))
+      prev.map((c) => (c.id === id ? { ...c, starred: next } : c)),
     );
     startTransition(() => {
       void starConversationAction(id, next);
@@ -56,40 +82,113 @@ export function ConversationSidebar({
   if (conversations.length === 0) return null;
 
   return (
-    <aside className="hidden w-56 shrink-0 lg:block">
-      <div className="flex items-center justify-between px-1 mb-2">
-        <p className="text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
-          History
-        </p>
+    <>
+      {/* Mobile overlay backdrop — renders when sidebar is expanded on small screens */}
+      {!collapsed && (
+        <div
+          className="fixed inset-0 z-30 bg-ink/10 md:hidden"
+          onClick={handleBackdropClick}
+          aria-hidden
+        />
+      )}
+
+      {/* Collapsed tab — narrow strip with expand chevron */}
+      {collapsed && (
         <button
           type="button"
-          onClick={() => setStarredOnly((v) => !v)}
-          title={starredOnly ? "Show all" : "Show starred"}
-          className={`rounded p-0.5 transition-base ${
-            starredOnly
-              ? "text-amber-500"
-              : "text-ink-faint hover:text-ink-muted"
-          }`}
+          onClick={toggle}
+          aria-label="Expand history"
+          title="History"
+          className="hidden lg:flex shrink-0 w-6 items-start pt-1 text-ink-faint transition-base hover:text-ink"
         >
-          <StarIcon size={12} />
+          {/* Right-pointing chevron when collapsed */}
+          <span className="rotate-[-90deg]">
+            <ChevronDownIcon size={14} />
+          </span>
         </button>
-      </div>
-
-      {visible.length === 0 ? (
-        <p className="px-1 text-[12px] text-ink-faint">No starred conversations.</p>
-      ) : (
-        <ul className="space-y-0.5">
-          {visible.map((c) => (
-            <ConversationRow
-              key={c.id}
-              conversation={c}
-              onStar={() => handleStar(c.id, c.starred)}
-              onDelete={() => handleDelete(c.id)}
-            />
-          ))}
-        </ul>
       )}
-    </aside>
+
+      {/* Sidebar panel */}
+      <aside
+        className={[
+          // Base
+          "shrink-0 overflow-hidden transition-[width,transform] duration-200 ease-out",
+          // Desktop: animate width
+          collapsed ? "hidden lg:block lg:w-0" : "hidden lg:block lg:w-56",
+          // Mobile: overlay that slides in from the left
+          !collapsed
+            ? "fixed inset-y-0 left-0 z-40 flex w-64 flex-col bg-canvas px-4 py-6 shadow-xl md:hidden"
+            : "",
+          // Respect reduced motion
+          "motion-reduce:transition-none",
+        ]
+          .filter(Boolean)
+          .join(" ")}
+        aria-label="Conversation history"
+      >
+        <div className="flex items-center justify-between px-1 mb-2">
+          <p className="text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
+            History
+          </p>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setStarredOnly((v) => !v)}
+              title={starredOnly ? "Show all" : "Show starred"}
+              className={`rounded p-0.5 transition-base ${
+                starredOnly
+                  ? "text-amber-500"
+                  : "text-ink-faint hover:text-ink-muted"
+              }`}
+            >
+              <StarIcon size={12} />
+            </button>
+            {/* Collapse button inside sidebar */}
+            <button
+              type="button"
+              onClick={toggle}
+              aria-label="Collapse history"
+              title="Collapse"
+              className="rounded p-0.5 text-ink-faint transition-base hover:text-ink"
+            >
+              {/* Left-pointing chevron when open */}
+              <span className="rotate-90">
+                <ChevronDownIcon size={12} />
+              </span>
+            </button>
+          </div>
+        </div>
+
+        {visible.length === 0 ? (
+          <p className="px-1 text-[12px] text-ink-faint">
+            No starred conversations.
+          </p>
+        ) : (
+          <ul className="space-y-0.5 overflow-y-auto">
+            {visible.map((c) => (
+              <ConversationRow
+                key={c.id}
+                conversation={c}
+                onStar={() => handleStar(c.id, c.starred)}
+                onDelete={() => handleDelete(c.id)}
+              />
+            ))}
+          </ul>
+        )}
+      </aside>
+
+      {/* Mobile expand tab (small screens only, visible when collapsed) */}
+      {collapsed && (
+        <button
+          type="button"
+          onClick={toggle}
+          aria-label="Expand history"
+          className="md:hidden fixed top-1/2 left-0 z-40 -translate-y-1/2 flex items-center justify-center h-12 w-5 rounded-r-md border border-l-0 border-line bg-surface-raised text-ink-faint shadow-sm transition-base hover:text-ink"
+        >
+          <ChevronDownIcon size={11} className="rotate-[-90deg]" />
+        </button>
+      )}
+    </>
   );
 }
 
