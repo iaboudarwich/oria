@@ -30,10 +30,15 @@ export async function chooseTemplate(formData: FormData): Promise<void> {
     return org?.kind === "personal";
   });
 
+  let orgId: string | null = null;
   if (personal) {
-    const orgId = personal.organization_id as string;
+    orgId = personal.organization_id as string;
     await applyTemplate(orgId, templateKey);
   }
 
+  // Redirect to guided onboarding for first-time users
+  if (orgId) {
+    redirect(`/onboarding/chat?mode=first&workspace=${orgId}`);
+  }
   redirect("/dashboard");
 }

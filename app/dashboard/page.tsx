@@ -21,6 +21,7 @@ import { readDismissedInsightIds } from "@/lib/data/insights-dismiss";
 import { InsightsCard } from "@/components/dashboard/insights-card";
 import { Hint } from "@/components/onboarding/hint";
 import { getSeenHintKeys } from "@/lib/data/onboarding";
+import { OnboardingRepromptBanner } from "@/components/dashboard/onboarding-reprompt-banner";
 import type { Section } from "@/lib/supabase/types";
 
 export default async function DashboardHome() {
@@ -62,11 +63,25 @@ export default async function DashboardHome() {
 
   const isEmpty = uploads.length === 0;
 
+  // Reprompt banner: show if not completed onboarding AND not dismissed
+  const profile = ctx?.profile as Record<string, unknown> | undefined;
+  const showReprompt =
+    ctx &&
+    !profile?.has_completed_guided_onboarding &&
+    !profile?.onboarding_reprompt_permanent_dismiss &&
+    (
+      !profile?.onboarding_reprompt_dismissed_until ||
+      new Date(profile.onboarding_reprompt_dismissed_until as string) < new Date()
+    );
+
   return (
     <>
       <Topbar title={greeting} />
 
       <div className="space-y-7 animate-fade-up">
+        {showReprompt && ctx && (
+          <OnboardingRepromptBanner orgId={ctx.organization.id} />
+        )}
         <SearchHero />
 
         <AddRow />
