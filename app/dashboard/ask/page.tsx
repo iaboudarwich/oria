@@ -1,11 +1,13 @@
 import { Topbar } from "@/components/dashboard/topbar";
 import { AskChat } from "@/components/ask/ask-chat";
+import { ConversationSidebar } from "@/components/ask/conversation-sidebar";
 import {
   getCurrentContext,
   isAccountOwnerInPersonal,
   listUserSpaces,
 } from "@/lib/data/organizations";
 import { listRecentUserQuestions } from "@/lib/data/recent-questions";
+import { listConversations } from "@/lib/data/conversations";
 
 export const metadata = { title: "Ask Oria" };
 
@@ -24,14 +26,21 @@ export default async function AskPage() {
   const crossSpaceAvailable =
     !!ctx && isAccountOwnerInPersonal(ctx) && spaces.length > 1;
 
+  const conversations = ctx
+    ? await listConversations({ userId: ctx.profile.id, limit: 50 })
+    : [];
+
   return (
     <>
       <Topbar title="Ask Oria" />
-      <div className="mx-auto max-w-3xl">
-        <AskChat
-          crossSpaceAvailable={crossSpaceAvailable}
-          recentQuestions={recentQuestions}
-        />
+      <div className="flex gap-6">
+        <ConversationSidebar conversations={conversations} />
+        <div className="min-w-0 flex-1">
+          <AskChat
+            crossSpaceAvailable={crossSpaceAvailable}
+            recentQuestions={recentQuestions}
+          />
+        </div>
       </div>
     </>
   );

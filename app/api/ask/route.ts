@@ -9,6 +9,10 @@ import { recordLearningEvent } from "@/lib/data/learning";
 import { recordSystemEvent } from "@/lib/data/system-events";
 import { checkDailyAskRequests } from "@/lib/data/quotas";
 import { rateLimit, RATE_PRESETS } from "@/lib/rate-limit";
+import {
+  createConversation,
+  addMessage,
+} from "@/lib/data/conversations";
 import type { SectionScope } from "@/lib/data/section-scope";
 import type { Section } from "@/lib/supabase/types";
 
@@ -41,6 +45,8 @@ export async function POST(request: Request) {
     history?: AgentMessage[];
     scope?: { kind?: string; key?: string; label?: string } | null;
     crossSpace?: boolean;
+    /** Pass an existing id to continue a conversation, omit to start a new one. */
+    conversationId?: string | null;
   } = {};
   try {
     body = (await request.json()) as typeof body;
@@ -110,6 +116,23 @@ export async function POST(request: Request) {
   // re-checks this on the server too, so a forged request can't broaden).
   const crossSpace = body.crossSpace === true && !scope;
 
+  // Resolve (or create) a conversation for persistence. Best-effort:
+  // if the DB call fails we still serve the answer — conversationId
+  // stays null and nothing is persisted this turn.
+  let conversationId: string | null =
+    typeof body.conversationId === "string" ? body.conversationId : null;
+  if (!conversationId) {
+    conversationId = await createConversation({
+      userId: ctx.profile.id,
+      organizationId: ctx.organization.id,
+      firstMessage: query,
+    });
+  }
+  // Persist the user's message before streaming starts.
+  if (conversationId) {
+    void addMessage({ conversationId, role: "user", content: query });
+  }
+
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
       try {
@@ -128,6 +151,7 @@ export async function POST(request: Request) {
         //    resolve today/yesterday correctly when reasoning over
         //    record occurred_at dates.
         const tz = (await cookies()).get("oria_tz")?.value ?? null;
+        let fullAnswer = "";
         for await (const text of streamAnswer({
           query,
           history,
@@ -140,11 +164,23 @@ export async function POST(request: Request) {
             actorId: ctx.profile.id,
           },
         })) {
+          fullAnswer += text;
           writeEvent(controller, { type: "delta", text });
         }
 
-        writeEvent(controller, { type: "done" });
+        // Include conversation_id in done frame so the client can
+        // update its URL or state without an extra round-trip.
+        writeEvent(controller, { type: "done", conversationId });
         controller.close();
+
+        // Persist the assistant's full response.
+        if (conversationId && fullAnswer) {
+          void addMessage({
+            conversationId,
+            role: "assistant",
+            content: fullAnswer,
+          });
+        }
 
         // Fire-and-forget telemetry. Same shape as search.queried so the
         // training pipeline can treat both signals uniformly later.

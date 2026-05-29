@@ -70,6 +70,9 @@ export function AskChat({
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const effectiveSuggestions = suggestions ?? SUGGESTIONS;
+  // Tracks the server-assigned conversation id once the first turn
+  // completes. Sent in all subsequent requests so messages are grouped.
+  const conversationIdRef = useRef<string | null>(null);
 
   const updateTurn = useCallback((id: string, fn: (t: Turn) => Turn) => {
     setTurns((prev) => prev.map((t) => (t.id === id ? fn(t) : t)));
@@ -94,6 +97,7 @@ export function AskChat({
             history,
             scope: scope ?? null,
             crossSpace: crossSpaceAvailable && crossSpace,
+            conversationId: conversationIdRef.current ?? null,
           }),
         });
         if (!res.ok || !res.body) {
@@ -129,7 +133,7 @@ export function AskChat({
               const evt = JSON.parse(line) as
                 | { type: "sources"; sources: SourceItem[] }
                 | { type: "delta"; text: string }
-                | { type: "done" }
+                | { type: "done"; conversationId?: string | null }
                 | { type: "error"; code: string };
               if (evt.type === "sources") {
                 updateTurn(id, (t) => ({ ...t, sources: evt.sources }));
@@ -137,6 +141,14 @@ export function AskChat({
                 updateTurn(id, (t) => ({ ...t, answer: t.answer + evt.text }));
               } else if (evt.type === "done") {
                 settled = true;
+                // Capture server-assigned conversation id so follow-up
+                // turns are appended to the same conversation.
+                if (
+                  evt.conversationId &&
+                  !conversationIdRef.current
+                ) {
+                  conversationIdRef.current = evt.conversationId;
+                }
                 updateTurn(id, (t) => ({ ...t, state: "done" }));
               } else if (evt.type === "error") {
                 settled = true;
