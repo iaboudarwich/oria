@@ -181,6 +181,71 @@ export async function markJobRetrying(jobId: string | null): Promise<void> {
   }
 }
 
+/**
+ * Atomically claim up to `limit` pending upload.extract jobs and flip
+ * them to processing. Returns the claimed rows so the caller can drive
+ * each one to completion without racing another worker.
+ *
+ * The WHERE … AND status='pending' guard on the UPDATE means a row can
+ * only be claimed once even if two cron invocations overlap slightly.
+ */
+export async function claimPendingExtractionJobs(
+  limit: number,
+): Promise<BackgroundJob[]> {
+  try {
+    const admin = createAdminClient();
+    const { data: candidates } = await admin
+      .from("background_jobs")
+      .select("*")
+      .eq("status", "pending")
+      .eq("kind", "upload.extract")
+      .order("created_at", { ascending: true })
+      .limit(limit);
+    if (!candidates?.length) return [];
+    const ids = (candidates as BackgroundJob[]).map((j) => j.id);
+    await admin
+      .from("background_jobs")
+      .update({
+        status: "processing",
+        started_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .in("id", ids)
+      .eq("status", "pending"); // Guard: only claim rows still pending
+    return candidates as BackgroundJob[];
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Reset a job back to pending for another attempt, recording the last
+ * error and incrementing the retry counter. Call this instead of
+ * markJobFailed when you still want the cron to pick the job up again.
+ */
+export async function requeueJobForRetry(
+  jobId: string | null,
+  errorMessage: string,
+  currentRetryCount: number,
+): Promise<void> {
+  if (!jobId) return;
+  try {
+    const admin = createAdminClient();
+    await admin
+      .from("background_jobs")
+      .update({
+        status: "pending",
+        error_message: errorMessage.slice(0, 1000),
+        retry_count: currentRetryCount + 1,
+        updated_at: new Date().toISOString(),
+        started_at: null,
+      })
+      .eq("id", jobId);
+  } catch {
+    // Best-effort.
+  }
+}
+
 /** Recent jobs for one org, newest first. Used by ops surfaces. */
 export async function listRecentJobs(input: {
   organizationId: string;

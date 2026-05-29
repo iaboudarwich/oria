@@ -6,6 +6,7 @@ import * as Sentry from "@sentry/nextjs";
 import { createClient } from "@/lib/supabase/server";
 import { requireContext } from "./organizations";
 import { runProcessUploadSafely } from "./upload-process-safe";
+import { createJob } from "./jobs";
 import {
   enrichBuiltinSectionFromMove,
   getOrgSectionContexts,
@@ -335,13 +336,26 @@ export async function uploadFile(formData: FormData): Promise<Result> {
     });
   }
 
-  // 4. Run the intelligence pass AFTER the response is sent so the upload
-  //    action returns immediately. Claude reads the file in the background;
-  //    Ask Oria already surfaces in-flight uploads as PENDING with a
-  //    "Reading…" chip, so the rest of the UI stays snappy.
-  after(async () => {
-    await runProcessUploadSafely(uploadId, ctx.organization.id);
-  });
+  // 4. Queue the intelligence pass.
+  //    Production: enqueue a pending job and return immediately — the Vercel
+  //    cron at /api/cron/process-uploads picks it up every minute with retry
+  //    logic. This decouples extraction from the HTTP lifecycle and avoids
+  //    hitting the serverless function timeout on large files.
+  //    Development: keep running inline via after() so a local cron isn't
+  //    needed and the feedback loop stays tight.
+  if (process.env.NODE_ENV === "production") {
+    await createJob({
+      organizationId: ctx.organization.id,
+      actorId: ctx.profile.id,
+      kind: "upload.extract",
+      uploadId,
+      context: { uploadId },
+    });
+  } else {
+    after(async () => {
+      await runProcessUploadSafely(uploadId, ctx.organization.id);
+    });
+  }
 
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/inbox");
