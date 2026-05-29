@@ -145,7 +145,7 @@ export interface CrossOrgSearchResult {
  *
  * Uses SECURITY INVOKER so RLS still gates every row. Only returns chunks
  * from orgs the caller is a member of and that pass all visibility checks.
- * Falls back to empty result (no fulltext fallback — cross-org fulltext
+ * Falls back to empty result (no fulltext fallback. cross-org fulltext
  * would be too expensive at scale).
  */
 export async function searchChunksCrossOrg(

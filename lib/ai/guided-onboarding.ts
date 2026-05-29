@@ -34,8 +34,9 @@ export type OnboardingSuggestions = {
 const CONVERSATION_SYSTEM = `You are Oria's onboarding assistant. Your job is to understand the user's life or work in 2-4 conversation turns, then suggest helpful sections, entity types, sample entities, and trackable categories.
 
 Rules:
+- NEVER use the em-dash character (Unicode U+2014, the long horizontal punctuation mark between two words). It is FORBIDDEN. Use a comma, a period, or a rewrite instead. Zero exceptions.
 - Ask open-ended questions first ("Tell me about what you'd like to track...")
-- After the first answer, move to structured follow-ups (multi_select) 
+- After the first answer, move to structured follow-ups (multi_select)
 - Do NOT ask more than 4 questions total
 - Keep messages short and warm
 - Use second person ("you", "your")
@@ -65,7 +66,9 @@ Return JSON ONLY:
 }
 
 Limit: 3-5 sections, 2-4 entity types, 1-3 sample entities, 2-4 trackable categories.
-Only include what genuinely fits. Quality over quantity.`;
+Only include what genuinely fits. Quality over quantity.
+
+Style: NEVER use the em-dash character (Unicode U+2014). Use a comma, a period, or a rewrite. Zero exceptions.`;
 
 /**
  * Get the AI's next response in an onboarding conversation.
@@ -106,7 +109,7 @@ export async function getOnboardingResponse(
   // merged starting point instead of asking from a blank slate.
   const templateContext =
     templateHints && templateHints.length > 0
-      ? `\nWorkspace templates the user just picked: ${templateHints.join(", ")}. Build on these — don't re-ask what they already chose.`
+      ? `\nWorkspace templates the user just picked: ${templateHints.join(", ")}. Build on these; don't re-ask what they already chose.`
       : "";
 
   const messages: Anthropic.Messages.MessageParam[] = [
@@ -160,13 +163,13 @@ export function getOpeningMessage(mode: "first" | "improve" | "reprompt"): Onboa
   }
   if (mode === "reprompt") {
     return {
-      next_message: "Welcome back! Tell me a bit about your life — what kinds of documents, things, or deadlines do you deal with most?",
+      next_message: "Welcome back! Tell me a bit about your life. What kinds of documents, things, or deadlines do you deal with most?",
       is_final: false,
       input_type: "text",
     };
   }
   return {
-    next_message: "Welcome to Oria! Tell me a bit about yourself — what kinds of things would you like to keep track of? (Property, businesses, health, travel, subscriptions, investments...)",
+    next_message: "Welcome to Oria! Tell me a bit about yourself. What kinds of things would you like to keep track of? (Property, businesses, health, travel, subscriptions, investments...)",
     is_final: false,
     input_type: "text",
   };

@@ -5,7 +5,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 /**
  * Background-job log. The user-facing status of an upload or report
  * still lives on the entity row (uploads.status, workspace_reports.
- * status) — this table is the parallel queue that lets us count
+ * status). this table is the parallel queue that lets us count
  * retries, attribute errors, and detect stuck rows in one place.
  *
  * Every helper is fire-and-forget: if the log write fails we swallow
@@ -110,7 +110,7 @@ export async function markJobStarted(jobId: string | null): Promise<void> {
 /** Mark a job completed. Stamp completed_at and updated_at. */
 export async function markJobCompleted(
   jobId: string | null,
-  /** Optional context patch — merged via simple replace, not jsonb deep merge. */
+  /** Optional context patch. merged via simple replace, not jsonb deep merge. */
   contextPatch?: Record<string, unknown>,
 ): Promise<void> {
   if (!jobId) return;
@@ -379,7 +379,7 @@ export type JobsHealth = {
   completed24h: number;
   pendingNow: number;
   processingNow: number;
-  /** processing rows whose started_at is older than 5 minutes — likely stuck. */
+  /** processing rows whose started_at is older than 5 minutes. likely stuck. */
   stuckNow: number;
   /** average completed-job duration in ms over the past 24h (rough). */
   avgDurationMs24h: number;
@@ -397,7 +397,7 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 const sinceISO = (ms: number) => new Date(Date.now() - ms).toISOString();
 
 /**
- * Cross-org background-job health. Service-role only — admin pages
+ * Cross-org background-job health. Service-role only. admin pages
  * read this; the daily user flow doesn't. Soft-fails open everywhere:
  * if the count query errors we report 0 rather than break the page.
  */

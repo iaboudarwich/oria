@@ -7,7 +7,7 @@ function siteUrl() {
   return process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 }
 
-// Only allow same-app paths as `next` redirect targets — never an external URL.
+// Only allow same-app paths as `next` redirect targets. never an external URL.
 function safeNext(value: string | null | undefined): string {
   if (!value) return "/dashboard";
   if (!value.startsWith("/") || value.startsWith("//")) return "/dashboard";

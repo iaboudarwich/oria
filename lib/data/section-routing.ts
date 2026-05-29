@@ -11,14 +11,14 @@ import type { SmartSection } from "@/lib/ai/extract";
  *
  * The model proposes a `suggested_section` per item, but it sometimes
  * picks badly: a vehicle registration RENEWAL is technically about a
- * car (travel) but the user is paying a bill — the right section is
+ * car (travel) but the user is paying a bill. the right section is
  * Finance. The same goes for any financial doc the model might tag
  * elsewhere (a healthcare invoice, a property tax bill).
  *
  * Server-side override rules (applied after extraction):
- *   1. smart_section="bills" → section="finance" — bills are always
+ *   1. smart_section="bills" → section="finance". bills are always
  *      payable items, regardless of what they're for.
- *   2. document_type IN {invoice, receipt} → section="finance" — both
+ *   2. document_type IN {invoice, receipt} → section="finance". both
  *      are financial documents by definition.
  *   3. Otherwise honour the model's suggestion (or the section hint
  *      passed in from the calling page).

@@ -11,7 +11,7 @@ import type { DocumentType } from "@/lib/supabase/types";
  *
  * Strict scoping: everything filters by organization_id. A Workspace
  * never surfaces Personal data and vice versa. Insights are computed
- * fresh per render — there's no separate `insights` table — so they
+ * fresh per render, there's no separate `insights` table, so they
  * always reflect the current state.
  *
  * The card on the home page renders at most a handful of these. We
@@ -30,7 +30,7 @@ export type InsightKind =
 
 export type Insight = {
   /** Stable id so the user can dismiss this exact observation. The
-   *  id is content-hashed (kind + key facts) — two identical weeks
+   *  id is content-hashed (kind + key facts), two identical weeks
    *  produce the same id, so dismissing once silences the same fact. */
   id: string;
   kind: InsightKind;
@@ -113,7 +113,7 @@ async function detectSpendingDelta(
     else prior += r.amount_normalized;
     count += 1;
   }
-  // Need real signal on both sides — guard against the "first month of
+  // Need real signal on both sides, guard against the "first month of
   // uploads ever" case which would otherwise read as a 999% spike.
   if (count < 6 || prior <= 0 || recent <= 0) return null;
   const delta = (recent - prior) / prior;
@@ -134,7 +134,7 @@ async function detectSpendingDelta(
 
 /**
  * Leases and contracts whose extracted occurred_at (treated as expiry
- * for these document types — see lib/ai/extract.ts) falls in the next
+ * for these document types, see lib/ai/extract.ts) falls in the next
  * 30 days. One insight per row, capped at two.
  */
 async function detectExpiringDocs(
@@ -143,7 +143,7 @@ async function detectExpiringDocs(
 ): Promise<Insight[]> {
   const now = new Date();
   const in30 = new Date(now.getTime() + 30 * 24 * 3600 * 1000);
-  // DocumentType only has "contract" — leases come through with that
+  // DocumentType only has "contract", leases come through with that
   // type too. We use the title to label which is which so the user
   // sees "Lease for X expires…" when the title clearly says lease.
   const { data } = await supabase
@@ -306,7 +306,7 @@ async function detectOverdueRecurring(
   const now = Date.now();
   for (const b of byMerchant.values()) {
     const expectedNext = b.last + b.intervalDays * 24 * 3600 * 1000;
-    // Grace period of 3 days — networks of small monthly bills are
+    // Grace period of 3 days, networks of small monthly bills are
     // often 1–2 days off from their nominal cadence.
     const overdueMs = now - (expectedNext + 3 * 24 * 3600 * 1000);
     if (overdueMs <= 0) continue;
@@ -320,7 +320,7 @@ async function detectOverdueRecurring(
   return {
     id: `recurring-overdue-${worst.merchant.toLowerCase()}-${worst.overdueDays}`,
     kind: "recurring.overdue",
-    message: `${worst.merchant} usually arrives by now — last one was ${
+    message: `${worst.merchant} usually arrives by now, last one was ${
       worst.overdueDays
     } day${worst.overdueDays === 1 ? "" : "s"} ago.`,
     href: worst.upload_id

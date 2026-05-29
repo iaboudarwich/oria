@@ -71,7 +71,7 @@ export async function analyzeImage(params: {
   filename: string;
   organizationId?: string | null;
   uploadId?: string | null;
-  /** User's preferred_language — used as extraction hint */
+  /** User's preferred_language, used as extraction hint */
   accountLanguage?: string | null;
 }): Promise<ImageAnalysisResult | null> {
   const { mimeType, filename } = params;
@@ -87,7 +87,7 @@ export async function analyzeImage(params: {
     void recordSystemEvent({
       kind: "image.heic_skipped",
       severity: "info",
-      message: "HEIC image skipped — vision analysis not supported for HEIC",
+      message: "HEIC image skipped, vision analysis not supported for HEIC",
       context: { filename, uploadId: params.uploadId ?? null },
       organizationId: params.organizationId ?? null,
     });
@@ -108,7 +108,7 @@ export async function analyzeImage(params: {
   if (!anthropic) return null;
 
   const typeList = IMAGE_DOC_TYPES.join(", ");
-  const productDesc = `product (a packaged consumer item — food, beverage, supplement, cosmetics, electronics, household goods)`;
+  const productDesc = `product (a packaged consumer item, food, beverage, supplement, cosmetics, electronics, household goods)`;
   const sceneDesc = `scene (a photo of a place, meal, event, person, or object)`;
 
   const langNames: Record<string, string> = { en: "English", ar: "Arabic", fr: "French", es: "Spanish" };

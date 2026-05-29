@@ -115,8 +115,8 @@ const HIGH_LEAK_SURFACES = [
  * immediately so the new circle is the user's context while they invite.
  *
  * FormData keys:
- *   - name (required) — short label, e.g. "Family", "Roommates"
- *   - description (optional) — what this circle is for (used by Oria to
+ *   - name (required). short label, e.g. "Family", "Roommates"
+ *   - description (optional). what this circle is for (used by Oria to
  *     classify uploads + organize reminders into the right circle).
  */
 export async function createCircle(formData: FormData): Promise<void> {

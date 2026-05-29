@@ -10,7 +10,7 @@ type Props = {
 
 /**
  * Password input with a small show/hide eye icon. Visual styling matches the
- * other auth fields exactly — the only difference is the toggle.
+ * other auth fields exactly. the only difference is the toggle.
  */
 export function PasswordField({ label, hint, ...rest }: Props) {
   const [visible, setVisible] = useState(false);

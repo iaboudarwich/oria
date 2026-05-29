@@ -7,7 +7,7 @@ import type { MemoryItem } from "@/lib/supabase/types";
 
 /**
  * Queryable shape of a Diet meal entry. Pulls only the columns the Diet
- * page actually renders — keeps the wire payload small.
+ * page actually renders. keeps the wire payload small.
  */
 export type DietMeal = Pick<
   MemoryItem,
@@ -197,7 +197,7 @@ function nextOccurrence(lastIso: string, interval: string | null): string | null
       d.setFullYear(d.getFullYear() + 1);
       break;
     default:
-      // Unknown cadence — default to monthly which covers most household bills.
+      // Unknown cadence. default to monthly which covers most household bills.
       d.setMonth(d.getMonth() + 1);
   }
   return d.toISOString();

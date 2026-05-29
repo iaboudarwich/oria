@@ -1,12 +1,12 @@
 import "server-only";
 
 /**
- * Burst rate limiter — in-process, sliding window.
+ * Burst rate limiter. in-process, sliding window.
  *
  * Complements the per-user DAILY quotas in lib/data/quotas.ts. Daily
  * caps stop steady abuse over hours; this stops short bursts (a user
  * holding Enter on Ask Oria, a misbehaving script firing 200 requests
- * a second). At 5–20 beta users this is plenty — Vercel Fluid Compute
+ * a second). At 5–20 beta users this is plenty. Vercel Fluid Compute
  * reuses instances so the in-memory window survives many requests,
  * and a cold start at worst forfeits a small extra burst.
  *
@@ -111,7 +111,7 @@ export const RATE_PRESETS = {
     windowMs: 60_000,
     label: "uploads",
   }),
-  /** Data export — 1 download per user per 24 h. */
+  /** Data export. 1 download per user per 24 h. */
   export: () => ({
     limit: 1,
     windowMs: 24 * 60 * 60_000,

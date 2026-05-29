@@ -208,6 +208,20 @@
   .text-body-sm  { font-size: 13px; line-height: 18px; font-weight: 400; }
   .text-caption  { font-size: 12px; line-height: 16px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; }
 
+  /* Eyebrow: the small uppercase section label that sits above cards and
+   * lists. The old inline pattern (10.5px, 0.12em tracking, ink-faint)
+   * read as "fine print" rather than a header; this is slightly larger,
+   * a touch heavier, less stretched, and uses ink-muted so the label
+   * actually registers as a label. Use INSTEAD OF a tiny faint <h2>. */
+  .text-eyebrow {
+    font-size: 11px;
+    line-height: 14px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+  }
+
   /* Text balance utilities */
   .text-balance { text-wrap: balance; }
   .text-pretty  { text-wrap: pretty; }

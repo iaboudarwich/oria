@@ -176,7 +176,7 @@ export async function requireContext(): Promise<CurrentContext> {
 
 /**
  * God's Eye gate. The account owner can search across every space they
- * belong to — but only while they're sitting in their Personal space.
+ * belong to. but only while they're sitting in their Personal space.
  * A Workspace or Circle agent never sees Personal data, and a non-owner
  * (e.g. a future shared-personal-space member) doesn't get this either.
  *

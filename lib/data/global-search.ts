@@ -100,7 +100,7 @@ export async function liveSearch(query: string): Promise<LiveSearchResult> {
     uploads.map((u) => ({ id: u.id, storage_path: u.storage_path })),
   );
 
-  // 2. Sections — match by name across built-in + custom + review.
+  // 2. Sections. match by name across built-in + custom + review.
   const allSections = await listAllSections({ includeHidden: false });
   const lowerQ = q.toLowerCase();
   const sections = allSections
@@ -115,7 +115,7 @@ export async function liveSearch(query: string): Promise<LiveSearchResult> {
         | "custom",
     }));
 
-  // 3. Reminders — match by title.
+  // 3. Reminders. match by title.
   const remindersRes = await supabase
     .from("reminders")
     .select("id, title, due_at, upload_id")
@@ -129,7 +129,7 @@ export async function liveSearch(query: string): Promise<LiveSearchResult> {
       Pick<Reminder, "id" | "title" | "due_at" | "upload_id">
     >) ?? [];
 
-  // 4. Static pages — keyword match.
+  // 4. Static pages. keyword match.
   const pages = STATIC_PAGES.filter(
     (p) =>
       p.label.toLowerCase().includes(lowerQ) ||

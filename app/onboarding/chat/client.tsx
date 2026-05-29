@@ -223,7 +223,7 @@ export function OnboardingChatClient({
         <div className="border-b border-line bg-brand-soft px-4 py-2 text-center text-[12px] text-ink">
           Starting from {templateHints.join(" + ")}.
           <span className="ml-1 text-ink-muted">
-            I&apos;ll build on this — feel free to add more.
+            I&apos;ll build on this. Feel free to add more.
           </span>
         </div>
       )}
@@ -247,7 +247,7 @@ export function OnboardingChatClient({
           </div>
         ))}
 
-        {/* Multi-select options — F2 chip styling, brand-tinted on selected. */}
+        {/* Multi-select options. F2 chip styling, brand-tinted on selected. */}
         {!pending && currentResponse.input_type === "multi_select" && currentResponse.options && (
           <div className="space-y-2 pt-2">
             <div className="flex flex-wrap gap-2">
@@ -297,7 +297,7 @@ export function OnboardingChatClient({
         <div ref={bottomRef} />
       </div>
 
-      {/* Input bar — mic is the primary action: large, breathing when
+      {/* Input bar. mic is the primary action: large, breathing when
           idle. Send arrow stays as a quiet secondary path. */}
       {currentResponse.input_type !== "multi_select" && (
         <div className="border-t border-line bg-canvas px-4 py-4">
@@ -406,7 +406,7 @@ function ProgressHeader({
 function ReviewGroup({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="mb-5">
-      <h3 className="mb-2 text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">{label}</h3>
+      <h3 className="mb-2 text-eyebrow">{label}</h3>
       <div className="space-y-1">{children}</div>
     </div>
   );

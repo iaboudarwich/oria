@@ -370,7 +370,7 @@ export async function processUpload(uploadId: string): Promise<void> {
     });
     // Hard-fail on insert error rather than silently filing the upload.
     // The old behaviour ate RLS / cookie errors here and left uploads
-    // marked "filed" with extractions present but zero memory_items —
+    // marked "filed" with extractions present but zero memory_items.
     // sections then showed nothing for that file. Mark the upload
     // failed so stuck-recovery can retry and the user sees a Failed
     // pill instead of a misleading green check.
@@ -498,7 +498,7 @@ export async function processUpload(uploadId: string): Promise<void> {
 
     // Calendar already surfaces memory_items.occurred_at directly (passive
     // events like flights and hotel check-ins). On top of that, propose
-    // action-shaped reminders for items that need follow-up — invoice due
+    // action-shaped reminders for items that need follow-up. invoice due
     // dates, lease/contract renewals, recurring bills. Confidence-gated
     // and date-gated so we don't fill the user's inbox with noise.
     await proposeAutoReminders({
@@ -697,7 +697,7 @@ async function matchCustomSection(
   filename: string,
   organizationId: string,
 ): Promise<string | null> {
-  // Called from processUpload, which runs in after() — must use the
+  // Called from processUpload, which runs in after(). must use the
   // admin client (no cookies post-response).
   const supabase = createAdminClient();
   const { data } = await supabase

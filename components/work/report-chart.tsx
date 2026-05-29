@@ -3,7 +3,7 @@ import type { ReportChart } from "@/lib/data/workspace-reports";
 const PALETTE = ["#1c1a17", "#7a5a2a", "#3f5240", "#7a4a7a", "#3a6a8a"];
 
 /**
- * Minimal inline-SVG chart. Three kinds — bar (categorical comparisons),
+ * Minimal inline-SVG chart. Three kinds. bar (categorical comparisons),
  * line (time series), and table (breakdowns / lists). No tooltips, no
  * animation, no library: paints fast, fits the calm aesthetic, never
  * wraps the page.

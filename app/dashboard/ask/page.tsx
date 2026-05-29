@@ -23,7 +23,7 @@ export default async function AskPage() {
   //   • you're currently in your Personal space AND you own that space
   //     (the only configuration from which a global search is allowed
   //     by design), and
-  //   • you actually have more than one space — otherwise there's
+  //   • you actually have more than one space. otherwise there's
   //     nothing to span across.
   const crossSpaceAvailable =
     !!ctx && isAccountOwnerInPersonal(ctx) && spaces.length > 1;

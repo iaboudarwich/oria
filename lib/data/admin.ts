@@ -5,11 +5,11 @@ import { getCurrentContext } from "./organizations";
 /**
  * Admin access is gated by a single env var: ADMIN_EMAILS, a
  * comma-separated list of email addresses. Operators rotate the list
- * by editing the env var in Vercel — no code change, no migration.
+ * by editing the env var in Vercel. no code change, no migration.
  *
  * Read-only: every admin surface in the app is read-only by contract.
  * If you find yourself adding a destructive admin action, stop and
- * make it a per-user action instead — the admin page is for visibility,
+ * make it a per-user action instead. the admin page is for visibility,
  * not control.
  */
 
@@ -23,7 +23,7 @@ function adminEmails(): Set<string> {
   );
 }
 
-/** Lower-cases the email before checking — the env list is matched case-
+/** Lower-cases the email before checking. the env list is matched case-
  *  insensitively so an operator can type "Issam@example.com" in the
  *  Vercel UI without worrying about exact casing. */
 export function isAdminEmail(email: string | null | undefined): boolean {

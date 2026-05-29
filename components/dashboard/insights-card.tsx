@@ -5,7 +5,7 @@ import { dismissInsight } from "@/lib/data/insights-dismiss-actions";
 
 /**
  * Calm one-line-per-insight strip. Renders nothing when there's
- * nothing to say — proactive intelligence should be useful, not
+ * nothing to say. proactive intelligence should be useful, not
  * noisy. Each row is dismissable and the dismissal is persisted via
  * a cookie keyed by insight id, so the user is never nagged twice
  * about the same observation.
@@ -17,7 +17,7 @@ export function InsightsCard({ insights }: { insights: Insight[] }) {
   if (insights.length === 0) return null;
   return (
     <section>
-      <h2 className="mb-2 px-1 text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
+      <h2 className="mb-2 px-1 text-eyebrow">
         From Oria
       </h2>
       <ul className="rounded-2xl border border-line bg-surface-raised divide-y divide-line">

@@ -8,9 +8,9 @@ const MAX_DISMISSED = 40;
 
 /**
  * Per-user list of insight ids the user has waved away. Stored in a
- * cookie keyed to a comma-separated list — small, no DB. We trim to
+ * cookie keyed to a comma-separated list. small, no DB. We trim to
  * the most-recent MAX_DISMISSED to keep the cookie payload tiny; if
- * an insight resurfaces because its id rolled off, that's fine — the
+ * an insight resurfaces because its id rolled off, that's fine. the
  * user can dismiss it again.
  *
  * Cookie writes happen only in a Server Action (see

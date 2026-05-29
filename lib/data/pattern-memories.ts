@@ -12,7 +12,7 @@ import { distinctiveTokens } from "./section-context";
  *   2. Ask Oria / Work AI weave the same memory into their system
  *      prompt the next time the section is scoped.
  *
- * Cheap heuristic — no ML. We look at the last 90 days of
+ * Cheap heuristic. no ML. We look at the last 90 days of
  * `upload.moved` events ending at the same destination. If any
  * distinctive token from the just-moved upload also appears in at
  * least N-1 of the prior 5 moves to the same destination, that's a
@@ -123,7 +123,7 @@ export async function maybeWritePatternMemoryFromMove(input: {
 
     // Idempotent insert: section_memories has a unique index on
     // (organization_id, builtin_section/custom_section_id, content).
-    // Soft-deleted duplicates are skipped here too — if the user
+    // Soft-deleted duplicates are skipped here too. if the user
     // deleted this pattern once, we don't re-add it.
     const { data: existing } = await admin
       .from("section_memories")

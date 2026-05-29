@@ -21,7 +21,7 @@ export const ALL_HINT_KEYS: HintKey[] = [
 
 /**
  * Return the set of hint keys already dismissed by the current user.
- * Best-effort — returns empty set on any error so hints remain hidden
+ * Best-effort. returns empty set on any error so hints remain hidden
  * rather than looping forever on a DB problem.
  */
 export async function getSeenHintKeys(): Promise<Set<HintKey>> {

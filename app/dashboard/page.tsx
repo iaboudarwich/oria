@@ -31,7 +31,7 @@ export default async function DashboardHome() {
     ? `Hi, ${ctx.profile.full_name.split(" ")[0]}`
     : "Hi";
 
-  // Onboarding hints — evaluated server-side to avoid flash.
+  // Onboarding hints. evaluated server-side to avoid flash.
   const seenHints = await getSeenHintKeys();
   // Show at most one hint per visit: first_upload takes priority.
   const showFirstUpload = !seenHints.has("first_upload");
@@ -141,7 +141,7 @@ function Onboarding({ orgKind }: { orgKind: string }) {
   ];
   return (
     <section>
-      <h2 className="mb-2 px-1 text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
+      <h2 className="mb-2 px-1 text-eyebrow">
         Get started
       </h2>
       <ul className="rounded-2xl border border-line bg-surface-raised divide-y divide-line">

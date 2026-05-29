@@ -31,7 +31,7 @@ const HARD_MAP: Record<string, Section> = {
  * Applied when doc_type === "product".
  */
 const PRODUCT_MAP: Record<string, Section> = {
-  food: "health",       // no "diet" builtin — route to health
+  food: "health",       // no "diet" builtin, route to health
   beverage: "health",
   supplement: "health",
   cosmetic: "household",

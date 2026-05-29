@@ -77,7 +77,7 @@ export async function retryReport(formData: FormData): Promise<void> {
     context: { kind, prompt: prompt.slice(0, 200), retry: true },
   });
 
-  // after() runs after the response is gone — cookies aren't readable
+  // after() runs after the response is gone. cookies aren't readable
   // there. Use the admin client and pass org info into the generator
   // explicitly; scope is preserved by report.id + the captured orgId.
   const orgId = ctx.organization.id;

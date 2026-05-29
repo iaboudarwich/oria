@@ -8,7 +8,7 @@ import { useEffect } from "react";
  * week" filters (Diet, Bills, Calendar). Re-writes on every dashboard
  * mount in case the user travels.
  *
- * Cheap — no network, no state, no re-render after mount.
+ * Cheap. no network, no state, no re-render after mount.
  */
 export function TimezoneCookie() {
   useEffect(() => {
@@ -18,7 +18,7 @@ export function TimezoneCookie() {
       const oneYear = 60 * 60 * 24 * 365;
       document.cookie = `oria_tz=${encodeURIComponent(tz)}; path=/; max-age=${oneYear}; samesite=lax`;
     } catch {
-      // No-op — fallback to UTC server-side.
+      // No-op. fallback to UTC server-side.
     }
   }, []);
   return null;

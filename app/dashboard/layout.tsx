@@ -84,7 +84,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
   };
 
   const personalSections = [
-    // Smart Sections live at the top of the Sections group — they're
+    // Smart Sections live at the top of the Sections group. they're
     // AI-driven aggregation pages, not browsing folders. Marked as
     // kind:"smart" so the sidebar can render a subtle sparkle next to them.
     {

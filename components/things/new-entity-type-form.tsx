@@ -79,7 +79,7 @@ export function NewEntityTypeForm() {
         </div>
         <div>
           <label className="block text-[13px] text-ink-muted mb-1">
-            Describe it (optional — helps AI suggest better fields)
+            Describe it (optional, helps AI suggest better fields)
           </label>
           <textarea
             value={description}

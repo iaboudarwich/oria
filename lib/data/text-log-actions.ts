@@ -21,14 +21,14 @@ import type { Section } from "@/lib/supabase/types";
  *
  * Counterpart to uploadFile: takes a short note the user typed into a
  * section (Diet, Bills, the generic section view) and turns it into
- * memory_items rows. No file involved — upload_id stays null.
+ * memory_items rows. No file involved. upload_id stays null.
  *
  * Section + smart-section context come from the calling page. The
  * model can still override based on content (e.g. user types "rent
  * due June 1" on the Diet page → still produces a bills item).
  *
  * Resolves relative dates ("yesterday", "next Friday") against the
- * user's IANA timezone + their local "now" — captured client-side
+ * user's IANA timezone + their local "now". captured client-side
  * and forwarded so the meal lands on the right day regardless of
  * where the function instance runs.
  */
@@ -86,7 +86,7 @@ export async function logFromText(
     };
   }
 
-  // Burst limit — typed-text is cheaper than file extraction but still
+  // Burst limit. typed-text is cheaper than file extraction but still
   // a Claude call. Reuse the upload preset (20/min).
   const burst = rateLimit({
     key: `text-log:${ctx.profile.id}`,
@@ -133,7 +133,7 @@ export async function logFromText(
     // Mirror the rules in upload-intelligence.ts so typed entries
     // and upload-derived entries behave identically downstream.
     const smartSection = item.smart_section ?? smartHint ?? null;
-    // For diet, ALWAYS force occurred_at to the user's local "now" —
+    // For diet, ALWAYS force occurred_at to the user's local "now".
     // the model can't know when the user actually ate, and the Today
     // view depends on this being right.
     let occurredAt: string | null;
@@ -230,7 +230,7 @@ export async function logFromText(
     });
   });
 
-  // Telemetry — feeds the "you've asked before" panel.
+  // Telemetry. feeds the "you've asked before" panel.
   void recordLearningEvent({
     organizationId: ctx.organization.id,
     actorId: ctx.profile.id,

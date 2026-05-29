@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/icon";
 
 // Demo personas + fixture data should not appear on the public site by
-// default — only when explicitly enabled via NEXT_PUBLIC_DEMO_MODE=1.
+// default. only when explicitly enabled via NEXT_PUBLIC_DEMO_MODE=1.
 const DEMO_ENABLED = process.env.NEXT_PUBLIC_DEMO_MODE === "1";
 
 export default function LandingPage() {

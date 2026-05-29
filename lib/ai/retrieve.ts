@@ -17,8 +17,8 @@ import type { Section } from "@/lib/supabase/types";
  * Claude can cite it inline as [N] and the UI can render a source card.
  *
  * processing_state:
- *   • "ready"   — full extraction available (raw_text + entities)
- *   • "pending" — file exists and matched by name, but Oria hasn't finished
+ *   • "ready"  , full extraction available (raw_text + entities)
+ *   • "pending", file exists and matched by name, but Oria hasn't finished
  *                 reading it yet. The agent is told to be honest about this
  *                 rather than say "I don't see anything".
  */
@@ -221,11 +221,11 @@ export function detectAggregateIntent(query: string): AggregateIntent {
  *
  * Hard rule: every query is scoped to ONE active organization (or, with the
  * explicit `crossSpace: true` opt-in, to the user's personal-side spaces
- * only — personal + circles). RLS alone is not enough here: a member of
+ * only, personal + circles). RLS alone is not enough here: a member of
  * multiple orgs (e.g. their Personal space and a Work Workspace) is
  * authorised to read all of them under RLS, so any unfiltered query leaks
  * across spaces. The Work AI agent must never see personal data, and a
- * personal Ask must never see another Workspace's data — that's enforced
+ * personal Ask must never see another Workspace's data, that's enforced
  * here, in the data layer, regardless of how the caller frames the query.
  *
  *   • scope set       → restrict to active org AND section (existing behaviour)
@@ -252,7 +252,7 @@ export async function retrieveForQuery(
   // keep the prompt fast and the answer focused.
   const maxSources =
     opts.maxSources ?? (intent.isAggregate || reviewIntent ? 20 : 8);
-  // Aggregate / review queries don't depend on keywords — they need the
+  // Aggregate / review queries don't depend on keywords, they need the
   // candidate set itself. We still bail when there's literally nothing
   // to work with (no keywords, no scope, no intent).
   if (
@@ -268,7 +268,7 @@ export async function retrieveForQuery(
   const activeOrgId = ctx.organization.id;
 
   // Decide the set of org ids retrieval is allowed to touch. This is the
-  // single source of truth — every query below applies it. A leak here is
+  // single source of truth, every query below applies it. A leak here is
   // a data isolation bug, so we hard-pin it rather than rely on RLS.
   let allowedOrgIds: string[];
   const userSpacesList = await listUserSpaces();
@@ -281,7 +281,7 @@ export async function retrieveForQuery(
     //   • Work AI always passes crossSpace=false, so a Workspace agent
     //     never sees Personal, other Workspaces, or any Circle.
     //   • A non-owner sitting in a shared space can't broaden retrieval
-    //     by forging the flag — server re-checks.
+    //     by forging the flag, server re-checks.
     // The expanded set spans every org the user is a member of:
     // Personal + Circles + Workspaces they have access to.
     allowedOrgIds = userSpacesList.map((s) => s.organization.id);
@@ -357,7 +357,7 @@ export async function retrieveForQuery(
     if (scope.kind === "builtin") uploadsQ = uploadsQ.eq("section", scope.key);
     else if (scope.kind === "custom")
       uploadsQ = uploadsQ.eq("custom_section_id", scope.key);
-    // For smart scope, uploads don't carry smart_section directly — we
+    // For smart scope, uploads don't carry smart_section directly, we
     // depend on memory_items below to do that filtering and skip uploads.
     if (scope.kind === "smart")
       uploadsQ = uploadsQ.eq("id", "00000000-0000-0000-0000-000000000000");
@@ -380,14 +380,14 @@ export async function retrieveForQuery(
 
   // Second pass: also include uploads whose extracted text matches, even if
   // the filename/title doesn't. Extractions are linked to uploads, so we
-  // re-apply the org filter via the upload table below — but we first prune
+  // re-apply the org filter via the upload table below, but we first prune
   // the extraction set by joining to upload_id so we don't pull text from
   // other orgs into memory at all.
   //
   // SKIP when scope is set. In a section-scoped Ask (Diet, Bills, finance),
   // structured items are the source of truth. Pulling in random uploads
   // whose raw_text happens to contain a question keyword leaks unrelated
-  // docs into the answer — a "Practice Problem" textbook scan was appearing
+  // docs into the answer, a "Practice Problem" textbook scan was appearing
   // as a Diet source because its raw_text contained the word "today".
   type ExtractionRow = { upload_id: string; raw_text: string | null };
   const extractionMatchRes = scope
@@ -455,7 +455,7 @@ export async function retrieveForQuery(
 
   // Also pull extractions for the title/filename-matched uploads so the
   // snippet shown to Claude carries actual content, not just a name. We
-  // can fetch by upload_id directly — those uploads were already org-
+  // can fetch by upload_id directly, those uploads were already org-
   // verified above.
   const missingExtractionIds = uploads
     .map((u) => u.id)
@@ -496,7 +496,7 @@ export async function retrieveForQuery(
     .is("deleted_at", null)
     .in("organization_id", allowedOrgIds);
   // When a scope is set, the scope IS the filter. Don't AND with the
-  // keyword filter — a meal "Penne arrabbiata" doesn't contain the
+  // keyword filter, a meal "Penne arrabbiata" doesn't contain the
   // word "calories", but for "how many calories did I eat today" on
   // the Diet page the meal IS the answer source. The previous behavior
   // returned zero items and the agent answered "I don't see a food
@@ -582,7 +582,7 @@ export async function retrieveForQuery(
   if (keywords.length > 0) remindersQ = remindersQ.or(reminderFilter);
   if (scope) {
     // Reminders aren't sectioned today. When scoped, the safest behaviour
-    // is to skip them entirely — the section-scoped agent should answer
+    // is to skip them entirely, the section-scoped agent should answer
     // only from section-scoped sources.
     remindersQ = remindersQ.eq("id", "00000000-0000-0000-0000-000000000000");
   }
@@ -651,7 +651,7 @@ export async function retrieveForQuery(
     let score = 0;
     for (const kw of keywords) if (haystack.includes(kw)) score += kw.length;
     // Aggregate intent: items pulled in the second pass don't keyword-
-    // match, but they ARE relevant — give them a base score so they
+    // match, but they ARE relevant, give them a base score so they
     // survive the filter and the agent can sum across them.
     if (score === 0 && intent.isAggregate) {
       const hasAmount = typeof it.amount_value === "string" && it.amount_value.length > 0;
@@ -662,7 +662,7 @@ export async function retrieveForQuery(
     }
     // SCOPE IS THE FILTER. When the user is on the Diet page and asks
     // "what did I eat today", the meal title "Penne arrabbiata" doesn't
-    // contain the words "what", "eat", or "today" — so the keyword
+    // contain the words "what", "eat", or "today", so the keyword
     // score is 0 and the meal would be dropped. But the scope itself
     // already qualified it (smart_section=diet), so every in-scope item
     // must reach the agent. Give them a base score; structured-field
@@ -672,7 +672,7 @@ export async function retrieveForQuery(
     }
     if (score === 0) continue;
     // Boost items that carry structured fields. The product's contract is
-    // "answer from structured records first, raw files second" — items
+    // "answer from structured records first, raw files second", items
     // with merchant/amount/macros represent the work the extractor has
     // already done, so they outrank a keyword-matched upload that's just
     // a filename hit. A typical "spinneys" upload title scores ~7; a
@@ -739,7 +739,7 @@ export async function retrieveForQuery(
   // grounded context, even if no keyword matched the memory text.
   for (const m of memoryRows) scored.push(m);
 
-  // "What should I review" — supplement keyword matches with the
+  // "What should I review", supplement keyword matches with the
   // review-candidate set: uploads still in Unsorted, files that failed
   // extraction, and low-confidence items the model couldn't place. Each
   // joins the pool with a strong base score so the agent always has a
@@ -769,7 +769,7 @@ export async function retrieveForQuery(
     };
     for (const u of (reviewUploads ?? []) as ReviewUploadRow[]) {
       if (!allowedOrgSet.has(u.organization_id)) continue;
-      // Skip uploads that landed in a custom section — they're filed.
+      // Skip uploads that landed in a custom section, they're filed.
       // The .or() above asked for section IS NULL, but Postgres treats
       // NULL on custom_section_id separately; only flag those that are
       // truly Unsorted (both null) or failed.
@@ -778,8 +778,8 @@ export async function retrieveForQuery(
       const space = spaceById.get(u.organization_id);
       const reason =
         u.status === "failed"
-          ? "Extraction failed — Oria couldn't read this."
-          : "In Unsorted — section not yet chosen.";
+          ? "Extraction failed, Oria couldn't read this."
+          : "In Unsorted, section not yet chosen.";
       scored.push({
         score: 12, // strong base so it survives the maxSources cap
         src: {
@@ -912,7 +912,7 @@ export async function retrieveForQuery(
       }
     }
   } catch (err) {
-    // Semantic search failure is never fatal — keyword results still return.
+    // Semantic search failure is never fatal, keyword results still return.
     console.warn("[retrieve] semantic search error (degrading to keyword-only):", err);
   }
 
@@ -964,8 +964,8 @@ type ItemSnippetSource = {
 /**
  * Compose a tight snippet for memory_items. Leads with the structured facts
  * (merchant, amount, date, location) the user actually asked about, then
- * folds in smart-section specifics — calories/macros for diet items,
- * recurrence/direction for bills — so the agent can answer "how many
+ * folds in smart-section specifics, calories/macros for diet items,
+ * recurrence/direction for bills, so the agent can answer "how many
  * calories today?" or "what are my recurring bills?" with real numbers.
  * Falls back to summary / raw text when structured fields are sparse.
  */

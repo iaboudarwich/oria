@@ -29,7 +29,7 @@ export function Accordion({
         aria-expanded={open}
       >
         <span className="flex items-center gap-2">
-          <span className="text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
+          <span className="text-eyebrow">
             {label}
           </span>
           {badge != null ? (

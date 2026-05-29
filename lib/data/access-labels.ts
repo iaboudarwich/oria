@@ -1,4 +1,4 @@
-// Plain string constants. No server-only imports — safe to use from both
+// Plain string constants. No server-only imports. safe to use from both
 // client and server components.
 
 import type { AccessLevel } from "@/lib/supabase/types";

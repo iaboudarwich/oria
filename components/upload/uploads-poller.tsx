@@ -10,7 +10,7 @@ import { useRouter } from "next/navigation";
  * short while the user is most likely watching, then settles into a
  * low-pressure heartbeat.
  *
- * Inert when `pending` is false — the component renders nothing and
+ * Inert when `pending` is false. the component renders nothing and
  * the effect immediately bails. Stops on unmount.
  */
 const POLL_SCHEDULE_MS = [2000, 3000, 5000, 8000];

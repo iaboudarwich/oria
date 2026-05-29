@@ -38,7 +38,7 @@ export type SortDecision = {
 const SYSTEM_PROMPT = `You read short user instructions about where receipts should go and map them onto a fixed list of items.
 
 You will be given:
-1. A list of ITEMS (id, title, merchant, category) — these are detected receipts/documents from a single uploaded image.
+1. A list of ITEMS (id, title, merchant, category), these are detected receipts/documents from a single uploaded image.
 2. A list of CUSTOM SECTIONS the user has created (id, name).
 3. Built-in sections (fixed): household, travel, properties, staff, events, finance, legal, personal, vendors, health.
 4. The user's INSTRUCTION sentence in their own language.

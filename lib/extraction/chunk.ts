@@ -41,7 +41,7 @@ export function splitIntoChunks(text: string): string[] {
           const overlap = current.slice(-OVERLAP_CHARS);
           current = overlap + "\n\n" + piece;
         } else {
-          // piece alone exceeds limit — hard-split
+          // piece alone exceeds limit. hard-split
           chunks.push(...hardSplit(piece));
           current = "";
         }

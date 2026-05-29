@@ -52,7 +52,7 @@ export default async function WorkAgentPage() {
         <div className="min-w-0 space-y-6 lg:col-span-2">
           <section className="rounded-2xl border border-line bg-surface-raised p-4">
             <div className="mb-3 flex items-baseline justify-between px-1">
-              <h2 className="text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
+              <h2 className="text-eyebrow">
                 Chat
               </h2>
               <span className="text-[11.5px] text-ink-faint">
@@ -64,7 +64,7 @@ export default async function WorkAgentPage() {
 
           <section>
             <div className="mb-2 flex items-baseline justify-between px-1">
-              <h2 className="text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
+              <h2 className="text-eyebrow">
                 Reports
               </h2>
               <span className="text-[11.5px] text-ink-faint">
@@ -131,14 +131,14 @@ export default async function WorkAgentPage() {
 
 function Suggestions() {
   const items = [
-    "Set up Workspace context once — the AI uses it on every answer.",
+    "Set up Workspace context once. The AI uses it on every answer.",
     "Generate a monthly summary report on the 1st as your operating brief.",
     "Upload leases and invoices and ask the AI to flag anomalies.",
     "Invite analysts and accountants from the Members page.",
   ];
   return (
     <section>
-      <h2 className="mb-2 px-1 text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
+      <h2 className="mb-2 px-1 text-eyebrow">
         Suggested
       </h2>
       <ul className="space-y-1 rounded-2xl border border-line bg-surface-raised p-3">

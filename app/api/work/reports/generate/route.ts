@@ -48,7 +48,7 @@ export async function POST(request: Request) {
   }
   const kind = typeof body.kind === "string" ? body.kind.trim() || "summary" : "summary";
 
-  // Reports are heavier — one Claude call with retrieval + reasoning.
+  // Reports are heavier. one Claude call with retrieval + reasoning.
   // Use an hourly burst window instead of per-minute so a normal user
   // can fire off a few in quick succession but not a script-attack volume.
   const burst = rateLimit({
@@ -109,7 +109,7 @@ export async function POST(request: Request) {
   // polls listWorkspaceReports / report detail to pick up the ready row.
   //
   // after() runs after the response is sent, so cookies are no longer
-  // accessible — use the service-role admin client for the row update,
+  // accessible. use the service-role admin client for the row update,
   // and pass org info into generateWorkReport explicitly (it no longer
   // calls requireContext internally). Capture the small bag of values
   // we need here so the closure doesn't depend on request state.

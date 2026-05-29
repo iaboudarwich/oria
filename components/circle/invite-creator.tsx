@@ -60,7 +60,7 @@ const WORKSPACE_TITLE_SUGGESTIONS = [
 
 /**
  * Create-an-invite form. After a successful create we never render the
- * code/link here — that would mean the same invite appears in two places
+ * code/link here. that would mean the same invite appears in two places
  * (creator + list), with the risk that one card drifts out of date if
  * the user later regenerates. Instead, the form resets, a single thin
  * status line shows the email outcome with the recipient, and the new
@@ -71,7 +71,7 @@ export function InviteCreator({
   orgKind = "circle",
 }: {
   sections: SectionOption[];
-  /** The org being invited to. Drives the title presets — a Workspace
+  /** The org being invited to. Drives the title presets. a Workspace
    *  shouldn't suggest "Wife" / "Driver"; a Circle shouldn't suggest
    *  "Property manager" / "Lawyer". */
   orgKind?: "personal" | "circle" | "office";
@@ -247,7 +247,7 @@ export function InviteCreator({
                       className="flex items-center gap-3 rounded-md px-2 py-1.5 transition-base hover:bg-canvas/60"
                     >
                       <span className="min-w-0 flex-1 text-[12.5px] text-ink">{s.name}</span>
-                      {/* Read checkbox — presence of this key = read access */}
+                      {/* Read checkbox. presence of this key = read access */}
                       <input
                         type="checkbox"
                         name={inputName}
@@ -274,7 +274,7 @@ export function InviteCreator({
           </fieldset>
         ) : null}
 
-        {/* Hidden role field — legacy column, defaults to "household".
+        {/* Hidden role field. legacy column, defaults to "household".
             We surface relationship via the friendly `title` field instead. */}
         <input type="hidden" name="role" value="household" />
 

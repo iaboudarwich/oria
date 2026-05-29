@@ -7,7 +7,7 @@ export const SECTIONS_COOKIE = "oria_sections";
 export const SIDEBAR_WIDTH_COOKIE = "oria_sidebar_w";
 export const SIDEBAR_EXTRAS_COOKIE = "oria_sidebar_extras";
 
-/** Opt-in sidebar items the user can toggle on. Keep the union small —
+/** Opt-in sidebar items the user can toggle on. Keep the union small.
  *  every entry here is a row that lives off-by-default to keep the
  *  sidebar uncluttered for the median user. */
 export type SidebarExtra = "timeline";

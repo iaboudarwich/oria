@@ -69,7 +69,7 @@ const SECTION_KEYS: Section[] = [
 
 /**
  * Per-section upload counts. Issues one head-only COUNT(*) per section in
- * parallel rather than fetching every row and counting in memory — same
+ * parallel rather than fetching every row and counting in memory. same
  * answer, no payload, scales to large orgs.
  */
 export async function countUploadsBySection(): Promise<Record<Section, number>> {

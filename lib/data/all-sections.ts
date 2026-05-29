@@ -42,7 +42,7 @@ export type MergedSection = {
  * the calmest label we tried: descriptive, never alarmist, and the obvious
  * next action is to sort.
  *
- * Invariants — DO NOT WEAKEN:
+ * Invariants. DO NOT WEAKEN:
  *   • Always present in every space (personal, circle, office). Implemented
  *     by injecting this constant into listAllSections rather than storing a
  *     row. There is no DELETE path that can remove it.
@@ -50,7 +50,7 @@ export type MergedSection = {
  *     "hide Unsorted" toggle; we pin `hidden: false` here as the single
  *     source of truth.
  *   • Not a database row. RLS, foreign keys, and section_settings have
- *     nothing to point at, which is the point — there is nothing to scope
+ *     nothing to point at, which is the point. there is nothing to scope
  *     across orgs, nothing to delete by accident, nothing to migrate. */
 export const REVIEW_SECTION: MergedSection = {
   ref: { kind: "review", key: "review" },
@@ -81,7 +81,7 @@ const BUILTIN_LABELS: Record<Section, string> = {
  * active.
  *
  * The Review pseudo-section is always present (can be hidden but not removed)
- * unless `includeReview` is explicitly false — used by callers like the
+ * unless `includeReview` is explicitly false. used by callers like the
  * limited-access section picker where Review doesn't make sense.
  */
 export async function listAllSections(

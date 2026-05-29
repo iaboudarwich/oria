@@ -72,7 +72,7 @@ function deriveCalendarTopic(input: {
     return "overdue";
   }
 
-  // 2. Travel — doc_type is the strongest signal.
+  // 2. Travel. doc_type is the strongest signal.
   if (
     input.documentType === "boarding_pass" ||
     /\bflight\b|\bboarding\b/.test(titleLower)
@@ -155,7 +155,7 @@ export async function loadCalendar(
   }));
 
   // Decide effective scope. Cross-space is opt-in AND gated by
-  // Personal-owner-in-Personal — exactly the same rule that gates Ask
+  // Personal-owner-in-Personal. exactly the same rule that gates Ask
   // Oria's God's Eye toggle.
   const allowCross =
     opts.crossSpace === true && isAccountOwnerInPersonal(ctx);
@@ -172,7 +172,7 @@ export async function loadCalendar(
   }
 
   const supabase = await createClient();
-  // `spaces` exposed to the UI is still the full membership list — it
+  // `spaces` exposed to the UI is still the full membership list. it
   // powers the (visible only to Personal owners) cross-space toggle.
   // Data fetched below is constrained to `orgIds`.
   const spaces = allSpaces;
@@ -217,7 +217,7 @@ export async function loadCalendar(
   const items = (itemsRes.data ?? []) as ItemRow[];
 
   // For upload-linked reminders we want both the parent's section
-  // (for category colouring) and document_type (for topic precision —
+  // (for category colouring) and document_type (for topic precision.
   // e.g. a reminder spawned from an invoice should classify as
   // "invoice", a contract → "contract"/"renewal").
   const uploadIds = Array.from(
@@ -335,7 +335,7 @@ export async function loadCalendar(
   );
 
   // Final safety net. If any entry slipped through with a space_id
-  // outside the allowed set (shouldn't happen — both queries filter
+  // outside the allowed set (shouldn't happen. both queries filter
   // by .in("organization_id", orgIds)), drop it and log a scope
   // violation. The mapping space_id ≡ organization_id is preserved
   // upstream.

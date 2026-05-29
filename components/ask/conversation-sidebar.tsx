@@ -83,7 +83,7 @@ export function ConversationSidebar({
 
   return (
     <>
-      {/* Mobile overlay backdrop — renders when sidebar is expanded on small screens */}
+      {/* Mobile overlay backdrop. renders when sidebar is expanded on small screens */}
       {!collapsed && (
         <div
           className="fixed inset-0 z-30 bg-ink/10 md:hidden"
@@ -92,7 +92,7 @@ export function ConversationSidebar({
         />
       )}
 
-      {/* Collapsed tab — narrow strip with expand chevron */}
+      {/* Collapsed tab. narrow strip with expand chevron */}
       {collapsed && (
         <button
           type="button"
@@ -127,7 +127,7 @@ export function ConversationSidebar({
         aria-label="Conversation history"
       >
         <div className="flex items-center justify-between px-1 mb-2">
-          <p className="text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
+          <p className="text-eyebrow">
             History
           </p>
           <div className="flex items-center gap-2">

@@ -43,7 +43,7 @@ export function reminderEmailText(d: ReminderEmailData): string {
 
 /**
  * Minimal HTML email. Inline styles only, wide email-client compatibility.
- * Tone and structure match the invite email — clean, no marketing.
+ * Tone and structure match the invite email. clean, no marketing.
  */
 export function reminderEmailHtml(d: ReminderEmailData): string {
   const greeting = d.recipientName
@@ -116,7 +116,7 @@ export function reminderEmailHtml(d: ReminderEmailData): string {
 </html>`;
 }
 
-/** Format an ISO timestamp as "Monday, January 6" (UTC, v1 — no tz). */
+/** Format an ISO timestamp as "Monday, January 6" (UTC, v1. no tz). */
 function formatDueDateUtc(iso: string): string {
   try {
     const d = new Date(iso);

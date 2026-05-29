@@ -14,7 +14,7 @@ import { useDismissable } from "@/lib/hooks/use-dismissable";
  * Bottom-left avatar pill in the sidebar. Click → small Apple-style
  * menu floats above the pill with: name + email header, Settings,
  * Admin (admin only), Sign out. Replaces the inline UserCard + the
- * separate "Settings" entry in the sidebar nav — the sidebar stays
+ * separate "Settings" entry in the sidebar nav. the sidebar stays
  * focused on places, the account menu owns account-level actions.
  *
  * Collapsed sidebar: the menu pops to the RIGHT of the avatar instead

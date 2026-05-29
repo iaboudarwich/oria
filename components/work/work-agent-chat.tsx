@@ -15,13 +15,13 @@ type Turn = {
   errorMessage?: string;
 };
 
-/** Prior-turn shape sent back as history. Defined locally — the
+/** Prior-turn shape sent back as history. Defined locally. the
  *  server-side AgentMessage type can't be imported into a Client Component. */
 type ChatMessage = { role: "user" | "assistant"; content: string };
 
 /**
  * Persistent Work AI chat. Same NDJSON stream as Ask Oria, different
- * endpoint (/api/work/agent), longer answers, no scope picker — the
+ * endpoint (/api/work/agent), longer answers, no scope picker. the
  * Workspace IS the scope. Conversation lives in client state for this
  * page; the model's standing context comes from workspace_context on
  * the server.

@@ -9,7 +9,7 @@ import type { HintKey } from "@/lib/data/onboarding";
  * One-time dismissible onboarding hint card.
  *
  * The server evaluates should_show before rendering, so there's no
- * client-side flash — if the user already dismissed it, the component
+ * client-side flash. if the user already dismissed it, the component
  * is simply never sent to the browser.
  *
  * Dismiss paths:
@@ -27,11 +27,11 @@ export function Hint({
   hintKey: HintKey;
   title: string;
   body: string;
-  /** Server-evaluated — pass false to suppress without mounting. */
+  /** Server-evaluated. pass false to suppress without mounting. */
   shouldShow: boolean;
   /**
    * When true, hide on screens ≥ 768 px via CSS (md:hidden).
-   * No JS viewport check needed — avoids set-state-in-effect lint rule
+   * No JS viewport check needed. avoids set-state-in-effect lint rule
    * and avoids hydration mismatches.
    */
   mobileOnly?: boolean;
@@ -51,7 +51,7 @@ export function Hint({
 
   return (
     <>
-      {/* Backdrop — click anywhere outside the card to dismiss */}
+      {/* Backdrop. click anywhere outside the card to dismiss */}
       <div
         className={`fixed inset-0 z-40 bg-ink/10 animate-fade-in ${hiddenOnDesktop}`}
         onClick={dismiss}

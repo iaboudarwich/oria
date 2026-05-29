@@ -4,7 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 
 /**
  * Ops-shaped event log. Distinct from `learning_events` (which captures
- * product behaviour) — this table is for platform health: failed AI
+ * product behaviour). this table is for platform health: failed AI
  * calls, send errors, stuck jobs. The Admin / System Health page reads
  * these to show real numbers instead of just env-var presence.
  *
@@ -13,10 +13,10 @@ import { createAdminClient } from "@/lib/supabase/admin";
  * code break the request.
  *
  * Severity convention:
- *   • "info"  — successful AI call, successful email send, etc.
- *   • "warn"  — degraded but recoverable (extraction skipped, rate-
+ *   • "info" . successful AI call, successful email send, etc.
+ *   • "warn" . degraded but recoverable (extraction skipped, rate-
  *               limit retry succeeded).
- *   • "error" — outright failure with user impact.
+ *   • "error". outright failure with user impact.
  */
 
 export type SystemEventSeverity = "info" | "warn" | "error";
@@ -64,7 +64,7 @@ export const USER_VISIBLE_EVENT_KINDS: SystemEventKind[] = [
 
 /**
  * Friendly, calm copy keyed by event kind. The status strip in the
- * topbar consumes this — context can override the trailing label when
+ * topbar consumes this. context can override the trailing label when
  * an event carries a useful detail (e.g. the upload title).
  */
 export function formatEventMessage(e: {
@@ -73,7 +73,7 @@ export function formatEventMessage(e: {
   message: string | null;
 }): string {
   // Deliberately generic. The global status strip sits in the topbar
-  // across every page — leaking an item title like "Processed Coffee
+  // across every page. leaking an item title like "Processed Coffee
   // with 2% milk and stevia" onto the Bills, Travel, and Calendar
   // pages was the bug the user reported. Friendly section-scoped
   // detail belongs inside the section view, not in the chrome.
@@ -134,7 +134,7 @@ export async function recordSystemEvent(input: {
       actor_id: input.actorId ?? null,
     });
   } catch {
-    // Best-effort. Telemetry must never break a real request — and the
+    // Best-effort. Telemetry must never break a real request. and the
     // most likely reason this would fail is the table doesn't exist yet
     // (migration not applied), which is exactly when we DON'T want to
     // surface an error to the user.
@@ -224,7 +224,7 @@ export async function listRecentEvents(input: {
  * tokens, total estimated cost, sent/failed email totals.
  *
  * Prefer sumEventContextFields() when you need multiple totals over the
- * same (kind, time-window) — it issues ONE query and sums all fields
+ * same (kind, time-window). it issues ONE query and sums all fields
  * locally instead of pulling the same rows back N times.
  */
 export async function sumEventContext(input: {
@@ -243,7 +243,7 @@ export async function sumEventContext(input: {
 /**
  * Multi-field variant. One round-trip; many sums. The admin-health page
  * was calling sumEventContext three times back-to-back for AI cost
- * stats — same rows pulled three times, 15K rows of JSON in flight per
+ * stats. same rows pulled three times, 15K rows of JSON in flight per
  * render. This collapses them into one query.
  */
 export async function sumEventContextFields(input: {

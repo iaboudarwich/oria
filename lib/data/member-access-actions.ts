@@ -46,8 +46,8 @@ export async function updateMemberAccess(formData: FormData): Promise<void> {
 /**
  * Replace the allowlist of sections for a "limited" member. FormData keys:
  *   - membership_id
- *   - builtin (multiple) — built-in section enum values
- *   - custom (multiple)  — custom section UUIDs
+ *   - builtin (multiple). built-in section enum values
+ *   - custom (multiple) . custom section UUIDs
  */
 export async function setMemberSections(formData: FormData): Promise<void> {
   const membershipId = String(formData.get("membership_id") ?? "");

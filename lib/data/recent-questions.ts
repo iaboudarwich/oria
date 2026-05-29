@@ -17,7 +17,7 @@ import type { SectionScope } from "./section-scope";
  * When `scope` is supplied, only questions that were originally asked
  * inside that exact section scope are returned. The Ask Oria API
  * tags learning events with `via: "ask:builtin:finance"` etc., so we
- * match against that tag — a Diet question never shows up as a
+ * match against that tag. a Diet question never shows up as a
  * recent Bills suggestion and vice versa.
  */
 export async function listRecentUserQuestions(input: {
@@ -70,14 +70,14 @@ export async function listRecentUserQuestions(input: {
       if (input.surface === "ask" && isWork) continue;
 
       // Section-scope match. The Ask API records `via` as either
-      // "ask" (no scope) or `ask:<kind>:<key>` — so we filter on the
+      // "ask" (no scope) or `ask:<kind>:<key>`. so we filter on the
       // exact compound tag when the caller supplied a scope.
       if (input.scope) {
         const wantTag = `ask:${input.scope.kind}:${input.scope.key}`;
         if (viaStr !== wantTag) continue;
       } else if (input.surface === "ask") {
         // The general /dashboard/ask page should NOT surface
-        // section-scoped recents — those belong to their section.
+        // section-scoped recents. those belong to their section.
         if (viaStr.startsWith("ask:")) continue;
       }
 

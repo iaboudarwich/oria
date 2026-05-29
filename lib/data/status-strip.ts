@@ -9,7 +9,7 @@ const ONE_YEAR_SECONDS = 60 * 60 * 24 * 365;
 /**
  * Last-event-id the user dismissed from the topbar status strip. Comparing
  * the latest fresh event's id to this cookie tells us whether to show the
- * strip at all. We don't store per-event read state in the database — a
+ * strip at all. We don't store per-event read state in the database. a
  * single cookie is enough for the calm in-app surface we want.
  */
 export async function readLastStatusSeenId(): Promise<string | null> {
@@ -33,7 +33,7 @@ export async function writeLastStatusSeenId(id: string): Promise<void> {
  * right before redirecting (in a Server Action). The topbar reads it
  * on the next render.
  *
- * We DON'T clear the cookie in the read path — Next.js only permits
+ * We DON'T clear the cookie in the read path. Next.js only permits
  * cookie writes inside Server Actions or Route Handlers, and the
  * topbar is a Server Component during render. Instead the cookie has
  * a tight 20-second TTL, which is more than enough for the redirect →

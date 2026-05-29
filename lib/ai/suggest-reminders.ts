@@ -7,7 +7,7 @@ export type ReminderSuggestion = {
   /** Stable key scoped to this upload. Used in dismissed_suggestions. */
   key: string;
   title: string;
-  /** ISO date — the actual event/deadline date */
+  /** ISO date, the actual event/deadline date */
   target_date: string;
   /** How many days before target_date to fire the reminder */
   default_lead_days: number;
@@ -15,7 +15,7 @@ export type ReminderSuggestion = {
 
 /**
  * Derive reminder suggestions from an upload's extracted entities.
- * Pure function — reads from DB, returns suggestions without writing.
+ * Pure function, reads from DB, returns suggestions without writing.
  * Filters: past dates, existing reminders, dismissed suggestions.
  */
 export async function generateSuggestionsForUpload(
@@ -117,7 +117,7 @@ export async function generateSuggestionsForUpload(
       });
     }
   } catch {
-    // Best-effort — trackables table may not exist yet
+    // Best-effort, trackables table may not exist yet
   }
 
   return noOverlap;
@@ -147,7 +147,7 @@ function deriveRaw(
         if (match) leadDays = Math.min(365, Math.max(7, parseInt(match[1], 10)));
         suggestions.push({
           key: `${uploadId}:lease_end`,
-          title: `Lease ends${f.property_address ? ` — ${str(f.property_address).slice(0, 50)}` : ""}`,
+          title: `Lease ends${f.property_address ? `, ${str(f.property_address).slice(0, 50)}` : ""}`,
           target_date: str(f.end_date),
           default_lead_days: leadDays,
         });
@@ -179,7 +179,7 @@ function deriveRaw(
         suggestions.push({
           key: `${uploadId}:flight_depart`,
           title: `Flight${dest ? ` to ${dest}` : ""} departs`,
-          // departure_datetime is ISO datetime — normalize to date
+          // departure_datetime is ISO datetime, normalize to date
           target_date: str(f.departure_datetime).slice(0, 10),
           default_lead_days: 1,
         });
@@ -202,7 +202,7 @@ function deriveRaw(
       if (f.due_date) {
         suggestions.push({
           key: `${uploadId}:invoice_due`,
-          title: `Invoice due${f.vendor ? ` — ${str(f.vendor).slice(0, 50)}` : ""}`,
+          title: `Invoice due${f.vendor ? `, ${str(f.vendor).slice(0, 50)}` : ""}`,
           target_date: str(f.due_date),
           default_lead_days: 3,
         });

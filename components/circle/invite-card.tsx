@@ -174,7 +174,7 @@ export function InviteCard({
                     // The old card (this one) is about to unmount because
                     // regenerate revokes the old invite. The new invite
                     // mounts auto-open via the page's `defaultOpen` rule,
-                    // so the user immediately sees the fresh code/link —
+                    // so the user immediately sees the fresh code/link.
                     // no transient mismatch between code and card.
                     router.refresh();
                   } else {

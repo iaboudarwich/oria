@@ -6,7 +6,7 @@ import { recordSystemEvent } from "./system-events";
  * Scope-isolation guard. Every read that returns org-scoped rows
  * should pass them through here so that:
  *   1. Any row whose `organization_id` doesn't match the expected
- *      org is DROPPED (defence in depth — even if a query is wrong,
+ *      org is DROPPED (defence in depth. even if a query is wrong,
  *      the data never reaches the UI).
  *   2. The mismatch is logged to system_events as `scope_violation`
  *      with the call-site label, so operators see leak attempts on
@@ -59,7 +59,7 @@ export function enforceActiveOrg<T extends WithOrgId>(
 
 /**
  * Same guard for a list of allowed org ids (cross-space God's Eye
- * mode). Use sparingly — only the Personal-owner explicit toggle.
+ * mode). Use sparingly. only the Personal-owner explicit toggle.
  */
 export function enforceAllowedOrgs<T extends WithOrgId>(
   rows: T[],

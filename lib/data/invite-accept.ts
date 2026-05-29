@@ -41,7 +41,7 @@ export type AcceptInviteResult =
 
 /**
  * Read-only preview of an invite by long-form token. Safe to call without
- * being a member of the target org — backed by a SECURITY DEFINER RPC.
+ * being a member of the target org. backed by a SECURITY DEFINER RPC.
  */
 export async function previewInvite(
   token: string,
@@ -110,7 +110,7 @@ export async function tryAcceptInvite(
     // members + a "You joined SpaceName" flash to the joiner themselves.
     // The event reaches existing members via the system_events feed;
     // the flash is a one-shot cookie consumed by the topbar on first
-    // render after the redirect. Best-effort — lookup failures fall
+    // render after the redirect. Best-effort. lookup failures fall
     // back to generic copy.
     const {
       data: { user },

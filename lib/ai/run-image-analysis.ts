@@ -10,9 +10,9 @@ const EXTRACTOR_VERSION = "v1-vision";
  * Full image analysis pipeline for one upload.
  *
  * Steps:
- *   1. Fetch the upload metadata — skip if not an image or already extracted.
+ *   1. Fetch the upload metadata, skip if not an image or already extracted.
  *   2. Download the file bytes from Supabase Storage.
- *   3. Call analyzeImage() — single Haiku vision call returns doc_type,
+ *   3. Call analyzeImage(), single Haiku vision call returns doc_type,
  *      fields, confidence, raw_text.
  *   4. Store raw_text + description as a document_chunk so semantic search works.
  *   5. Upsert into extracted_entities.

@@ -11,7 +11,7 @@ import "server-only";
  * Strategy: detect at upload time, convert to JPEG before storing, then
  * let every downstream step (storage, signed-URL previews, vision
  * extraction, section routing) treat it as a normal JPEG. The user
- * doesn't see "converting…" — the file just works.
+ * doesn't see "converting…". the file just works.
  *
  * Conversion uses heic-convert (pure JS, no native deps, runs on
  * Vercel's Node runtime). Slower than libheif-native but at 5–20
@@ -50,7 +50,7 @@ export async function convertHeicToJpeg(input: Buffer): Promise<Buffer> {
   // heic-decode internally does `[...buffer]` to read the box header,
   // so it requires an iterable (Uint8Array / Buffer), NOT a raw
   // ArrayBuffer. The @types/heic-convert signature claims ArrayBufferLike,
-  // which is wrong at runtime — pass the Buffer through and cast.
+  // which is wrong at runtime. pass the Buffer through and cast.
   const out = await convert({
     buffer: input as unknown as ArrayBufferLike,
     format: "JPEG",

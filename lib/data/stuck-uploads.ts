@@ -6,7 +6,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { requireContext } from "./organizations";
 import { runProcessUploadSafely } from "./upload-process-safe";
 
-const STUCK_THRESHOLD_MS = 5 * 60 * 1000; // 5 minutes — "processing"
+const STUCK_THRESHOLD_MS = 5 * 60 * 1000; // 5 minutes. "processing"
 // "received" means the upload row was inserted but the after()-scheduled
 // extraction never ran (function crashed, deploy mid-flight, cold-start
 // abort). Wait longer before declaring it stuck so we don't race a slow
@@ -20,13 +20,13 @@ const MAX_PER_SWEEP_ALL_ORGS = 20;
 /**
  * Find uploads in the active org that have been stuck and schedule a
  * retry. Catches two cases:
- *   • status="processing" older than 5 min — extraction started but
+ *   • status="processing" older than 5 min. extraction started but
  *     never finished (Claude timeout, function crash mid-flight).
- *   • status="received"   older than 10 min — the after() pass never
+ *   • status="received"   older than 10 min. the after() pass never
  *     even fired (the upload row landed in DB but the background job
  *     wasn't queued; usually a function abort right after the response).
  *
- * Called by the inbox page on render — cheap, indexed query, scoped
+ * Called by the inbox page on render. cheap, indexed query, scoped
  * to the active org. Each retry is scheduled via `after()` so it
  * doesn't block the page response. Idempotent: if the original job
  * still finishes mid-retry, the retry just confirms the same state.
@@ -68,7 +68,7 @@ export async function recoverStuckUploads(): Promise<void> {
       }
     });
   } catch {
-    // Best-effort recovery — never break the inbox render.
+    // Best-effort recovery. never break the inbox render.
   }
 }
 
@@ -81,7 +81,7 @@ export async function recoverStuckUploads(): Promise<void> {
  * this so any operator visit doubles as a janitor pass.
  *
  * Returns the number of recoveries scheduled. Safe to call from
- * page renders — sweep is capped, never throws.
+ * page renders. sweep is capped, never throws.
  */
 export async function recoverStuckUploadsAcrossOrgs(): Promise<number> {
   try {

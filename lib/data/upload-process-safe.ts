@@ -67,7 +67,7 @@ export async function runProcessUploadSafely(
         organizationId: orgId,
       });
     } catch {
-      // Last-resort silence — stuck detection will catch this row on
+      // Last-resort silence. stuck detection will catch this row on
       // the next inbox render.
     }
   }

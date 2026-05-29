@@ -2,7 +2,7 @@
  * Quiet loading placeholder used by every dashboard loading.tsx. The
  * sidebar stays mounted (it's in the layout); only the page area
  * renders this while the next segment fetches. Keeping it visually
- * close to the real pages avoids the "flash of skeleton" feeling —
+ * close to the real pages avoids the "flash of skeleton" feeling.
  * the eye sees structure, not motion.
  */
 export function PageSkeleton({

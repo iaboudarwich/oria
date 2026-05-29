@@ -8,8 +8,8 @@ type TopbarProps = {
 };
 
 /**
- * Page chrome. A thin eyebrow above the title names the active space —
- * "Personal", "Office Building A", "Family" — so the user never loses
+ * Page chrome. A thin eyebrow above the title names the active space.
+ * "Personal", "Office Building A", "Family". so the user never loses
  * their grounding when bouncing between Workspaces and Circles.
  * Topbar is async because it reads getCurrentContext, which is cached
  * by React for the duration of the render so this is free in practice.
@@ -22,17 +22,21 @@ export async function Topbar({ title, subtitle }: TopbarProps) {
       <div className="flex items-center justify-between gap-4">
         <div className="min-w-0 pl-12 lg:pl-0">
           {spaceName ? (
-            <p className="truncate text-[11.5px] text-ink-faint">
-              <span className="text-ink-muted">{spaceName}</span>
+            <p className="truncate text-[12px] text-ink-muted">
+              <span className="font-medium text-ink">{spaceName}</span>
               <span className="mx-1.5 text-ink-faint">›</span>
               <span>{title}</span>
             </p>
           ) : null}
-          <h1 className="text-[20px] font-semibold tracking-tight text-ink sm:text-[22px]">
+          {/* Page title uses the design-system text-title token so every
+              page lands at the same confident weight + size. Subtitle uses
+              ink-soft (one shade darker than ink-muted) so it reads as
+              supporting copy rather than fine print. */}
+          <h1 className="mt-0.5 text-title text-ink">
             {title}
           </h1>
           {subtitle ? (
-            <p className="mt-0.5 text-[13px] text-ink-muted">{subtitle}</p>
+            <p className="mt-1 text-[13.5px] text-ink-soft">{subtitle}</p>
           ) : null}
         </div>
         <div className="flex items-center gap-2">

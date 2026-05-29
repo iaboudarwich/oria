@@ -18,7 +18,7 @@ const VALID_KEYS = new Set<TemplateKey>([
 /**
  * Accept one or more template choices from the onboarding picker.
  *
- * The picker submits a FormData with `template` entries — one per
+ * The picker submits a FormData with `template` entries. one per
  * selected card. We validate against the known set (a forged value
  * can't seed unexpected sections), apply the merged template, then
  * redirect to the guided chat carrying the chosen keys so the AI's
@@ -64,7 +64,7 @@ export async function chooseTemplates(formData: FormData): Promise<void> {
 
   // Carry the real (non-custom) selections into the guided chat so the
   // AI's opening context can personalize off them. `custom` is omitted
-  // — it carries no signal.
+  //. it carries no signal.
   const carried = keys.filter((k) => k !== "custom");
 
   if (orgId) {

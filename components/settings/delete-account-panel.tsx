@@ -33,7 +33,7 @@ export function DeleteAccountPanel() {
   return (
     <section>
       <div className="mb-2 px-1">
-        <h2 className="text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
+        <h2 className="text-eyebrow">
           Danger zone
         </h2>
         <p className="mt-1 text-[12px] text-ink-faint">

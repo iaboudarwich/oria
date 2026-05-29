@@ -13,7 +13,7 @@ import { sendDueReminderNotifications } from "@/lib/data/reminder-notifications"
  * Auth: Authorization: Bearer CRON_SECRET (same secret as process-uploads).
  *
  * Returns: { notified, failed, skipped } counts.
- * "skipped" means email isn't configured — not an error.
+ * "skipped" means email isn't configured. not an error.
  */
 export async function GET(req: NextRequest) {
   const secret = process.env.CRON_SECRET;

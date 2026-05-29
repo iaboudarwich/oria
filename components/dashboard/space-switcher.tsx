@@ -60,7 +60,7 @@ export function SpaceSwitcher({ active, spaces }: Props) {
       if (result.ok) {
         // Client-side navigation lands on /dashboard with the new cookie
         // set. switchSpace already called revalidatePath("/dashboard",
-        // "layout"), so the RSC tree refetches automatically — no extra
+        // "layout"), so the RSC tree refetches automatically. no extra
         // router.refresh() needed.
         router.push("/dashboard");
       } else {
@@ -70,7 +70,7 @@ export function SpaceSwitcher({ active, spaces }: Props) {
   }
 
   // Reality-catch-up, React 19 render-body idiom. The Server Action ran,
-  // the cookie flipped, the layout re-rendered with the new `active` —
+  // the cookie flipped, the layout re-rendered with the new `active`.
   // so the optimistic state has done its job and can step aside. Without
   // this the row stays "Switching…" forever because no other path
   // resets pendingId on success.

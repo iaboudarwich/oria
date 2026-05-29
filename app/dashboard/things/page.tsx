@@ -37,7 +37,7 @@ export default async function ThingsPage({
         {/* Sidebar */}
         <aside className="hidden w-48 shrink-0 lg:block">
           <div className="mb-2 flex items-center justify-between px-1">
-            <p className="text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
+            <p className="text-eyebrow">
               Types
             </p>
             <Link

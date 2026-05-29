@@ -63,7 +63,7 @@ export async function createReminder(formData: FormData): Promise<void> {
  *
  * The calendar may show reminders from more than one space when the
  * Personal-owner uses God's Eye. So a mutated reminder might not be
- * pinned to the *active* org — but it must still belong to a space the
+ * pinned to the *active* org. but it must still belong to a space the
  * user is a member of. We restrict the update/delete with an explicit
  * `.in("organization_id", userSpaceIds)` rather than relying solely on
  * RLS, so a missing/incorrect policy can never silently widen the
@@ -104,7 +104,7 @@ export async function deleteReminder(formData: FormData): Promise<void> {
 
   // Capture the row before deletion so we can record a useful learning signal
   // (was it a suggestion the user rejected? a manual entry they cleaned up?)
-  // and so we know which org to log against — the reminder may live in a
+  // and so we know which org to log against. the reminder may live in a
   // different org than the active one. The .in() filter is the scope guard:
   // a reminder outside the user's spaces would not be returned even if RLS
   // somehow let it slip.

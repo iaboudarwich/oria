@@ -177,7 +177,7 @@ export async function sendDueReminderNotifications(): Promise<NotificationBatchR
       });
       failed++;
     } else {
-      // status === "skipped" — email not configured; don't mark as failed
+      // status === "skipped". email not configured; don't mark as failed
       // so the cron will retry once email IS configured.
       skipped++;
     }

@@ -1,7 +1,7 @@
 import "server-only";
 
 import type Anthropic from "@anthropic-ai/sdk";
-// xlsx removed (CVE-2023-30533 / CVE-2024-22363 — unpatched high severity).
+// xlsx removed (CVE-2023-30533 / CVE-2024-22363, unpatched high severity).
 // Excel parsing is handled exclusively by the Python sidecar (pandas/openpyxl).
 // When the sidecar is unavailable, spreadsheets are skipped gracefully.
 import * as Sentry from "@sentry/nextjs";
@@ -87,7 +87,7 @@ export type ExtractionResult = {
   source_quality_notes: string | null;
   items: ExtractedItem[];
   processor: string;
-  /** Full pre-extracted text (for chunking / semantic search). Optional — present
+  /** Full pre-extracted text (for chunking / semantic search). Optional; present
    *  when the Python extraction service ran, or concatenated from item raw_text otherwise. */
   rawText?: string;
   /** Which tool produced the rawText (e.g. "pymupdf4llm", "pandas", "claude"). */
@@ -142,11 +142,11 @@ const SPREADSHEET_MIME = new Set([
 ]);
 
 // Per-file caps for the in-prompt path. These cap what we send TO Claude,
-// not what we store — oversize files are still saved and searchable by
+// not what we store, oversize files are still saved and searchable by
 // filename + user note, just without structured extraction. The image cap
 // reflects Anthropic's vision payload ceiling (~5MB per image block).
 //
-// Spreadsheet uploads are capped at 25MB — above this we skip extraction
+// Spreadsheet uploads are capped at 25MB, above this we skip extraction
 // rather than risking OOM on a Fluid Compute instance.
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 const MAX_PDF_BYTES = 32 * 1024 * 1024;
@@ -156,7 +156,7 @@ const MAX_SHEET_BYTES = 25 * 1024 * 1024;
 /**
  * Reason an extraction call skipped a file. Surfaces in upload metadata so
  * the UI can show a calm "kept on file, couldn't read" message instead of
- * silently falling back. `null` here means "no skip — extraction ran".
+ * silently falling back. `null` here means "no skip, extraction ran".
  */
 export type SkipReason =
   | "image_too_large"
@@ -174,48 +174,50 @@ export type ExtractionOutcome =
 
 const SYSTEM_PROMPT = `You are Oria's document intelligence engine.
 
+STYLE RULE (strict): NEVER use the em-dash character (Unicode U+2014, the long horizontal punctuation mark between two words) in any string field you emit, especially "title" and "summary". Use a comma, a period, or a rewrite instead. Zero exceptions.
+
 Read the attached file carefully and extract every distinct piece of information so the user can search and ask about it later.
 
 CRITICAL: If the file contains multiple receipts, invoices, or documents laid out together (e.g. a photo of three receipts on a table, a scan with two invoices), return ONE item per receipt/document. Do not merge them. A photo with five receipts should produce five items.
 
-TRAVEL DOCUMENTS — one item per LEG: a multi-leg flight itinerary, a multi-segment train trip, or a multi-stop hotel booking should produce one item per discrete event the user needs on their calendar. A round-trip with two flights produces TWO items, each with occurred_at = the departure datetime, title = "Origin → Destination, <date>", and merchant = the carrier. A booking confirmation covering both an outbound and a return flight is NOT a single item.
+TRAVEL DOCUMENTS. One item per LEG: a multi-leg flight itinerary, a multi-segment train trip, or a multi-stop hotel booking should produce one item per discrete event the user needs on their calendar. A round-trip with two flights produces TWO items, each with occurred_at = the departure datetime, title = "Origin → Destination, <date>", and merchant = the carrier. A booking confirmation covering both an outbound and a return flight is NOT a single item.
 
 For each item:
 - Read in the original language; do not translate.
 - Treat handwriting the same as typed text; set is_handwritten=true if any.
 - Pull the merchant/vendor (for receipts/invoices), the total amount with currency, the transaction date/time, location, payment method, and any line items.
 - Suggest the best section. If you're not sure, set suggested_section to null and confidence below 0.6.
-- Suggest a short human title, e.g. "Spinneys, Feb 12 — 47.20 USD" or "Hermès invoice, Beirut — 1,250 EUR".
+- Suggest a short human title, e.g. "Spinneys, Feb 12, 47.20 USD" or "Hermès invoice, Beirut, 1,250 EUR".
 - Pick a category in your own words: "groceries", "fashion / luxury shopping", "money transfer", "household maintenance", "fuel", etc.
 - Confidence (0..1) reflects how cleanly you read this specific item.
 
-BUSINESS DOCUMENTS — when the file looks operational (contract, term sheet, bank statement, transaction export, lease, board minutes, financial report), be exhaustive:
+BUSINESS DOCUMENTS. When the file looks operational (contract, term sheet, bank statement, transaction export, lease, board minutes, financial report), be exhaustive:
 - Pull every named party, vendor, tenant, customer, counterparty into entities.people / entities.companies.
 - Capture every amount with its context: rent, deposit, fee, valuation, ownership %, interest rate, recurring charge, late payment, transaction id, invoice number.
 - Capture every relevant date: signing, closing, due, expiration, renewal, board meeting, transaction date.
 - Note obligations, risks, and commitments in action_items when actionable, or in summary when descriptive.
 - For spreadsheets and bank/transaction exports, return one item per discrete transaction or line. If hundreds of similar rows, produce a single summary item plus a few exemplar rows.
 
-DIRECTION — set direction whenever a document moves money:
+DIRECTION. Set direction whenever a document moves money:
 - "outflow" for money the user paid or owes: bills, supplier invoices received, purchase receipts, outgoing wire transfers, lease/rent payments.
 - "inflow" for money the user received: sales invoices issued to customers, customer receipts, refunds, incoming transfers, dividend or interest income.
 - null for non-financial or ambiguous documents (contracts without monetary movement, statements that contain both directions, etc.).
 
-SMART SECTIONS — set smart_section on each item:
-- "diet" when the item is food the user ate (meal photo, restaurant receipt, food description). Estimate calories, protein_g, carbs_g, fat_g as plain numbers. Be DECISIVE — a reasonable rough estimate is much more useful than null. Use both the image AND the user_description (e.g. "lunch: chicken bowl, rice, salad" → estimate ~600 cal, 45g protein, 70g carbs, 18g fat). Only leave calories null when the item genuinely contains no food cue at all. Suggest a friendly meal title like "Chicken bowl with rice and salad". The downstream pipeline always overrides occurred_at to the upload time for meals (the user uploads when they eat), so you can leave occurred_at null here.
+SMART SECTIONS. Set smart_section on each item:
+- "diet" when the item is food the user ate (meal photo, restaurant receipt, food description). Estimate calories, protein_g, carbs_g, fat_g as plain numbers. Be DECISIVE: a reasonable rough estimate is much more useful than null. Use both the image AND the user_description (e.g. "lunch: chicken bowl, rice, salad" → estimate ~600 cal, 45g protein, 70g carbs, 18g fat). Only leave calories null when the item genuinely contains no food cue at all. Suggest a friendly meal title like "Chicken bowl with rice and salad". The downstream pipeline always overrides occurred_at to the upload time for meals (the user uploads when they eat), so you can leave occurred_at null here.
 - "bills" when the item is a bill or invoice the user owes or paid (utility, rent, subscription, recurring service). Pull amount + currency + occurred_at (use the DUE DATE if visible, otherwise the issue/payment date). Detect recurrence: set is_recurring=true and recurring_interval ("monthly" / "quarterly" / "yearly" / "weekly") when the bill clearly recurs. Leave is_recurring null when uncertain.
 - null when the item is neither (a contract, photo, note, generic receipt that isn't a household bill).
 
-CALENDAR / EVENT DATES — occurred_at is what the Calendar and reminder system read. It should always represent the NEXT actionable moment for the item, not the moment the document was created:
+CALENDAR / EVENT DATES. occurred_at is what the Calendar and reminder system read. It should always represent the NEXT actionable moment for the item, not the moment the document was created:
 - For boarding passes, tickets, itineraries, and reservations, occurred_at MUST be the EVENT date and time (the flight time, the show time, the hotel check-in), NOT the booking date or issue date.
 - For invoices and bills, occurred_at is the DUE DATE when visible. If only an issue date is present and the bill is recurring, use the next expected due date.
-- For leases and rental agreements, occurred_at is the LEASE EXPIRATION date or the next renewal/break-clause date — NOT the signing date. If only the signing date is present and the term is stated (e.g. "12-month lease starting Jan 1, 2026"), compute the expiration.
+- For leases and rental agreements, occurred_at is the LEASE EXPIRATION date or the next renewal/break-clause date, NOT the signing date. If only the signing date is present and the term is stated (e.g. "12-month lease starting Jan 1, 2026"), compute the expiration.
 - For contracts and agreements, occurred_at is the EXPIRATION or NEXT RENEWAL date when stated. If neither is visible, leave it null and put the signing date in entities.dates instead.
 - For insurance policies, occurred_at is the RENEWAL date (when the policy needs to be re-paid or re-bound). The effective-from date goes in entities.dates.
 - For subscriptions and recurring services, occurred_at is the NEXT CHARGE date.
 - For receipts of past purchases, occurred_at is the purchase date/time.
 - For meal photos, occurred_at is when the meal was eaten (often = upload time).
-- If you cannot infer the right date, leave occurred_at null. Don't guess wildly — better empty than wrong.
+- If you cannot infer the right date, leave occurred_at null. Don't guess wildly; better empty than wrong.
 
 USER CONTEXT may be provided alongside the file. It's a free-form note the user typed before uploading (e.g. "Lunch: chicken, rice, salad" or "Electricity bill for LA apartment"). Use it to:
 - Disambiguate when the image is unclear.
@@ -380,7 +382,7 @@ export function getExtractionModel(): string {
 /**
  * Model for TYPED quick-logs ("I spent $50 at Chanel", "lunch: chicken
  * and rice"). These are short, plain-language, and far easier than
- * reading a blurry multi-receipt photo or a 40-sheet workbook — so they
+ * reading a blurry multi-receipt photo or a 40-sheet workbook, so they
  * run on the cheap/fast model by default instead of the heavyweight
  * extraction model. This is the "cheaper model for simple tasks" half of
  * task-based routing; file extraction keeps using getExtractionModel().
@@ -430,7 +432,7 @@ export async function extractFromUpload(input: {
         preExtracted = { text: routed.text, method: routed.method, fileHash: routed.fileHash };
       }
     } catch (err) {
-      // Router failure is non-fatal — fall through to the original Claude path.
+      // Router failure is non-fatal, fall through to the original Claude path.
       console.warn("[extract] routeExtraction error (falling back to Claude):", err);
     }
   }
@@ -535,7 +537,7 @@ Call store_extraction.`,
     ];
   } else if (preExtracted) {
     // DOCX, PPTX, HTML, or any other type that the Python service extracted.
-    // We now have clean text — pass it as a text block to Claude.
+    // We now have clean text, pass it as a text block to Claude.
     content = [
       {
         type: "text",
@@ -544,7 +546,7 @@ Call store_extraction.`,
     ];
   } else {
     // Unsupported type (e.g. audio, unknown binary) and Python service
-    // could not extract text. File still on storage — searchable by name + note.
+    // could not extract text. File still on storage, searchable by name + note.
     return { kind: "skipped", reason: "unsupported_type" };
   }
 

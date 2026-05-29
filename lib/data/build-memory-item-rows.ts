@@ -6,20 +6,20 @@ import type { Section } from "@/lib/supabase/types";
 
 /**
  * Turn the AI's extracted items into the rows we insert into
- * `memory_items`. This is the deterministic core of the upload pipeline —
+ * `memory_items`. This is the deterministic core of the upload pipeline.
  * the same logic used to live inline inside `processUpload`, where it
  * couldn't be unit-tested without a live Supabase + Anthropic round-trip.
  *
  * Pulling it out (pure function, no I/O) lets us assert the rules that
  * actually matter for correctness:
  *
- *   • ORG SCOPE — every row is stamped with the upload's organization_id,
+ *   • ORG SCOPE. every row is stamped with the upload's organization_id,
  *     so an upload in one space can never seed an item in another. This
  *     is the load-bearing invariant for multi-tenant isolation; it's
  *     enforced here and asserted in the tests.
- *   • SECTION ROUTING — bills / receipts / invoices are forced to Finance;
+ *   • SECTION ROUTING. bills / receipts / invoices are forced to Finance;
  *     low-confidence suggestions fall through to Unsorted (null section).
- *   • DIET DATE OVERRIDE — meals are dated to the upload moment, not to
+ *   • DIET DATE OVERRIDE. meals are dated to the upload moment, not to
  *     whatever date the model read off the photo (EXIF, a printed date),
  *     so the Today view and "calories today" aggregates stay correct.
  *

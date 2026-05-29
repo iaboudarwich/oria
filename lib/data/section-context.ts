@@ -328,7 +328,7 @@ const MAX_LEARNED_KEYWORDS_PER_SECTION = 30;
  *     learning from a move in one space never affects another space.
  *   • Built-in sections only. Custom sections own their own profile
  *     (`custom_sections.profile`) and a separate UI for editing it.
- *   • Best-effort. Any DB error swallowed — the move itself succeeded
+ *   • Best-effort. Any DB error swallowed. the move itself succeeded
  *     and the user's flow shouldn't break for a telemetry-grade enrich.
  *   • Bounded growth. Keywords dedup case-insensitively and cap at
  *     MAX_LEARNED_KEYWORDS_PER_SECTION per section.

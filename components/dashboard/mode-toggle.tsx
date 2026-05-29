@@ -9,7 +9,7 @@ import type { Mode } from "@/lib/data/mode";
  * Pill bar at the very top of the sidebar. Two states only: Personal and
  * Work. Highlight rules, in order:
  *
- *   1. If the user just clicked, show their intent (optimistic) — even
+ *   1. If the user just clicked, show their intent (optimistic). even
  *      across multiple re-renders.
  *   2. Once "settled" (pathname + active cookie) matches that intent,
  *      drop the optimistic flag. We only drop it when reality has caught
@@ -58,7 +58,7 @@ export function ModeToggle({ active }: { active: Mode }) {
         return;
       }
       router.push(result.href);
-      // Intentionally do NOT clear optimistic here — the useEffect above
+      // Intentionally do NOT clear optimistic here. the useEffect above
       // clears it when `settled` confirms the new state. Clearing now
       // would flash the old highlight while pathname/active catch up.
     });

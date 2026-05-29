@@ -89,7 +89,7 @@ export default async function TrackablesPage() {
             const items = groups.get(cat) ?? [];
             return (
               <section key={cat}>
-                <h2 className="mb-3 px-1 text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
+                <h2 className="mb-3 px-1 text-eyebrow">
                   {CATEGORY_LABELS[cat] ?? cat} ({items.length})
                 </h2>
                 <ul className="divide-y divide-line rounded-2xl border border-line bg-surface-raised overflow-hidden">

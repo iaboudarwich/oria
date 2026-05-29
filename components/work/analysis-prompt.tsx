@@ -8,7 +8,7 @@ const QUICK_PROMPTS: Array<{ label: string; prompt: string }> = [
   { label: "Revenue vs costs", prompt: "Analyze revenue vs costs this quarter. Highlight margin and the biggest cost drivers." },
   { label: "Top vendors", prompt: "Show top vendors by total spend. Include each vendor's share of total expenses." },
   { label: "Recurring expenses", prompt: "List recurring expenses with average amount and cadence." },
-  { label: "Late payments", prompt: "List late payments — tenant, days late, amount." },
+  { label: "Late payments", prompt: "List late payments. Tenant, days late, amount." },
   { label: "Lease expirations", prompt: "Which leases expire in the next 6 months? Tenant, date, monthly rent." },
   { label: "Forecast utilities", prompt: "Forecast next quarter's utilities based on recent months." },
   { label: "Monthly trend", prompt: "Show monthly revenue and expense trend for the last 12 months." },
@@ -86,7 +86,7 @@ export function AnalysisPrompt({
 
   return (
     <section>
-      <h2 className="mb-2 px-1 text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
+      <h2 className="mb-2 px-1 text-eyebrow">
         Custom analysis
       </h2>
       <div className="rounded-2xl border border-line bg-surface-raised p-4 space-y-3">
@@ -103,7 +103,7 @@ export function AnalysisPrompt({
         >
           {recentQuestions.length > 0 ? (
             <div className="space-y-1.5">
-              <p className="text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
+              <p className="text-eyebrow">
                 You&apos;ve asked before
               </p>
               <div className="flex flex-wrap gap-1.5">

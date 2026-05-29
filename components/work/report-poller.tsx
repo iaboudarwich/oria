@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 /**
  * While any report on this page is still generating, refresh the route
  * data so the row flips to "Ready" automatically. The actual status
- * flip happens via revalidatePath inside the after() generator — this
+ * flip happens via revalidatePath inside the after() generator. this
  * just nudges the client to pick it up without the user needing to
  * refresh manually.
  *

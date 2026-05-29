@@ -72,7 +72,7 @@ export default async function CircleSetupPage({ params }: PageProps) {
 
         {invites.length > 0 ? (
           <section className="mt-8">
-            <h2 className="mb-2 px-1 text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
+            <h2 className="mb-2 px-1 text-eyebrow">
               Pending invites · {invites.length}
             </h2>
             <ul className="space-y-2">

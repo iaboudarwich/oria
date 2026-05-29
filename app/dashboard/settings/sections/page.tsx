@@ -8,7 +8,7 @@ export const metadata = { title: "Edit sections" };
 /**
  * Focused section-management page reached from the sidebar's
  * "Edit sections" link. Same management surface as the embedded one
- * on /dashboard/settings — the dedicated route just gives quick access
+ * on /dashboard/settings. the dedicated route just gives quick access
  * without the surrounding settings groups. Add section still goes
  * through /dashboard/settings/sections/new so the AI-context form
  * (purpose, related items, etc.) keeps capturing the signal the
@@ -48,7 +48,7 @@ export default async function EditSectionsPage() {
 
         <p className="px-1 pt-1 text-[11px] text-ink-faint">
           Adding a section opens a short form so Oria knows what belongs
-          there — purpose, related items, file types. That context goes
+          there: purpose, related items, file types. That context goes
           into how new uploads get classified.
         </p>
       </div>

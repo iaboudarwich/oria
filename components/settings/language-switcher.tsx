@@ -52,7 +52,7 @@ export function LanguageSwitcher({
         </select>
       </div>
 
-      {/* Workspace content language — owner only */}
+      {/* Workspace content language. owner only */}
       {isOwner && (
         <div>
           <label className="block text-[13px] text-ink mb-1">

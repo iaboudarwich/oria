@@ -5,7 +5,7 @@ import type { EmailOutcome } from "@/lib/data/circle-actions";
  * Tiny inline status under the invite-creator success state + the resend
  * action. Keeps wording calm, but when a send actually fails we now
  * show the *real* reason (e.g. "Sending domain isn't verified on Resend
- * yet.") rather than a generic banner — the operator needs to know.
+ * yet.") rather than a generic banner. the operator needs to know.
  */
 export function EmailStatusLine({
   outcome,
@@ -31,7 +31,7 @@ export function EmailStatusLine({
   return (
     <p className="text-[12.5px] text-claret">
       Email didn&apos;t go through
-      {outcome.reason ? ` — ${outcome.reason}` : "."}{" "}
+      {outcome.reason ? `. ${outcome.reason}` : "."}{" "}
       <span className="text-ink-muted">
         Share the link or code below directly.
       </span>

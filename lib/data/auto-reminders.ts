@@ -7,7 +7,7 @@ import type { DocumentType } from "@/lib/supabase/types";
  * Smart calendar/reminder bridge.
  *
  * After extraction finishes for an upload, scan its high-confidence items
- * and create reminders for things the user will want to act on later —
+ * and create reminders for things the user will want to act on later.
  * invoice due dates, lease/contract renewals, recurring bills, future
  * insurance payments. The model has already done the reading; this
  * function just translates "this item is an action with a date" into
@@ -19,7 +19,7 @@ import type { DocumentType } from "@/lib/supabase/types";
  *     not a reminder).
  *   • Document types that are *event* shaped (boarding pass, ticket,
  *     itinerary, schedule) already show up in the calendar via
- *     memory_items.occurred_at — we don't double them up as reminders.
+ *     memory_items.occurred_at. we don't double them up as reminders.
  *   • Recurring items (is_recurring=true) get a one-shot reminder for the
  *     next occurrence. Building a real recurrence engine that
  *     materializes future instances is deliberately out of scope.

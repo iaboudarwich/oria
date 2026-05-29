@@ -50,7 +50,7 @@ async function setActiveCookie(orgId: string) {
  *   • Work     = your private Work area + optional Workspaces you create
  *                (Office Building A, Investment X, etc.).
  *
- * Does NOT redirect server-side — returns `{ ok, href }` so the client can
+ * Does NOT redirect server-side. returns `{ ok, href }` so the client can
  * push() to the new route inside a transition. That keeps the switch
  * feeling instant.
  */
@@ -102,7 +102,7 @@ export async function switchMode(mode: Mode): Promise<SwitchModeResult> {
     };
   }
 
-  // No org of the target mode yet — bootstrap one so the user lands in a
+  // No org of the target mode yet. bootstrap one so the user lands in a
   // real space, not a setup form. Personal was already auto-bootstrapped
   // inside getCurrentContext; we mirror it for Work here.
   if (mode === "work") {
@@ -127,7 +127,7 @@ export async function switchMode(mode: Mode): Promise<SwitchModeResult> {
 
 /**
  * Mint a private Work org named "Work" for the user, owner role. The same
- * shape every named Workspace uses (kind=office) — we just default the
+ * shape every named Workspace uses (kind=office). we just default the
  * name and skip the description form. Returns the new org id or null
  * on failure. Best-effort; the caller falls back to the named-setup
  * flow if this returns null.
@@ -167,9 +167,9 @@ async function bootstrapPrivateWorkSpace(
  *
  * FormData keys (all from the Work setup form):
  *   - name (required): "Office Building A", "Parking Revenue", "Investment X"
- *   - purpose (optional): single value — "Business", "Property", "Investment",
+ *   - purpose (optional): single value. "Business", "Property", "Investment",
  *     "Company", "Project", "Other".
- *   - stores (optional): multi-value — "Invoices", "Leases", "Rent",
+ *   - stores (optional): multi-value. "Invoices", "Leases", "Rent",
  *     "Expenses", "Contracts", "Reports".
  *
  * Purpose + stores are folded into the existing `description` text column so

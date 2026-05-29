@@ -65,7 +65,7 @@ export default function NewWorkSpacePage() {
                 />
                 <span className="flex items-center gap-3 rounded-xl border border-line bg-canvas px-3 py-2 transition-base peer-checked:border-ink peer-checked:bg-surface-raised hover:border-line-strong">
                   <span className="text-[14px]">✨</span>
-                  <span className="text-[12.5px] text-ink-muted">Blank — no sections, start from scratch</span>
+                  <span className="text-[12.5px] text-ink-muted">Blank. No sections, start from scratch.</span>
                 </span>
               </label>
             </div>

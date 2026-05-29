@@ -23,8 +23,8 @@ type Props = {
  * Apple-Notes-style "Move to..." picker.
  *
  * Two visual variants:
- *   • button — labelled pill used on the upload detail page
- *   • inline-quiet — compact text trigger used on list rows for fast cleanup
+ *   • button. labelled pill used on the upload detail page
+ *   • inline-quiet. compact text trigger used on list rows for fast cleanup
  */
 export function MovePicker({
   uploadId,

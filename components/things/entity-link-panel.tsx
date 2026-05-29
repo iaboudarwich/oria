@@ -33,7 +33,7 @@ export function EntityLinkPanel({
   return (
     <section>
       <div className="mb-2 flex items-center justify-between px-1">
-        <h2 className="text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
+        <h2 className="text-eyebrow">
           Linked to
         </h2>
         {availableEntities.length > 0 && (

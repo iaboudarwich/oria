@@ -74,7 +74,7 @@ export default async function AdminHealthPage({
           <Stat
             label="Extractions reused"
             value={h.ai.reused30d.toLocaleString()}
-            hint="Identical re-uploads — Claude calls avoided"
+            hint="Identical re-uploads. Claude calls avoided."
           />
           <Stat
             label="Source of truth"
@@ -93,7 +93,7 @@ export default async function AdminHealthPage({
         {h.ai.topActors.length > 0 || h.ai.byVia.length > 0 ? (
           <div className="grid gap-4 lg:grid-cols-2">
             {h.ai.topActors.length > 0 ? (
-              <Card title="Top users — past 7 days">
+              <Card title="Top users · past 7 days">
                 <SimpleList
                   rows={h.ai.topActors.map((a) => ({
                     left: a.actor,
@@ -103,7 +103,7 @@ export default async function AdminHealthPage({
               </Card>
             ) : null}
             {h.ai.byVia.length > 0 ? (
-              <Card title="By surface — past 7 days">
+              <Card title="By surface · past 7 days">
                 <SimpleList
                   rows={h.ai.byVia.map((v) => ({
                     left: v.via,
@@ -144,7 +144,7 @@ export default async function AdminHealthPage({
             ) : null}
             {h.storage.topUsers.length > 0 ? (
               <Card
-                title={`Top uploaders — cap ${formatBytes(h.storage.userCapBytes)}`}
+                title={`Top uploaders · cap ${formatBytes(h.storage.userCapBytes)}`}
               >
                 <SimpleList
                   rows={h.storage.topUsers.map((u) => ({
@@ -192,7 +192,7 @@ export default async function AdminHealthPage({
                 <li key={f.id} className="text-[12.5px]">
                   <p className="text-ink">
                     <span className="font-medium">{f.kind}</span>{" "}
-                    <span className="text-ink-muted">— {f.error}</span>
+                    <span className="text-ink-muted">· {f.error}</span>
                   </p>
                   <p className="mt-0.5 text-[11px] text-ink-faint">
                     {new Date(f.when).toLocaleString()}
@@ -282,10 +282,10 @@ export default async function AdminHealthPage({
         ) : null}
 
         <SectionGrid title="Vercel deployment">
-          <Stat label="Environment" value={h.deploy.env ?? "—"} />
-          <Stat label="Branch" value={h.deploy.branch ?? "—"} />
-          <Stat label="Commit" value={h.deploy.commitSha ?? "—"} />
-          <Stat label="Region" value={h.deploy.region ?? "—"} />
+          <Stat label="Environment" value={h.deploy.env ?? "–"} />
+          <Stat label="Branch" value={h.deploy.branch ?? "–"} />
+          <Stat label="Commit" value={h.deploy.commitSha ?? "–"} />
+          <Stat label="Region" value={h.deploy.region ?? "–"} />
         </SectionGrid>
         {h.deploy.commitMessage ? (
           <p className="px-1 text-[12px] text-ink-muted">
@@ -297,7 +297,7 @@ export default async function AdminHealthPage({
           <SectionGrid title="Vercel live status">
             <Stat
               label="State"
-              value={h.vercelLive.state ?? "—"}
+              value={h.vercelLive.state ?? "–"}
               tone={
                 h.vercelLive.state === "READY" || h.vercelLive.state === "ready"
                   ? "ok"
@@ -305,13 +305,13 @@ export default async function AdminHealthPage({
               }
               hint={h.vercelLive.reason}
             />
-            <Stat label="Branch" value={h.vercelLive.branch ?? "—"} />
+            <Stat label="Branch" value={h.vercelLive.branch ?? "–"} />
             <Stat
               label="URL"
               value={
                 h.vercelLive.url
                   ? h.vercelLive.url.replace(/^https?:\/\//, "")
-                  : "—"
+                  : "–"
               }
             />
             <Stat
@@ -319,7 +319,7 @@ export default async function AdminHealthPage({
               value={
                 h.vercelLive.createdAt
                   ? new Date(h.vercelLive.createdAt).toLocaleString()
-                  : "—"
+                  : "–"
               }
             />
           </SectionGrid>
@@ -362,13 +362,13 @@ export default async function AdminHealthPage({
         <div className="grid gap-4 lg:grid-cols-2">
           <FailedListCard
             title="Recent failed uploads"
-            empty="None — every upload extracted cleanly."
+            empty="None. every upload extracted cleanly."
             items={h.failedUploads}
             linkPrefix="/dashboard/uploads/"
           />
           <FailedListCard
             title="Recent failed reports"
-            empty="None — every report generated cleanly."
+            empty="None. every report generated cleanly."
             items={h.failedReports}
             linkPrefix="/dashboard/work/agent/reports/"
           />
@@ -376,7 +376,7 @@ export default async function AdminHealthPage({
 
         {/* Developer tools ------------------------------------------------- */}
         <section>
-          <h2 className="mb-2 px-1 text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
+          <h2 className="mb-2 px-1 text-eyebrow">
             Developer tools
           </h2>
           <div className="rounded-2xl border border-line bg-surface-raised p-4">
@@ -453,7 +453,7 @@ function SectionGrid({
 }) {
   return (
     <section>
-      <h2 className="mb-2 px-1 text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
+      <h2 className="mb-2 px-1 text-eyebrow">
         {title}
       </h2>
       <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
@@ -502,7 +502,7 @@ function Card({
 }) {
   return (
     <section>
-      <h2 className="mb-2 px-1 text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
+      <h2 className="mb-2 px-1 text-eyebrow">
         {title}
       </h2>
       <div className="rounded-2xl border border-line bg-surface-raised p-4">
@@ -525,7 +525,7 @@ function EventsCard({
 }) {
   return (
     <section>
-      <h2 className="mb-2 px-1 text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
+      <h2 className="mb-2 px-1 text-eyebrow">
         {title}
       </h2>
       <ul className="rounded-2xl border border-line bg-surface-raised divide-y divide-line">
@@ -587,7 +587,7 @@ function FailedListCard({
 }) {
   return (
     <section>
-      <h2 className="mb-2 px-1 text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
+      <h2 className="mb-2 px-1 text-eyebrow">
         {title}
       </h2>
       {items.length === 0 ? (
@@ -620,7 +620,7 @@ function FailedListCard({
 function WarningsCard({ warnings }: { warnings: string[] }) {
   return (
     <section>
-      <h2 className="mb-2 px-1 text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
+      <h2 className="mb-2 px-1 text-eyebrow">
         Warnings
       </h2>
       <ul className="rounded-2xl border border-claret/20 bg-claret/5 divide-y divide-claret/10">

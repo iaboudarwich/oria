@@ -39,12 +39,12 @@ type DropzoneProps = {
  * the file appears as a small preview alongside the optional note input and
  * an explicit Upload button. The user can replace the file or back out
  * before committing. The Upload button is the only path that actually
- * commits, so the note is always captured *with* the file — not after,
+ * commits, so the note is always captured *with* the file. not after,
  * not as a race.
  *
  * The AI extractor receives both the file content and the note (via
  * uploadFile → metadata.user_description → processUpload → extractFromUpload).
- * That makes the note useful for every kind of file — meal photo,
+ * That makes the note useful for every kind of file. meal photo,
  * receipt, lease, contract, spreadsheet, anything.
  */
 export function Dropzone({
@@ -125,7 +125,7 @@ export function Dropzone({
         return;
       }
       setStorageWarning(result.warning ?? null);
-      // Free the preview URL — file bytes are server-side now.
+      // Free the preview URL. file bytes are server-side now.
       if (objectUrlRef.current) {
         URL.revokeObjectURL(objectUrlRef.current);
         objectUrlRef.current = null;
@@ -221,7 +221,7 @@ export function Dropzone({
           />
         </label>
 
-        {/* Camera capture — shown only on touch/mobile-sized screens.
+        {/* Camera capture. shown only on touch/mobile-sized screens.
             Renders as a tappable secondary button. On mobile browsers
             capture="environment" opens the rear camera directly; on
             desktop this element is hidden via md:hidden so it never

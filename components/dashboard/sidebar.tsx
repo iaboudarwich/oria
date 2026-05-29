@@ -124,7 +124,7 @@ export type SidebarProps = {
    *  layout so the menu never has to make its own decision. */
   isAdmin: boolean;
   /** Active org kind drives Members/Team visibility in the account
-   *  menu — there's nothing to manage in a Personal space. */
+   *  menu. there's nothing to manage in a Personal space. */
   orgKind: "personal" | "circle" | "office";
   /** Opt-in sidebar rows the user has enabled (Settings → Sidebar).
    *  Layout resolves these from a cookie; sidebar just renders them. */
@@ -274,7 +274,7 @@ export function Sidebar({
             collapsed ? "px-2" : "px-3"
           }`}
         >
-          {/* TIER 1 — Ask Oria, the primary action. Alone, with a ⌘K hint. */}
+          {/* TIER 1. Ask Oria, the primary action. Alone, with a ⌘K hint. */}
           <PrimaryRow
             item={primaryAction}
             pathname={pathname}
@@ -282,8 +282,8 @@ export function Sidebar({
             collapsed={collapsed}
           />
 
-          {/* TIER 2 — Sections, the user's organized world. Personal mode
-           * only — Work mode has its own tightly-scoped nav below. */}
+          {/* TIER 2. Sections, the user's organized world. Personal mode
+           * only. Work mode has its own tightly-scoped nav below. */}
           {!collapsed && mode === "personal" ? (
             <>
               <Divider />
@@ -297,7 +297,7 @@ export function Sidebar({
             </>
           ) : null}
 
-          {/* TIER 3 — Mode-specific navigation, plus any opt-in extras
+          {/* TIER 3. Mode-specific navigation, plus any opt-in extras
            * the user has enabled (Settings → Sidebar). */}
           <Divider collapsed={collapsed} />
           <ul className="flex flex-col gap-0.5">
@@ -320,7 +320,7 @@ export function Sidebar({
             )}
           </ul>
 
-          {/* TIER 4 — System. Pinned to the bottom. */}
+          {/* TIER 4. System. Pinned to the bottom. */}
           <div className="mt-auto pt-4">
             <Divider collapsed={collapsed} />
             <ul className="flex flex-col gap-0.5">
@@ -425,7 +425,7 @@ function SectionsGroup({
         type="button"
         onClick={onToggle}
         aria-expanded={open}
-        className="flex w-full items-center gap-1.5 rounded-md px-3 py-1 text-[10.5px] uppercase tracking-[0.12em] text-ink-faint transition-base hover:text-ink-muted"
+        className="flex w-full items-center gap-1.5 rounded-md px-3 py-1 text-eyebrow transition-base hover:text-ink-muted"
       >
         <span className="flex-1 text-left">Sections</span>
         <ChevronDownIcon

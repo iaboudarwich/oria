@@ -93,7 +93,7 @@ export const WORKSPACE_TEMPLATES: WorkspaceTemplate[] = [
 
 /**
  * Result of a (multi-)template apply. `delegation_prominent` is the OR of
- * every applied template's flag — it's not persisted on the org row (no
+ * every applied template's flag. it's not persisted on the org row (no
  * column for it today), so callers that care about that bit at apply time
  * can read it from this return value.
  */
@@ -160,7 +160,7 @@ export function mergeTemplatesForApply(
 /**
  * Decide which template key to stamp on the org row. Single selection
  * stamps that key; multi-selection collapses to `custom` (no column to
- * persist the full list — see ApplyTemplatesResult.delegationProminent
+ * persist the full list. see ApplyTemplatesResult.delegationProminent
  * for the merged flag callers can still act on).
  *
  * Skip (empty array, or only `custom`) also stamps `custom`.
@@ -248,7 +248,7 @@ export async function applyTemplates(
 }
 
 /**
- * Single-template apply — kept as a thin wrapper around applyTemplates()
+ * Single-template apply. kept as a thin wrapper around applyTemplates()
  * so existing callers (lib/data/mode-actions.ts) keep working without
  * change. New call sites should prefer applyTemplates().
  */

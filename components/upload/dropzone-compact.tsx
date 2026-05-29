@@ -54,7 +54,7 @@ type Props = {
  * content+note flow as the full Dropzone, so the AI receives both.
  *
  * After upload it polls the status endpoint and surfaces a tight
- * "Found N items / Filed X" line — same intelligence affordance as
+ * "Found N items / Filed X" line. same intelligence affordance as
  * the hero dropzone, just in less space.
  */
 export function DropzoneCompact({
@@ -225,7 +225,7 @@ export function DropzoneCompact({
                 ? "Lunch: chicken, rice, salad"
                 : smartSection === "bills"
                   ? "March electricity for the LA apartment"
-                  : "Optional note — Oria reads it with the file."
+                  : "Optional note. Oria reads it with the file."
             }
             maxLength={500}
             className="block h-9 flex-1 rounded-md border border-line bg-canvas/40 px-2.5 text-[12.5px] text-ink placeholder:text-ink-faint outline-none focus:border-line-strong"
@@ -318,7 +318,7 @@ export function DropzoneCompact({
         />
       </label>
 
-      {/* Camera capture — mobile only. capture="environment" opens the
+      {/* Camera capture. mobile only. capture="environment" opens the
           rear camera on iOS/Android. Hidden on md+ via md:hidden so
           desktop users never see a confusing fallback button. */}
       {!busy && !done && (

@@ -10,7 +10,7 @@ type MicButtonProps = {
   className?: string;
   /** When true, the idle state pulses with the slow mic-breathe rhythm
    *  to draw attention as a primary action (used in the onboarding
-   *  chat). Default is false — secondary placements stay still. */
+   *  chat). Default is false. secondary placements stay still. */
   breatheWhenIdle?: boolean;
 };
 

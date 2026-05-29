@@ -6,7 +6,7 @@ import type { WorkspaceTemplate, TemplateKey } from "@/lib/data/workspace-templa
 type Props = {
   templates: WorkspaceTemplate[];
   customTemplate: WorkspaceTemplate;
-  /** Server action — `chooseTemplates(formData)` — passed in from the
+  /** Server action. `chooseTemplates(formData)`. passed in from the
    *  page so this client component doesn't import server-only code. */
   onSubmit: (formData: FormData) => Promise<void>;
 };
@@ -16,8 +16,8 @@ type Props = {
  *
  * Each card behaves like a checkbox: tap to toggle. The Continue button
  * lights up once one or more templates are selected and shows the count
- * ("Continue with 2 templates"). All visual state — brand-tinted border
- * and background when selected, hover lift, focus ring — flows from the
+ * ("Continue with 2 templates"). All visual state. brand-tinted border
+ * and background when selected, hover lift, focus ring. flows from the
  * F1 design tokens and F2 polish conventions.
  *
  * "Skip for now" stays available as a calm secondary link and submits
@@ -145,7 +145,7 @@ export function TemplatePicker({
           disabled={pending}
           className="text-[13px] text-ink-faint transition-base hover:text-ink hover:underline disabled:opacity-50"
         >
-          Skip for now — start with a blank workspace
+          Skip for now, start with a blank workspace
         </button>
       </div>
     </>

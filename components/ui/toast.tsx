@@ -56,7 +56,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={{ toast }}>
       {children}
-      {/* Toast stack — bottom-right */}
+      {/* Toast stack. bottom-right */}
       {toasts.length > 0 && (
         <div className="fixed bottom-6 end-6 z-[100] flex flex-col gap-2 w-80 max-w-[calc(100vw-3rem)]">
           {toasts.map((t) => (

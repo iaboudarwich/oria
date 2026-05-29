@@ -13,7 +13,7 @@ import { CloseIcon, SparkIcon } from "@/components/ui/icon";
 
 /**
  * Calm panel that lists what Oria has learned about this section + lets the
- * user add, edit, or remove items. Renders nothing intrusive when empty —
+ * user add, edit, or remove items. Renders nothing intrusive when empty.
  * just a single input row inviting the user to teach Oria a fact.
  *
  * Pattern memories (source="pattern") get a small "Learned" pill so the
@@ -93,7 +93,7 @@ export function SectionMemoryPanel({
   return (
     <section>
       <div className="mb-2 flex items-baseline gap-2 px-1">
-        <h2 className="text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
+        <h2 className="text-eyebrow">
           What Oria remembers
         </h2>
         <span className="text-[11.5px] text-ink-faint">

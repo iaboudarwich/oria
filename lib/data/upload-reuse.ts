@@ -4,7 +4,7 @@ import { createHash } from "node:crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 /**
- * Identical-content reuse — the cheapest extraction is the one we never
+ * Identical-content reuse. the cheapest extraction is the one we never
  * make.
  *
  * Every upload gets a SHA-256 of its (post-conversion) bytes stamped into
@@ -12,7 +12,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
  * match an already-FILED upload in the SAME organization, we clone that
  * twin's structured records (memory_items + the extractions blob) onto the
  * new upload and skip the Claude extraction call entirely. A re-sent
- * receipt, a forwarded PDF, the same screenshot dropped twice — all now
+ * receipt, a forwarded PDF, the same screenshot dropped twice. all now
  * cost zero AI tokens the second time.
  *
  * PRIVACY / SCOPE: the twin lookup is hard-filtered to the new upload's
@@ -34,7 +34,7 @@ export function contentHashHex(bytes: Buffer | Uint8Array): string {
   return createHash("sha256").update(bytes).digest("hex");
 }
 
-/** Columns cloned into memory_items — exactly the set buildMemoryItemRows
+/** Columns cloned into memory_items. exactly the set buildMemoryItemRows
  *  writes. Kept in sync with lib/data/build-memory-item-rows.ts. */
 export const MEMORY_ITEM_CLONE_COLUMNS = [
   "organization_id",
@@ -68,7 +68,7 @@ export const MEMORY_ITEM_CLONE_COLUMNS = [
   "smart_section",
 ] as const;
 
-/** Columns cloned into extractions — the set extractionFromAi writes. */
+/** Columns cloned into extractions. the set extractionFromAi writes. */
 export const EXTRACTION_CLONE_COLUMNS = [
   "upload_id",
   "document_type",
@@ -165,7 +165,7 @@ export async function reuseRecordsFromTwin(
   >;
   // Only reuse when the twin genuinely produced structured records. A twin
   // that only went through the heuristic fallback (no memory_items) gives
-  // us nothing worth cloning — fall back to a fresh extraction.
+  // us nothing worth cloning. fall back to a fresh extraction.
   if (itemErr || sourceItems.length === 0) return { reused: false };
 
   // 2. Insert cloned items pointed at the new upload.
@@ -181,7 +181,7 @@ export async function reuseRecordsFromTwin(
     return { reused: false };
   }
 
-  // 3. Clone the twin's per-file extraction blob (best-effort — the items
+  // 3. Clone the twin's per-file extraction blob (best-effort. the items
   //    are the load-bearing part; the extraction row is the searchable
   //    raw_text mirror).
   const { data: exData } = await admin

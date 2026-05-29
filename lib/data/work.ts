@@ -6,7 +6,7 @@ import type { DocumentType, MemoryItem } from "@/lib/supabase/types";
 
 /**
  * Scope every Work query to the active org. We don't filter by smart_section
- * here — the Diet smart routing only applies to personal mode; in a Work
+ * here. the Diet smart routing only applies to personal mode; in a Work
  * space anything financial counts as a Finance/Bills/Invoice item.
  */
 
@@ -116,7 +116,7 @@ export type AnalysisAggregates = {
     transactions: number;
     currency: string | null;
   };
-  /** True when we have any financial items at all — drives the empty state. */
+  /** True when we have any financial items at all. drives the empty state. */
   hasData: boolean;
 };
 
@@ -126,7 +126,7 @@ const ANOMALY_MIN_HISTORY = 3;
 /**
  * Pull the last `windowMonths` months of financial items and compute the
  * shape the Analysis page renders. Everything runs in one query then we
- * aggregate in memory — for typical orgs (<10k items) this is fine.
+ * aggregate in memory. for typical orgs (<10k items) this is fine.
  */
 export async function computeAnalysis(
   windowMonths = 6,

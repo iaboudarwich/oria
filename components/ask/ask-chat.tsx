@@ -18,7 +18,7 @@ type Turn = {
 };
 
 /** Prior-turn shape sent back to /api/ask as conversation history.
- *  Defined locally — the server-side AgentMessage type can't be imported
+ *  Defined locally. the server-side AgentMessage type can't be imported
  *  into a Client Component. */
 type ChatMessage = { role: "user" | "assistant"; content: string };
 
@@ -46,7 +46,7 @@ type AskChatProps = {
    *  prompts; section pages pass section-specific examples. */
   suggestions?: string[];
   /** When true, render the God's Eye toggle. The server only honours it
-   *  when the active org is Personal — this prop is the visual gate, the
+   *  when the active org is Personal. this prop is the visual gate, the
    *  data layer is the security gate. */
   crossSpaceAvailable?: boolean;
   /** Top recent unique questions the current user has asked in this
@@ -57,7 +57,7 @@ type AskChatProps = {
 
 /**
  * Calm ChatGPT-style chat for Ask Oria. Single-page, no server-side history
- * persistence yet — turns live in client state. Streaming uses an NDJSON
+ * persistence yet. turns live in client state. Streaming uses an NDJSON
  * protocol from /api/ask: each line is one event.
  */
 export function AskChat({
@@ -88,7 +88,7 @@ export function AskChat({
       setBusy(true);
       // Track whether we saw a terminal frame. A stream that closes
       // without one (proxy drop, server crash mid-answer) would otherwise
-      // leave the turn stuck on "Thinking…" forever — the hang we're
+      // leave the turn stuck on "Thinking…" forever. the hang we're
       // guarding against. We force it to an error so Retry appears.
       let settled = false;
       try {
@@ -166,7 +166,7 @@ export function AskChat({
             }
           }
         }
-        // Stream ended without a done/error frame — don't hang.
+        // Stream ended without a done/error frame. don't hang.
         if (!settled) {
           updateTurn(id, (t) =>
             t.state === "streaming"
@@ -386,7 +386,7 @@ function TurnView({
           {sourcesOpen ? (
             <>
               <div className="mb-2 flex items-baseline justify-between px-1">
-                <p className="text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
+                <p className="text-eyebrow">
                   Sources
                 </p>
                 <button
@@ -561,7 +561,7 @@ function EmptyState({
 
       {recentQuestions.length > 0 ? (
         <div className="mt-6 space-y-1.5">
-          <p className="text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
+          <p className="text-eyebrow">
             You&apos;ve asked before
           </p>
           <ul className="flex flex-wrap justify-center gap-1.5">

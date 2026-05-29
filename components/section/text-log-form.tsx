@@ -29,7 +29,7 @@ export function TextLogForm({
   section = null,
   customSectionId = null,
   customSectionName = null,
-  placeholder = "Type a quick note — e.g. ‘Lunch: chicken bowl, rice, salad’",
+  placeholder = "Type a quick note. e.g. ‘Lunch: chicken bowl, rice, salad’",
   label = "Or just type it",
   rows = 2,
 }: {
@@ -82,7 +82,7 @@ export function TextLogForm({
 
   return (
     <section>
-      <h2 className="mb-2 px-1 text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
+      <h2 className="mb-2 px-1 text-eyebrow">
         {label}
       </h2>
       <form

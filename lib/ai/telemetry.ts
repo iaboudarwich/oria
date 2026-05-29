@@ -7,7 +7,7 @@ import { recordSystemEvent } from "@/lib/data/system-events";
  * One place to record what every model call cost, how long it took, and
  * whether it failed. Before this, each call site hand-rolled its own
  * recordSystemEvent payload, so the same fact (an extraction call) was
- * logged with slightly different keys than an Ask Oria call — which made
+ * logged with slightly different keys than an Ask Oria call, which made
  * the admin health page's roll-ups fragile and left the streaming agents
  * recording nothing at all.
  *
@@ -24,7 +24,7 @@ import { recordSystemEvent } from "@/lib/data/system-events";
  * roll-ups) and `surface` / `statusCode` / `model` (read by the health
  * page's error list) are deliberately kept exactly as they were.
  *
- * Provider is captured explicitly — today it's always "anthropic", but
+ * Provider is captured explicitly, today it's always "anthropic", but
  * recording it now means a future move behind a gateway (or a second
  * provider) is a one-argument change, not a schema migration of old
  * telemetry.

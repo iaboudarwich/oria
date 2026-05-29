@@ -2,12 +2,12 @@
  * HTTP client for the Python extraction sidecar.
  *
  * Base URL: PYTHON_EXTRACTION_URL env var (default: http://localhost:8000)
- * The sidecar is optional — callers check `isServiceAvailable()` and fall
+ * The sidecar is optional. callers check `isServiceAvailable()` and fall
  * back to the npm-based extractors when the service is unreachable.
  *
  * Auth: every request to /extract, /embed, /embed-query carries two headers:
- *   X-Oria-Timestamp  — Unix seconds (integer)
- *   X-Oria-Signature  — sha256=HMAC-SHA256(ORIA_SIDECAR_SECRET, "<ts>:<METHOD>:<path>")
+ *   X-Oria-Timestamp . Unix seconds (integer)
+ *   X-Oria-Signature . sha256=HMAC-SHA256(ORIA_SIDECAR_SECRET, "<ts>:<METHOD>:<path>")
  * The sidecar rejects requests with a missing/wrong signature or a timestamp
  * older than 60 s.  /health is intentionally unprotected.
  */
@@ -20,7 +20,7 @@ const BASE_URL =
   process.env.PYTHON_EXTRACTION_URL?.replace(/\/$/, "") ??
   "http://localhost:8000";
 
-const TIMEOUT_MS = 60_000; // 60 s — Docling on large docs can be slow
+const TIMEOUT_MS = 60_000; // 60 s. Docling on large docs can be slow
 
 // ── HMAC signing ─────────────────────────────────────────────────────────────
 

@@ -2,12 +2,12 @@
  * Store document chunks + embeddings in pgvector (document_chunks table).
  *
  * Called after extraction completes for an upload.
- * Skips embeddings when the Python service is unavailable — chunks are
+ * Skips embeddings when the Python service is unavailable. chunks are
  * stored as text-only and can be re-embedded later.
  */
 
 import * as Sentry from "@sentry/nextjs";
-// Use the service-role admin client — document_chunks has no INSERT policy
+// Use the service-role admin client. document_chunks has no INSERT policy
 // for the anon/authenticated roles (writes are service-role only per migration
 // 0024). Using createClient() (anon key) here would silently fail in cron
 // and background contexts where no user session cookie is present.

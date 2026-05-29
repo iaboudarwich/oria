@@ -59,7 +59,7 @@ export default async function BillsPage() {
 
         <TextLogForm
           smartSection="bills"
-          placeholder="Or type a bill — ‘Rent $2,500 due June 1, monthly’"
+          placeholder="Or type a bill. ‘Rent $2,500 due June 1, monthly’"
           label="Log a bill by text"
         />
 
@@ -73,7 +73,7 @@ export default async function BillsPage() {
 
         {upcoming.length > 0 ? (
           <section>
-            <h2 className="mb-2 px-1 text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
+            <h2 className="mb-2 px-1 text-eyebrow">
               Upcoming
             </h2>
             <ul className="rounded-2xl border border-line bg-surface-raised divide-y divide-line">
@@ -86,7 +86,7 @@ export default async function BillsPage() {
 
         {recurring.length > 0 ? (
           <section>
-            <h2 className="mb-2 px-1 text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
+            <h2 className="mb-2 px-1 text-eyebrow">
               Recurring
             </h2>
             <ul className="rounded-2xl border border-line bg-surface-raised divide-y divide-line">
@@ -99,7 +99,7 @@ export default async function BillsPage() {
 
         {recent.length > 0 ? (
           <section>
-            <h2 className="mb-2 px-1 text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
+            <h2 className="mb-2 px-1 text-eyebrow">
               Recent
             </h2>
             <ul className="rounded-2xl border border-line bg-surface-raised divide-y divide-line">
@@ -111,7 +111,7 @@ export default async function BillsPage() {
         ) : null}
 
         <section>
-          <h2 className="mb-2 px-1 text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
+          <h2 className="mb-2 px-1 text-eyebrow">
             Ask Bills
           </h2>
           <div className="rounded-2xl border border-line bg-surface-raised p-3">
@@ -145,7 +145,7 @@ function ForecastStrip({
 }) {
   return (
     <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 rounded-2xl border border-line bg-surface-raised p-4">
-      <span className="text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
+      <span className="text-eyebrow">
         Next month
       </span>
       {forecast ? (

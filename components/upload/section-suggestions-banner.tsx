@@ -44,7 +44,7 @@ export function SectionSuggestionsBanner({
   return (
     <section>
       <div className="flex items-center justify-between px-1 mb-2">
-        <h2 className="text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
+        <h2 className="text-eyebrow">
           Suggested by Oria
         </h2>
         {suggestions.length > 1 && (

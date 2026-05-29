@@ -51,7 +51,7 @@ export async function createConversation(input: {
 }
 
 /**
- * Append a message to an existing conversation. Best-effort — never
+ * Append a message to an existing conversation. Best-effort. never
  * throws so a persistence failure never breaks the chat stream.
  */
 export async function addMessage(input: {

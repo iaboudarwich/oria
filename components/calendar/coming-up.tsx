@@ -2,7 +2,7 @@ import type { CalendarEntry } from "@/lib/data/calendar-types";
 import type { ComingUpBucket } from "@/lib/data/calendar";
 
 /**
- * "Coming up" rollup that sits above the calendar list. Pure renderer —
+ * "Coming up" rollup that sits above the calendar list. Pure renderer.
  * the time math (Date.now etc.) lives in groupComingUp on the server
  * side, called by the page. Keeps this component purity-rule clean.
  *
@@ -15,7 +15,7 @@ export function ComingUpRollup({ buckets }: { buckets: ComingUpBucket[] }) {
   if (buckets.length === 0) return null;
   return (
     <section>
-      <h2 className="mb-2 px-1 text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
+      <h2 className="mb-2 px-1 text-eyebrow">
         Coming up
       </h2>
       <ul className="grid grid-cols-2 gap-1.5 sm:grid-cols-3 sm:gap-2 md:grid-cols-4 lg:grid-cols-5">

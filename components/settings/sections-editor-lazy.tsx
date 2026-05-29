@@ -7,8 +7,8 @@ import type { SectionsEditor as SectionsEditorType } from "./sections-editor";
 /**
  * Defers the SectionsEditor chunk (and its @dnd-kit/core + sortable +
  * utilities transitive deps) until it actually mounts. On
- * /dashboard/settings the editor is inside the "Sections" tab — below
- * the fold when the page opens on the default "General" tab — so the
+ * /dashboard/settings the editor is inside the "Sections" tab. below
+ * the fold when the page opens on the default "General" tab. so the
  * dnd-kit weight doesn't need to be in the synchronous bundle.
  *
  * ssr:false is appropriate here: @dnd-kit binds to browser pointer
@@ -17,7 +17,7 @@ import type { SectionsEditor as SectionsEditorType } from "./sections-editor";
  * streams in.
  *
  * The dedicated /dashboard/settings/sections route keeps importing
- * SectionsEditor directly — the editor IS the page there, so deferral
+ * SectionsEditor directly. the editor IS the page there, so deferral
  * would just add latency without saving anything.
  */
 const SectionsEditorClient = dynamic(

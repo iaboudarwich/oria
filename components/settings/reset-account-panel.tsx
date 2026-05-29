@@ -33,12 +33,12 @@ export function ResetAccountPanel() {
   return (
     <section>
       <div className="mb-2 px-1">
-        <h2 className="text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
+        <h2 className="text-eyebrow">
           Reset account
         </h2>
         <p className="mt-1 text-[12px] text-ink-faint">
-          Wipe all your uploads, reminders, conversations, and memory — but
-          keep your account, profile, and shared circle memberships. This
+          Wipe all your uploads, reminders, conversations, and memory.
+          Keep your account, profile, and shared circle memberships. This
           can&apos;t be undone.
         </p>
       </div>

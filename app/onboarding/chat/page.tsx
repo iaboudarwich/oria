@@ -16,7 +16,7 @@ type Props = {
 
 /** Parse the optional `?templates=personal,investor` query param into a
  *  validated list of human-readable labels. Anything unknown is silently
- *  dropped — the picker is the source of truth for what's valid. */
+ *  dropped. the picker is the source of truth for what's valid. */
 function parseTemplateHints(raw: unknown): string[] {
   const s = typeof raw === "string" ? raw : "";
   if (!s) return [];

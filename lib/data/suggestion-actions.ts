@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 
 /**
- * Accept a reminder suggestion — creates a reminder with lead_days,
+ * Accept a reminder suggestion. creates a reminder with lead_days,
  * source_upload_id, and auto_suggested=true.
  */
 export async function acceptSuggestion(input: {

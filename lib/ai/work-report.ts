@@ -23,7 +23,7 @@ const REPORT_TOOL: Anthropic.Messages.Tool = {
     properties: {
       title: {
         type: "string",
-        description: "Short report title, e.g. 'Building A — March operations'.",
+        description: "Short report title, e.g. 'Building A, March operations'.",
       },
       summary: {
         type: "string",
@@ -94,7 +94,7 @@ const REPORT_TOOL: Anthropic.Messages.Tool = {
                 table: {
                   type: "object",
                   description:
-                    "Required for kind=table. 2–6 columns, ≤20 rows. Cells are short plain strings — money like '$1,243', dates like 'Mar 12', percentages like '14%'.",
+                    "Required for kind=table. 2–6 columns, ≤20 rows. Cells are short plain strings, money like '$1,243', dates like 'Mar 12', percentages like '14%'.",
                   properties: {
                     columns: {
                       type: "array",
@@ -201,7 +201,7 @@ type Aggregates = {
  * can answer "compare these two files" or "summarize this spreadsheet"
  * by name. Built by collectFiles.
  *
- * raw_text is the extraction content — Claude already read this file
+ * raw_text is the extraction content, Claude already read this file
  * once at upload time, so we pass that derived text instead of the
  * original bytes (cheaper + already classified). itemSummaries are a
  * couple of memory_items so the model sees structured fields too.
@@ -425,7 +425,7 @@ async function collectAggregates(organizationId: string): Promise<Aggregates> {
  * filename/title token overlap, and return the top files trimmed to
  * fit a per-file character budget.
  *
- * Scope: organizationId only. The admin client bypasses RLS — the
+ * Scope: organizationId only. The admin client bypasses RLS, the
  * caller is responsible for passing a Workspace org id, never a
  * personal/circle one. The route handler already enforces
  * `organization.kind === "office"`.
@@ -634,7 +634,7 @@ function formatRowForPrompt(r: AggregateRow): string {
 }
 
 export type GenerateInput = {
-  prompt: string; // user brief — e.g. "March operations for Building A"
+  prompt: string; // user brief, e.g. "March operations for Building A"
   kind: string; // user-picked kind (summary/finance/leases/forecast/custom)
   /** Org context captured at request time so this can run from after(). */
   organizationId: string;
@@ -808,12 +808,12 @@ You MUST call the save_report tool exactly once. Don't reply with prose.
 
 The user gets INSIGHT, not a file recap. Think like an analyst.
 
-How to use the context blocks (already pre-aggregated for you — don't re-derive these from LINE ITEMS):
+How to use the context blocks (already pre-aggregated for you, don't re-derive these from LINE ITEMS):
 - FILES IN THIS WORKSPACE → individual uploads with filename + extracted body + structured items. Use this when the user asks about specific files ("compare these two", "summarize this spreadsheet", "what's in the lease"). The list is pre-ranked by relevance to the user's brief; the first few are usually what they meant.
   • If the user mentioned a filename token (e.g. "Waterfront", "lease", "March invoice"), prioritize the matching files and reference them by name in the summary and section bodies.
   • If the user asked vaguely ("compare these files", "this report"), use the first 1–3 files in the FILES list.
   • Cross-reference across files when the question implies it ("invoices vs payments", "lease A vs lease B"). Synthesize, don't just list per file.
-  • Be honest when only one file matched — say "I'm using <filename>" instead of pretending you had more sources.
+  • Be honest when only one file matched, say "I'm using <filename>" instead of pretending you had more sources.
 - CASHFLOW BY CURRENCY → total inflow/outflow/net per currency. Lead with these.
 - MONTHLY {CUR} → time series for trends, comparisons, and forecasts. Use a LINE chart when the question is "trend / forecast / monthly / over time". Compute simple forecasts as the 3-month rolling average if asked.
 - TOP VENDORS BY OUTFLOW → who you pay the most. Use a BAR chart or a TABLE.
@@ -840,7 +840,7 @@ Hard rules:
 - State assumptions in plain English in the section body when you computed anything derived (currency conversion not done, late-payment threshold = 30 days past due, etc.).
 - If amounts span multiple currencies, separate them. Don't pretend they add.
 - Skip a section rather than pad. A report with 2 strong sections beats one with 5 weak ones.
-- If the brief refers to files and the FILES list has matches, name the files you used in the section bodies (e.g. "From Waterfront 04.26 Stacking Plan.xlsx…"). If FILES is empty, say "No matching files in this Workspace — I'm working from aggregated items only."
+- If the brief refers to files and the FILES list has matches, name the files you used in the section bodies (e.g. "From Waterfront 04.26 Stacking Plan.xlsx…"). If FILES is empty, say "No matching files in this Workspace, I'm working from aggregated items only."
 - Honour STANDING INSTRUCTIONS and PREFERRED METRICS when present.`;
 
   const reportModel =
@@ -852,7 +852,7 @@ Hard rules:
   try {
     response = await client.messages.create({
       model: reportModel,
-      // Bumped from 4096 — file-aware analyses with cross-file tables
+      // Bumped from 4096, file-aware analyses with cross-file tables
       // and multi-section commentary regularly need 5–7K output tokens.
       max_tokens: 8192,
       system: systemPrompt,
@@ -954,7 +954,7 @@ function normalizeChart(
   const o = raw as Record<string, unknown>;
   const caption = typeof o.caption === "string" ? o.caption : undefined;
 
-  // table — for breakdowns and lists
+  // table, for breakdowns and lists
   if (o.kind === "table") {
     const tableIn = o.table as Record<string, unknown> | undefined;
     if (!tableIn || typeof tableIn !== "object") return null;
@@ -975,7 +975,7 @@ function normalizeChart(
     };
   }
 
-  // bar / line — series-based
+  // bar / line, series-based
   const kind = o.kind === "bar" || o.kind === "line" ? o.kind : null;
   if (!kind) return null;
   const seriesIn = Array.isArray(o.series) ? o.series : [];

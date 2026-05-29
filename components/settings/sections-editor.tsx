@@ -75,7 +75,7 @@ export function SectionsEditor({
   // per user, then writes the flag so it never fires again.
   //
   // The setState-in-effect lint rule wants pure derivations, but this
-  // value is genuinely client-only (localStorage) — the hydration-safe
+  // value is genuinely client-only (localStorage). the hydration-safe
   // alternative would be useSyncExternalStore, which is overkill for a
   // one-shot UI hint. Suppressing the rule is the right tradeoff here.
   const [wiggleHint, setWiggleHint] = useState(false);
@@ -87,7 +87,7 @@ export function SectionsEditor({
       setWiggleHint(true);
       window.localStorage.setItem(DRAG_HINT_KEY, "1");
     } catch {
-      // Safari private mode + locked-down browsers throw on localStorage —
+      // Safari private mode + locked-down browsers throw on localStorage.
       // silently skip the wiggle, nothing breaks.
     }
   }, []);
@@ -207,7 +207,7 @@ function SortableSectionRow({
         .filter(Boolean)
         .join(" ")}
     >
-      {/* Drag handle — only this element activates the drag. On a
+      {/* Drag handle. only this element activates the drag. On a
           fresh visit the first row's handle wiggles once to teach the
           affordance (gated by localStorage upstream). */}
       <button

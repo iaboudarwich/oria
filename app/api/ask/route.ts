@@ -117,7 +117,7 @@ export async function POST(request: Request) {
   const crossSpace = body.crossSpace === true && !scope;
 
   // Resolve (or create) a conversation for persistence. Best-effort:
-  // if the DB call fails we still serve the answer — conversationId
+  // if the DB call fails we still serve the answer. conversationId
   // stays null and nothing is persisted this turn.
   let conversationId: string | null =
     typeof body.conversationId === "string" ? body.conversationId : null;
@@ -136,7 +136,7 @@ export async function POST(request: Request) {
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
       try {
-        // 1. Retrieval (works without an API key — useful for the empty case).
+        // 1. Retrieval (works without an API key. useful for the empty case).
         const sources = await retrieveForQuery(query, { scope, crossSpace });
         writeEvent(controller, { type: "sources", sources });
 

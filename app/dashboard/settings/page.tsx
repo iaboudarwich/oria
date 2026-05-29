@@ -94,7 +94,7 @@ export default async function SettingsPage({
             <SidebarPrefsPanel timelineEnabled={timelineEnabled} />
             {/* Appearance */}
             <section>
-              <h2 className="mb-3 px-1 text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
+              <h2 className="mb-3 px-1 text-eyebrow">
                 Appearance
               </h2>
               <div className="overflow-hidden rounded-2xl border border-line bg-surface-raised px-4 py-4 shadow-[0_1px_2px_rgba(28,26,23,0.04)]">
@@ -110,7 +110,7 @@ export default async function SettingsPage({
 
             {/* Language preferences */}
             <section>
-              <h2 className="mb-3 px-1 text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
+              <h2 className="mb-3 px-1 text-eyebrow">
                 Language
               </h2>
               <div className="overflow-hidden rounded-2xl border border-line bg-surface-raised px-4 py-4 shadow-[0_1px_2px_rgba(28,26,23,0.04)]">
@@ -130,7 +130,7 @@ export default async function SettingsPage({
           <section>
             <div className="mb-2 flex items-end justify-between px-1">
               <div>
-                <h2 className="text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
+                <h2 className="text-eyebrow">
                   Sections
                 </h2>
                 <p className="mt-1 text-[12px] text-ink-faint">
@@ -189,14 +189,14 @@ export default async function SettingsPage({
 
 /**
  * Download-my-data button. Opens /api/account/export directly in the
- * browser — the response carries Content-Disposition: attachment so the
+ * browser. the response carries Content-Disposition: attachment so the
  * browser saves it as a file. Rate-limited to 1/day server-side.
  */
 function DataExportPanel() {
   return (
     <section>
       <div className="mb-2 px-1">
-        <h2 className="text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
+        <h2 className="text-eyebrow">
           Your data
         </h2>
         <p className="mt-1 text-[12px] text-ink-faint">
@@ -388,7 +388,7 @@ function GroupedSection({
     <section>
       <div className="mb-2 flex items-end justify-between px-1">
         <div>
-          <h2 className="text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
+          <h2 className="text-eyebrow">
             {label}
           </h2>
           {hint ? (

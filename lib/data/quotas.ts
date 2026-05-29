@@ -11,10 +11,10 @@ import { createAdminClient } from "@/lib/supabase/admin";
  * redeploying:
  *   ORIA_DAILY_UPLOAD_BYTES   (default 300MB)
  *   ORIA_DAILY_ASK_REQUESTS   (default 250)
- *   ORIA_USER_STORAGE_BYTES   (default 5GB — lifetime cap per user)
- *   ORIA_MONTHLY_ASK_REQUESTS (default 3000 — rolling 30d cap per user)
+ *   ORIA_USER_STORAGE_BYTES   (default 5GB. lifetime cap per user)
+ *   ORIA_MONTHLY_ASK_REQUESTS (default 3000. rolling 30d cap per user)
  *
- * SCOPE: every check is PER USER, across every org the user belongs to —
+ * SCOPE: every check is PER USER, across every org the user belongs to.
  * the queries filter by `uploaded_by` / `actor_id`, never by
  * `organization_id`. A tester who belongs to multiple Workspaces still
  * shares one cap. This is intentional: per-org caps would let a single
@@ -74,7 +74,7 @@ export type QuotaCheck =
 /**
  * Returns ok=true when the user has room for `incomingBytes` more today.
  * Uses the admin client so it works regardless of which org the upload
- * lands in. Soft-fails (allows the upload) on any DB error — we'd rather
+ * lands in. Soft-fails (allows the upload) on any DB error. we'd rather
  * an upload through than block the tester on a transient hiccup.
  */
 export async function checkDailyUploadBytes(
@@ -233,7 +233,7 @@ export async function getUserStorageStats(
 
 /**
  * Rolling 30-day Ask count for one user. Doesn't refuse a request on
- * its own — the daily check fires first — but feeds the admin health
+ * its own. the daily check fires first. but feeds the admin health
  * page so we can spot a user racking up cost over a longer window.
  */
 export async function getMonthlyAskUsage(

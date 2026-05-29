@@ -20,7 +20,7 @@ ${description ? `Description: ${description}` : ""}
 
 Suggest 4–8 useful fields for tracking "${name}" entities.
 
-Return ONLY valid JSON — an array of field objects:
+Return ONLY valid JSON, an array of field objects:
 [{"key":"...", "label":"...", "type":"...", "required":false}]
 
 Field types: text | number | date | currency | enum | boolean | long_text

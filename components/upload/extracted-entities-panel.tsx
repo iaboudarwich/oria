@@ -639,7 +639,7 @@ function GenericView({ f, editing, draft, onDraftChange }: FieldProps) {
   );
 }
 
-// Product renderer (added in F5 — vision analysis)
+// Product renderer (added in F5. vision analysis)
 function ProductView({ f, editing, draft, onDraftChange }: FieldProps) {
   const attrs = Array.isArray(f.key_attributes)
     ? (f.key_attributes as unknown[]).map(str).join(", ")
@@ -655,7 +655,7 @@ function ProductView({ f, editing, draft, onDraftChange }: FieldProps) {
   );
 }
 
-// Scene renderer (added in F5 — vision analysis)
+// Scene renderer (added in F5. vision analysis)
 function SceneView({ f, editing, draft, onDraftChange }: FieldProps) {
   return (
     <>
@@ -707,7 +707,7 @@ const TYPE_LABEL: Record<string, string> = {
 export function ExtractedEntitiesPending() {
   return (
     <section>
-      <h2 className="mb-2 px-1 text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
+      <h2 className="mb-2 px-1 text-eyebrow">
         What&rsquo;s in this
       </h2>
       <div className="rounded-2xl border border-line bg-surface-raised p-4">
@@ -725,7 +725,7 @@ export function ExtractedEntitiesPending() {
 export function ExtractedEntitiesFailed() {
   return (
     <section>
-      <h2 className="mb-2 px-1 text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
+      <h2 className="mb-2 px-1 text-eyebrow">
         What&rsquo;s in this
       </h2>
       <div className="rounded-2xl border border-line bg-surface-raised px-4 py-3">
@@ -766,11 +766,11 @@ export function ExtractedEntitiesPanel({
     return translatedFields ? { ...base, ...translatedFields } : base;
   }, [entity, translatedFields]);
 
-  // Runtime Zod validation — catches LLM schema mismatches before rendering.
+  // Runtime Zod validation. catches LLM schema mismatches before rendering.
   const validationPassed = useMemo(() => {
     if (!entity) return true;
     const schema = SCHEMAS[entity.doc_type as DocType];
-    if (!schema) return true; // unknown doc_type — render via GenericView
+    if (!schema) return true; // unknown doc_type. render via GenericView
     const result = schema.safeParse(activeFields);
     if (!result.success) {
       if (process.env.NODE_ENV === "development") {
@@ -788,7 +788,7 @@ export function ExtractedEntitiesPanel({
     return true;
   }, [entity, activeFields]);
 
-  // Early returns — must come AFTER all hooks.
+  // Early returns. must come AFTER all hooks.
   if (
     !entity &&
     (uploadStatus === "received" || uploadStatus === "processing")
@@ -821,14 +821,14 @@ export function ExtractedEntitiesPanel({
   return (
     <section>
       <div className="mb-2 flex items-center justify-between px-1">
-        <h2 className="text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
+        <h2 className="text-eyebrow">
           What&rsquo;s in this
         </h2>
         <div className="flex items-center gap-2">
           {entity.user_verified && (
             <span className="text-[10.5px] text-sage-600">Verified</span>
           )}
-          {/* Translate button — only when locale is non-English */}
+          {/* Translate button. only when locale is non-English */}
           {locale !== "en" && !translatedFields && (
             <button
               type="button"

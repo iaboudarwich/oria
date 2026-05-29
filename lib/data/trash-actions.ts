@@ -16,7 +16,7 @@ function revalidateAll() {
  * Move an upload to trash. Sets deleted_at + deleted_by. The file remains in
  * storage for 30 days and is then hard-deleted (see purgeExpiredTrash).
  *
- * When `redirect_to` is set in the form data we redirect there afterwards —
+ * When `redirect_to` is set in the form data we redirect there afterwards.
  * used by the upload detail page, where the row the user just deleted is
  * also the page they're on. When it's absent we stay put: the inline
  * trash button on list rows uses this path so the list re-renders in

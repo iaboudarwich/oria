@@ -80,7 +80,7 @@ export async function uploadFile(formData: FormData): Promise<Result> {
   const supabase = await createClient();
 
   // Burst limit so a runaway script or a leaning-on-the-button user can't
-  // queue dozens of uploads per second. Per-user, in-process — best-effort
+  // queue dozens of uploads per second. Per-user, in-process. best-effort
   // but enough at beta scale.
   const burst = rateLimit({
     key: `upload:${ctx.profile.id}`,
@@ -137,7 +137,7 @@ export async function uploadFile(formData: FormData): Promise<Result> {
   let bodySize = file.size;
 
   if (looksHeic) {
-    // Mark every HEIC attempt unconditionally — so a future "HEIC
+    // Mark every HEIC attempt unconditionally. so a future "HEIC
     // didn't convert" report has positive evidence the action was
     // even invoked (vs. served by a stale Fluid Compute instance from
     // a prior deploy). Cheap, fire-and-forget.
@@ -256,7 +256,7 @@ export async function uploadFile(formData: FormData): Promise<Result> {
     : (sectionHint as Section | null) ?? inferredBuiltin;
 
   // Cheap duplicate detection: same org, same filename + size, in the
-  // last 24h. We don't block — testers genuinely do re-upload a file
+  // last 24h. We don't block. testers genuinely do re-upload a file
   // after editing it, and we have no content hash to be certain. Just
   // tag metadata so the upload detail can show "Looks like a duplicate
   // of [other]" and emit a status event so the user sees it.
@@ -337,7 +337,7 @@ export async function uploadFile(formData: FormData): Promise<Result> {
   }
 
   // 4. Queue the intelligence pass.
-  //    Production: enqueue a pending job and return immediately — the Vercel
+  //    Production: enqueue a pending job and return immediately. the Vercel
   //    cron at /api/cron/process-uploads picks it up every minute with retry
   //    logic. This decouples extraction from the HTTP lifecycle and avoids
   //    hitting the serverless function timeout on large files.
@@ -364,7 +364,7 @@ export async function uploadFile(formData: FormData): Promise<Result> {
   // Calm, non-blocking storage warning once a user crosses 80% of their
   // lifetime cap. We already passed the hard check above; this just gives
   // a heads-up before they hit the wall. (storage.ok is narrowed true here
-  // — the !ok case returned earlier.)
+  //. the !ok case returned earlier.)
   let warning: string | undefined;
   if (storage.ok) {
     const usedAfter = storage.limit - storage.remaining + bodySize;
@@ -411,7 +411,7 @@ export async function retryUploadProcessing(
 
   // Only retry stuck/failed rows. Don't blow up a healthy "filed"
   // record by accident. "received" rows are orphans where the original
-  // after() never fired — the retry button is the user's escape hatch.
+  // after() never fired. the retry button is the user's escape hatch.
   if (
     upload.status !== "failed" &&
     upload.status !== "processing" &&

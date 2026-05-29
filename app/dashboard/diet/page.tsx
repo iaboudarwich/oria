@@ -74,7 +74,7 @@ export default async function DietPage() {
 
         <TextLogForm
           smartSection="diet"
-          placeholder="Or describe what you ate — ‘1.5 cups pasta with 2 fried eggs and parmesan’"
+          placeholder="Or describe what you ate. ‘1.5 cups pasta with 2 fried eggs and parmesan’"
           label="Log a meal by text"
         />
 
@@ -95,7 +95,7 @@ export default async function DietPage() {
 
         {yesterdayMeals.length > 0 ? (
           <section>
-            <h2 className="mb-2 px-1 text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
+            <h2 className="mb-2 px-1 text-eyebrow">
               Yesterday
             </h2>
             <DaySummary
@@ -112,7 +112,7 @@ export default async function DietPage() {
 
         {weekTotals.calories > 0 ? (
           <section>
-            <h2 className="mb-2 px-1 text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
+            <h2 className="mb-2 px-1 text-eyebrow">
               Last 7 days, totals
             </h2>
             <div className="rounded-2xl border border-line bg-surface-raised p-4">
@@ -142,7 +142,7 @@ export default async function DietPage() {
         ) : null}
 
         <section>
-          <h2 className="mb-2 px-1 text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
+          <h2 className="mb-2 px-1 text-eyebrow">
             Last 7 days
           </h2>
           <div className="rounded-2xl border border-line bg-surface-raised p-4">
@@ -186,7 +186,7 @@ export default async function DietPage() {
         </section>
 
         <section>
-          <h2 className="mb-2 px-1 text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
+          <h2 className="mb-2 px-1 text-eyebrow">
             Ask Diet
           </h2>
           <div className="rounded-2xl border border-line bg-surface-raised p-3">
@@ -212,7 +212,7 @@ export default async function DietPage() {
 /**
  * Compact one-line totals card for a single past day (Yesterday).
  * Mirrors the look of DailyStrip but smaller and without the empty
- * state — only rendered when meals exist.
+ * state. only rendered when meals exist.
  */
 function DaySummary({
   total,
@@ -304,7 +304,7 @@ function MealRow({ meal: m }: { meal: DietMeal }) {
  * the left, macros on the right. Replaces the old vertical aside card so
  * the meals list takes the full width and the page breathes.
  *
- * Empty state: one short line, no macro chips — fewer dots, less noise.
+ * Empty state: one short line, no macro chips. fewer dots, less noise.
  * Partial state (a meal logged but no macros from AI): show calories
  * and hide the zero-macro chips instead of rendering "·" placeholders.
  */
@@ -321,7 +321,7 @@ function DailyStrip({
     return (
       <div className="flex items-center justify-between rounded-2xl border border-line bg-surface-raised p-4">
         <div className="flex items-baseline gap-3">
-          <span className="text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
+          <span className="text-eyebrow">
             Today
           </span>
           <span className="text-[13.5px] text-ink-muted">
@@ -356,7 +356,7 @@ function DailyStrip({
   return (
     <div className="flex flex-col gap-3 rounded-2xl border border-line bg-surface-raised p-4 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex items-baseline gap-3">
-        <span className="text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
+        <span className="text-eyebrow">
           Today
         </span>
         <span className="text-[26px] font-semibold tracking-tight text-ink">

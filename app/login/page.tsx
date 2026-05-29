@@ -21,7 +21,7 @@ export default async function LoginPage({ searchParams }: Props) {
 
   return (
     <div className="min-h-screen bg-canvas relative flex flex-col items-center justify-center px-4 py-12 overflow-hidden">
-      {/* Gradient orbs — premium background depth */}
+      {/* Gradient orbs. premium background depth */}
       <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="absolute -top-40 -start-40 h-[600px] w-[600px] rounded-full bg-brand/5 blur-3xl" />
         <div className="absolute -bottom-40 -end-20 h-[400px] w-[400px] rounded-full bg-accent/8 blur-3xl" />

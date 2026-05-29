@@ -50,9 +50,9 @@ function patchForTarget(t: ResolvedTarget) {
  * uploader can do this; RLS does the rest.
  *
  * FormData:
- *   item_id      — uuid of the memory_items row
- *   target_kind  — "builtin" | "custom" | "review"
- *   target_key   — Section enum, custom_section uuid, or "review"
+ *   item_id     . uuid of the memory_items row
+ *   target_kind . "builtin" | "custom" | "review"
+ *   target_key  . Section enum, custom_section uuid, or "review"
  */
 export async function setItemSection(formData: FormData): Promise<void> {
   const id = String(formData.get("item_id") ?? "").trim();
@@ -142,7 +142,7 @@ export async function setItemSection(formData: FormData): Promise<void> {
   // items landed in the same section, mirror it onto the upload so the
   // section page shows one entry, not many; otherwise stamp
   // metadata.items_sorted_at so the Unsorted listing skips it (the
-  // source still lives in /dashboard/inbox — the Uploads archive).
+  // source still lives in /dashboard/inbox. the Uploads archive).
   if (row.upload_id) {
     await propagateUploadSectionFromItems(row.upload_id, ctx.organization.id);
     revalidatePath(`/dashboard/uploads/${row.upload_id}`);

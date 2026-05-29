@@ -43,7 +43,7 @@ export function MonthGrid({
         {WEEKDAY_LABELS.map((d, i) => (
           <div
             key={i}
-            className="px-2 py-2 text-center text-[10.5px] uppercase tracking-[0.12em] text-ink-faint"
+            className="px-2 py-2 text-center text-eyebrow"
           >
             {d}
           </div>
@@ -78,7 +78,7 @@ export function MonthGrid({
               </span>
               {items.length > 0 ? (
                 <>
-                  {/* Mobile: dot row only — text labels don't fit at ~40px cell width. */}
+                  {/* Mobile: dot row only. text labels don't fit at ~40px cell width. */}
                   <div className="mt-auto flex flex-wrap items-center gap-1 sm:hidden">
                     {items.slice(0, 3).map((e) => (
                       <span

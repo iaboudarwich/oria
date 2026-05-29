@@ -59,8 +59,8 @@ export function UnderstoodPanel({
         </h2>
         <div className="flex items-center gap-3 rounded-xl border border-claret/30 bg-claret/[0.05] p-4">
           <p className="flex-1 text-[13px] text-ink">
-            Extraction didn&apos;t finish. The file is still on hand —
-            try again or move it manually.
+            Extraction didn&apos;t finish. The file is still on hand.
+            Try again or move it manually.
           </p>
           <form action={retryUploadProcessing}>
             <input type="hidden" name="id" value={uploadId} />
@@ -92,7 +92,7 @@ export function UnderstoodPanel({
   // The file went through extraction (status="filed") but the model
   // couldn't pull a confident document type or any structured fields.
   // Without this hint the user sees an empty "Understood" panel and
-  // wonders whether anything happened — surface the partial state
+  // wonders whether anything happened. surface the partial state
   // calmly so they know the file is on hand and searchable by name.
   if (
     status === "filed" &&

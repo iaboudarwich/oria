@@ -16,7 +16,7 @@ import { getQuotaLimits } from "./quotas";
  * Uses the service-role admin client because the whole point of this
  * surface is cross-org visibility ("how many uploads across the entire
  * platform"). Never expose the data returned here to anyone other than
- * an authenticated admin — the caller (the admin page) must check
+ * an authenticated admin. the caller (the admin page) must check
  * isCurrentUserAdmin() first.
  */
 
@@ -45,7 +45,7 @@ export type AiUsage = {
   /** Sum of estimated costs we attached at log time. Treat as rough. */
   estimatedCostUsd30d: number;
   /** Identical-content uploads whose extraction was skipped by cloning a
-   *  prior result over the last 30 days — Claude calls avoided. */
+   *  prior result over the last 30 days. Claude calls avoided. */
   reused30d: number;
   recentErrors: SystemEvent[];
 };
@@ -302,7 +302,7 @@ async function collectAiUsage(admin: AdminClient): Promise<AiUsage> {
     .sort((a, b) => b.count - a.count)
     .slice(0, 6);
 
-  // One query for all three numeric totals over the same row set —
+  // One query for all three numeric totals over the same row set;
   // previously three separate limit(5000) pulls of the exact same
   // ai.request rows. At a few thousand events that's the difference
   // between a snappy admin page and 3–5 seconds of blocking I/O.
@@ -322,7 +322,7 @@ async function collectAiUsage(admin: AdminClient): Promise<AiUsage> {
     }),
     listRecentEvents({ kind: "ai.error", limit: 10 }),
     // Identical-content uploads whose extraction we skipped by cloning a
-    // prior result — Claude calls avoided, money saved.
+    // prior result. Claude calls avoided, money saved.
     countEvents({ kind: "extraction.reused", sinceISO: sinceDays(30) }),
   ]);
 
@@ -564,7 +564,7 @@ async function collectFailedReports(
 /**
  * Surface recent scope-violation diagnostics. enforceActiveOrg writes
  * a `scope.violation` system_event whenever a query returns a row that
- * doesn't belong to the active org — these should ALWAYS be zero. Any
+ * doesn't belong to the active org. these should ALWAYS be zero. Any
  * non-zero count is a real bug to investigate.
  */
 async function collectScopeViolations(): Promise<ScopeViolations> {
@@ -653,47 +653,47 @@ function collectWarnings(args: {
 }): string[] {
   const out: string[] = [];
   if (!args.env.hasAnthropicKey) {
-    out.push("ANTHROPIC_API_KEY missing — Ask Oria and extraction will degrade to the no-AI path.");
+    out.push("ANTHROPIC_API_KEY missing. Ask Oria and extraction will degrade to the no-AI path.");
   }
   if (!args.env.hasResendKey || !args.env.hasResendFrom) {
-    out.push("Resend not fully configured — invite emails won't send. Owners can still copy the link/code.");
+    out.push("Resend not fully configured. invite emails won't send. Owners can still copy the link/code.");
   }
   if (!args.env.hasSupabaseServiceKey) {
-    out.push("SUPABASE_SERVICE_ROLE_KEY missing — admin client features (bootstrap, this page) won't work.");
+    out.push("SUPABASE_SERVICE_ROLE_KEY missing. admin client features (bootstrap, this page) won't work.");
   }
   if (args.env.adminEmailCount === 0) {
-    out.push("ADMIN_EMAILS is empty — nobody can reach this page in production (you're seeing it locally / by env override).");
+    out.push("ADMIN_EMAILS is empty. nobody can reach this page in production (you're seeing it locally / by env override).");
   }
   if (args.storage.pendingCount > 5) {
-    out.push(`${args.storage.pendingCount} uploads stuck in processing — background extraction may be lagging.`);
+    out.push(`${args.storage.pendingCount} uploads stuck in processing. background extraction may be lagging.`);
   }
   if (args.failedUploads.length >= 5) {
-    out.push(`${args.failedUploads.length}+ uploads failed extraction recently — see Recent failed uploads below.`);
+    out.push(`${args.failedUploads.length}+ uploads failed extraction recently. see Recent failed uploads below.`);
   }
   if (args.failedReports.length >= 3) {
-    out.push(`${args.failedReports.length}+ Work reports failed recently — check the report detail for the model error.`);
+    out.push(`${args.failedReports.length}+ Work reports failed recently. check the report detail for the model error.`);
   }
   if (args.ai.errorsToday >= 5) {
-    out.push(`${args.ai.errorsToday} AI errors today — check Claude key, rate limits, and the Recent AI errors list.`);
+    out.push(`${args.ai.errorsToday} AI errors today. check Claude key, rate limits, and the Recent AI errors list.`);
   }
   if (args.email.failed7d >= 3 && args.email.sent7d === 0) {
-    out.push(`${args.email.failed7d} email failures and zero successes in the past week — Resend likely misconfigured.`);
+    out.push(`${args.email.failed7d} email failures and zero successes in the past week. Resend likely misconfigured.`);
   }
 
   // Background-job pressure signals.
   if (args.jobs.stuckNow > 0) {
-    out.push(`${args.jobs.stuckNow} background job${args.jobs.stuckNow === 1 ? "" : "s"} stuck in processing for over 5 minutes — likely OOM, timeout, or deploy mid-flight.`);
+    out.push(`${args.jobs.stuckNow} background job${args.jobs.stuckNow === 1 ? "" : "s"} stuck in processing for over 5 minutes. likely OOM, timeout, or deploy mid-flight.`);
   }
   if (args.jobs.failed24h >= 5) {
-    out.push(`${args.jobs.failed24h} background jobs failed in the past 24h — check Recent job failures below.`);
+    out.push(`${args.jobs.failed24h} background jobs failed in the past 24h. check Recent job failures below.`);
   }
 
-  // Scope-violation signal — this should ALWAYS be zero. Any number
+  // Scope-violation signal. this should ALWAYS be zero. Any number
   // is a real privacy bug: a query returned org-scoped rows from the
   // wrong org and the runtime guard caught it. Investigate the call
   // site listed in the system_event context.
   if (args.scopeViolations.count7d > 0) {
-    out.push(`${args.scopeViolations.count7d} scope.violation event${args.scopeViolations.count7d === 1 ? "" : "s"} in the past 7 days — a query returned a row from the wrong organization. See Recent scope violations below.`);
+    out.push(`${args.scopeViolations.count7d} scope.violation event${args.scopeViolations.count7d === 1 ? "" : "s"} in the past 7 days. a query returned a row from the wrong organization. See Recent scope violations below.`);
   }
 
   // Storage cap signals (per-user).
@@ -704,15 +704,15 @@ function collectWarnings(args: {
       (u) => u.capRatio >= 0.8 && u.capRatio < 1,
     );
     if (atCap.length > 0) {
-      out.push(`${atCap.length} user${atCap.length === 1 ? "" : "s"} at or over the ${formatGb(userCap)} storage cap — they can't upload until they delete files or you raise ORIA_USER_STORAGE_BYTES.`);
+      out.push(`${atCap.length} user${atCap.length === 1 ? "" : "s"} at or over the ${formatGb(userCap)} storage cap. they can't upload until they delete files or you raise ORIA_USER_STORAGE_BYTES.`);
     } else if (approaching.length > 0) {
       out.push(`${approaching.length} user${approaching.length === 1 ? "" : "s"} above 80% of the ${formatGb(userCap)} storage cap.`);
     }
   }
 
-  // AI cost signal — visible nudge if estimated 30d spend is starting to matter.
+  // AI cost signal. visible nudge if estimated 30d spend is starting to matter.
   if (args.ai.estimatedCostUsd30d >= 20) {
-    out.push(`Estimated Claude spend over the past 30 days is $${args.ai.estimatedCostUsd30d.toFixed(2)} — confirm against console.anthropic.com if it looks off.`);
+    out.push(`Estimated Claude spend over the past 30 days is $${args.ai.estimatedCostUsd30d.toFixed(2)}. confirm against console.anthropic.com if it looks off.`);
   }
 
   return out;

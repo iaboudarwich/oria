@@ -1,5 +1,5 @@
 /**
- * Extraction router — TypeScript side.
+ * Extraction router. TypeScript side.
  *
  * Routing priority (mirrors Python service):
  *   Excel / CSV    → Python service (pandas)    → xlsx npm fallback
@@ -11,7 +11,7 @@
  *   Plain text     → passthrough (no service call needed)
  *   Unknown        → null (caller falls back to Claude)
  *
- * Returns null when no text was extracted — the caller (extract.ts) then
+ * Returns null when no text was extracted. the caller (extract.ts) then
  * falls back to sending the file as a Claude vision/document block.
  */
 
@@ -41,7 +41,7 @@ export async function routeExtraction(
   const mime = (mimeType ?? "").toLowerCase().trim();
   const ext = filename.split(".").pop()?.toLowerCase() ?? "";
 
-  // ── Plain text — passthrough, no service call ────────────────────────────
+  // ── Plain text. passthrough, no service call ────────────────────────────
   if (
     mime.startsWith("text/plain") ||
     ["txt", "md", "rst", "log"].includes(ext)
@@ -102,7 +102,7 @@ export async function routeExtraction(
     return null;
   }
 
-  // PPTX — no JS fallback; let Claude handle if service failed
+  // PPTX. no JS fallback; let Claude handle if service failed
   if (
     mime === "application/vnd.openxmlformats-officedocument.presentationml.presentation" ||
     mime === "application/vnd.ms-powerpoint" ||
@@ -111,7 +111,7 @@ export async function routeExtraction(
     return null; // Claude fallback in extract.ts
   }
 
-  // Images — no JS OCR fallback; Claude vision handles this
+  // Images. no JS OCR fallback; Claude vision handles this
   if (mime.startsWith("image/")) {
     return null;
   }

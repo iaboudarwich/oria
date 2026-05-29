@@ -14,7 +14,7 @@ export async function GET(request: Request) {
   }
 
   // Search fires on every keystroke past 3 chars, so we allow a high
-  // per-minute ceiling but still bounce obvious scraping. Soft fail —
+  // per-minute ceiling but still bounce obvious scraping. Soft fail.
   // a 429 here surfaces in the UI as "Search hiccup" via the cache.
   const burst = rateLimit({
     key: `search:${ctx.profile.id}`,

@@ -143,7 +143,7 @@ Rules:
     }
   }
 
-  // Validate against Zod schema — strip unknown keys, coerce optional fields
+  // Validate against Zod schema, strip unknown keys, coerce optional fields
   const schema_zod = SCHEMAS[docType];
   const result = schema_zod.safeParse(parsed);
   const fields = result.success
@@ -178,7 +178,7 @@ export async function extractEntity(
     existing.extractor_version === EXTRACTOR_VERSION &&
     existing.user_verified === true
   ) {
-    // User has verified — never overwrite.
+    // User has verified, never overwrite.
     return;
   }
   if (
@@ -186,7 +186,7 @@ export async function extractEntity(
     existing.extractor_version === EXTRACTOR_VERSION &&
     existing.user_verified === false
   ) {
-    // Already extracted and not yet verified — skip to avoid thrashing.
+    // Already extracted and not yet verified, skip to avoid thrashing.
     return;
   }
 

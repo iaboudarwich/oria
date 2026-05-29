@@ -86,7 +86,7 @@ export async function deleteAccount(
   }
 
   await supabase.auth.signOut();
-  // Account is gone; clearing the login page is enough — no need to
+  // Account is gone; clearing the login page is enough. no need to
   // revalidate the dashboard tree they can no longer access.
   redirect("/login?notice=Your+account+has+been+deleted.");
 }
@@ -137,7 +137,7 @@ export async function resetAccount(
     (m: { organization_id: string }) => m.organization_id,
   );
 
-  // Identify personal orgs (sole member) — safe to fully wipe.
+  // Identify personal orgs (sole member). safe to fully wipe.
   const personalOrgIds: string[] = [];
   for (const orgId of orgIds) {
     const { count } = await admin
@@ -163,7 +163,7 @@ export async function resetAccount(
     await admin.from("uploads").delete().eq("organization_id", orgId);
   }
 
-  // 2. Uploads the user created in shared orgs — delete their rows only
+  // 2. Uploads the user created in shared orgs. delete their rows only
   //    (other members' content stays); storage objects are scoped per upload.
   const sharedOrgIds = orgIds.filter((id) => !personalOrgIds.includes(id));
   if (sharedOrgIds.length > 0) {
@@ -206,7 +206,7 @@ export async function resetAccount(
   // 6. Learning events attributed to this user.
   await admin.from("learning_events").delete().eq("actor_id", user.id);
 
-  // 7. Onboarding dismissals — intentionally cleared so hints reappear
+  // 7. Onboarding dismissals. intentionally cleared so hints reappear
   //    after a "start fresh" reset.
   await admin.from("user_onboarding").delete().eq("user_id", user.id);
 

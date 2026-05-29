@@ -30,7 +30,7 @@ function SystemIcon() {
 /**
  * Three-way theme toggle: light / dark / system.
  * suppressHydrationWarning prevents the flicker when next-themes resolves
- * the theme on the client — the SSR render defaults to no active state
+ * the theme on the client. the SSR render defaults to no active state
  * and the client immediately corrects it.
  */
 export function ThemeToggle() {

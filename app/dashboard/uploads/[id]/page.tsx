@@ -74,7 +74,7 @@ export default async function UploadDetailPage({ params }: Props) {
     extractedEntity,
   } = detail;
 
-  // Reminder suggestions — only when extraction exists and user is authenticated.
+  // Reminder suggestions. only when extraction exists and user is authenticated.
   const ctx = await getCurrentContext();
   const suggestions = ctx && extractedEntity
     ? await generateSuggestionsForUpload(upload.id, ctx.profile.id).catch(() => [])
@@ -312,7 +312,7 @@ function DeleteSection({ id, filename }: { id: string; filename: string }) {
 }
 
 function SingleItemPanel({ item }: { item: MemoryItem }) {
-  // Only render when we actually have structured fields worth showing —
+  // Only render when we actually have structured fields worth showing.
   // otherwise the UnderstoodPanel + Section row already tell the story.
   const rows: Array<{ label: string; value: string }> = [];
   if (item.merchant) rows.push({ label: "Merchant", value: item.merchant });
@@ -369,7 +369,7 @@ function friendlyDate(iso: string): string {
 /**
  * Heuristic: did Oria choose this upload's section, or did the user?
  * We say "auto-filed" when the upload sits in a section AND at least
- * one extracted item carries that same section with high confidence —
+ * one extracted item carries that same section with high confidence.
  * the exact condition that triggers auto-filing in upload-intelligence.
  * Anything else (user-moved, low-confidence extraction, no items) shows
  * no badge so we don't claim credit incorrectly.

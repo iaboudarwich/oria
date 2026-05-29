@@ -30,15 +30,15 @@ What good output looks like:
 - One item per discrete thing the user mentioned. "Lunch was pasta and I paid the electric bill" → TWO items (a diet item and a bills item).
 - Confidence reflects how cleanly you understood the note. If it's vague ("had something good for lunch"), confidence below 0.6 and leave amounts/dates null instead of guessing.
 
-DATES — the input includes USER_NOW (ISO 8601 in UTC) and USER_TIMEZONE (IANA, e.g. "America/Los_Angeles"). Always resolve relative dates against USER_NOW in USER_TIMEZONE, then output occurred_at as an ISO 8601 UTC instant:
+DATES, the input includes USER_NOW (ISO 8601 in UTC) and USER_TIMEZONE (IANA, e.g. "America/Los_Angeles"). Always resolve relative dates against USER_NOW in USER_TIMEZONE, then output occurred_at as an ISO 8601 UTC instant:
 - "today" / "tonight" / "now" → USER_NOW
-- "yesterday" → midnight of (USER_NOW - 1 day) at a reasonable hour (12:00 local) — UNLESS the user gave a specific time
+- "yesterday" → midnight of (USER_NOW - 1 day) at a reasonable hour (12:00 local), UNLESS the user gave a specific time
 - "tomorrow", "next Friday", "in 3 days" → resolve forward
 - Specific dates without a year → the closest plausible occurrence (June 1 in May = this June 1; in July = next June 1)
 - Explicit times ("at 8pm", "for 7:30") → use that local time
 - If the note has no date cue at all and the item is a meal/expense the user just experienced, treat it as occurring at USER_NOW.
 
-DIET items: estimate calories, protein_g, carbs_g, fat_g from the description. Be decisive — "1 cup pasta with parmesan" should produce a number, not null. The downstream pipeline forces occurred_at to USER_NOW for diet items, so you can leave that null.
+DIET items: estimate calories, protein_g, carbs_g, fat_g from the description. Be decisive, "1 cup pasta with parmesan" should produce a number, not null. The downstream pipeline forces occurred_at to USER_NOW for diet items, so you can leave that null.
 
 EXPENSES/RECEIPTS: capture merchant, amount_value, amount_currency (default USD if user wrote "$" without a code), occurred_at, category ("groceries", "shopping", "dining out", etc), direction="outflow". document_type="receipt" when phrased as a purchase.
 
@@ -88,12 +88,12 @@ export async function extractFromText(
   } else if (input.customSectionName) {
     hintLines.push(`SECTION_HINT: custom section "${input.customSectionName}"`);
   } else {
-    hintLines.push(`SECTION_HINT: (none — pick from content)`);
+    hintLines.push(`SECTION_HINT: (none, pick from content)`);
   }
 
   const userMessage = `${hintLines.join("\n")}\n\nUSER TYPED:\n${input.text}`;
 
-  // Typed logs are short + plain — run them on the cheap model (routing).
+  // Typed logs are short + plain, run them on the cheap model (routing).
   const model = getTextExtractionModel();
   let response: Anthropic.Messages.Message;
   const startedAt = Date.now();

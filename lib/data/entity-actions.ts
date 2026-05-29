@@ -176,7 +176,7 @@ export async function seedEntityTypes(
 
 /**
  * Translate the displayed extracted entity fields to the user's account
- * language. Only updates the UI display — the stored fields remain in
+ * language. Only updates the UI display. the stored fields remain in
  * their original language.
  *
  * Returns the translated fields object.

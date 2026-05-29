@@ -28,7 +28,7 @@ export function CircleSettings({
 }) {
   return (
     <section>
-      <h2 className="mb-2 px-1 text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
+      <h2 className="mb-2 px-1 text-eyebrow">
         Circle settings
       </h2>
 

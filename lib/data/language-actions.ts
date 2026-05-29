@@ -25,7 +25,7 @@ export async function setAccountLanguage(lang: Locale): Promise<void> {
       .eq("id", user.id);
   }
 
-  // Set cookie — next-intl reads this on every request
+  // Set cookie. next-intl reads this on every request
   const cookieStore = await cookies();
   cookieStore.set("oria_locale", lang, {
     httpOnly: true,

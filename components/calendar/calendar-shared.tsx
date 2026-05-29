@@ -66,10 +66,10 @@ export function shortLabel(e: CalendarEntry): string {
 
   // "Boston → Paris, 05 Jul 2026 (AF 331)" → 3-letter city codes.
   // Only match a route-style separator: the Unicode right-arrow OR an
-  // en-dash. Plain hyphens are deliberately excluded — they're
+  // en-dash. Plain hyphens are deliberately excluded. they're
   // overwhelmingly used in compound words ("Full-Year", "in-house"),
   // and treating those as route separators produces nonsense labels
-  // like "FUL → YEA" for "Pay Catalina Landing — 2026 Full-Year
+  // like "FUL → YEA" for "Pay Catalina Landing. 2026 Full-Year
   // Budget".
   const arrow = title.match(/([A-Z][a-zA-Z]{2,})\s*[→–]+\s*([A-Z][a-zA-Z]{2,})/);
   if (arrow) {
@@ -261,8 +261,8 @@ export function CalendarRow({
         </div>
       </div>
 
-      {/* Hover actions: only for reminders. Items have no Keep/Delete here —
-       * to remove them, the user deletes the underlying upload. */}
+      {/* Hover actions: only for reminders. Items have no Keep/Delete here.
+       * To remove them, the user deletes the underlying upload. */}
       {isReminder ? (
         <div className="flex shrink-0 items-center gap-2 opacity-0 transition-opacity duration-150 group-hover:opacity-100 focus-within:opacity-100">
           {suggested ? (

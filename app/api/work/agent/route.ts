@@ -77,7 +77,7 @@ export async function POST(request: Request) {
     async start(controller) {
       try {
         // Retrieval runs against the active org (the Workspace) by default.
-        // Pull a slightly wider set than Ask Oria — operational questions
+        // Pull a slightly wider set than Ask Oria. operational questions
         // often need to compare across documents.
         const sources = await retrieveForQuery(query, { scope: null });
         writeEvent(controller, { type: "sources", sources });

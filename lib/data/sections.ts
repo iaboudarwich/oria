@@ -7,10 +7,10 @@ import type { UploadWithUploader } from "./uploads";
 
 /**
  * A row that shows up on a section page. Two flavours:
- *   • kind: "upload" — a whole file the user filed into this section. This
+ *   • kind: "upload". a whole file the user filed into this section. This
  *     includes multi-item uploads whose items all landed in the same
  *     section (their parent upload was propagated here).
- *   • kind: "item"   — one receipt extracted from a multi-item file whose
+ *   • kind: "item"  . one receipt extracted from a multi-item file whose
  *     other items went elsewhere. The parent upload lives in the Uploads
  *     archive (/dashboard/inbox), not in any specific section.
  *
@@ -54,7 +54,7 @@ export type SectionEntry =
  *
  * Multi-item uploads whose items have all been sorted are stamped with
  * `metadata.items_sorted_at` by propagateUploadSectionFromItems and
- * filtered out here — the source file still lives in the Uploads archive
+ * filtered out here. the source file still lives in the Uploads archive
  * (/dashboard/inbox), it just no longer needs review.
  */
 export async function listReviewUploads(
@@ -143,7 +143,7 @@ export async function listSectionEntries(
   // (so we don't double-show single-item or fully-propagated uploads).
   const knownUploadIds = new Set(uploads.map((u) => u.id));
 
-  // Note: we no longer filter `upload_id is not null` here — typed
+  // Note: we no longer filter `upload_id is not null` here. typed
   // records (e.g. "I spent 500 USD at Chanel" logged via the section
   // text-log form) have upload_id=null and need to show up here too.
   // The post-processing loop below handles either case.
@@ -197,7 +197,7 @@ export async function listSectionEntries(
   );
   for (const r of itemRowsSafe) {
     if (r.upload_id === null) {
-      // Typed record — no source file. Always show.
+      // Typed record. no source file. Always show.
       orphanItems.push({
         kind: "item",
         id: r.id,

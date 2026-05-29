@@ -18,13 +18,13 @@ import { dismissStatusStrip } from "@/lib/data/status-strip-actions";
  *
  * SCOPE: strictly active org only. The previous version called
  * listUserSpaces() and queried events across every space the user
- * belonged to — that meant a workspace user got a Personal-space
+ * belonged to. that meant a workspace user got a Personal-space
  * "Upload processed" event in their topbar. Messages were generic so
  * no content leaked, but a notification surfacing in the wrong context
  * is itself a UX/privacy issue. Now the strip mirrors the rest of the
  * dashboard: it only ever shows what the active org produced.
  *
- * Dismissal is persisted via a cookie of the last-seen event id — the
+ * Dismissal is persisted via a cookie of the last-seen event id. the
  * strip stays hidden until something newer arrives.
  */
 export async function StatusStrip() {

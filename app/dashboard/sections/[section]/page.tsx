@@ -40,7 +40,7 @@ type Props = { params: Promise<{ section: string }> };
 export default async function SectionPage({ params }: Props) {
   const { section } = await params;
 
-  // Special: "review" — uploads Oria couldn't confidently classify.
+  // Special: "review". uploads Oria couldn't confidently classify.
   if (section === "review") {
     const [uploads, allSections] = await Promise.all([
       listReviewUploads(100),
@@ -168,7 +168,7 @@ function placeholderForSection(sec: Section): string {
     case "vendors":
       return "e.g. ‘Hired Acme HVAC, contract through March 2027’";
     case "properties":
-      return "e.g. ‘Unit 4B occupied — Sarah Chen, lease through Dec 2026’";
+      return "e.g. ‘Unit 4B occupied. Sarah Chen, lease through Dec 2026’";
     case "staff":
       return "e.g. ‘Hired Maria as housekeeper, starts June 1, $25/hr’";
     case "events":
@@ -181,7 +181,7 @@ function placeholderForSection(sec: Section): string {
 }
 
 /** Fetch signed thumbnail URLs keyed by entry id. Both uploads and items
- *  show the parent file's thumb — items don't have storage of their own. */
+ *  show the parent file's thumb. items don't have storage of their own. */
 async function thumbsForEntries(
   entries: SectionEntry[],
 ): Promise<Map<string, string>> {

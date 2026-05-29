@@ -66,8 +66,8 @@ export type CalendarSpace = {
 export type CalendarEntry = {
   id: string;
   /**
-   * "reminder" entries come from the reminders table — they're tasks the user
-   * can mark done. "item" entries come from memory_items — passive events
+   * "reminder" entries come from the reminders table. they're tasks the user
+   * can mark done. "item" entries come from memory_items. passive events
    * Oria extracted from uploads (flights, hotel check-ins, payments due).
    * Items are display-only; they don't have a checkbox.
    */
@@ -86,7 +86,7 @@ export type CalendarEntry = {
   space_name: string;
   space_kind: OrgKind;
   category: CalendarCategory;
-  /** Operational topic — drives the filter chips and the "coming up"
+  /** Operational topic. drives the filter chips and the "coming up"
    *  rollup. See deriveCalendarTopic in lib/data/calendar.ts. */
   topic: CalendarTopic;
   /** Item-only display sugar. Null on reminders. */

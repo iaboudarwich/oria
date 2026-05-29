@@ -42,7 +42,7 @@ function AnalysisList({
 }) {
   return (
     <section>
-      <h2 className="mb-2 px-1 text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
+      <h2 className="mb-2 px-1 text-eyebrow">
         Recent analyses
       </h2>
       <ul className="space-y-2">

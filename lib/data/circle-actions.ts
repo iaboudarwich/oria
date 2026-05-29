@@ -76,8 +76,8 @@ function parseSectionFields(
  * Create one invite for one person AND email them the link.
  * Returns the full invite row + email send status so the UI can show:
  *   • "Email sent to alex@example.com" on success
- *   • "Email isn't set up yet — share the link directly" on no key
- *   • "Email failed — share the link directly" on transport failure
+ *   • "Email isn't set up yet. share the link directly" on no key
+ *   • "Email failed. share the link directly" on transport failure
  */
 export async function inviteToCircle(
   formData: FormData,
@@ -195,7 +195,7 @@ export async function revokeInvite(formData: FormData): Promise<void> {
 /**
  * Generate a brand-new invite for the same recipient. The previous invite is
  * revoked atomically so its link and code stop working immediately. Use this
- * when the link/code may have been seen, mistyped, or leaked — anything that
+ * when the link/code may have been seen, mistyped, or leaked. anything that
  * means "I'd like the previous one to stop working but please re-send".
  *
  * Returns the new invite + email status. Recipient sees a fresh link+code.

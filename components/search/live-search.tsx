@@ -141,7 +141,7 @@ export function LiveSearch({
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Cmd/Ctrl + K focuses the input from anywhere. (Subscribes to a DOM event,
-  // setState happens only inside the event listener — allowed.)
+  // setState happens only inside the event listener. allowed.)
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const meta = e.metaKey || e.ctrlKey;

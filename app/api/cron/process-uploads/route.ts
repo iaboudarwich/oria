@@ -29,10 +29,10 @@ const MAX_RETRIES = 3;
  *
  * Called by Vercel Cron every minute (see vercel.json). Two phases:
  *
- * Phase A — upload.extract: text extraction + embedding (existing pipeline).
+ * Phase A. upload.extract: text extraction + embedding (existing pipeline).
  *   On success, enqueues an entity.extract job for the same upload.
  *
- * Phase B — entity.extract: structured field extraction via two Haiku calls.
+ * Phase B. entity.extract: structured field extraction via two Haiku calls.
  *   Processed after Phase A in the same cron tick so extraction happens
  *   one minute after upload completes (no new cron entry needed).
  *

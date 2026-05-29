@@ -38,7 +38,7 @@ const CATEGORY_TINT: Record<CalendarCategory, string> = {
  * today (or already overdue) and the review nudge if present. Replaces what
  * used to be a static dashboard with the upload box at the center.
  *
- * Empty state stays calm: "Calm day, nothing scheduled." — never an alarm.
+ * Empty state stays calm: "Calm day, nothing scheduled.". never an alarm.
  */
 export async function TodayPulse({ activeSpaceId }: { activeSpaceId: string }) {
   const [{ entries }, reviewCount] = await Promise.all([

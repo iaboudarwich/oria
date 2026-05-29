@@ -80,7 +80,7 @@ export function CalendarView({
   initialComingUp,
 }: Props) {
   // Default scope is "active" so the calendar is isolated to the
-  // current space — same rule as every other Oria surface. Owner of
+  // current space. same rule as every other Oria surface. Owner of
   // Personal can flip to "all" to explore across their own spaces.
   const [scope, setScope] = useState<SpaceScope>("active");
   const [spaceFilter, setSpaceFilter] = useState<SpaceFilter>("all");
@@ -107,7 +107,7 @@ export function CalendarView({
     return entries;
   }, [entries, scope, activeSpaceId]);
 
-  // Topic counts drive the chip row — chips with zero matches in the
+  // Topic counts drive the chip row. chips with zero matches in the
   // current dataset are hidden so the row stays scannable.
   const topicCounts = useMemo(() => {
     const counts = new Map<CalendarTopic, number>();
@@ -144,7 +144,7 @@ export function CalendarView({
           mixed-scope strip that could confuse the user. */}
       <ComingUpRollup buckets={initialComingUp} />
 
-      {/* God's Eye toggle — Personal-owner only */}
+      {/* God's Eye toggle. Personal-owner only */}
       {crossSpaceAvailable ? (
         <div className="flex items-center gap-2 px-1">
           <button
