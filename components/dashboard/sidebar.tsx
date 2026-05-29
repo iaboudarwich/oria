@@ -5,8 +5,10 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Wordmark } from "@/components/brand/wordmark";
 import {
+  BoxIcon,
   CalendarIcon,
   ChartIcon,
+  CheckIcon,
   ChevronDownIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -61,6 +63,8 @@ const primaryAction: NavItem = {
 const personalSecondaryNav: NavItem[] = [
   { label: "Upload", href: "/dashboard/inbox", icon: UploadIcon },
   { label: "Calendar", href: "/dashboard/calendar", icon: CalendarIcon },
+  { label: "Things", href: "/dashboard/things", icon: BoxIcon },
+  { label: "Trackables", href: "/dashboard/trackables", icon: CheckIcon },
 ];
 
 // Work mode: business-focused nav. AI Agent sits right under Ask Oria as
@@ -75,6 +79,8 @@ const workSecondaryNav: NavItem[] = [
   { label: "Invoices", href: "/dashboard/work/invoices", icon: DocumentIcon },
   { label: "Calendar", href: "/dashboard/calendar", icon: CalendarIcon },
   { label: "Reports", href: "/dashboard/work/reports", icon: PulseIcon },
+  { label: "Things", href: "/dashboard/things", icon: BoxIcon },
+  { label: "Trackables", href: "/dashboard/trackables", icon: CheckIcon },
 ];
 
 // Optional rows the user can opt into from Settings → Sidebar. Layout

@@ -33,6 +33,8 @@ import { ExtractedEntitiesPanel } from "@/components/upload/extracted-entities-p
 import { SuggestedRemindersPanel } from "@/components/upload/suggested-reminders-panel";
 import { generateSuggestionsForUpload } from "@/lib/ai/suggest-reminders";
 import { getCurrentContext } from "@/lib/data/organizations";
+import { EntityLinkPanel } from "@/components/things/entity-link-panel";
+import { getUploadEntities, listEntityTypes, listEntities } from "@/lib/data/entities";
 import type { EventKind, MemoryItem, Section } from "@/lib/supabase/types";
 
 type Props = { params: Promise<{ id: string }> };
@@ -76,6 +78,28 @@ export default async function UploadDetailPage({ params }: Props) {
   const suggestions = ctx && extractedEntity
     ? await generateSuggestionsForUpload(upload.id, ctx.profile.id).catch(() => [])
     : [];
+
+  // Entity linking
+  const [uploadEntityLinks, allEntityTypes] = await Promise.all([
+    getUploadEntities(upload.id),
+    listEntityTypes(),
+  ]);
+  // Load all entities for all types so the picker shows them
+  const allEntitiesPerType = await Promise.all(
+    allEntityTypes.map((t) => listEntities(t.id)),
+  );
+  const allEntities = allEntityTypes.flatMap((t, i) =>
+    allEntitiesPerType[i].map((e) => ({ entity: e, entityType: t })),
+  );
+  const linkedEntityIds = new Set(uploadEntityLinks.map((l) => l.entity_id));
+  const linkedEntitiesForPanel = uploadEntityLinks.map((l) => ({
+    entity: l.entity,
+    entityType: l.entity_type,
+    relationship: l.relationship,
+  }));
+  const availableEntities = allEntities.filter(
+    ({ entity }) => !linkedEntityIds.has(entity.id),
+  );
 
   // Thumbnails for related image uploads.
   const relatedThumbs = await getSignedUrlMap(
@@ -182,6 +206,12 @@ export default async function UploadDetailPage({ params }: Props) {
           />
 
           {items.length === 1 ? <SingleItemPanel item={items[0]} /> : null}
+
+          <EntityLinkPanel
+            uploadId={upload.id}
+            linkedEntities={linkedEntitiesForPanel}
+            availableEntities={availableEntities}
+          />
 
           <SectionPanel
             label={sectionLabel}
