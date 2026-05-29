@@ -1,53 +1,161 @@
+"use client";
+
+import { useState, useTransition } from "react";
 import Link from "next/link";
 import {
-  ChevronDownIcon,
-  ChevronUpIcon,
-  EyeIcon,
-  EyeOffIcon,
-} from "@/components/ui/icon";
+  DndContext,
+  PointerSensor,
+  TouchSensor,
+  KeyboardSensor,
+  useSensor,
+  useSensors,
+  closestCenter,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable,
+  arrayMove,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { EyeIcon, EyeOffIcon } from "@/components/ui/icon";
 import { SECTION_META, CustomSectionIcon } from "@/lib/sections-meta";
 import { deleteCustomSection } from "@/lib/data/custom-section-actions";
 import {
-  moveSection,
   toggleSectionHidden,
+  reorderSections,
 } from "@/lib/data/section-settings-actions";
 import type { MergedSection } from "@/lib/data/all-sections";
 import type { Section } from "@/lib/supabase/types";
 
-/**
- * Section management list, rendered both in /dashboard/settings and on
- * the focused /dashboard/settings/sections page (the latter is what the
- * sidebar "Edit sections" link opens). All actions are server actions
- * — reorder, hide/show, delete custom — so no client JS needed here.
- *
- * Built-in sections can be reordered + hidden but never renamed or
- * deleted; those names are product vocabulary. Custom sections have
- * Edit (rename + AI context) and Remove on top.
- */
-export function SectionsEditor({ sections }: { sections: MergedSection[] }) {
+/** Stable string id for a section ref. */
+function refId(ref: { kind: string; key: string }) {
+  return `${ref.kind}:${ref.key}`;
+}
+
+/** 6-dot drag-handle icon. */
+function DragHandleIcon({ size = 14 }: { size?: number }) {
   return (
-    <ul className="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface-raised shadow-[0_1px_2px_rgba(28,26,23,0.04),0_2px_8px_-6px_rgba(28,26,23,0.08)]">
-      {sections.map((s, i) => (
-        <SectionRow
-          key={`${s.ref.kind}-${s.ref.key}`}
-          section={s}
-          isFirst={i === 0}
-          isLast={i === sections.length - 1}
-        />
-      ))}
-    </ul>
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 14 14"
+      fill="currentColor"
+      aria-hidden
+    >
+      <circle cx="4.5" cy="3" r="1.2" />
+      <circle cx="4.5" cy="7" r="1.2" />
+      <circle cx="4.5" cy="11" r="1.2" />
+      <circle cx="9.5" cy="3" r="1.2" />
+      <circle cx="9.5" cy="7" r="1.2" />
+      <circle cx="9.5" cy="11" r="1.2" />
+    </svg>
   );
 }
 
-function SectionRow({
-  section,
-  isFirst,
-  isLast,
+/**
+ * Section management list with drag-and-drop reordering.
+ * Client component so DnD context can maintain local optimistic order.
+ */
+export function SectionsEditor({
+  sections: initial,
 }: {
-  section: MergedSection;
-  isFirst: boolean;
-  isLast: boolean;
+  sections: MergedSection[];
 }) {
+  const [sections, setSections] = useState(initial);
+  const [, startTransition] = useTransition();
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 4 },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: { delay: 200, tolerance: 5 },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  );
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = sections.findIndex((s) => refId(s.ref) === active.id);
+    const newIndex = sections.findIndex((s) => refId(s.ref) === over.id);
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    const reordered = arrayMove(sections, oldIndex, newIndex);
+    setSections(reordered);
+    startTransition(() => {
+      void reorderSections(
+        reordered.map((s) => ({ kind: s.ref.kind, key: s.ref.key })),
+      );
+    });
+  }
+
+  const ids = sections.map((s) => refId(s.ref));
+
+  return (
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragEnd={handleDragEnd}
+    >
+      <SortableContext items={ids} strategy={verticalListSortingStrategy}>
+        <ul className="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface-raised shadow-[0_1px_2px_rgba(28,26,23,0.04),0_2px_8px_-6px_rgba(28,26,23,0.08)]">
+          {sections.map((s) => (
+            <SortableSectionRow
+              key={refId(s.ref)}
+              id={refId(s.ref)}
+              section={s}
+              onToggleHidden={(ref, hidden) => {
+                setSections((prev) =>
+                  prev.map((x) =>
+                    refId(x.ref) === refId(ref) ? { ...x, hidden } : x,
+                  ),
+                );
+              }}
+              onDelete={(ref) => {
+                setSections((prev) =>
+                  prev.filter((x) => refId(x.ref) !== refId(ref)),
+                );
+              }}
+            />
+          ))}
+        </ul>
+      </SortableContext>
+    </DndContext>
+  );
+}
+
+function SortableSectionRow({
+  id,
+  section,
+  onToggleHidden,
+  onDelete,
+}: {
+  id: string;
+  section: MergedSection;
+  onToggleHidden: (ref: MergedSection["ref"], hidden: boolean) => void;
+  onDelete: (ref: MergedSection["ref"]) => void;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
   const Icon =
     section.ref.kind === "builtin"
       ? SECTION_META[section.ref.key as Section].Icon
@@ -56,14 +164,30 @@ function SectionRow({
 
   return (
     <li
-      className={`flex items-center gap-2 px-2 py-2 transition-base hover:bg-canvas/60 ${
-        section.hidden ? "opacity-55" : ""
-      }`}
+      ref={setNodeRef}
+      style={style}
+      className={[
+        "flex items-center gap-2 px-2 py-2",
+        section.hidden ? "opacity-55" : "",
+        isDragging
+          ? "z-10 scale-[1.02] rounded-xl border border-line bg-surface-raised shadow-md"
+          : "transition-colors hover:bg-canvas/60",
+      ]
+        .filter(Boolean)
+        .join(" ")}
     >
-      <MoveButton target={section.ref} dir="up" disabled={isFirst} />
-      <MoveButton target={section.ref} dir="down" disabled={isLast} />
+      {/* Drag handle — only this element activates the drag */}
+      <button
+        type="button"
+        {...attributes}
+        {...listeners}
+        aria-label="Drag to reorder"
+        className="inline-flex h-7 w-7 cursor-grab items-center justify-center rounded-md text-ink-faint transition-base hover:bg-canvas hover:text-ink active:cursor-grabbing"
+      >
+        <DragHandleIcon size={14} />
+      </button>
 
-      <span className="ml-1 inline-flex h-7 w-7 shrink-0 items-center justify-center text-ink-muted">
+      <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center text-ink-muted">
         <Icon size={14} />
       </span>
 
@@ -75,7 +199,11 @@ function SectionRow({
         </p>
       </div>
 
-      <HideButton target={section.ref} hidden={section.hidden} />
+      <HideButton
+        target={section.ref}
+        hidden={section.hidden}
+        onOptimistic={(hidden) => onToggleHidden(section.ref, hidden)}
+      />
 
       {isCustom ? (
         <>
@@ -85,7 +213,12 @@ function SectionRow({
           >
             Edit
           </Link>
-          <form action={deleteCustomSection}>
+          <form
+            action={async (fd) => {
+              onDelete(section.ref);
+              await deleteCustomSection(fd);
+            }}
+          >
             <input type="hidden" name="id" value={section.ref.key} />
             <button
               type="submit"
@@ -100,41 +233,22 @@ function SectionRow({
   );
 }
 
-function MoveButton({
-  target,
-  dir,
-  disabled,
-}: {
-  target: { kind: string; key: string };
-  dir: "up" | "down";
-  disabled: boolean;
-}) {
-  return (
-    <form action={moveSection}>
-      <input type="hidden" name="kind" value={target.kind} />
-      <input type="hidden" name="key" value={target.key} />
-      <input type="hidden" name="dir" value={dir} />
-      <button
-        type="submit"
-        disabled={disabled}
-        className="inline-flex h-7 w-7 items-center justify-center rounded-md text-ink-faint transition-base hover:bg-canvas hover:text-ink disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-ink-faint"
-        aria-label={dir === "up" ? "Move up" : "Move down"}
-      >
-        {dir === "up" ? <ChevronUpIcon size={14} /> : <ChevronDownIcon size={14} />}
-      </button>
-    </form>
-  );
-}
-
 function HideButton({
   target,
   hidden,
+  onOptimistic,
 }: {
   target: { kind: string; key: string };
   hidden: boolean;
+  onOptimistic: (hidden: boolean) => void;
 }) {
   return (
-    <form action={toggleSectionHidden}>
+    <form
+      action={async (fd) => {
+        onOptimistic(!hidden);
+        await toggleSectionHidden(fd);
+      }}
+    >
       <input type="hidden" name="kind" value={target.kind} />
       <input type="hidden" name="key" value={target.key} />
       <button

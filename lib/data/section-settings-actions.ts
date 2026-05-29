@@ -99,3 +99,23 @@ export async function toggleSectionHidden(formData: FormData): Promise<void> {
 
   revalidateSections();
 }
+
+/**
+ * Persist a completely reordered list of sections. Called by the drag-and-
+ * drop SectionsEditor after a successful drop. Refs are in the new desired
+ * order; we assign sort_order = index * 10 to each.
+ */
+export async function reorderSections(
+  orderedRefs: Array<{ kind: string; key: string }>,
+): Promise<void> {
+  await Promise.all(
+    orderedRefs.map((ref, i) => {
+      const sRef: SectionRef =
+        ref.kind === "builtin"
+          ? { kind: "builtin", key: ref.key as Section }
+          : { kind: "custom", key: ref.key };
+      return upsertSetting(sRef, { sort_order: i * 10 });
+    }),
+  );
+  revalidateSections();
+}
