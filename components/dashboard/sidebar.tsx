@@ -214,7 +214,7 @@ export function Sidebar({
         // the CSS var set by SidebarShell so expand/collapse stays in sync
         // with the main content padding.
         style={{ width: "var(--sidebar-w, 250px)" }}
-        className={`fixed inset-y-0 left-0 z-50 flex flex-col overflow-hidden border-r border-line bg-surface transition-[width,transform] duration-200 ease-[cubic-bezier(0.2,0.8,0.2,1)] max-lg:!w-[260px] lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 flex flex-col overflow-hidden border-e border-line glass shadow-lg transition-[width,transform] duration-200 ease-[cubic-bezier(0.2,0.8,0.2,1)] max-lg:!w-[260px] lg:translate-x-0 ${
           open ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -379,7 +379,7 @@ function PrimaryRow({
         collapsed ? "justify-center px-0 py-2" : "px-3 py-2"
       } ${
         active
-          ? "bg-canvas text-ink"
+          ? "bg-brand-muted text-brand font-medium"
           : "text-ink hover:bg-canvas/60"
       }`}
     >
@@ -450,7 +450,7 @@ function SectionsGroup({
                   title={isSmart ? `${s.label} · Smart Section` : undefined}
                   className={`group flex min-h-[36px] items-center gap-2.5 rounded-lg px-3 py-2 text-[12.5px] transition-base ${
                     active
-                      ? "bg-canvas text-ink"
+                      ? "bg-brand-muted text-brand font-medium"
                       : isReview || isSmart
                         ? "text-ink-soft hover:bg-canvas/60 hover:text-ink"
                         : "text-ink-muted hover:bg-canvas/60 hover:text-ink"
@@ -524,7 +524,7 @@ function NavLink({
         collapsed ? "justify-center px-0 py-2" : "px-3 py-2"
       } ${
         active
-          ? "bg-canvas text-ink"
+          ? "bg-brand-muted text-brand font-medium"
           : quiet
             ? "text-ink-muted hover:bg-canvas/60 hover:text-ink"
             : "text-ink-soft hover:bg-canvas/60 hover:text-ink"

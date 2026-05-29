@@ -5,9 +5,7 @@ import { ArrowRightIcon } from "@/components/ui/icon";
 import { signIn, signInWithMagicLink } from "@/lib/auth/actions";
 import { PasswordField } from "@/components/auth/password-field";
 
-export const metadata = {
-  title: "Sign in",
-};
+export const metadata = { title: "Sign in to Oria" };
 
 type Props = {
   searchParams: Promise<{
@@ -22,47 +20,34 @@ export default async function LoginPage({ searchParams }: Props) {
   const { error, notice, email, next } = await searchParams;
 
   return (
-    <div className="min-h-screen bg-canvas">
-      <header className="border-b border-line">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4 sm:px-8">
-          <Wordmark />
-          <Link
-            href="/"
-            className="text-[13px] text-ink-muted hover:text-ink transition-base"
-          >
-            Back
-          </Link>
-        </div>
-      </header>
+    <div className="min-h-screen bg-canvas relative flex flex-col items-center justify-center px-4 py-12 overflow-hidden">
+      {/* Gradient orbs — premium background depth */}
+      <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute -top-40 -start-40 h-[600px] w-[600px] rounded-full bg-brand/5 blur-3xl" />
+        <div className="absolute -bottom-40 -end-20 h-[400px] w-[400px] rounded-full bg-accent/8 blur-3xl" />
+      </div>
 
-      <main className="flex min-h-[calc(100vh-72px)] items-center justify-center px-6 py-12">
-        <div className="w-full max-w-[360px] animate-fade-up">
-          <h1 className="text-[26px] font-semibold tracking-tight text-ink">
-            Sign in
-          </h1>
+      <div className="mb-8 relative z-10">
+        <Wordmark />
+      </div>
 
-          {notice ? (
-            <p className="mt-4 rounded-lg border border-line bg-surface-raised px-3 py-2 text-[12.5px] text-ink-soft">
-              {notice}
-            </p>
-          ) : null}
-          {error ? (
-            <p className="mt-4 rounded-lg border border-claret/20 bg-claret/5 px-3 py-2 text-[12.5px] text-claret">
-              {error}
-            </p>
-          ) : null}
+      <div className="relative z-10 w-full max-w-[400px] animate-scale-in">
+        <div className="rounded-2xl border border-line bg-surface-raised shadow-xl px-8 py-8">
+          <div className="mb-6 text-center">
+            <h1 className="text-[24px] font-semibold tracking-tight text-ink">Welcome back</h1>
+            <p className="mt-1.5 text-[13.5px] text-ink-muted">Your private AI for everything that matters.</p>
+          </div>
 
-          <form className="mt-6 space-y-3" action={signIn}>
+          {notice && (
+            <div className="mb-4 rounded-xl border border-line bg-canvas px-3.5 py-2.5 text-[13px] text-ink-soft">{notice}</div>
+          )}
+          {error && (
+            <div className="mb-4 rounded-xl border border-claret/20 bg-claret/5 px-3.5 py-2.5 text-[13px] text-claret">{error}</div>
+          )}
+
+          <form className="space-y-3.5" action={signIn}>
             <input type="hidden" name="next" value={next ?? "/dashboard"} />
-            <Field
-              label="Email"
-              type="email"
-              name="email"
-              defaultValue={email}
-              placeholder="you@example.com"
-              autoComplete="email"
-              required
-            />
+            <Field label="Email" type="email" name="email" defaultValue={email} placeholder="you@example.com" autoComplete="email" required />
             <PasswordField
               label="Password"
               name="password"
@@ -70,52 +55,44 @@ export default async function LoginPage({ searchParams }: Props) {
               autoComplete="current-password"
               required
               hint={
-                <Link
-                  href="#"
-                  className="text-[12px] text-ink-muted hover:text-ink transition-base"
-                >
+                <Link href="#" className="text-[12px] text-brand hover:opacity-80 transition-base">
                   Forgot?
                 </Link>
               }
             />
-            <Button
-              type="submit"
-              variant="primary"
-              size="lg"
-              className="mt-1 w-full"
-            >
-              Continue <ArrowRightIcon size={14} />
+            <Button type="submit" variant="primary" size="lg" className="w-full mt-1">
+              Sign in <ArrowRightIcon size={14} />
             </Button>
           </form>
 
-          <div className="my-6 flex items-center gap-3">
+          <div className="my-5 flex items-center gap-3">
             <span className="h-px flex-1 bg-line" />
             <span className="text-[11px] text-ink-faint">or</span>
             <span className="h-px flex-1 bg-line" />
           </div>
 
-          <form action={signInWithMagicLink}>
+          <form action={signInWithMagicLink} className="space-y-2.5">
             <input type="hidden" name="next" value={next ?? "/dashboard"} />
             <MagicLinkField defaultEmail={email} />
             <button
               type="submit"
-              className="mt-2 flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-line bg-surface text-[13.5px] text-ink-soft transition-base hover:border-line-strong hover:text-ink"
+              className="flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-line bg-canvas text-[13.5px] text-ink-muted transition-base hover:border-line-strong hover:text-ink hover:bg-surface-raised"
             >
-              Email me a sign-in link
+              Send me a sign-in link
             </button>
           </form>
 
-          <p className="mt-8 text-center text-[12px] text-ink-faint">
+          <p className="mt-6 text-center text-[12.5px] text-ink-faint">
             New to Oria?{" "}
             <Link
               href={`/signup${next ? `?next=${encodeURIComponent(next)}` : ""}`}
-              className="text-ink-muted hover:text-ink"
+              className="text-brand font-medium hover:opacity-80 transition-base"
             >
               Create account
             </Link>
           </p>
         </div>
-      </main>
+      </div>
     </div>
   );
 }
@@ -124,19 +101,18 @@ function Field({
   label,
   hint,
   ...rest
-}: {
-  label: string;
-  hint?: React.ReactNode;
-} & React.InputHTMLAttributes<HTMLInputElement>) {
+}: { label: string; hint?: React.ReactNode } & React.InputHTMLAttributes<HTMLInputElement>) {
   return (
     <label className="block">
-      <span className="mb-1.5 flex items-center justify-between text-[12px] text-ink-muted">
-        <span>{label}</span>
-        {hint}
-      </span>
+      {label && (
+        <span className="mb-1.5 flex items-center justify-between text-[12.5px] font-medium text-ink">
+          <span>{label}</span>
+          {hint}
+        </span>
+      )}
       <input
         {...rest}
-        className="block h-11 w-full rounded-xl border border-line-strong bg-surface-raised px-3.5 text-[16px] text-ink placeholder:text-ink-faint outline-none transition-base focus:border-ink"
+        className="block h-11 w-full rounded-xl border border-line-strong bg-canvas px-3.5 text-[16px] text-ink placeholder:text-ink-faint outline-none transition-all duration-150 focus:border-brand focus:shadow-[0_0_0_3px_rgba(91,95,221,0.12)] focus:bg-surface-raised"
       />
     </label>
   );
@@ -145,13 +121,13 @@ function Field({
 function MagicLinkField({ defaultEmail }: { defaultEmail?: string }) {
   return (
     <label className="block">
-      <span className="mb-1.5 block text-[12px] text-ink-muted">Or use a link</span>
       <input
         type="email"
         name="email"
         defaultValue={defaultEmail}
-        placeholder="you@example.com"
-        className="block h-11 w-full rounded-xl border border-line-strong bg-surface-raised px-3.5 text-[16px] text-ink placeholder:text-ink-faint outline-none transition-base focus:border-ink"
+        placeholder="Email address for magic link"
+        autoComplete="email"
+        className="block h-11 w-full rounded-xl border border-line-strong bg-canvas px-3.5 text-[16px] text-ink placeholder:text-ink-faint outline-none transition-all duration-150 focus:border-brand focus:shadow-[0_0_0_3px_rgba(91,95,221,0.12)]"
       />
     </label>
   );

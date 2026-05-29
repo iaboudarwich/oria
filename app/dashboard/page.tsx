@@ -22,6 +22,7 @@ import { InsightsCard } from "@/components/dashboard/insights-card";
 import { Hint } from "@/components/onboarding/hint";
 import { getSeenHintKeys } from "@/lib/data/onboarding";
 import { OnboardingRepromptBanner } from "@/components/dashboard/onboarding-reprompt-banner";
+import { QuickActions } from "@/components/dashboard/quick-actions";
 import type { Section } from "@/lib/supabase/types";
 
 export default async function DashboardHome() {
@@ -83,6 +84,8 @@ export default async function DashboardHome() {
           <OnboardingRepromptBanner orgId={ctx.organization.id} />
         )}
         <SearchHero />
+
+        <QuickActions />
 
         <AddRow />
 
