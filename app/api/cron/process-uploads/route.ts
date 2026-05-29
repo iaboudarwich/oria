@@ -5,6 +5,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import {
   claimPendingExtractionJobs,
   claimPendingEntityJobs,
+  claimPendingImageJobs,
   createJob,
   markJobCompleted,
   markJobFailed,
@@ -12,6 +13,7 @@ import {
 } from "@/lib/data/jobs";
 import { processUpload } from "@/lib/data/upload-intelligence";
 import { extractEntity } from "@/lib/ai/extract-entities";
+import { runImageAnalysis } from "@/lib/ai/run-image-analysis";
 import { recordSystemEvent } from "@/lib/data/system-events";
 
 /** Maximum concurrent jobs per phase per cron tick. */
@@ -54,11 +56,24 @@ export async function GET(req: NextRequest) {
         await processUpload(job.upload_id);
         await markJobCompleted(job.id);
 
-        // Enqueue entity extraction for the next phase / cron tick.
+        // Determine follow-up job based on MIME type.
+        // Images use Phase C (vision analysis) which does both
+        // classification and extraction in one call.
+        // Other files use Phase B (entity.extract).
+        const { data: uploadRow } = await createAdminClient()
+          .from("uploads")
+          .select("mime_type")
+          .eq("id", job.upload_id)
+          .maybeSingle();
+        const mime = (uploadRow as { mime_type?: string } | null)?.mime_type ?? "";
+        const nextKind = mime.startsWith("image/")
+          ? ("analyze_image" as const)
+          : ("entity.extract" as const);
+
         await createJob({
           organizationId: job.organization_id,
           actorId: job.actor_id,
-          kind: "entity.extract",
+          kind: nextKind,
           uploadId: job.upload_id,
         }).catch(() => {});
 
@@ -125,6 +140,34 @@ export async function GET(req: NextRequest) {
     }),
   );
 
+  // ── Phase C: analyze_image ────────────────────────────────────────────────
+  // Vision analysis for image uploads. Replaces Phase B for images — the
+  // analyze_image job combines classification + extraction in a single call.
+  const imageJobs = await claimPendingImageJobs(BATCH_SIZE);
+
+  const imageResults = await Promise.allSettled(
+    imageJobs.map(async (job) => {
+      if (!job.upload_id) {
+        await markJobFailed(job.id, "Missing upload_id on image job");
+        return { id: job.id, ok: false };
+      }
+      try {
+        await runImageAnalysis(job.upload_id);
+        await markJobCompleted(job.id);
+        return { id: job.id, ok: true };
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : "Image analysis failed";
+        if (job.retry_count < MAX_RETRIES) {
+          await requeueJobForRetry(job.id, message, job.retry_count);
+        } else {
+          await markJobFailed(job.id, message);
+        }
+        return { id: job.id, ok: false };
+      }
+    }),
+  );
+
   const countOk = (results: PromiseSettledResult<{ ok: boolean }>[]) =>
     results.filter((r) => r.status === "fulfilled" && r.value.ok).length;
 
@@ -136,6 +179,10 @@ export async function GET(req: NextRequest) {
     entity: {
       processed: entityResults.length,
       succeeded: countOk(entityResults as PromiseSettledResult<{ ok: boolean }>[]),
+    },
+    image: {
+      processed: imageResults.length,
+      succeeded: countOk(imageResults as PromiseSettledResult<{ ok: boolean }>[]),
     },
   });
 }

@@ -124,6 +124,34 @@ export const GenericSchema = z.object({
     .optional(),
 });
 
+// ── Vision-only doc types ─────────────────────────────────────────────────────
+
+export const ProductSchema = z.object({
+  product_name: z.string(),
+  brand: z.string().optional(),
+  category: z
+    .enum([
+      "food",
+      "beverage",
+      "supplement",
+      "cosmetic",
+      "household",
+      "electronics",
+      "clothing",
+      "other",
+    ])
+    .optional(),
+  key_attributes: z.array(z.string()).optional(),
+  inferred_purpose: z.string().optional(),
+});
+
+export const SceneSchema = z.object({
+  scene_type: z.string().optional(),
+  primary_subject: z.string(),
+  location_hints: z.string().optional(),
+  context: z.string().optional(),
+});
+
 // ── Registry ──────────────────────────────────────────────────────────────────
 
 export const DOC_TYPES = [
@@ -136,6 +164,8 @@ export const DOC_TYPES = [
   "statement",
   "id_document",
   "generic",
+  "product",
+  "scene",
 ] as const;
 
 export type DocType = (typeof DOC_TYPES)[number];
@@ -150,6 +180,8 @@ export type ExtractedFields = {
   statement: z.infer<typeof StatementSchema>;
   id_document: z.infer<typeof IdDocumentSchema>;
   generic: z.infer<typeof GenericSchema>;
+  product: z.infer<typeof ProductSchema>;
+  scene: z.infer<typeof SceneSchema>;
 };
 
 export const SCHEMAS: Record<DocType, z.ZodTypeAny> = {
@@ -162,6 +194,8 @@ export const SCHEMAS: Record<DocType, z.ZodTypeAny> = {
   statement: StatementSchema,
   id_document: IdDocumentSchema,
   generic: GenericSchema,
+  product: ProductSchema,
+  scene: SceneSchema,
 };
 
 /**
@@ -236,10 +270,23 @@ const SCHEMA_DESCRIPTIONS: Record<DocType, Record<string, string>> = {
     name_on_document: "string",
   },
   generic: {
-    title: "string — document title under 80 chars",
-    summary: "string — 1-3 sentences describing the document",
-    key_dates: "array of {label: string, date: string YYYY-MM-DD} — optional",
-    key_amounts: "array of {label: string, amount: number, currency: string ISO4217} — optional",
+    title: "string - document title under 80 chars",
+    summary: "string - 1-3 sentences describing the document",
+    key_dates: "array of {label: string, date: string YYYY-MM-DD} - optional",
+    key_amounts: "array of {label: string, amount: number, currency: string ISO4217} - optional",
+  },
+  product: {
+    product_name: "string - full product name",
+    brand: "string - brand or manufacturer - optional",
+    category: "food|beverage|supplement|cosmetic|household|electronics|clothing|other",
+    key_attributes: "array of strings - e.g. organic, sugar-free, 12oz - optional",
+    inferred_purpose: "string - one sentence describing what the product is for - optional",
+  },
+  scene: {
+    scene_type: "string - e.g. meal, landscape, event, object, document",
+    primary_subject: "string - main subject of the image",
+    location_hints: "string - any location clues visible - optional",
+    context: "string - one sentence describing what is happening or shown",
   },
 };
 

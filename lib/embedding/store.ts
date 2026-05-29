@@ -7,7 +7,11 @@
  */
 
 import * as Sentry from "@sentry/nextjs";
-import { createClient } from "@/lib/supabase/server";
+// Use the service-role admin client — document_chunks has no INSERT policy
+// for the anon/authenticated roles (writes are service-role only per migration
+// 0024). Using createClient() (anon key) here would silently fail in cron
+// and background contexts where no user session cookie is present.
+import { createAdminClient } from "@/lib/supabase/admin";
 import { embedViaService } from "@/lib/extraction/service";
 import { splitIntoChunks, estimateTokens } from "@/lib/extraction/chunk";
 
@@ -32,7 +36,7 @@ export async function storeChunks(
   input: StoreChunksInput
 ): Promise<StoreChunksResult> {
   const { uploadId, organizationId, text, section, filename } = input;
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   const chunks = splitIntoChunks(text);
   if (chunks.length === 0) {
@@ -86,7 +90,7 @@ export async function storeChunks(
 
 /** Delete all chunks for an upload (called when upload is deleted). */
 export async function deleteChunks(uploadId: string): Promise<void> {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   await supabase.from("document_chunks").delete().eq("upload_id", uploadId);
   await supabase
     .from("uploads")

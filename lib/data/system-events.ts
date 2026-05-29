@@ -43,7 +43,9 @@ export type SystemEventKind =
   // Reminder notifications
   | "reminder.notified"
   // Account lifecycle
-  | "account.reset";
+  | "account.reset"
+  // Image analysis
+  | "image.heic_skipped";
 
 /**
  * Kinds that show up in the user-facing status strip. Most events in
