@@ -39,6 +39,18 @@ export async function signIn(formData: FormData) {
   const { error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) authError("/login", error.message, email, next);
 
+  // After a valid password, check whether the user has a verified TOTP
+  // factor. If so the session is currently AAL1 and we need to gate
+  // them through /login/mfa before any dashboard route resolves their
+  // actor. The MFA page completes the AAL2 elevation, then bounces to
+  // `next`. No change to page-side reads is needed: the session itself
+  // is already valid; AAL is metadata Supabase tracks alongside it.
+  const aal = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+  if (aal.data?.nextLevel === "aal2" && aal.data.currentLevel === "aal1") {
+    const params = new URLSearchParams({ next });
+    redirect(`/login/mfa?${params.toString()}`);
+  }
+
   redirect(next);
 }
 

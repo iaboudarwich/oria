@@ -12,6 +12,15 @@ export async function GET(request: Request) {
     const supabase = await createClient();
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
+      // Gate magic-link landings through the MFA prompt when the user
+      // has a verified TOTP factor — same rule as password sign-in.
+      const aal = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+      if (aal.data?.nextLevel === "aal2" && aal.data.currentLevel === "aal1") {
+        const params = new URLSearchParams({ next });
+        return NextResponse.redirect(
+          new URL(`/login/mfa?${params.toString()}`, url.origin),
+        );
+      }
       return NextResponse.redirect(new URL(next, url.origin));
     }
     return NextResponse.redirect(

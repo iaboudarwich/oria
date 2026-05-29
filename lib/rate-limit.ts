@@ -117,6 +117,15 @@ export const RATE_PRESETS = {
     windowMs: 24 * 60 * 60_000,
     label: "data export",
   }),
+  /** MFA code verification. 5 attempts per 15 minutes per user. Tight
+   *  because a thief with the password is online-attacking a 6-digit
+   *  TOTP; at 10^6 keyspace, 5 per 15-min keeps the brute-force ceiling
+   *  far above the rotation window of the code itself. */
+  mfaVerify: () => ({
+    limit: envInt("ORIA_RATE_MFA_VERIFY_PER_15M", 5),
+    windowMs: 15 * 60_000,
+    label: "MFA verification",
+  }),
 } as const;
 
 function envInt(name: string, fallback: number): number {

@@ -14,6 +14,11 @@ import {
 import { DeleteAccountPanel } from "@/components/settings/delete-account-panel";
 import { ResetAccountPanel } from "@/components/settings/reset-account-panel";
 import { SectionsEditorLazy } from "@/components/settings/sections-editor-lazy";
+import { SecurityPanel } from "@/components/settings/security-panel";
+import {
+  countUnusedBackupCodes,
+  readMfaEnrolledAt,
+} from "@/lib/auth/mfa";
 import { isCurrentUserAdmin } from "@/lib/data/admin";
 import { readSidebarExtras } from "@/lib/data/sidebar-prefs";
 import { setSidebarExtra } from "@/lib/data/sidebar-prefs-actions";
@@ -32,6 +37,7 @@ const TABS = [
   { key: "circles",    label: "Circles" },
   { key: "workspaces", label: "Workspaces" },
   { key: "storage",    label: "Storage" },
+  { key: "security",   label: "Security" },
   { key: "privacy",    label: "Privacy" },
 ] as const;
 type TabKey = (typeof TABS)[number]["key"];
@@ -58,6 +64,14 @@ export default async function SettingsPage({
   const storageStats = ctx?.profile.id
     ? await getUserStorageStats(ctx.profile.id)
     : null;
+  // MFA status for the Security tab — reads profiles.mfa_enrolled_at +
+  // counts unused backup codes. Both are cheap admin-client reads.
+  const mfa = ctx?.profile.id
+    ? {
+        enrolled: !!(await readMfaEnrolledAt(ctx.profile.id)),
+        backupCodesLeft: await countUnusedBackupCodes(ctx.profile.id),
+      }
+    : { enrolled: false, backupCodesLeft: 0 };
   const timelineEnabled = extras.has("timeline");
 
   const visible = sections.filter((s) => !s.hidden);
@@ -170,6 +184,13 @@ export default async function SettingsPage({
               <p className="text-[13px] text-ink-faint px-1">Storage stats unavailable.</p>
             )}
           </>
+        )}
+
+        {tab === "security" && (
+          <SecurityPanel
+            enrolled={mfa.enrolled}
+            backupCodesLeft={mfa.backupCodesLeft}
+          />
         )}
 
         {tab === "privacy" && (

@@ -16,6 +16,8 @@ import {
 } from "@/lib/data/sidebar-prefs";
 import { kindsForMode, modeForOrgKind } from "@/lib/data/mode";
 import { isCurrentUserAdmin } from "@/lib/data/admin";
+import { readMfaEnrolledAt } from "@/lib/auth/mfa";
+import { MfaBanner } from "@/components/dashboard/mfa-banner";
 
 export const metadata = {
   title: "Oria",
@@ -135,6 +137,16 @@ export default async function DashboardLayout({ children }: { children: ReactNod
     extras: Array.from(sidebarExtras),
   };
 
+  // Soft-requirement banner for Workspace owners without 2FA.
+  // userSpaces carries the full membership (incl. role); spaceSummaries
+  // is the trimmed shape the sidebar needs and doesn't include role.
+  const ownsAnyWorkspace = userSpaces.some(
+    (s) => s.organization.kind === "office" && s.membership.role === "owner",
+  );
+  const mfaEnrolled = ownsAnyWorkspace
+    ? !!(await readMfaEnrolledAt(ctx.profile.id))
+    : true; // never compute / never render the banner for non-owners
+
   return (
     <div className="min-h-screen bg-canvas">
       <TimezoneCookie />
@@ -144,6 +156,10 @@ export default async function DashboardLayout({ children }: { children: ReactNod
         initialWidth={sidebarWidth}
         sidebarProps={sidebarProps}
       >
+        <MfaBanner
+          ownsAnyWorkspace={ownsAnyWorkspace}
+          mfaEnrolled={mfaEnrolled}
+        />
         {children}
       </SidebarShell>
     </div>
