@@ -20,6 +20,7 @@ import { setSidebarExtra } from "@/lib/data/sidebar-prefs-actions";
 import { getUserStorageStats, type StorageStats } from "@/lib/data/quotas";
 import { formatBytes } from "@/lib/utils";
 import { LanguageSwitcher } from "@/components/settings/language-switcher";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 import type { OrgKind } from "@/lib/supabase/types";
 import type { Locale } from "@/i18n/config";
 
@@ -91,6 +92,22 @@ export default async function SettingsPage({
           <>
             <ModesPanel orgKind={orgKind} />
             <SidebarPrefsPanel timelineEnabled={timelineEnabled} />
+            {/* Appearance */}
+            <section>
+              <h2 className="mb-3 px-1 text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
+                Appearance
+              </h2>
+              <div className="overflow-hidden rounded-2xl border border-line bg-surface-raised px-4 py-4 shadow-[0_1px_2px_rgba(28,26,23,0.04)]">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-[13px] text-ink">Theme</p>
+                    <p className="text-[11.5px] text-ink-faint">Choose light, dark, or follow your system setting.</p>
+                  </div>
+                  <ThemeToggle />
+                </div>
+              </div>
+            </section>
+
             {/* Language preferences */}
             <section>
               <h2 className="mb-3 px-1 text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">

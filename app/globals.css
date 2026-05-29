@@ -1,67 +1,168 @@
 @import "tailwindcss";
 
 /*
- * Oria design tokens.
- * Warm neutral palette, calm, simple, operational.
+ * ═══════════════════════════════════════════════════════════
+ * ORIA DESIGN SYSTEM — v2
+ * Warm, confident, premium. Inspired by Linear, Vercel, Things 3.
+ * ═══════════════════════════════════════════════════════════
  */
 
+/* ── Light mode (default) ──────────────────────────────────── */
 :root {
-  --canvas: #f7f5f0;
-  --surface: #fbfaf6;
-  --surface-raised: #ffffff;
-  --ink: #1c1a17;
-  --ink-soft: #3a352d;
-  --ink-muted: #6b6258;
-  --ink-faint: #9c9387;
-  --line: rgba(28, 26, 23, 0.08);
-  --line-strong: rgba(28, 26, 23, 0.14);
-  --accent: #b89968;
-  --accent-soft: #efe6d4;
-  --sand: #ece4d4;
-  --sage: #6f8472;
-  --claret: #9b4a4a;
-  --success: #5a7a5a;
+  color-scheme: light;
 
-  --shadow-xs: 0 1px 2px rgba(28, 26, 23, 0.04);
-  --shadow-sm: 0 1px 2px rgba(28, 26, 23, 0.05);
-  --shadow-md: 0 2px 6px rgba(28, 26, 23, 0.05), 0 12px 28px -16px rgba(28, 26, 23, 0.10);
+  /* Surfaces */
+  --canvas:          #f7f5f0;
+  --surface:         #fbfaf6;
+  --surface-raised:  #ffffff;
+  --surface-floating:#ffffff;
+
+  /* Ink (text) */
+  --ink:             #1c1a17;
+  --ink-soft:        #3a352d;
+  --ink-muted:       #6b6258;
+  --ink-faint:       #9c9387;
+
+  /* Lines / borders */
+  --line:            rgba(28, 26, 23, 0.08);
+  --line-strong:     rgba(28, 26, 23, 0.14);
+
+  /* Brand — warm indigo */
+  --brand:           #5B5FDD;
+  --brand-soft:      #ededfc;
+  --brand-muted:     rgba(91, 95, 221, 0.12);
+
+  /* Accent — warm gold */
+  --accent:          #b89968;
+  --accent-soft:     #efe6d4;
+  --sand:            #ece4d4;
+
+  /* Semantic */
+  --sage:            #6f8472;
+  --claret:          #9b4a4a;
+  --success:         #5a7a5a;
+  --success-soft:    #e8f0e8;
+  --warning:         #b07a30;
+  --warning-soft:    #fdf0da;
+  --danger:          #9b4a4a;
+  --danger-soft:     #faeaea;
+  --info:            var(--brand);
+  --info-soft:       var(--brand-soft);
+
+  /* Shadow scale */
+  --shadow-xs:  0 1px 2px rgba(28,26,23,0.04);
+  --shadow-sm:  0 2px 4px rgba(28,26,23,0.06);
+  --shadow-md:  0 4px 12px rgba(28,26,23,0.08);
+  --shadow-lg:  0 12px 24px rgba(28,26,23,0.10);
+  --shadow-xl:  0 24px 48px rgba(28,26,23,0.12);
+
+  /* Brand shadow (for focused/active elements) */
+  --shadow-brand: 0 0 0 3px rgba(91,95,221,0.12);
+
+  /* Motion */
+  --ease-out-quart:  cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-spring:     cubic-bezier(0.3, 1.3, 0.4, 1);
+  --ease-in-out:     cubic-bezier(0.4, 0, 0.2, 1);
+  --duration-fast:   150ms;
+  --duration-base:   200ms;
+  --duration-slow:   300ms;
 }
 
+/* ── Dark mode ─────────────────────────────────────────────── */
+.dark {
+  color-scheme: dark;
+
+  --canvas:          #0f0e0d;
+  --surface:         #161412;
+  --surface-raised:  #1e1c1a;
+  --surface-floating:#252220;
+
+  --ink:             #f0ede8;
+  --ink-soft:        #ccc5bc;
+  --ink-muted:       #8a8077;
+  --ink-faint:       #5c554e;
+
+  --line:            rgba(240, 237, 232, 0.08);
+  --line-strong:     rgba(240, 237, 232, 0.14);
+
+  --brand:           #7b7fe8;
+  --brand-soft:      rgba(123,127,232,0.15);
+  --brand-muted:     rgba(123,127,232,0.10);
+
+  --accent:          #c9a870;
+  --accent-soft:     rgba(201,168,112,0.12);
+  --sand:            rgba(201,168,112,0.10);
+
+  --sage:            #7a9980;
+  --claret:          #b86060;
+  --success:         #6a9a6a;
+  --success-soft:    rgba(106,154,106,0.12);
+  --warning:         #c0903a;
+  --warning-soft:    rgba(192,144,58,0.12);
+  --danger:          #b86060;
+  --danger-soft:     rgba(184,96,96,0.12);
+
+  --shadow-xs:  0 1px 2px rgba(0,0,0,0.2);
+  --shadow-sm:  0 2px 4px rgba(0,0,0,0.25);
+  --shadow-md:  0 4px 12px rgba(0,0,0,0.3);
+  --shadow-lg:  0 12px 24px rgba(0,0,0,0.35);
+  --shadow-xl:  0 24px 48px rgba(0,0,0,0.4);
+
+  --shadow-brand: 0 0 0 3px rgba(123,127,232,0.2);
+}
+
+/* ── Tailwind token bridge ─────────────────────────────────── */
 @theme inline {
-  --color-canvas: var(--canvas);
-  --color-surface: var(--surface);
-  --color-surface-raised: var(--surface-raised);
-  --color-ink: var(--ink);
-  --color-ink-soft: var(--ink-soft);
-  --color-ink-muted: var(--ink-muted);
-  --color-ink-faint: var(--ink-faint);
-  --color-line: var(--line);
+  /* Surfaces */
+  --color-canvas:          var(--canvas);
+  --color-surface:         var(--surface);
+  --color-surface-raised:  var(--surface-raised);
+  --color-surface-floating:var(--surface-floating);
+
+  /* Ink */
+  --color-ink:        var(--ink);
+  --color-ink-soft:   var(--ink-soft);
+  --color-ink-muted:  var(--ink-muted);
+  --color-ink-faint:  var(--ink-faint);
+
+  /* Lines */
+  --color-line:        var(--line);
   --color-line-strong: var(--line-strong);
-  --color-accent: var(--accent);
+
+  /* Brand */
+  --color-brand:      var(--brand);
+  --color-brand-soft: var(--brand-soft);
+  --color-brand-muted:var(--brand-muted);
+
+  /* Accent */
+  --color-accent:      var(--accent);
   --color-accent-soft: var(--accent-soft);
-  --color-champagne: var(--accent);
+
+  /* Legacy aliases (used throughout existing code) */
+  --color-champagne:      var(--accent);
   --color-champagne-soft: var(--accent-soft);
-  --color-sand: var(--sand);
-  --color-sage: var(--sage);
-  --color-claret: var(--claret);
-  --color-success: var(--success);
+  --color-sand:           var(--sand);
+  --color-sage:           var(--sage);
+  --color-claret:         var(--claret);
+  --color-success:        var(--success);
+  --color-success-soft:   var(--success-soft);
+  --color-warning:        var(--warning);
+  --color-warning-soft:   var(--warning-soft);
+  --color-danger:         var(--danger);
+  --color-danger-soft:    var(--danger-soft);
 
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system,
-    "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
-  --font-display: var(--font-inter), ui-sans-serif, system-ui, -apple-system,
-    "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo,
-    monospace;
+  /* Fonts */
+  --font-sans:    var(--font-inter), ui-sans-serif, system-ui, -apple-system, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+  --font-display: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
+  --font-mono:    var(--font-jetbrains-mono), var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
 
-  --shadow-soft: var(--shadow-sm);
+  /* Shadow tokens */
+  --shadow-soft:   var(--shadow-sm);
   --shadow-raised: var(--shadow-md);
 }
 
+/* ── Base layer ─────────────────────────────────────────────── */
 @layer base {
-  html {
-    color-scheme: light;
-  }
-
   body {
     background: var(--canvas);
     color: var(--ink);
@@ -73,32 +174,19 @@
   }
 
   ::selection {
-    background: var(--accent-soft);
+    background: var(--brand-soft);
     color: var(--ink);
   }
 
   *:focus-visible {
-    outline: 2px solid var(--accent);
+    outline: 2px solid var(--brand);
     outline-offset: 2px;
-    border-radius: 2px;
+    border-radius: 3px;
   }
 
-  /* Tailwind v4 dropped the preflight that gave <button> a pointer
-   * cursor. Restore it project-wide so every clickable control reads
-   * as clickable. Disabled buttons keep the default cursor. */
   button:not(:disabled),
   [role="button"]:not([aria-disabled="true"]) {
     cursor: pointer;
-  }
-
-  /* Subtle iOS-style press feedback on primary CTAs. Components opt in
-   * by adding `cta` alongside their normal classes; nothing changes for
-   * the rest of the UI. */
-  .cta {
-    transition: transform 0.08s cubic-bezier(0.2, 0.8, 0.2, 1);
-  }
-  .cta:active:not(:disabled) {
-    transform: scale(0.98);
   }
 
   h1, h2, h3, h4 {
@@ -108,101 +196,178 @@
   }
 }
 
+/* ── Utility layer ──────────────────────────────────────────── */
 @layer utilities {
-  .text-balance {
-    text-wrap: balance;
+
+  /* Typography scale */
+  .text-display  { font-size: 32px; line-height: 40px; font-weight: 600; letter-spacing: -0.02em; }
+  .text-headline { font-size: 24px; line-height: 32px; font-weight: 600; letter-spacing: -0.016em; }
+  .text-title    { font-size: 20px; line-height: 28px; font-weight: 600; letter-spacing: -0.012em; }
+  .text-body-lg  { font-size: 17px; line-height: 26px; font-weight: 400; }
+  .text-body     { font-size: 15px; line-height: 22px; font-weight: 400; }
+  .text-body-sm  { font-size: 13px; line-height: 18px; font-weight: 400; }
+  .text-caption  { font-size: 12px; line-height: 16px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; }
+
+  /* Text balance utilities */
+  .text-balance { text-wrap: balance; }
+  .text-pretty  { text-wrap: pretty; }
+
+  /* Glass effect */
+  .glass {
+    background: color-mix(in srgb, var(--surface-raised) 85%, transparent);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+  }
+  .glass-dark {
+    background: color-mix(in srgb, var(--surface) 80%, transparent);
+    backdrop-filter: blur(24px) saturate(160%);
+    -webkit-backdrop-filter: blur(24px) saturate(160%);
   }
 
-  .text-pretty {
-    text-wrap: pretty;
-  }
-
-  /* Safe-area padding for notched iPhones (iPhone X and later).
-   * Use pb-safe-bottom on fixed/sticky bottom elements and the main
-   * content wrapper so the home indicator doesn't overlap content. */
-  .pb-safe-bottom {
-    padding-bottom: max(4rem, env(safe-area-inset-bottom));
-  }
-  .pb-safe {
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-  .pt-safe {
-    padding-top: env(safe-area-inset-top);
-  }
-  .px-safe {
-    padding-left: env(safe-area-inset-left);
-    padding-right: env(safe-area-inset-right);
-  }
-
-  /* Sidebar width driven by a CSS variable so the sidebar aside + the main
-   * content padding stay in sync as the user toggles. The SidebarShell sets
-   * --sidebar-w via inline style; these classes are fallbacks + state
-   * markers. .sidebar-dragging kills width transitions so the drag handle
-   * feels native instead of laggy. */
+  /* Sidebar width system */
   .sidebar-expanded { --sidebar-w: 250px; }
   .sidebar-collapsed { --sidebar-w: 64px; }
   .sidebar-dragging aside,
-  .sidebar-dragging .sidebar-content {
-    transition: none !important;
-  }
-  .sidebar-dragging,
-  .sidebar-dragging * {
+  .sidebar-dragging .sidebar-content { transition: none !important; }
+  .sidebar-dragging, .sidebar-dragging * {
     user-select: none;
     cursor: col-resize !important;
   }
-}
 
-/* Animations.
- * Kept short so navigation feels native rather than animated. Slow appears
- * read as "the app is thinking"; under 250ms reads as "the app is ready". */
-@keyframes oria-fade-up {
-  from {
+  /* Safe-area insets */
+  .pb-safe-bottom { padding-bottom: max(4rem, env(safe-area-inset-bottom)); }
+  .pb-safe        { padding-bottom: env(safe-area-inset-bottom); }
+  .pt-safe        { padding-top: env(safe-area-inset-top); }
+  .px-safe        { padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); }
+
+  /* Hover lift — for card hover states */
+  .hover-lift {
+    transition: transform var(--duration-base) var(--ease-out-quart),
+                box-shadow var(--duration-base) var(--ease-out-quart);
+  }
+  .hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+
+  /* CTA press feedback */
+  .cta {
+    transition: transform var(--duration-fast) var(--ease-out-quart);
+  }
+  .cta:active:not(:disabled) {
+    transform: scale(0.98) translateY(0);
+  }
+
+  /* Button hover lift */
+  .btn-lift {
+    transition:
+      transform var(--duration-fast) var(--ease-out-quart),
+      box-shadow var(--duration-fast) var(--ease-out-quart),
+      background-color var(--duration-fast) var(--ease-out-quart),
+      border-color var(--duration-fast) var(--ease-out-quart),
+      color var(--duration-fast) var(--ease-out-quart);
+  }
+  .btn-lift:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+  }
+  .btn-lift:active:not(:disabled) {
+    transform: translateY(0) scale(0.99);
+    box-shadow: none;
+  }
+
+  /* Transition base — explicit property list avoids layout thrashing */
+  .transition-base {
+    transition-property: background-color, border-color, color, fill, stroke, box-shadow, opacity, transform;
+    transition-duration: var(--duration-fast);
+    transition-timing-function: var(--ease-out-quart);
+  }
+
+  /* Skeleton shimmer */
+  .skeleton {
+    background: linear-gradient(
+      90deg,
+      var(--surface-raised) 0%,
+      color-mix(in srgb, var(--surface-raised) 60%, var(--line)) 40%,
+      var(--surface-raised) 80%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 2.4s ease-in-out infinite;
+    border-radius: 6px;
+  }
+
+  /* Active brand indicator — animated left-bar for nav items */
+  .brand-indicator {
+    position: relative;
+  }
+  .brand-indicator::before {
+    content: '';
+    position: absolute;
+    inset-inline-start: 0;
+    top: 4px;
+    bottom: 4px;
+    width: 2px;
+    border-radius: 2px;
+    background: var(--brand);
     opacity: 0;
-    transform: translateY(4px);
+    transition: opacity var(--duration-fast) var(--ease-out-quart),
+                transform var(--duration-fast) var(--ease-out-quart);
+    transform: scaleY(0.6);
   }
-  to {
+  .brand-indicator.active::before {
     opacity: 1;
-    transform: translateY(0);
+    transform: scaleY(1);
   }
 }
 
+/* ── Keyframes ──────────────────────────────────────────────── */
+@keyframes oria-fade-up {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
 @keyframes oria-fade-in {
   from { opacity: 0; }
-  to { opacity: 1; }
+  to   { opacity: 1; }
+}
+@keyframes oria-scale-in {
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+@keyframes pulse-ring {
+  0%   { box-shadow: 0 0 0 0 rgba(91,95,221,0.4); }
+  70%  { box-shadow: 0 0 0 8px rgba(91,95,221,0); }
+  100% { box-shadow: 0 0 0 0 rgba(91,95,221,0); }
+}
+@keyframes mic-breathe {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.6; transform: scale(0.92); }
 }
 
 @layer utilities {
-  .animate-fade-up {
-    animation: oria-fade-up 0.22s cubic-bezier(0.2, 0.8, 0.2, 1) both;
-  }
-
-  .animate-fade-in {
-    animation: oria-fade-in 0.18s ease-out both;
-  }
+  .animate-fade-up   { animation: oria-fade-up   0.22s var(--ease-out-quart) both; }
+  .animate-fade-in   { animation: oria-fade-in   0.18s ease-out both; }
+  .animate-scale-in  { animation: oria-scale-in  0.20s var(--ease-spring) both; }
+  .animate-pulse-ring { animation: pulse-ring 0.6s ease-out; }
+  .animate-mic-breathe { animation: mic-breathe 2.4s ease-in-out infinite; }
 
   .delay-1 { animation-delay: 30ms; }
   .delay-2 { animation-delay: 60ms; }
   .delay-3 { animation-delay: 90ms; }
   .delay-4 { animation-delay: 120ms; }
   .delay-5 { animation-delay: 150ms; }
-  .delay-6 { animation-delay: 180ms; }
-  .delay-7 { animation-delay: 210ms; }
-
-  /* transition-base: explicit property list. `transition: all` paints layout
-   * and reads as laggy on hovered rows. We only animate the cheap, paint-only
-   * properties used by the app. */
-  .transition-base {
-    transition-property: background-color, border-color, color, fill, stroke,
-      box-shadow, opacity, transform;
-    transition-duration: 0.15s;
-    transition-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
-  }
 }
 
+/* ── Reduced motion override ─────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+  .hover-lift:hover { transform: none; }
+  .btn-lift:hover:not(:disabled) { transform: none; }
 }
