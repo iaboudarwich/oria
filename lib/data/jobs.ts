@@ -20,7 +20,8 @@ export type JobKind =
   | "upload.extract"
   | "report.generate"
   | "reminder.propose"
-  | "analysis.compute";
+  | "analysis.compute"
+  | "entity.extract";
 
 export type JobStatus =
   | "pending"
@@ -212,6 +213,39 @@ export async function claimPendingExtractionJobs(
       })
       .in("id", ids)
       .eq("status", "pending"); // Guard: only claim rows still pending
+    return candidates as BackgroundJob[];
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Atomically claim up to `limit` pending entity.extract jobs.
+ * Same race-safe pattern as claimPendingExtractionJobs.
+ */
+export async function claimPendingEntityJobs(
+  limit: number,
+): Promise<BackgroundJob[]> {
+  try {
+    const admin = createAdminClient();
+    const { data: candidates } = await admin
+      .from("background_jobs")
+      .select("*")
+      .eq("status", "pending")
+      .eq("kind", "entity.extract")
+      .order("created_at", { ascending: true })
+      .limit(limit);
+    if (!candidates?.length) return [];
+    const ids = (candidates as BackgroundJob[]).map((j) => j.id);
+    await admin
+      .from("background_jobs")
+      .update({
+        status: "processing",
+        started_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .in("id", ids)
+      .eq("status", "pending");
     return candidates as BackgroundJob[];
   } catch {
     return [];

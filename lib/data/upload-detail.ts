@@ -10,6 +10,19 @@ import type {
   Upload,
 } from "@/lib/supabase/types";
 
+export type ExtractedEntity = {
+  id: string;
+  upload_id: string;
+  organization_id: string;
+  doc_type: string;
+  confidence: number;
+  fields: Record<string, unknown>;
+  extracted_at: string;
+  extractor_version: string;
+  user_verified: boolean;
+  user_edited_fields: Record<string, unknown> | null;
+};
+
 export type UploadDetail = {
   upload: Upload;
   uploader: Pick<Profile, "id" | "full_name" | "email"> | null;
@@ -20,6 +33,7 @@ export type UploadDetail = {
   related: Upload[];
   extraction: Extraction | null;
   items: MemoryItem[];
+  extractedEntity: ExtractedEntity | null;
 };
 
 export async function getUploadDetail(id: string): Promise<UploadDetail | null> {
@@ -45,6 +59,7 @@ export async function getUploadDetail(id: string): Promise<UploadDetail | null> 
     relatedRes,
     extractionRes,
     itemsRes,
+    entityRes,
   ] = await Promise.all([
     upload.uploaded_by
       ? supabase
@@ -85,6 +100,11 @@ export async function getUploadDetail(id: string): Promise<UploadDetail | null> 
       .eq("upload_id", upload.id)
       .is("deleted_at", null)
       .order("created_at", { ascending: true }),
+    supabase
+      .from("extracted_entities")
+      .select("*")
+      .eq("upload_id", upload.id)
+      .maybeSingle(),
   ]);
 
   return {
@@ -97,6 +117,7 @@ export async function getUploadDetail(id: string): Promise<UploadDetail | null> 
     related: relatedRes,
     extraction: (extractionRes.data ?? null) as Extraction | null,
     items: (itemsRes.data ?? []) as MemoryItem[],
+    extractedEntity: (entityRes.data ?? null) as ExtractedEntity | null,
   };
 }
 

@@ -29,6 +29,7 @@ import { getCustomSectionById } from "@/lib/data/custom-sections";
 import { MovePicker } from "@/components/upload/move-picker";
 import { ItemReviewPanel } from "@/components/upload/item-review-panel";
 import { DescriptionBadge } from "@/components/upload/description-badge";
+import { ExtractedEntitiesPanel } from "@/components/upload/extracted-entities-panel";
 import type { EventKind, MemoryItem, Section } from "@/lib/supabase/types";
 
 type Props = { params: Promise<{ id: string }> };
@@ -64,6 +65,7 @@ export default async function UploadDetailPage({ params }: Props) {
     related,
     extraction,
     items,
+    extractedEntity,
   } = detail;
 
   // Thumbnails for related image uploads.
@@ -140,6 +142,12 @@ export default async function UploadDetailPage({ params }: Props) {
 
         <aside className="space-y-6">
           <DescriptionBadge metadata={upload.metadata} />
+
+          <ExtractedEntitiesPanel
+            entity={extractedEntity}
+            uploadId={upload.id}
+            uploadStatus={upload.status}
+          />
 
           {items.length > 1 ? (
             <ItemReviewPanel
