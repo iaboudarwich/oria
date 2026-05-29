@@ -35,6 +35,7 @@ import { generateSuggestionsForUpload } from "@/lib/ai/suggest-reminders";
 import { getCurrentContext } from "@/lib/data/organizations";
 import { EntityLinkPanel } from "@/components/things/entity-link-panel";
 import { getUploadEntities, listEntityTypes, listEntities } from "@/lib/data/entities";
+import { Accordion } from "@/components/ui/accordion";
 import type { EventKind, MemoryItem, Section } from "@/lib/supabase/types";
 
 type Props = { params: Promise<{ id: string }> };
@@ -173,45 +174,66 @@ export default async function UploadDetailPage({ params }: Props) {
           />
         </div>
 
-        <aside className="space-y-6">
+        <aside className="space-y-4">
           <DescriptionBadge metadata={upload.metadata} />
 
+          {/* Above the fold: extraction summary (always visible) */}
           <ExtractedEntitiesPanel
             entity={extractedEntity}
             uploadId={upload.id}
             uploadStatus={upload.status}
           />
 
-          <SuggestedRemindersPanel
-            suggestions={suggestions}
-            uploadId={upload.id}
-            organizationId={upload.organization_id}
-          />
+          {/* Suggestions: open by default when present */}
+          {suggestions.length > 0 && (
+            <Accordion
+              label="Suggested reminders"
+              defaultOpen
+              badge={suggestions.length}
+            >
+              <SuggestedRemindersPanel
+                suggestions={suggestions}
+                uploadId={upload.id}
+                organizationId={upload.organization_id}
+              />
+            </Accordion>
+          )}
 
-          {items.length > 1 ? (
-            <ItemReviewPanel
+          {/* Linked things: open by default when linked */}
+          <Accordion
+            label="Linked to"
+            defaultOpen={linkedEntitiesForPanel.length > 0}
+            badge={linkedEntitiesForPanel.length || undefined}
+          >
+            <EntityLinkPanel
               uploadId={upload.id}
-              items={items}
-              sections={moveOptions}
-              sectionLabels={SECTION_LABEL}
-              customNames={customNames}
+              linkedEntities={linkedEntitiesForPanel}
+              availableEntities={availableEntities}
             />
+          </Accordion>
+
+          {/* Secondary panels: collapsed by default */}
+          {items.length > 1 ? (
+            <Accordion label="Item review" defaultOpen={false} badge={items.length}>
+              <ItemReviewPanel
+                uploadId={upload.id}
+                items={items}
+                sections={moveOptions}
+                sectionLabels={SECTION_LABEL}
+                customNames={customNames}
+              />
+            </Accordion>
           ) : null}
 
-          <UnderstoodPanel
-            uploadId={upload.id}
-            extraction={extraction}
-            status={upload.status}
-            skipReason={readSkipReason(upload.metadata)}
-          />
-
-          {items.length === 1 ? <SingleItemPanel item={items[0]} /> : null}
-
-          <EntityLinkPanel
-            uploadId={upload.id}
-            linkedEntities={linkedEntitiesForPanel}
-            availableEntities={availableEntities}
-          />
+          <Accordion label="Full extraction details" defaultOpen={false}>
+            <UnderstoodPanel
+              uploadId={upload.id}
+              extraction={extraction}
+              status={upload.status}
+              skipReason={readSkipReason(upload.metadata)}
+            />
+            {items.length === 1 ? <div className="mt-4"><SingleItemPanel item={items[0]} /></div> : null}
+          </Accordion>
 
           <SectionPanel
             label={sectionLabel}

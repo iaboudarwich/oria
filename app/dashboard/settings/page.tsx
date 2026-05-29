@@ -23,7 +23,28 @@ import type { OrgKind } from "@/lib/supabase/types";
 
 export const metadata = { title: "Settings" };
 
-export default async function SettingsPage() {
+const TABS = [
+  { key: "general",    label: "General" },
+  { key: "sections",   label: "Sections" },
+  { key: "circles",    label: "Circles" },
+  { key: "workspaces", label: "Workspaces" },
+  { key: "storage",    label: "Storage" },
+  { key: "privacy",    label: "Privacy" },
+] as const;
+type TabKey = (typeof TABS)[number]["key"];
+
+export default async function SettingsPage({
+  searchParams,
+}: {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const sp: Record<string, string | string[] | undefined> = await (
+    searchParams ?? Promise.resolve({})
+  );
+  const rawTab = typeof sp.tab === "string" ? sp.tab : "general";
+  const tab: TabKey = (TABS.map((t) => t.key) as string[]).includes(rawTab)
+    ? (rawTab as TabKey)
+    : "general";
   const [sections, ctx, spaces, admin, extras] = await Promise.all([
     listAllSections({ includeHidden: true, includeReview: false }),
     getCurrentContext(),
@@ -44,52 +65,87 @@ export default async function SettingsPage() {
     <>
       <Topbar title="Settings" />
 
-      <div className="mx-auto max-w-2xl space-y-9 animate-fade-up">
-        <ModesPanel orgKind={orgKind} />
-
-        <section>
-          <div className="mb-2 flex items-end justify-between px-1">
-            <div>
-              <h2 className="text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
-                Sections
-              </h2>
-              <p className="mt-1 text-[12px] text-ink-faint">
-                {`${visible.length} of ${total} visible.`}
-              </p>
-            </div>
+      {/* Tab bar */}
+      <div className="mb-6 -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-10 lg:px-10 border-b border-line">
+        <nav className="flex gap-1 overflow-x-auto">
+          {TABS.map((t) => (
             <Link
-              href="/dashboard/settings/sections/new"
-              className="inline-flex h-9 items-center rounded-md bg-ink px-3 text-[12px] text-surface hover:bg-ink-soft transition-base"
+              key={t.key}
+              href={`/dashboard/settings?tab=${t.key}`}
+              className={`shrink-0 px-3 py-2.5 text-[13px] transition-base border-b-2 -mb-px ${
+                tab === t.key
+                  ? "border-ink text-ink font-medium"
+                  : "border-transparent text-ink-muted hover:text-ink"
+              }`}
             >
-              Add section
+              {t.label}
             </Link>
-          </div>
-          <SectionsEditor sections={sections} />
-        </section>
+          ))}
+        </nav>
+      </div>
 
-        <SpacesPanel
-          spaces={spaces}
-          activeOrgId={ctx?.organization.id ?? null}
-          kind="circle"
-        />
+      <div className="mx-auto max-w-2xl space-y-9 animate-fade-up">
+        {tab === "general" && (
+          <>
+            <ModesPanel orgKind={orgKind} />
+            <SidebarPrefsPanel timelineEnabled={timelineEnabled} />
+            {admin ? <AdminPanel /> : null}
+          </>
+        )}
 
-        <SpacesPanel
-          spaces={spaces}
-          activeOrgId={ctx?.organization.id ?? null}
-          kind="office"
-        />
+        {tab === "sections" && (
+          <section>
+            <div className="mb-2 flex items-end justify-between px-1">
+              <div>
+                <h2 className="text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
+                  Sections
+                </h2>
+                <p className="mt-1 text-[12px] text-ink-faint">
+                  {`${visible.length} of ${total} visible.`}
+                </p>
+              </div>
+              <Link
+                href="/dashboard/settings/sections/new"
+                className="inline-flex h-9 items-center rounded-md bg-ink px-3 text-[12px] text-surface hover:bg-ink-soft transition-base"
+              >
+                Add section
+              </Link>
+            </div>
+            <SectionsEditor sections={sections} />
+          </section>
+        )}
 
-        <SidebarPrefsPanel timelineEnabled={timelineEnabled} />
+        {tab === "circles" && (
+          <SpacesPanel
+            spaces={spaces}
+            activeOrgId={ctx?.organization.id ?? null}
+            kind="circle"
+          />
+        )}
 
-        {storageStats ? <StorageSection stats={storageStats} /> : null}
+        {tab === "workspaces" && (
+          <SpacesPanel
+            spaces={spaces}
+            activeOrgId={ctx?.organization.id ?? null}
+            kind="office"
+          />
+        )}
 
-        {admin ? <AdminPanel /> : null}
+        {tab === "storage" && (
+          <>
+            {storageStats ? <StorageSection stats={storageStats} /> : (
+              <p className="text-[13px] text-ink-faint px-1">Storage stats unavailable.</p>
+            )}
+          </>
+        )}
 
-        <DataExportPanel />
-
-        <ResetAccountPanel />
-
-        <DeleteAccountPanel />
+        {tab === "privacy" && (
+          <>
+            <DataExportPanel />
+            <ResetAccountPanel />
+            <DeleteAccountPanel />
+          </>
+        )}
       </div>
     </>
   );
