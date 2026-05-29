@@ -10,6 +10,8 @@ export type ReminderEmailData = {
   uploadTitle: string | null;
   /** Link to the calendar page so the user can open and mark it done. */
   calendarUrl: string;
+  /** e.g. "This was set to notify you 60 days in advance." */
+  leadNote?: string | null;
 };
 
 export function reminderEmailSubject(d: ReminderEmailData): string {
@@ -29,6 +31,7 @@ export function reminderEmailText(d: ReminderEmailData): string {
     `  ${d.title}`,
     d.dueAt ? `  Due: ${formatDueDateUtc(d.dueAt)}` : "",
     d.uploadTitle ? `  Related to: ${d.uploadTitle}` : "",
+    d.leadNote ? `  Note: ${d.leadNote}` : "",
     "",
     "Open your calendar:",
     d.calendarUrl,
@@ -51,6 +54,9 @@ export function reminderEmailHtml(d: ReminderEmailData): string {
     : "";
   const uploadRow = d.uploadTitle
     ? `<p style="margin:10px 0 0 0;font-size:12px;color:#9c9387;">Related to: ${escapeHtml(d.uploadTitle)}</p>`
+    : "";
+  const leadRow = d.leadNote
+    ? `<p style="margin:10px 0 0 0;font-size:12px;color:#9c9387;">${escapeHtml(d.leadNote)}</p>`
     : "";
 
   return `<!doctype html>
@@ -83,6 +89,7 @@ export function reminderEmailHtml(d: ReminderEmailData): string {
                 </h1>
                 ${dueRow}
                 ${uploadRow}
+                ${leadRow}
 
                 <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:24px 0 0 0;">
                   <tr>

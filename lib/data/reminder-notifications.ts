@@ -5,22 +5,17 @@ import { sendReminderEmail } from "@/lib/email/send-reminder";
 import { recordSystemEvent } from "./system-events";
 
 /**
- * Find reminders due today or tomorrow (UTC) that haven't been notified yet,
- * and send one email + in-app system event per reminder.
+ * Find reminders whose notification time has arrived and send email.
+ *
+ * Notification time = due_at − lead_days.
+ * The cron fires hourly. The window is:
+ *   [now − 24 hours, now + 1 hour)
+ * The −24 h floor catches reminders whose window fell during a cron outage.
+ * The +1 h ceiling gives the hourly cron a small buffer.
  *
  * Called by:
  *   - GET /api/cron/send-reminders (Vercel cron, hourly)
  *   - triggerReminderNotifications() server action (admin dev button)
- *
- * Design decisions:
- *   - Window: due_at within [start_of_today_UTC, start_of_day_after_tomorrow_UTC)
- *     so the cron covers both "same day" and "day before" in one pass.
- *   - notified_at IS NULL guards against double-sends when the cron fires
- *     multiple times in the same day.
- *   - Per-reminder errors set notification_failed_at and continue — one
- *     bad address never blocks the rest of the batch.
- *   - "not_configured" (no Resend key) is a silent skip, not a failure,
- *     so dev environments without RESEND_API_KEY don't pollute the log.
  */
 export type NotificationBatchResult = {
   notified: number;
@@ -32,6 +27,7 @@ type ReminderRow = {
   id: string;
   title: string;
   due_at: string | null;
+  lead_days: number;
   upload_id: string | null;
   created_by: string | null;
   assigned_to: string | null;
@@ -42,23 +38,39 @@ export async function sendDueReminderNotifications(): Promise<NotificationBatchR
   const admin = createAdminClient();
   const now = new Date();
 
-  // UTC day boundaries
-  const todayStart = new Date(
-    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()),
-  );
-  const dayAfterTomorrow = new Date(todayStart.getTime() + 48 * 60 * 60 * 1000);
+  // Pull a broad window of unnotified, undone reminders due within the next
+  // year. We'll filter to the exact notification window in TypeScript so
+  // lead_days arithmetic is easy and testable.
+  const yearOut = new Date(now.getTime() + 365 * 24 * 3600 * 1000);
 
   const { data: rows, error } = await admin
     .from("reminders")
     .select(
-      "id, title, due_at, upload_id, created_by, assigned_to, organization_id",
+      "id, title, due_at, lead_days, upload_id, created_by, assigned_to, organization_id",
     )
     .eq("done", false)
     .is("notified_at", null)
-    .gte("due_at", todayStart.toISOString())
-    .lt("due_at", dayAfterTomorrow.toISOString());
+    .not("due_at", "is", null)
+    .lt("due_at", yearOut.toISOString());
 
   if (error || !rows?.length) {
+    return { notified: 0, failed: 0, skipped: 0 };
+  }
+
+  // Filter to reminders whose notify_at falls within the cron window.
+  // notify_at = due_at − lead_days * 1 day
+  const windowStart = new Date(now.getTime() - 24 * 3600 * 1000); // −24 h
+  const windowEnd = new Date(now.getTime() + 1 * 3600 * 1000); // +1 h
+
+  const dueNow = (rows as ReminderRow[]).filter((r) => {
+    if (!r.due_at) return false;
+    const dueMs = new Date(r.due_at).getTime();
+    const leadMs = (r.lead_days ?? 0) * 24 * 3600 * 1000;
+    const notifyMs = dueMs - leadMs;
+    return notifyMs >= windowStart.getTime() && notifyMs < windowEnd.getTime();
+  });
+
+  if (!dueNow.length) {
     return { notified: 0, failed: 0, skipped: 0 };
   }
 
@@ -67,7 +79,7 @@ export async function sendDueReminderNotifications(): Promise<NotificationBatchR
   let skipped = 0;
   const nowISO = new Date().toISOString();
 
-  for (const reminder of rows as ReminderRow[]) {
+  for (const reminder of dueNow) {
     const recipientId = reminder.assigned_to ?? reminder.created_by;
     if (!recipientId) {
       await admin
@@ -110,6 +122,12 @@ export async function sendDueReminderNotifications(): Promise<NotificationBatchR
         null;
     }
 
+    // Build a lead-time note for the email when lead_days > 0.
+    const leadNote =
+      (reminder.lead_days ?? 0) > 0
+        ? `This was set to notify you ${reminder.lead_days} day${reminder.lead_days === 1 ? "" : "s"} in advance.`
+        : null;
+
     const result = await sendReminderEmail({
       toEmail: profile.email as string,
       toName: (profile.full_name as string | null) ?? null,
@@ -118,6 +136,7 @@ export async function sendDueReminderNotifications(): Promise<NotificationBatchR
       uploadTitle,
       organizationId: reminder.organization_id,
       reminderId: reminder.id,
+      leadNote,
     });
 
     if (result.status === "sent") {
@@ -133,6 +152,7 @@ export async function sendDueReminderNotifications(): Promise<NotificationBatchR
           reminder_id: reminder.id,
           user_id: recipientId,
           channel: "email",
+          lead_days: reminder.lead_days,
         },
         organizationId: reminder.organization_id,
         actorId: recipientId,

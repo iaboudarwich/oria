@@ -30,6 +30,9 @@ import { MovePicker } from "@/components/upload/move-picker";
 import { ItemReviewPanel } from "@/components/upload/item-review-panel";
 import { DescriptionBadge } from "@/components/upload/description-badge";
 import { ExtractedEntitiesPanel } from "@/components/upload/extracted-entities-panel";
+import { SuggestedRemindersPanel } from "@/components/upload/suggested-reminders-panel";
+import { generateSuggestionsForUpload } from "@/lib/ai/suggest-reminders";
+import { getCurrentContext } from "@/lib/data/organizations";
 import type { EventKind, MemoryItem, Section } from "@/lib/supabase/types";
 
 type Props = { params: Promise<{ id: string }> };
@@ -67,6 +70,12 @@ export default async function UploadDetailPage({ params }: Props) {
     items,
     extractedEntity,
   } = detail;
+
+  // Reminder suggestions — only when extraction exists and user is authenticated.
+  const ctx = await getCurrentContext();
+  const suggestions = ctx && extractedEntity
+    ? await generateSuggestionsForUpload(upload.id, ctx.profile.id).catch(() => [])
+    : [];
 
   // Thumbnails for related image uploads.
   const relatedThumbs = await getSignedUrlMap(
@@ -147,6 +156,12 @@ export default async function UploadDetailPage({ params }: Props) {
             entity={extractedEntity}
             uploadId={upload.id}
             uploadStatus={upload.status}
+          />
+
+          <SuggestedRemindersPanel
+            suggestions={suggestions}
+            uploadId={upload.id}
+            organizationId={upload.organization_id}
           />
 
           {items.length > 1 ? (

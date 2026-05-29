@@ -22,6 +22,8 @@ export async function sendReminderEmail(input: {
   uploadTitle: string | null;
   organizationId?: string | null;
   reminderId?: string | null;
+  /** e.g. "This was set to notify you 60 days in advance." */
+  leadNote?: string | null;
 }): Promise<SendReminderResult> {
   const resend = getResend();
   const from = getFromAddress();
@@ -38,6 +40,7 @@ export async function sendReminderEmail(input: {
     dueAt: input.dueAt,
     uploadTitle: input.uploadTitle,
     calendarUrl: `${base}/dashboard/calendar`,
+    leadNote: input.leadNote ?? null,
   };
 
   try {
