@@ -4,12 +4,13 @@ import { requireContext } from "./organizations";
 import type { Section } from "@/lib/supabase/types";
 
 export type MemberSectionRef =
-  | { kind: "builtin"; key: Section }
-  | { kind: "custom"; key: string };
+  | { kind: "builtin"; key: Section; can_write: boolean }
+  | { kind: "custom"; key: string; can_write: boolean };
 
 /**
- * Sections explicitly granted to a "limited" member. Returns an empty array
- * if the member is owner / full / assigned (those don't use the allowlist).
+ * Sections explicitly granted to a "limited" member, including whether
+ * they have write access to each section. Returns an empty array for
+ * owner / full / assigned (those don't use the allowlist).
  */
 export async function listMemberSectionRefs(
   membershipId: string,
@@ -28,18 +29,27 @@ export async function listMemberSectionRefs(
 
   const { data } = await supabase
     .from("membership_sections")
-    .select("builtin_section, custom_section_id")
+    .select("builtin_section, custom_section_id, can_write")
     .eq("membership_id", membershipId);
 
   return ((data ?? []) as Array<{
     builtin_section: Section | null;
     custom_section_id: string | null;
+    can_write: boolean;
   }>)
     .map((r) =>
       r.builtin_section
-        ? ({ kind: "builtin", key: r.builtin_section } as MemberSectionRef)
+        ? ({
+            kind: "builtin",
+            key: r.builtin_section,
+            can_write: r.can_write ?? false,
+          } as MemberSectionRef)
         : r.custom_section_id
-          ? ({ kind: "custom", key: r.custom_section_id } as MemberSectionRef)
+          ? ({
+              kind: "custom",
+              key: r.custom_section_id,
+              can_write: r.can_write ?? false,
+            } as MemberSectionRef)
           : null,
     )
     .filter((x): x is MemberSectionRef => !!x);

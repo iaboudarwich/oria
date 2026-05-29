@@ -48,10 +48,28 @@ function isEmail(value: string): boolean {
 
 function parseSectionFields(
   formData: FormData,
-): { builtin: string[]; custom: string[] } {
+): { builtin: string[]; custom: string[]; writeSet: Set<string> } {
   const builtin = formData.getAll("builtin").map(String).filter(Boolean);
   const custom = formData.getAll("custom").map(String).filter(Boolean);
-  return { builtin: Array.from(new Set(builtin)), custom: Array.from(new Set(custom)) };
+
+  // Write checkboxes are named can_write_{builtin|custom}_{key}
+  const writeSet = new Set<string>();
+  for (const [key, val] of formData.entries()) {
+    if (key.startsWith("can_write_") && String(val) === "1") {
+      // key: can_write_builtin_finance  OR  can_write_custom_<uuid>
+      const suffix = key.slice("can_write_".length); // e.g. "builtin_finance"
+      const firstUnderscore = suffix.indexOf("_");
+      if (firstUnderscore !== -1) {
+        writeSet.add(suffix.slice(firstUnderscore + 1)); // the key/id part
+      }
+    }
+  }
+
+  return {
+    builtin: Array.from(new Set(builtin)),
+    custom: Array.from(new Set(custom)),
+    writeSet,
+  };
 }
 
 /**
@@ -120,10 +138,18 @@ export async function inviteToCircle(
   const invite = row as Invite;
 
   if (access_level === "limited") {
-    const { builtin, custom } = parseSectionFields(formData);
+    const { builtin, custom, writeSet } = parseSectionFields(formData);
     const rows = [
-      ...builtin.map((b) => ({ invite_id: invite.id, builtin_section: b })),
-      ...custom.map((c) => ({ invite_id: invite.id, custom_section_id: c })),
+      ...builtin.map((b) => ({
+        invite_id: invite.id,
+        builtin_section: b,
+        can_write: writeSet.has(b),
+      })),
+      ...custom.map((c) => ({
+        invite_id: invite.id,
+        custom_section_id: c,
+        can_write: writeSet.has(c),
+      })),
     ];
     if (rows.length > 0) {
       await supabase.from("invite_sections").insert(rows);
@@ -231,15 +257,17 @@ export async function regenerateInvite(
   if (prev.access_level === "limited") {
     const { data: oldSections } = await supabase
       .from("invite_sections")
-      .select("builtin_section, custom_section_id")
+      .select("builtin_section, custom_section_id, can_write")
       .eq("invite_id", prev.id);
     const rows = ((oldSections ?? []) as Array<{
       builtin_section: string | null;
       custom_section_id: string | null;
+      can_write: boolean;
     }>).map((r) => ({
       invite_id: fresh.id,
       builtin_section: r.builtin_section,
       custom_section_id: r.custom_section_id,
+      can_write: r.can_write ?? false,
     }));
     if (rows.length > 0) {
       await supabase.from("invite_sections").insert(rows);
@@ -347,10 +375,18 @@ export async function updateInviteAccess(
 
   await supabase.from("invite_sections").delete().eq("invite_id", id);
   if (access_level === "limited") {
-    const { builtin, custom } = parseSectionFields(formData);
+    const { builtin, custom, writeSet } = parseSectionFields(formData);
     const rows = [
-      ...builtin.map((b) => ({ invite_id: id, builtin_section: b })),
-      ...custom.map((c) => ({ invite_id: id, custom_section_id: c })),
+      ...builtin.map((b) => ({
+        invite_id: id,
+        builtin_section: b,
+        can_write: writeSet.has(b),
+      })),
+      ...custom.map((c) => ({
+        invite_id: id,
+        custom_section_id: c,
+        can_write: writeSet.has(c),
+      })),
     ];
     if (rows.length > 0) {
       await supabase.from("invite_sections").insert(rows);

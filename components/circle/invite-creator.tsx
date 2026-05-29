@@ -225,34 +225,52 @@ export function InviteCreator({
 
         {access === "limited" ? (
           <fieldset>
-            <legend className="mb-2 text-[12.5px] text-ink-muted">
-              Which sections?
-            </legend>
+            <div className="mb-2 flex items-baseline gap-3">
+              <legend className="text-[12.5px] text-ink-muted">
+                Section permissions
+              </legend>
+              <span className="ml-auto text-[10.5px] text-ink-faint">Read</span>
+              <span className="text-[10.5px] text-ink-faint">Write</span>
+            </div>
             {sections.length === 0 ? (
               <p className="rounded-lg border border-line bg-canvas/60 px-3 py-2 text-[12px] text-ink-faint">
                 No sections yet. Add some in Settings first.
               </p>
             ) : (
-              <div className="grid grid-cols-1 gap-1 sm:grid-cols-2">
+              <div className="space-y-0.5">
                 {sections.map((s) => {
                   const inputName = s.ref.kind === "builtin" ? "builtin" : "custom";
+                  const writeKey = `can_write_${s.ref.kind}_${s.ref.key}`;
                   return (
-                    <label
+                    <div
                       key={`${s.ref.kind}-${s.ref.key}`}
-                      className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1 transition-base hover:bg-canvas/60 has-[:checked]:bg-canvas"
+                      className="flex items-center gap-3 rounded-md px-2 py-1.5 transition-base hover:bg-canvas/60"
                     >
+                      <span className="min-w-0 flex-1 text-[12.5px] text-ink">{s.name}</span>
+                      {/* Read checkbox — presence of this key = read access */}
                       <input
                         type="checkbox"
                         name={inputName}
                         value={s.ref.key}
-                        className="h-3.5 w-3.5 accent-ink"
+                        id={`read_${s.ref.kind}_${s.ref.key}`}
+                        className="h-4 w-4 accent-ink"
                       />
-                      <span className="text-[12.5px] text-ink">{s.name}</span>
-                    </label>
+                      {/* Write checkbox */}
+                      <input
+                        type="checkbox"
+                        name={writeKey}
+                        value="1"
+                        id={writeKey}
+                        className="h-4 w-4 accent-ink"
+                      />
+                    </div>
                   );
                 })}
               </div>
             )}
+            <p className="mt-2 text-[11px] text-ink-faint">
+              Read lets them see items. Write lets them upload and edit.
+            </p>
           </fieldset>
         ) : null}
 
