@@ -129,3 +129,73 @@ export async function searchChunks(
 
   return { chunks: [], method: "none" };
 }
+
+export interface CrossOrgSearchChunk extends SearchChunk {
+  /** The org this chunk belongs to. Present when using cross-org search. */
+  organizationId: string;
+}
+
+export interface CrossOrgSearchResult {
+  chunks: CrossOrgSearchChunk[];
+  method: "vector" | "none";
+}
+
+/**
+ * Cross-organisation semantic search via match_document_chunks_cross_org().
+ *
+ * Uses SECURITY INVOKER so RLS still gates every row. Only returns chunks
+ * from orgs the caller is a member of and that pass all visibility checks.
+ * Falls back to empty result (no fulltext fallback — cross-org fulltext
+ * would be too expensive at scale).
+ */
+export async function searchChunksCrossOrg(
+  opts: Omit<SemanticSearchOptions, "organizationId">
+): Promise<CrossOrgSearchResult> {
+  const { query, topK = 10, similarityThreshold = 0.3 } = opts;
+
+  const queryEmbedding = await embedQueryViaService(query);
+  if (!queryEmbedding || queryEmbedding.length !== 384) {
+    return { chunks: [], method: "none" };
+  }
+
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc(
+    "match_document_chunks_cross_org",
+    {
+      query_embedding: JSON.stringify(queryEmbedding),
+      match_count: topK,
+      similarity_threshold: similarityThreshold,
+    },
+  );
+
+  if (error || !data || data.length === 0) {
+    if (error) {
+      console.warn(
+        "[embedding/search] match_document_chunks_cross_org RPC error:",
+        error,
+      );
+    }
+    return { chunks: [], method: "none" };
+  }
+
+  return {
+    chunks: (
+      data as Array<{
+        chunk_id: string;
+        upload_id: string;
+        organization_id: string;
+        content: string;
+        similarity: number;
+      }>
+    ).map((row) => ({
+      id: row.chunk_id,
+      uploadId: row.upload_id,
+      organizationId: row.organization_id,
+      chunkIndex: 0, // cross-org RPC doesn't return chunk_index
+      content: row.content,
+      similarity: row.similarity,
+      metadata: {},
+    })),
+    method: "vector",
+  };
+}

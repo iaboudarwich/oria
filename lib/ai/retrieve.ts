@@ -8,7 +8,7 @@ import {
 } from "@/lib/data/organizations";
 import { sectionLabel } from "@/lib/sections-meta";
 import { listSectionMemories } from "@/lib/data/section-memory";
-import { searchChunks } from "@/lib/embedding/search";
+import { searchChunks, searchChunksCrossOrg } from "@/lib/embedding/search";
 import type { SectionScope } from "@/lib/data/section-scope";
 import type { Section } from "@/lib/supabase/types";
 
@@ -803,18 +803,35 @@ export async function retrieveForQuery(
   // results above.  Only fires when the Python service is reachable and
   // pgvector embeddings exist; degrades gracefully to keyword-only otherwise.
   //
+  // When crossSpace is active, use match_document_chunks_cross_org (SECURITY
+  // INVOKER) which spans all orgs the caller belongs to while still honoring
+  // every visibility predicate. Otherwise use the single-org function.
+  //
   // De-duplicate: if a chunk's uploadId already appeared in the keyword
   // results, boost the existing entry's score instead of adding a duplicate.
   try {
-    const semanticResults = await searchChunks({
-      organizationId: activeOrgId,
-      query,
-      topK: 8,
-      similarityThreshold: 0.35,
-      section: scope?.kind === "builtin" ? scope.key : undefined,
-    });
+    type AnyChunk = { uploadId: string; content: string; similarity: number; organizationId?: string };
 
-    if (semanticResults.chunks.length > 0) {
+    let semanticChunks: AnyChunk[] = [];
+    if (crossSpace && isAccountOwnerInPersonal(ctx)) {
+      const crossResult = await searchChunksCrossOrg({
+        query,
+        topK: 12,
+        similarityThreshold: 0.35,
+      });
+      semanticChunks = crossResult.chunks;
+    } else {
+      const singleResult = await searchChunks({
+        organizationId: activeOrgId,
+        query,
+        topK: 8,
+        similarityThreshold: 0.35,
+        section: scope?.kind === "builtin" ? scope.key : undefined,
+      });
+      semanticChunks = singleResult.chunks;
+    }
+
+    if (semanticChunks.length > 0) {
       // Collect uploadIds we need metadata for that aren't already scored
       const alreadyScoredUploadIds = new Set(
         scored
@@ -828,7 +845,7 @@ export async function retrieveForQuery(
 
       const newUploadIds = Array.from(
         new Set(
-          semanticResults.chunks
+          semanticChunks
             .map((c) => c.uploadId)
             .filter((id) => !alreadyScoredUploadIds.has(id))
         )
@@ -855,7 +872,7 @@ export async function retrieveForQuery(
       }
       const semanticUploadMap = new Map(semanticUploads.map((u) => [u.id, u]));
 
-      for (const chunk of semanticResults.chunks) {
+      for (const chunk of semanticChunks) {
         // Similarity → score (0.35 → ~7, 0.9 → ~18)
         const semScore = Math.round(chunk.similarity * 20);
 
