@@ -158,6 +158,10 @@ export interface Upload {
   deleted_by: UUID | null;
   visibility: Visibility;
   shared_with: UUID[];
+  // Auto-categorization (migration 0032)
+  section_assigned_by?: "user" | "auto" | null;
+  auto_section?: string | null;
+  auto_custom_section_id?: UUID | null;
 }
 
 export interface Extraction {

@@ -188,7 +188,10 @@ export default async function UploadDetailPage({ params }: Props) {
             uploadId={upload.id}
             currentRef={currentRef}
             sections={moveOptions}
-            autoFiled={detectAutoFiled(upload, items)}
+            autoFiled={
+              upload.section_assigned_by === "auto" ||
+              detectAutoFiled(upload, items)
+            }
           />
 
           <Metadata

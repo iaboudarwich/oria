@@ -254,6 +254,38 @@ export async function claimPendingImageJobs(
 }
 
 /**
+ * Atomically claim up to `limit` pending categorize_section jobs.
+ */
+export async function claimPendingCategorizationJobs(
+  limit: number,
+): Promise<BackgroundJob[]> {
+  try {
+    const admin = createAdminClient();
+    const { data: candidates } = await admin
+      .from("background_jobs")
+      .select("*")
+      .eq("status", "pending")
+      .eq("kind", "categorize_section")
+      .order("created_at", { ascending: true })
+      .limit(limit);
+    if (!candidates?.length) return [];
+    const ids = (candidates as BackgroundJob[]).map((j) => j.id);
+    await admin
+      .from("background_jobs")
+      .update({
+        status: "processing",
+        started_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .in("id", ids)
+      .eq("status", "pending");
+    return candidates as BackgroundJob[];
+  } catch {
+    return [];
+  }
+}
+
+/**
  * Atomically claim up to `limit` pending entity.extract jobs.
  * Same race-safe pattern as claimPendingExtractionJobs.
  */

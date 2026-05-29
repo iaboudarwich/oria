@@ -19,6 +19,10 @@ import { sectionLabel } from "@/lib/sections-meta";
 import { relativeTime } from "@/lib/utils";
 import { Hint } from "@/components/onboarding/hint";
 import { getSeenHintKeys } from "@/lib/data/onboarding";
+import {
+  SectionSuggestionsBanner,
+  type SuggestionItem,
+} from "@/components/upload/section-suggestions-banner";
 import type { Section } from "@/lib/supabase/types";
 
 export const metadata = { title: "Upload" };
@@ -45,6 +49,21 @@ export default async function UploadPage() {
     (u) => u.status === "processing" || u.status === "received",
   );
 
+  // Uploads that have a low-confidence suggestion but no section yet.
+  const pendingSuggestions: SuggestionItem[] = uploads
+    .filter(
+      (u) =>
+        !u.section &&
+        !u.custom_section_id &&
+        (u.auto_section || u.auto_custom_section_id),
+    )
+    .map((u) => ({
+      id: u.id,
+      title: u.title ?? u.filename,
+      auto_section: u.auto_section ?? null,
+      auto_custom_section_id: u.auto_custom_section_id ?? null,
+    }));
+
   return (
     <>
       <Topbar title="Upload" />
@@ -63,6 +82,7 @@ export default async function UploadPage() {
             <span className="text-[12px] text-ink-faint">Open</span>
           </Link>
         ) : null}
+        <SectionSuggestionsBanner suggestions={pendingSuggestions} />
         <RecentList items={uploads} thumbs={thumbs} />
         <SectionsGrid sections={allSections} counts={counts} />
       </div>

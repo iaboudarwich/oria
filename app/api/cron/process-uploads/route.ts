@@ -6,6 +6,7 @@ import {
   claimPendingExtractionJobs,
   claimPendingEntityJobs,
   claimPendingImageJobs,
+  claimPendingCategorizationJobs,
   createJob,
   markJobCompleted,
   markJobFailed,
@@ -14,6 +15,7 @@ import {
 import { processUpload } from "@/lib/data/upload-intelligence";
 import { extractEntity } from "@/lib/ai/extract-entities";
 import { runImageAnalysis } from "@/lib/ai/run-image-analysis";
+import { runCategorizeSection } from "@/lib/ai/run-categorize-section";
 import { recordSystemEvent } from "@/lib/data/system-events";
 
 /** Maximum concurrent jobs per phase per cron tick. */
@@ -126,6 +128,13 @@ export async function GET(req: NextRequest) {
       try {
         await extractEntity(job.upload_id);
         await markJobCompleted(job.id);
+        // Enqueue section categorization after entity extraction.
+        await createJob({
+          organizationId: job.organization_id,
+          actorId: job.actor_id,
+          kind: "categorize_section",
+          uploadId: job.upload_id,
+        }).catch(() => {});
         return { id: job.id, ok: true };
       } catch (err) {
         const message =
@@ -141,8 +150,6 @@ export async function GET(req: NextRequest) {
   );
 
   // ── Phase C: analyze_image ────────────────────────────────────────────────
-  // Vision analysis for image uploads. Replaces Phase B for images — the
-  // analyze_image job combines classification + extraction in a single call.
   const imageJobs = await claimPendingImageJobs(BATCH_SIZE);
 
   const imageResults = await Promise.allSettled(
@@ -154,10 +161,43 @@ export async function GET(req: NextRequest) {
       try {
         await runImageAnalysis(job.upload_id);
         await markJobCompleted(job.id);
+        // Enqueue section categorization after vision analysis.
+        await createJob({
+          organizationId: job.organization_id,
+          actorId: job.actor_id,
+          kind: "categorize_section",
+          uploadId: job.upload_id,
+        }).catch(() => {});
         return { id: job.id, ok: true };
       } catch (err) {
         const message =
           err instanceof Error ? err.message : "Image analysis failed";
+        if (job.retry_count < MAX_RETRIES) {
+          await requeueJobForRetry(job.id, message, job.retry_count);
+        } else {
+          await markJobFailed(job.id, message);
+        }
+        return { id: job.id, ok: false };
+      }
+    }),
+  );
+
+  // ── Phase D: categorize_section ───────────────────────────────────────────
+  const categorizationJobs = await claimPendingCategorizationJobs(BATCH_SIZE);
+
+  const categorizationResults = await Promise.allSettled(
+    categorizationJobs.map(async (job) => {
+      if (!job.upload_id) {
+        await markJobFailed(job.id, "Missing upload_id on categorization job");
+        return { id: job.id, ok: false };
+      }
+      try {
+        await runCategorizeSection(job.upload_id);
+        await markJobCompleted(job.id);
+        return { id: job.id, ok: true };
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : "Categorization failed";
         if (job.retry_count < MAX_RETRIES) {
           await requeueJobForRetry(job.id, message, job.retry_count);
         } else {
@@ -183,6 +223,10 @@ export async function GET(req: NextRequest) {
     image: {
       processed: imageResults.length,
       succeeded: countOk(imageResults as PromiseSettledResult<{ ok: boolean }>[]),
+    },
+    categorize: {
+      processed: categorizationResults.length,
+      succeeded: countOk(categorizationResults as PromiseSettledResult<{ ok: boolean }>[]),
     },
   });
 }
