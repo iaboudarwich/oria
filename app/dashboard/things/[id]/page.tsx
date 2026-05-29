@@ -8,6 +8,7 @@ import {
 } from "@/lib/data/entities";
 import { createClient } from "@/lib/supabase/server";
 import { getSignedUrlMap } from "@/lib/data/uploads";
+import { setPrimaryPhoto } from "@/lib/data/entity-actions";
 
 export const dynamic = "force-dynamic";
 type Props = { params: Promise<{ id: string }> };

@@ -16,6 +16,7 @@ import { processUpload } from "@/lib/data/upload-intelligence";
 import { extractEntity } from "@/lib/ai/extract-entities";
 import { runImageAnalysis } from "@/lib/ai/run-image-analysis";
 import { runCategorizeSection } from "@/lib/ai/run-categorize-section";
+import { runDetectTrackable } from "@/lib/ai/run-detect-trackable";
 import { recordSystemEvent } from "@/lib/data/system-events";
 
 /** Maximum concurrent jobs per phase per cron tick. */
@@ -135,6 +136,8 @@ export async function GET(req: NextRequest) {
           kind: "categorize_section",
           uploadId: job.upload_id,
         }).catch(() => {});
+        // Fire trackable detection as best-effort (no retry needed).
+        void runDetectTrackable(job.upload_id).catch(() => {});
         return { id: job.id, ok: true };
       } catch (err) {
         const message =

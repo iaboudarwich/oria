@@ -83,6 +83,43 @@ export async function generateSuggestionsForUpload(
     return !existingDates.some((t) => Math.abs(t - targetMs) < sevenDaysMs);
   });
 
+  // ── Also derive suggestions from trackables for this upload ─────────────
+  // Trackable detection may have run async after this function is called,
+  // so we query it here too and merge any non-overlapping suggestions.
+  try {
+    const { data: trackableRows } = await admin
+      .from("trackables")
+      .select("id, category, title, renewal_date")
+      .eq("source_upload_id", uploadId)
+      .not("renewal_date", "is", null);
+
+    const { TRACKABLE_LEAD_DAYS } = await import("@/lib/ai/detect-trackable");
+
+    for (const t of (trackableRows ?? []) as Array<{
+      id: string;
+      category: string;
+      title: string;
+      renewal_date: string;
+    }>) {
+      if (!t.renewal_date) continue;
+      const targetDate = new Date(t.renewal_date);
+      if (isNaN(targetDate.getTime()) || targetDate <= now) continue;
+      const key = `${uploadId}:trackable:${t.id}`;
+      if (dismissedKeys.has(key)) continue;
+      const targetMs = targetDate.getTime();
+      if (existingDates.some((d) => Math.abs(d - targetMs) < sevenDaysMs)) continue;
+      const leadDays = TRACKABLE_LEAD_DAYS[t.category as keyof typeof TRACKABLE_LEAD_DAYS] ?? 30;
+      noOverlap.push({
+        key,
+        title: t.title,
+        target_date: t.renewal_date,
+        default_lead_days: leadDays,
+      });
+    }
+  } catch {
+    // Best-effort — trackables table may not exist yet
+  }
+
   return noOverlap;
 }
 
