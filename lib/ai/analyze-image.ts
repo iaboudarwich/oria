@@ -71,6 +71,8 @@ export async function analyzeImage(params: {
   filename: string;
   organizationId?: string | null;
   uploadId?: string | null;
+  /** User's preferred_language — used as extraction hint */
+  accountLanguage?: string | null;
 }): Promise<ImageAnalysisResult | null> {
   const { mimeType, filename } = params;
   let { imageBytes } = params;
@@ -109,8 +111,14 @@ export async function analyzeImage(params: {
   const productDesc = `product (a packaged consumer item — food, beverage, supplement, cosmetics, electronics, household goods)`;
   const sceneDesc = `scene (a photo of a place, meal, event, person, or object)`;
 
-  const systemPrompt = `You analyze images and return structured JSON.
+  const langNames: Record<string, string> = { en: "English", ar: "Arabic", fr: "French", es: "Spanish" };
+  const accountLang = params.accountLanguage;
+  const langHint = accountLang && langNames[accountLang]
+    ? `The user's primary language is ${langNames[accountLang]}. Transcribe text in its original language. If the document is in a non-Latin script, include both the original transcription AND a romanized version where applicable. Provide structured field values in the original language.`
+    : "";
 
+  const systemPrompt = `You analyze images and return structured JSON.
+${langHint ? `\n${langHint}\n` : ""}
 For the image provided:
 1. Describe what you see in 1-3 sentences.
 2. Classify it as one of: ${typeList}. Use ${productDesc}. Use ${sceneDesc}.

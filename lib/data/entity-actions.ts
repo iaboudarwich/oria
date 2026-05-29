@@ -173,3 +173,50 @@ export async function seedEntityTypes(
       );
   }
 }
+
+/**
+ * Translate the displayed extracted entity fields to the user's account
+ * language. Only updates the UI display — the stored fields remain in
+ * their original language.
+ *
+ * Returns the translated fields object.
+ */
+export async function translateUploadFieldsAction(
+  uploadId: string,
+  targetLanguage: string,
+): Promise<Record<string, unknown> | null> {
+  const supabase = await createClient();
+  const { data: entity } = await supabase
+    .from("extracted_entities")
+    .select("doc_type, fields")
+    .eq("upload_id", uploadId)
+    .maybeSingle();
+  if (!entity) return null;
+
+  // Import dynamically to avoid server-only in non-server context
+  const { getAnthropic, getModel } = await import("@/lib/ai/anthropic");
+  const anthropic = getAnthropic();
+  if (!anthropic) return null;
+
+  const langNames: Record<string, string> = {
+    en: "English", ar: "Arabic", fr: "French", es: "Spanish",
+  };
+  const targetName = langNames[targetLanguage] ?? targetLanguage;
+
+  const fieldsStr = JSON.stringify(entity.fields, null, 2);
+  try {
+    const msg = await anthropic.messages.create({
+      model: getModel(),
+      max_tokens: 1000,
+      messages: [{
+        role: "user",
+        content: `Translate the string values in this JSON object to ${targetName}. Keep all keys in English. Return ONLY the translated JSON, no explanation.\n\n${fieldsStr}`,
+      }],
+    });
+    const raw = msg.content[0]?.type === "text" ? msg.content[0].text.trim() : "";
+    const cleaned = raw.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim();
+    return JSON.parse(cleaned) as Record<string, unknown>;
+  } catch {
+    return null;
+  }
+}

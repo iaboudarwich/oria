@@ -88,18 +88,23 @@ type ExtractResult = { fields: Record<string, unknown>; confidence: number };
 export async function extractFields(
   text: string,
   docType: DocType,
+  accountLanguage?: string | null,
 ): Promise<ExtractResult> {
   const anthropic = getAnthropic();
   if (!anthropic) return { fields: {}, confidence: 0 };
 
   const schema = schemaDescription(docType);
+  const langNames: Record<string, string> = { en: "English", ar: "Arabic", fr: "French", es: "Spanish" };
+  const langHint = accountLanguage && langNames[accountLanguage]
+    ? `The user's primary language is ${langNames[accountLanguage]}. Extract text in the original document language. Use English keys for the schema.\n`
+    : "";
 
   const attempt = async (extra = ""): Promise<string> => {
     const msg = await anthropic.messages.create({
       model: getModel(),
       max_tokens: 1000,
       system: `You extract structured fields from a ${docType} document.
-Respond with ONLY valid JSON matching this schema (omit fields you cannot find):
+${langHint}Respond with ONLY valid JSON matching this schema (omit fields you cannot find):
 ${schema}
 ${extra}
 Rules:
@@ -155,7 +160,10 @@ Rules:
  * Idempotent: skips uploads already extracted with the same extractor version
  * unless user_verified is false (allowing re-extraction after a bug fix).
  */
-export async function extractEntity(uploadId: string): Promise<void> {
+export async function extractEntity(
+  uploadId: string,
+  accountLanguage?: string | null,
+): Promise<void> {
   const admin = createAdminClient();
 
   // ── Idempotency check ──────────────────────────────────────────────────
@@ -209,11 +217,11 @@ export async function extractEntity(uploadId: string): Promise<void> {
   );
 
   // ── Extract ────────────────────────────────────────────────────────────
-  let { fields, confidence: extractConf } = await extractFields(text, doc_type);
+  let { fields, confidence: extractConf } = await extractFields(text, doc_type, accountLanguage);
 
   // If extraction produced nothing useful, fall back to generic
   if (Object.keys(fields).length === 0 && doc_type !== "generic") {
-    const fallback = await extractFields(text, "generic");
+    const fallback = await extractFields(text, "generic", accountLanguage);
     fields = fallback.fields;
     extractConf = fallback.confidence * 0.8; // discount for fallback
   }

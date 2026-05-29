@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useTransition, useMemo } from "react";
-import { saveEntityEdits } from "@/lib/data/entity-actions";
+import { saveEntityEdits, translateUploadFieldsAction } from "@/lib/data/entity-actions";
 import { SCHEMAS, type DocType } from "@/lib/ai/extraction-schemas";
+import { useLocale } from "next-intl";
 import type { ExtractedEntity } from "@/lib/data/upload-detail";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -752,16 +753,18 @@ export function ExtractedEntitiesPanel({
   const [draft, setDraft] = useState<Record<string, unknown>>({});
   const [saveError, setSaveError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  const [translatedFields, setTranslatedFields] = useState<Record<string, unknown> | null>(null);
+  const [translating, startTranslate] = useTransition();
+  const locale = useLocale();
 
-  const activeFields = useMemo(
-    () =>
-      entity
-        ? entity.user_verified && entity.user_edited_fields
-          ? { ...entity.fields, ...entity.user_edited_fields }
-          : entity.fields
-        : {},
-    [entity],
-  );
+  const activeFields = useMemo(() => {
+    if (!entity) return {};
+    const base = entity.user_verified && entity.user_edited_fields
+      ? { ...entity.fields, ...entity.user_edited_fields }
+      : entity.fields;
+    // Overlay translated fields if present (UI-only, doesn't affect storage)
+    return translatedFields ? { ...base, ...translatedFields } : base;
+  }, [entity, translatedFields]);
 
   // Runtime Zod validation — catches LLM schema mismatches before rendering.
   const validationPassed = useMemo(() => {
@@ -824,6 +827,31 @@ export function ExtractedEntitiesPanel({
         <div className="flex items-center gap-2">
           {entity.user_verified && (
             <span className="text-[10.5px] text-sage-600">Verified</span>
+          )}
+          {/* Translate button — only when locale is non-English */}
+          {locale !== "en" && !translatedFields && (
+            <button
+              type="button"
+              disabled={translating}
+              onClick={() => {
+                startTranslate(async () => {
+                  const result = await translateUploadFieldsAction(uploadId, locale);
+                  if (result) setTranslatedFields(result);
+                });
+              }}
+              className="text-[11px] text-ink-faint transition-base hover:text-ink disabled:opacity-50"
+            >
+              {translating ? "Translating..." : "Translate"}
+            </button>
+          )}
+          {translatedFields && (
+            <button
+              type="button"
+              onClick={() => setTranslatedFields(null)}
+              className="text-[11px] text-ink-faint transition-base hover:text-ink"
+            >
+              Original
+            </button>
           )}
           {!editing ? (
             <button

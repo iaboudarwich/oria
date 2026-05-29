@@ -20,7 +20,7 @@ const EXTRACTOR_VERSION = "v1-vision";
  * This replaces Phase B (entity.extract) for image uploads so the cron
  * doesn't double-process them.
  */
-export async function runImageAnalysis(uploadId: string): Promise<void> {
+export async function runImageAnalysis(uploadId: string, accountLanguage?: string | null): Promise<void> {
   const admin = createAdminClient();
 
   // ── Skip conditions ────────────────────────────────────────────────────
@@ -60,6 +60,7 @@ export async function runImageAnalysis(uploadId: string): Promise<void> {
     imageBytes,
     mimeType: mime,
     filename: upload.filename as string,
+    accountLanguage,
     organizationId: upload.organization_id as string,
     uploadId,
   });

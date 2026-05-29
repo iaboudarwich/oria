@@ -127,7 +127,9 @@ export async function GET(req: NextRequest) {
       }
 
       try {
-        await extractEntity(job.upload_id);
+        // Fetch uploader's preferred_language for extraction hints
+        const accountLang = await getUploaderLanguage(job.upload_id);
+        await extractEntity(job.upload_id, accountLang);
         await markJobCompleted(job.id);
         // Enqueue section categorization after entity extraction.
         await createJob({
@@ -162,7 +164,8 @@ export async function GET(req: NextRequest) {
         return { id: job.id, ok: false };
       }
       try {
-        await runImageAnalysis(job.upload_id);
+        const accountLangImg = await getUploaderLanguage(job.upload_id);
+        await runImageAnalysis(job.upload_id, accountLangImg);
         await markJobCompleted(job.id);
         // Enqueue section categorization after vision analysis.
         await createJob({
@@ -232,4 +235,28 @@ export async function GET(req: NextRequest) {
       succeeded: countOk(categorizationResults as PromiseSettledResult<{ ok: boolean }>[]),
     },
   });
+}
+
+/**
+ * Fetch the uploader's preferred_language for an upload.
+ * Used to pass language hints to extraction functions.
+ */
+async function getUploaderLanguage(uploadId: string): Promise<string | null> {
+  try {
+    const admin = createAdminClient();
+    const { data: upload } = await admin
+      .from("uploads")
+      .select("uploaded_by")
+      .eq("id", uploadId)
+      .maybeSingle();
+    if (!upload?.uploaded_by) return null;
+    const { data: profile } = await admin
+      .from("profiles")
+      .select("preferred_language")
+      .eq("id", upload.uploaded_by as string)
+      .maybeSingle();
+    return (profile as { preferred_language?: string } | null)?.preferred_language ?? null;
+  } catch {
+    return null;
+  }
 }
