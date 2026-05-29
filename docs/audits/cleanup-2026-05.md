@@ -412,4 +412,10 @@ Listed here so you can override.
 
 ### Commits applied
 
-_Filled by the final report._
+| Feature | Commit | What landed |
+|---|---|---|
+| F1 — audit doc | `ee622de` | This document. |
+| F2 — safe cleanup | `3cdedf4` | 8 missing env vars added to `.env.local.example` (PYTHON_EXTRACTION_URL, ORIA_SIDECAR_SECRET, ORIA_TEXT_EXTRACTION_MODEL, UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN, SENTRY_DSN, NEXT_PUBLIC_SENTRY_DSN, CRON_SECRET). No unused-import removals (codebase already clean). No console-statement removals (all 17 are intentional). No type/dep removals (audit found no qualifying targets). |
+| F3 — dead code removal | _filled by next commit_ | `lib/data/scoped-query.ts` and `lib/data/reminders.ts` deleted. Both re-verified to have only self-references before deletion. Build + tests green after each. |
+| F4 — consolidation | _filled by next commit_ | No qualifying consolidations under the strict spec rule. See §5. |
+| F5 — performance | _filled by next commit_ | Migration `0039_org_scoped_indexes.sql` + dynamic-import of `SectionsEditor`. |
