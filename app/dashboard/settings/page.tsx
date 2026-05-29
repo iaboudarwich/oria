@@ -16,6 +16,8 @@ import { SectionsEditor } from "@/components/settings/sections-editor";
 import { isCurrentUserAdmin } from "@/lib/data/admin";
 import { readSidebarExtras } from "@/lib/data/sidebar-prefs";
 import { setSidebarExtra } from "@/lib/data/sidebar-prefs-actions";
+import { getUserStorageStats, type StorageStats } from "@/lib/data/quotas";
+import { formatBytes } from "@/lib/utils";
 import type { OrgKind } from "@/lib/supabase/types";
 
 export const metadata = { title: "Settings" };
@@ -28,6 +30,9 @@ export default async function SettingsPage() {
     isCurrentUserAdmin(),
     readSidebarExtras(),
   ]);
+  const storageStats = ctx?.profile.id
+    ? await getUserStorageStats(ctx.profile.id)
+    : null;
   const timelineEnabled = extras.has("timeline");
 
   const visible = sections.filter((s) => !s.hidden);
@@ -74,6 +79,8 @@ export default async function SettingsPage() {
         />
 
         <SidebarPrefsPanel timelineEnabled={timelineEnabled} />
+
+        {storageStats ? <StorageSection stats={storageStats} /> : null}
 
         {admin ? <AdminPanel /> : null}
 
@@ -264,6 +271,94 @@ function GroupedSection({
         <ul className="divide-y divide-line">{children}</ul>
       </div>
     </section>
+  );
+}
+
+function StorageSection({ stats }: { stats: StorageStats }) {
+  const {
+    lifetimeUsedBytes,
+    lifetimeLimitBytes,
+    dailyUsedBytes,
+    dailyLimitBytes,
+  } = stats;
+  const lifetimePct =
+    lifetimeLimitBytes > 0
+      ? Math.min(100, (lifetimeUsedBytes / lifetimeLimitBytes) * 100)
+      : 0;
+  const dailyPct =
+    dailyLimitBytes > 0
+      ? Math.min(100, (dailyUsedBytes / dailyLimitBytes) * 100)
+      : 0;
+
+  return (
+    <GroupedSection label="Storage">
+      <li className="px-4 py-4 space-y-4">
+        <StorageBar
+          label="Lifetime storage"
+          used={lifetimeUsedBytes}
+          limit={lifetimeLimitBytes}
+          pct={lifetimePct}
+        />
+        <StorageBar
+          label="Today's uploads"
+          used={dailyUsedBytes}
+          limit={dailyLimitBytes}
+          pct={dailyPct}
+        />
+      </li>
+    </GroupedSection>
+  );
+}
+
+function StorageBar({
+  label,
+  used,
+  limit,
+  pct,
+}: {
+  label: string;
+  used: number;
+  limit: number;
+  pct: number;
+}) {
+  const isWarning = pct >= 80 && pct < 100;
+  const isFull = pct >= 100;
+  const barColor = isFull
+    ? "bg-claret"
+    : isWarning
+      ? "bg-amber-500"
+      : "bg-ink";
+  const usedColor = isFull
+    ? "text-claret"
+    : isWarning
+      ? "text-amber-600"
+      : "text-ink-muted";
+
+  return (
+    <div className="space-y-1.5">
+      <div className="flex items-baseline justify-between">
+        <p className="text-[12.5px] text-ink">{label}</p>
+        <p className={`text-[11.5px] tabular-nums ${usedColor}`}>
+          {formatBytes(used)} / {formatBytes(limit)}
+        </p>
+      </div>
+      <div className="h-1.5 w-full overflow-hidden rounded-full bg-line">
+        <div
+          className={`h-full rounded-full transition-all duration-300 ${barColor}`}
+          style={{ width: `${Math.min(100, pct)}%` }}
+        />
+      </div>
+      {isFull && (
+        <p className="text-[11px] text-claret">
+          Storage full. Delete older uploads to continue adding files.
+        </p>
+      )}
+      {isWarning && (
+        <p className="text-[11px] text-amber-600">
+          Approaching your limit — consider deleting older uploads.
+        </p>
+      )}
+    </div>
   );
 }
 

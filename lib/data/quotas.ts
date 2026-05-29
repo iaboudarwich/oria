@@ -181,6 +181,56 @@ export async function checkTotalUserStorage(
   return { ok: true, remaining: limit - used, limit };
 }
 
+export type StorageStats = {
+  lifetimeUsedBytes: number;
+  lifetimeLimitBytes: number;
+  dailyUsedBytes: number;
+  dailyLimitBytes: number;
+};
+
+/**
+ * Read-only snapshot of how much storage a user has consumed. Used by
+ * the settings page to render progress bars. Soft-fails to zeroes on
+ * any DB error so the page always renders. Never modifies anything.
+ */
+export async function getUserStorageStats(
+  userId: string,
+): Promise<StorageStats> {
+  const lifetimeLimitBytes = userStorageCap();
+  const dailyLimitBytes = dailyUploadCap();
+  const admin = createAdminClient();
+
+  const [lifetimeRes, dailyRes] = await Promise.allSettled([
+    admin
+      .from("uploads")
+      .select("size_bytes")
+      .eq("uploaded_by", userId)
+      .is("deleted_at", null),
+    admin
+      .from("uploads")
+      .select("size_bytes")
+      .eq("uploaded_by", userId)
+      .gte("created_at", startOfTodayISO()),
+  ]);
+
+  const sum = (rows: { size_bytes: number | null }[]) =>
+    rows.reduce((acc, r) => acc + (r.size_bytes ?? 0), 0);
+
+  const lifetimeUsedBytes =
+    lifetimeRes.status === "fulfilled" && !lifetimeRes.value.error
+      ? sum(
+          (lifetimeRes.value.data ?? []) as { size_bytes: number | null }[],
+        )
+      : 0;
+
+  const dailyUsedBytes =
+    dailyRes.status === "fulfilled" && !dailyRes.value.error
+      ? sum((dailyRes.value.data ?? []) as { size_bytes: number | null }[])
+      : 0;
+
+  return { lifetimeUsedBytes, lifetimeLimitBytes, dailyUsedBytes, dailyLimitBytes };
+}
+
 /**
  * Rolling 30-day Ask count for one user. Doesn't refuse a request on
  * its own — the daily check fires first — but feeds the admin health
