@@ -3,12 +3,20 @@ import { Topbar } from "@/components/dashboard/topbar";
 import { isCurrentUserAdmin } from "@/lib/data/admin";
 import { getSystemHealth, type FailedItem } from "@/lib/data/system-health";
 import { recoverStuckUploadsAcrossOrgs } from "@/lib/data/stuck-uploads";
+import { triggerReminderNotifications } from "@/lib/data/reminder-notification-actions";
 import type { SystemEvent } from "@/lib/data/system-events";
 
 export const metadata = { title: "System Health" };
 export const dynamic = "force-dynamic";
 
-export default async function AdminHealthPage() {
+export default async function AdminHealthPage({
+  searchParams,
+}: {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const sp: Record<string, string | string[] | undefined> = await (
+    searchParams ?? Promise.resolve({})
+  );
   const admin = await isCurrentUserAdmin();
   if (!admin) {
     return <NotAuthorized />;
@@ -365,6 +373,42 @@ export default async function AdminHealthPage() {
             linkPrefix="/dashboard/work/agent/reports/"
           />
         </div>
+
+        {/* Developer tools ------------------------------------------------- */}
+        <section>
+          <h2 className="mb-2 px-1 text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
+            Developer tools
+          </h2>
+          <div className="rounded-2xl border border-line bg-surface-raised p-4">
+            <p className="mb-3 text-[13px] text-ink">
+              Manually trigger the reminder notification batch (same logic as
+              the hourly cron). Only reminders due today or tomorrow that
+              haven&apos;t been notified yet are processed.
+            </p>
+            <form action={triggerReminderNotifications}>
+              <button
+                type="submit"
+                className="inline-flex h-8 items-center rounded-lg border border-line bg-canvas px-3 text-[12.5px] text-ink-muted transition-base hover:border-line-strong hover:text-ink"
+              >
+                Send pending reminder notifications
+              </button>
+            </form>
+            {sp.reminders_sent !== undefined ? (
+              <p className="mt-3 text-[12px] text-ink-muted">
+                Last run:{" "}
+                <span className="text-ink">
+                  {sp.reminders_sent} sent
+                </span>
+                {sp.reminders_failed !== undefined &&
+                Number(sp.reminders_failed) > 0 ? (
+                  <span className="ml-2 text-claret">
+                    · {sp.reminders_failed} failed
+                  </span>
+                ) : null}
+              </p>
+            ) : null}
+          </div>
+        </section>
 
         <p className="px-1 text-[11.5px] text-ink-faint">
           Generated {new Date(h.generatedAt).toLocaleString()}. Reload this

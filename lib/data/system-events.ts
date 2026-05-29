@@ -39,7 +39,9 @@ export type SystemEventKind =
   // Invites
   | "invite.accepted"
   // Auto-scheduling
-  | "reminder.failed";
+  | "reminder.failed"
+  // Reminder notifications
+  | "reminder.notified";
 
 /**
  * Kinds that show up in the user-facing status strip. Most events in
@@ -53,6 +55,7 @@ export const USER_VISIBLE_EVENT_KINDS: SystemEventKind[] = [
   "report.failed",
   "invite.accepted",
   "email.error",
+  "reminder.notified",
 ];
 
 /**
@@ -90,6 +93,8 @@ export function formatEventMessage(e: {
       return detail ? `${detail} joined` : "Invite accepted";
     case "email.error":
       return e.message ?? "Email didn't go through";
+    case "reminder.notified":
+      return detail ? `Reminder: ${detail}` : "Reminder sent";
     default:
       return e.message ?? e.kind;
   }
