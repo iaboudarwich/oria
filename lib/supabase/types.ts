@@ -90,6 +90,9 @@ export interface Organization {
   created_by: UUID | null;
   created_at: TimestampString;
   updated_at: TimestampString;
+  archived_at?: TimestampString | null;
+  // Added in migration 0033
+  template_key?: "personal" | "investor" | "business" | "family_office" | "custom" | null;
 }
 
 export interface Invite {

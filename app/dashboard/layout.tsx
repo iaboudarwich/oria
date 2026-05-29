@@ -36,6 +36,14 @@ export default async function DashboardLayout({ children }: { children: ReactNod
   const ctx = await getCurrentContext();
   if (!ctx) redirect("/login");
 
+  // New-user onboarding: if the active org (personal) hasn't had a template
+  // chosen yet, redirect to the template picker. We check template_key === null
+  // (or undefined when migration hasn't run). Existing users are unaffected.
+  const templateKey = ctx.organization.template_key;
+  if (ctx.organization.kind === "personal" && templateKey === null) {
+    redirect("/onboarding/template");
+  }
+
   const [
     sections,
     userSpaces,

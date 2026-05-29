@@ -8,6 +8,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { ACTIVE_SPACE_COOKIE } from "./active-space";
 import { requireContext } from "./organizations";
 import { kindsForMode, type Mode } from "./mode";
+import { applyTemplate, type TemplateKey } from "./workspace-templates";
 import type { OrgKind } from "@/lib/supabase/types";
 
 export type SwitchModeResult =
@@ -191,6 +192,14 @@ export async function createWorkSpace(formData: FormData): Promise<void> {
   if (stores.length > 0) descParts.push(`Stores: ${stores.join(", ")}.`);
   const description = descParts.length > 0 ? descParts.join(" ").slice(0, 280) : null;
 
+  // Optional template key from the template picker step.
+  const rawTemplate = String(formData.get("template") ?? "").trim();
+  const templateKey: TemplateKey | null =
+    rawTemplate &&
+    ["personal", "investor", "business", "family_office", "custom"].includes(rawTemplate)
+      ? (rawTemplate as TemplateKey)
+      : null;
+
   const ctx = await requireContext();
   const admin = createAdminClient();
 
@@ -216,6 +225,11 @@ export async function createWorkSpace(formData: FormData): Promise<void> {
     user_id: ctx.profile.id,
     role: "owner",
   });
+
+  // Apply template sections if one was chosen.
+  if (templateKey) {
+    await applyTemplate(orgRow.id, templateKey);
+  }
 
   await setActiveCookie(orgRow.id);
   revalidatePath("/dashboard", "layout");

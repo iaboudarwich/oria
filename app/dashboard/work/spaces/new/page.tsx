@@ -1,26 +1,9 @@
 import Link from "next/link";
 import { Topbar } from "@/components/dashboard/topbar";
 import { createWorkSpace } from "@/lib/data/mode-actions";
+import { WORKSPACE_TEMPLATES } from "@/lib/data/workspace-templates";
 
 export const metadata = { title: "New Workspace" };
-
-const PURPOSES = [
-  "Business",
-  "Property",
-  "Investment",
-  "Company",
-  "Project",
-  "Other",
-];
-
-const STORE_TYPES = [
-  "Invoices",
-  "Leases",
-  "Rent",
-  "Expenses",
-  "Contracts",
-  "Reports",
-];
 
 const NAME_EXAMPLES = [
   "Office Building A",
@@ -29,29 +12,69 @@ const NAME_EXAMPLES = [
 ];
 
 export default function NewWorkSpacePage() {
+  const mainTemplates = WORKSPACE_TEMPLATES.filter((t) => t.key !== "custom");
+
   return (
     <>
       <Topbar title="New Workspace" />
 
       <div className="mx-auto max-w-xl animate-fade-up">
         <p className="mb-7 px-1 text-[13px] text-ink-muted">
-          A Workspace is its own operational context — one per office,
-          property, investment, or company. Your private Work area already
-          exists; this form is for adding another scoped Workspace on top.
+          A Workspace is its own operational context. Pick a template to
+          seed it with the right sections, then name it.
         </p>
 
         <form action={createWorkSpace} className="space-y-7">
-          <Field
-            label="What is this Workspace for?"
-            hint="Pick the closest fit. This helps Oria tune extraction and summaries for the Workspace."
-          >
-            <ChipRadio name="purpose" options={PURPOSES} defaultIndex={0} />
-          </Field>
 
-          <Field
-            label="Workspace name"
-            hint="A short, descriptive name. You can change it later."
-          >
+          {/* Template picker */}
+          <div>
+            <span className="mb-2 block text-[13px] text-ink">
+              Start from a template
+            </span>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {mainTemplates.map((t, i) => (
+                <label key={t.key} className="relative cursor-pointer">
+                  <input
+                    type="radio"
+                    name="template"
+                    value={t.key}
+                    defaultChecked={i === 0}
+                    className="peer sr-only"
+                  />
+                  <span className="flex items-start gap-3 rounded-xl border border-line bg-canvas p-3 transition-base peer-checked:border-ink peer-checked:bg-surface-raised peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-ink hover:border-line-strong">
+                    <span className="mt-0.5 text-[16px]">{templateEmoji(t.key)}</span>
+                    <span>
+                      <span className="block text-[12.5px] font-medium text-ink">{t.label}</span>
+                      <span className="mt-0.5 block text-[11px] text-ink-faint">{t.description}</span>
+                      <span className="mt-1.5 flex flex-wrap gap-1">
+                        {t.section_seeds.map((s) => (
+                          <span key={s.name} className="rounded bg-line px-1.5 py-0.5 text-[10.5px] text-ink-faint">{s.name}</span>
+                        ))}
+                      </span>
+                    </span>
+                  </span>
+                </label>
+              ))}
+              {/* Custom / blank option */}
+              <label className="relative cursor-pointer sm:col-span-2">
+                <input
+                  type="radio"
+                  name="template"
+                  value="custom"
+                  className="peer sr-only"
+                />
+                <span className="flex items-center gap-3 rounded-xl border border-line bg-canvas px-3 py-2 transition-base peer-checked:border-ink peer-checked:bg-surface-raised hover:border-line-strong">
+                  <span className="text-[14px]">✨</span>
+                  <span className="text-[12.5px] text-ink-muted">Blank — no sections, start from scratch</span>
+                </span>
+              </label>
+            </div>
+          </div>
+
+          {/* Workspace name */}
+          <div>
+            <span className="mb-1.5 block text-[13px] text-ink">Workspace name</span>
+            <span className="mb-2 block text-[12px] text-ink-faint">A short, descriptive name. You can change it later.</span>
             <input
               type="text"
               name="name"
@@ -63,22 +86,12 @@ export default function NewWorkSpacePage() {
             />
             <ul className="mt-2 flex flex-wrap gap-1.5">
               {NAME_EXAMPLES.map((p) => (
-                <li
-                  key={p}
-                  className="rounded-full border border-line bg-canvas px-2.5 py-0.5 text-[11px] text-ink-muted"
-                >
+                <li key={p} className="rounded-full border border-line bg-canvas px-2.5 py-0.5 text-[11px] text-ink-muted">
                   {p}
                 </li>
               ))}
             </ul>
-          </Field>
-
-          <Field
-            label="What will you store here?"
-            hint="Pick any that fit. You can always upload other things later."
-          >
-            <ChipCheckbox name="stores" options={STORE_TYPES} />
-          </Field>
+          </div>
 
           <div className="flex items-center gap-3 pt-1">
             <button
@@ -100,77 +113,12 @@ export default function NewWorkSpacePage() {
   );
 }
 
-function Field({
-  label,
-  hint,
-  children,
-}: {
-  label: string;
-  hint?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <label className="block">
-      <span className="mb-1.5 block text-[13px] text-ink">{label}</span>
-      {hint ? (
-        <span className="mb-2 block text-[12px] text-ink-faint">{hint}</span>
-      ) : null}
-      {children}
-    </label>
-  );
-}
-
-function ChipRadio({
-  name,
-  options,
-  defaultIndex = 0,
-}: {
-  name: string;
-  options: string[];
-  defaultIndex?: number;
-}) {
-  return (
-    <div className="flex flex-wrap gap-1.5">
-      {options.map((opt, i) => (
-        <label key={opt} className="relative cursor-pointer">
-          <input
-            type="radio"
-            name={name}
-            value={opt}
-            defaultChecked={i === defaultIndex}
-            className="peer sr-only"
-          />
-          <span className="inline-flex items-center rounded-full border border-line bg-canvas px-3 py-1 text-[12.5px] text-ink-muted transition-base hover:border-line-strong peer-checked:border-ink peer-checked:bg-ink peer-checked:text-surface peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-ink">
-            {opt}
-          </span>
-        </label>
-      ))}
-    </div>
-  );
-}
-
-function ChipCheckbox({
-  name,
-  options,
-}: {
-  name: string;
-  options: string[];
-}) {
-  return (
-    <div className="flex flex-wrap gap-1.5">
-      {options.map((opt) => (
-        <label key={opt} className="relative cursor-pointer">
-          <input
-            type="checkbox"
-            name={name}
-            value={opt}
-            className="peer sr-only"
-          />
-          <span className="inline-flex items-center rounded-full border border-line bg-canvas px-3 py-1 text-[12.5px] text-ink-muted transition-base hover:border-line-strong peer-checked:border-ink peer-checked:bg-ink peer-checked:text-surface peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-ink">
-            {opt}
-          </span>
-        </label>
-      ))}
-    </div>
-  );
+function templateEmoji(key: string): string {
+  switch (key) {
+    case "personal":      return "🏠";
+    case "investor":      return "📈";
+    case "business":      return "🏢";
+    case "family_office": return "🏛️";
+    default:              return "✨";
+  }
 }
