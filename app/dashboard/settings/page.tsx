@@ -85,11 +85,46 @@ export default async function SettingsPage() {
 
         {admin ? <AdminPanel /> : null}
 
+        <DataExportPanel />
+
         <ResetAccountPanel />
 
         <DeleteAccountPanel />
       </div>
     </>
+  );
+}
+
+/**
+ * Download-my-data button. Opens /api/account/export directly in the
+ * browser — the response carries Content-Disposition: attachment so the
+ * browser saves it as a file. Rate-limited to 1/day server-side.
+ */
+function DataExportPanel() {
+  return (
+    <section>
+      <div className="mb-2 px-1">
+        <h2 className="text-[10.5px] uppercase tracking-[0.12em] text-ink-faint">
+          Your data
+        </h2>
+        <p className="mt-1 text-[12px] text-ink-faint">
+          Download a copy of all your data as a JSON file — uploads metadata,
+          reminders, conversations, and more.
+        </p>
+      </div>
+      <div className="overflow-hidden rounded-2xl border border-line bg-surface-raised shadow-[0_1px_2px_rgba(28,26,23,0.04),0_2px_8px_-6px_rgba(28,26,23,0.08)]">
+        <div className="flex items-center justify-between px-4 py-3">
+          <p className="text-[13px] text-ink">Export my data</p>
+          <a
+            href="/api/account/export"
+            download
+            className="text-[11.5px] text-ink-muted transition-base hover:text-ink hover:underline"
+          >
+            Download JSON
+          </a>
+        </div>
+      </div>
+    </section>
   );
 }
 

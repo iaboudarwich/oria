@@ -111,6 +111,12 @@ export const RATE_PRESETS = {
     windowMs: 60_000,
     label: "uploads",
   }),
+  /** Data export — 1 download per user per 24 h. */
+  export: () => ({
+    limit: 1,
+    windowMs: 24 * 60 * 60_000,
+    label: "data export",
+  }),
 } as const;
 
 function envInt(name: string, fallback: number): number {
