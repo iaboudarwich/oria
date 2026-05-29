@@ -19,6 +19,8 @@ import { relativeTime } from "@/lib/utils";
 import { computeUserInsights } from "@/lib/data/insights";
 import { readDismissedInsightIds } from "@/lib/data/insights-dismiss";
 import { InsightsCard } from "@/components/dashboard/insights-card";
+import { Hint } from "@/components/onboarding/hint";
+import { getSeenHintKeys } from "@/lib/data/onboarding";
 import type { Section } from "@/lib/supabase/types";
 
 export default async function DashboardHome() {
@@ -26,6 +28,12 @@ export default async function DashboardHome() {
   const greeting = ctx?.profile.full_name
     ? `Hi, ${ctx.profile.full_name.split(" ")[0]}`
     : "Hi";
+
+  // Onboarding hints — evaluated server-side to avoid flash.
+  const seenHints = await getSeenHintKeys();
+  // Show at most one hint per visit: first_upload takes priority.
+  const showFirstUpload = !seenHints.has("first_upload");
+  const showCreateCircle = !showFirstUpload && !seenHints.has("create_circle");
 
   // Section counts and section settings are independent of uploads.
   // Fetch uploads first (we need their ids for the signed-url batch),
@@ -75,6 +83,19 @@ export default async function DashboardHome() {
 
         <SectionsGrid sections={allSections} counts={sectionCounts} />
       </div>
+
+      <Hint
+        hintKey="first_upload"
+        shouldShow={showFirstUpload}
+        title="Add your first file"
+        body="Drop any document, receipt, or photo — Oria reads it, files it, and makes it searchable. Try dragging something onto this page."
+      />
+      <Hint
+        hintKey="create_circle"
+        shouldShow={showCreateCircle}
+        title="Share a space with someone"
+        body="Circles let you coordinate with family, a partner, or housemates. Create one from the circles menu and invite them by email."
+      />
     </>
   );
 }

@@ -17,6 +17,8 @@ import { recoverStuckUploads } from "@/lib/data/stuck-uploads";
 import { displayActor } from "@/lib/data/timeline";
 import { sectionLabel } from "@/lib/sections-meta";
 import { relativeTime } from "@/lib/utils";
+import { Hint } from "@/components/onboarding/hint";
+import { getSeenHintKeys } from "@/lib/data/onboarding";
 import type { Section } from "@/lib/supabase/types";
 
 export const metadata = { title: "Upload" };
@@ -26,12 +28,14 @@ export default async function UploadPage() {
   // list them, so the row either flips fast or shows a real Failed
   // pill instead of pretending it's still reading.
   await recoverStuckUploads();
-  const [counts, uploads, allSections, reviewCount] = await Promise.all([
-    countUploadsBySection(),
-    listUploadsWithUploader({ limit: 50 }),
-    listAllSections({ includeHidden: false, includeReview: false }),
-    countReviewUploads(),
-  ]);
+  const [counts, uploads, allSections, reviewCount, seenHints] =
+    await Promise.all([
+      countUploadsBySection(),
+      listUploadsWithUploader({ limit: 50 }),
+      listAllSections({ includeHidden: false, includeReview: false }),
+      countReviewUploads(),
+      getSeenHintKeys(),
+    ]);
 
   const thumbs = await getSignedUrlMap(
     uploads.map((u) => ({ id: u.id, storage_path: u.storage_path })),
@@ -62,6 +66,14 @@ export default async function UploadPage() {
         <RecentList items={uploads} thumbs={thumbs} />
         <SectionsGrid sections={allSections} counts={counts} />
       </div>
+
+      <Hint
+        hintKey="take_photo_mobile"
+        shouldShow={!seenHints.has("take_photo_mobile")}
+        mobileOnly
+        title="Snap a receipt or document"
+        body="Tap the camera button in the upload area to photograph a receipt, document, or label — Oria reads it instantly."
+      />
     </>
   );
 }

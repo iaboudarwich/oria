@@ -8,6 +8,8 @@ import {
 } from "@/lib/data/organizations";
 import { listRecentUserQuestions } from "@/lib/data/recent-questions";
 import { listConversations } from "@/lib/data/conversations";
+import { Hint } from "@/components/onboarding/hint";
+import { getSeenHintKeys } from "@/lib/data/onboarding";
 
 export const metadata = { title: "Ask Oria" };
 
@@ -26,9 +28,12 @@ export default async function AskPage() {
   const crossSpaceAvailable =
     !!ctx && isAccountOwnerInPersonal(ctx) && spaces.length > 1;
 
-  const conversations = ctx
-    ? await listConversations({ userId: ctx.profile.id, limit: 50 })
-    : [];
+  const [conversations, seenHints] = await Promise.all([
+    ctx
+      ? listConversations({ userId: ctx.profile.id, limit: 50 })
+      : Promise.resolve([]),
+    getSeenHintKeys(),
+  ]);
 
   return (
     <>
@@ -42,6 +47,12 @@ export default async function AskPage() {
           />
         </div>
       </div>
+      <Hint
+        hintKey="try_ask_oria"
+        shouldShow={!seenHints.has("try_ask_oria")}
+        title="Ask Oria anything"
+        body="Type a question in plain English — about your documents, bills, reminders, or anything you've uploaded. Oria finds the answer from your own files."
+      />
     </>
   );
 }
