@@ -347,6 +347,31 @@
   50%       { opacity: 0.6; transform: scale(0.92); }
 }
 
+/* Drag handle hint — one shake on first reveal to teach
+ * draggability without a tooltip. Subtle (3deg, 4 cycles). */
+@keyframes oria-drag-hint {
+  0%, 100% { transform: rotate(0); }
+  20%      { transform: rotate(-3deg) translateY(-1px); }
+  40%      { transform: rotate( 3deg) translateY(0); }
+  60%      { transform: rotate(-3deg) translateY(-1px); }
+  80%      { transform: rotate( 3deg) translateY(0); }
+}
+
+/* Page navigation — cross-document view transitions. Pure CSS, so the
+ * fallback for unsupported browsers is no transition. Same easing +
+ * duration tokens the rest of the app uses, with a 4px slide-up to
+ * match the spec. SPA <Link> navigations don't get this until the
+ * React 19 ViewTransition surface stabilizes — full document loads
+ * (e.g. server-action redirects, hard reloads) animate today. */
+@keyframes oria-view-old {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(-4px); }
+}
+@keyframes oria-view-new {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 @layer utilities {
   .animate-fade-up   { animation: oria-fade-up   0.22s var(--ease-out-quart) both; }
   .animate-fade-in   { animation: oria-fade-in   0.18s ease-out both; }
@@ -354,11 +379,33 @@
   .animate-pulse-ring { animation: pulse-ring 0.6s ease-out; }
   .animate-mic-breathe { animation: mic-breathe 2.4s ease-in-out infinite; }
 
+  /* One-shot drag affordance. Apply once (typically gated by a
+   *  localStorage flag) so users learn the handle is draggable. */
+  .drag-hint-wiggle {
+    animation: oria-drag-hint 0.9s var(--ease-out-quart) 1;
+    transform-origin: center;
+  }
+
   .delay-1 { animation-delay: 30ms; }
   .delay-2 { animation-delay: 60ms; }
   .delay-3 { animation-delay: 90ms; }
   .delay-4 { animation-delay: 120ms; }
   .delay-5 { animation-delay: 150ms; }
+}
+
+/* Cross-document view transitions are an opt-in browser feature
+ * (Chrome 126+ at the time of writing). Wrapped in
+ * prefers-reduced-motion: no-preference so users who've asked the OS
+ * for reduced motion get an instant swap instead. */
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition { navigation: auto; }
+
+  ::view-transition-old(root) {
+    animation: oria-view-old var(--duration-base) var(--ease-out-quart) both;
+  }
+  ::view-transition-new(root) {
+    animation: oria-view-new var(--duration-base) var(--ease-out-quart) both;
+  }
 }
 
 /* ── Reduced motion override ─────────────────────────────────── */
@@ -370,4 +417,5 @@
   }
   .hover-lift:hover { transform: none; }
   .btn-lift:hover:not(:disabled) { transform: none; }
+  .drag-hint-wiggle { animation: none; }
 }

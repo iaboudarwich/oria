@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import Link from "next/link";
 import {
   DndContext,
@@ -59,6 +59,10 @@ function DragHandleIcon({ size = 14 }: { size?: number }) {
  * Section management list with drag-and-drop reordering.
  * Client component so DnD context can maintain local optimistic order.
  */
+/** localStorage key for "has the user seen the drag-handle wiggle yet?".
+ *  Set once on first reveal; subsequent visits skip the animation. */
+const DRAG_HINT_KEY = "oria.drag_hint_shown";
+
 export function SectionsEditor({
   sections: initial,
 }: {
@@ -66,6 +70,27 @@ export function SectionsEditor({
 }) {
   const [sections, setSections] = useState(initial);
   const [, startTransition] = useTransition();
+  // Wiggle gating. Starts off so SSR + first paint match (no hydration
+  // mismatch); a client effect checks localStorage and flips it on once
+  // per user, then writes the flag so it never fires again.
+  //
+  // The setState-in-effect lint rule wants pure derivations, but this
+  // value is genuinely client-only (localStorage) — the hydration-safe
+  // alternative would be useSyncExternalStore, which is overkill for a
+  // one-shot UI hint. Suppressing the rule is the right tradeoff here.
+  const [wiggleHint, setWiggleHint] = useState(false);
+  useEffect(() => {
+    try {
+      if (typeof window === "undefined") return;
+      if (window.localStorage.getItem(DRAG_HINT_KEY)) return;
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setWiggleHint(true);
+      window.localStorage.setItem(DRAG_HINT_KEY, "1");
+    } catch {
+      // Safari private mode + locked-down browsers throw on localStorage —
+      // silently skip the wiggle, nothing breaks.
+    }
+  }, []);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -106,11 +131,12 @@ export function SectionsEditor({
     >
       <SortableContext items={ids} strategy={verticalListSortingStrategy}>
         <ul className="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface-raised shadow-[0_1px_2px_rgba(28,26,23,0.04),0_2px_8px_-6px_rgba(28,26,23,0.08)]">
-          {sections.map((s) => (
+          {sections.map((s, i) => (
             <SortableSectionRow
               key={refId(s.ref)}
               id={refId(s.ref)}
               section={s}
+              wiggleHandle={wiggleHint && i === 0}
               onToggleHidden={(ref, hidden) => {
                 setSections((prev) =>
                   prev.map((x) =>
@@ -136,11 +162,16 @@ function SortableSectionRow({
   section,
   onToggleHidden,
   onDelete,
+  wiggleHandle = false,
 }: {
   id: string;
   section: MergedSection;
   onToggleHidden: (ref: MergedSection["ref"], hidden: boolean) => void;
   onDelete: (ref: MergedSection["ref"]) => void;
+  /** When true, the drag handle plays a one-shot wiggle on mount to
+   *  teach draggability. Gated upstream by a localStorage flag so the
+   *  hint only fires once per user. */
+  wiggleHandle?: boolean;
 }) {
   const {
     attributes,
@@ -176,13 +207,17 @@ function SortableSectionRow({
         .filter(Boolean)
         .join(" ")}
     >
-      {/* Drag handle — only this element activates the drag */}
+      {/* Drag handle — only this element activates the drag. On a
+          fresh visit the first row's handle wiggles once to teach the
+          affordance (gated by localStorage upstream). */}
       <button
         type="button"
         {...attributes}
         {...listeners}
         aria-label="Drag to reorder"
-        className="inline-flex h-7 w-7 cursor-grab items-center justify-center rounded-md text-ink-faint transition-base hover:bg-canvas hover:text-ink active:cursor-grabbing"
+        className={`inline-flex h-7 w-7 cursor-grab items-center justify-center rounded-md text-ink-faint transition-base hover:bg-canvas hover:text-ink active:cursor-grabbing ${
+          wiggleHandle ? "drag-hint-wiggle" : ""
+        }`}
       >
         <DragHandleIcon size={14} />
       </button>

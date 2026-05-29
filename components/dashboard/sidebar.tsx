@@ -375,11 +375,11 @@ function PrimaryRow({
       onClick={onNavigate}
       title={collapsed ? item.label : undefined}
       aria-label={collapsed ? item.label : undefined}
-      className={`group flex items-center gap-2.5 rounded-lg transition-base ${
+      className={`group relative brand-indicator flex items-center gap-2.5 rounded-lg transition-base ${
         collapsed ? "justify-center px-0 py-2" : "px-3 py-2"
       } ${
         active
-          ? "bg-brand-muted text-brand font-medium"
+          ? "active bg-brand-muted text-brand font-medium"
           : "text-ink hover:bg-canvas/60"
       }`}
     >
@@ -448,9 +448,9 @@ function SectionsGroup({
                   href={s.href}
                   onClick={onNavigate}
                   title={isSmart ? `${s.label} · Smart Section` : undefined}
-                  className={`group flex min-h-[36px] items-center gap-2.5 rounded-lg px-3 py-2 text-[12.5px] transition-base ${
+                  className={`group relative brand-indicator flex min-h-[36px] items-center gap-2.5 rounded-lg px-3 py-2 text-[12.5px] transition-base ${
                     active
-                      ? "bg-brand-muted text-brand font-medium"
+                      ? "active bg-brand-muted text-brand font-medium"
                       : isReview || isSmart
                         ? "text-ink-soft hover:bg-canvas/60 hover:text-ink"
                         : "text-ink-muted hover:bg-canvas/60 hover:text-ink"
