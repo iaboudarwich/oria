@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/icon";
 import { DeleteAccountPanel } from "@/components/settings/delete-account-panel";
 import { ResetAccountPanel } from "@/components/settings/reset-account-panel";
-import { SectionsEditor } from "@/components/settings/sections-editor";
+import { SectionsEditorLazy } from "@/components/settings/sections-editor-lazy";
 import { isCurrentUserAdmin } from "@/lib/data/admin";
 import { readSidebarExtras } from "@/lib/data/sidebar-prefs";
 import { setSidebarExtra } from "@/lib/data/sidebar-prefs-actions";
@@ -144,7 +144,7 @@ export default async function SettingsPage({
                 Add section
               </Link>
             </div>
-            <SectionsEditor sections={sections} />
+            <SectionsEditorLazy sections={sections} />
           </section>
         )}
 

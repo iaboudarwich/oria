@@ -396,19 +396,23 @@ Listed here so you can override.
 
 | Metric | Before | After | Delta |
 |---|---|---|---|
-| Tests passing | 127/127 | _filled by Final pass_ | — |
-| `npm run lint` | clean | _filled_ | — |
-| `tsc --noEmit` | clean | _filled_ | — |
-| `next build` | success | _filled_ | — |
-| `.next/static` size | 1.9 MB | _filled_ | — |
-| `.next/static/chunks` size | 1.5 MB | _filled_ | — |
-| Files removed | 0 | _filled_ | — |
-| Lines removed | 0 | _filled_ | — |
-| New migrations | 0 | _filled_ | — |
-| Lighthouse — Performance | _capture before_ | _capture after_ | — |
-| Lighthouse — Accessibility | _capture before_ | _capture after_ | — |
-| Lighthouse — Best Practices | _capture before_ | _capture after_ | — |
-| Lighthouse — SEO | _capture before_ | _capture after_ | — |
+| Tests passing | 127/127 | 127/127 | unchanged ✓ |
+| `npm run lint` | clean | clean | unchanged ✓ |
+| `tsc --noEmit` | clean | clean | unchanged ✓ |
+| `next build` | success | success | unchanged ✓ |
+| `.next/static` total | 1904 KB | 1904 KB | unchanged — `next/dynamic` defers, doesn't shrink total |
+| `.next/static/chunks` total | 1564 KB | 1564 KB | unchanged — same |
+| Synchronous load on `/dashboard/settings` | included `@dnd-kit/*` (~25–35 KB minified) | excludes `@dnd-kit/*` until "Sections" tab opens | deferred |
+| Files removed | 0 | 2 | `lib/data/scoped-query.ts`, `lib/data/reminders.ts` |
+| Lines removed | 0 | 100 | 62 (scoped-query) + 38 (reminders) |
+| Files added | 0 | 2 | `supabase/migrations/0039_org_scoped_indexes.sql`, `components/settings/sections-editor-lazy.tsx` |
+| New env-var docs in `.env.local.example` | 0 | 8 | PYTHON_EXTRACTION_URL, ORIA_SIDECAR_SECRET, ORIA_TEXT_EXTRACTION_MODEL, UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN, SENTRY_DSN, NEXT_PUBLIC_SENTRY_DSN, CRON_SECRET |
+| New migrations | 0 | 1 | `0039_org_scoped_indexes.sql` — 5 indexes |
+| DB indexes added | 0 | 5 | `custom_sections(org)`, `section_settings(org, builtin_section)`, `memberships(org)`, `reminders(org, due_at)`, `document_chunks(org)` |
+| Lighthouse — Performance | _capture manually before_ | _capture manually after_ | run `npx lighthouse https://heyoria.com --only-categories=performance` |
+| Lighthouse — Accessibility | _capture manually before_ | _capture manually after_ | — |
+| Lighthouse — Best Practices | _capture manually before_ | _capture manually after_ | — |
+| Lighthouse — SEO | _capture manually before_ | _capture manually after_ | — |
 
 ### Commits applied
 
@@ -416,6 +420,6 @@ Listed here so you can override.
 |---|---|---|
 | F1 — audit doc | `ee622de` | This document. |
 | F2 — safe cleanup | `3cdedf4` | 8 missing env vars added to `.env.local.example` (PYTHON_EXTRACTION_URL, ORIA_SIDECAR_SECRET, ORIA_TEXT_EXTRACTION_MODEL, UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN, SENTRY_DSN, NEXT_PUBLIC_SENTRY_DSN, CRON_SECRET). No unused-import removals (codebase already clean). No console-statement removals (all 17 are intentional). No type/dep removals (audit found no qualifying targets). |
-| F3 — dead code removal | _filled by next commit_ | `lib/data/scoped-query.ts` and `lib/data/reminders.ts` deleted. Both re-verified to have only self-references before deletion. Build + tests green after each. |
-| F4 — consolidation | _filled by next commit_ | No qualifying consolidations under the strict spec rule. See §5. |
-| F5 — performance | _filled by next commit_ | Migration `0039_org_scoped_indexes.sql` + dynamic-import of `SectionsEditor`. |
+| F3 — dead code removal | `f9cc770` | `lib/data/scoped-query.ts` and `lib/data/reminders.ts` deleted. Both re-verified to have only self-references before deletion. Build + tests green after each. 100 lines removed. |
+| F4 — consolidation | _no commit_ | No qualifying consolidations under the strict spec rule. Every flagged duplicate either has behavioral variants or crosses the server-only boundary in a way the spec rules out. See §5 + §17.4. |
+| F5 — performance | _filled by next commit_ | Migration `0039_org_scoped_indexes.sql` (5 org-scoped indexes — see §10.1) + `components/settings/sections-editor-lazy.tsx` (`next/dynamic` wrapper deferring `@dnd-kit/*` off the synchronous `/dashboard/settings` bundle). |
