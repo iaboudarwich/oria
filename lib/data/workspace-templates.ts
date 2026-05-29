@@ -129,6 +129,26 @@ export async function applyTemplate(
       .maybeSingle();
   }
 
+  // Seed entity types for this template.
+  const entitySeeds = TEMPLATE_ENTITY_TYPES[templateKey] ?? [];
+  for (const et of entitySeeds) {
+    await admin
+      .from("entity_types")
+      .upsert(
+        {
+          organization_id: organizationId,
+          key: et.key,
+          label_singular: et.label_singular,
+          label_plural: et.label_plural,
+          icon: et.icon ?? null,
+          field_schema: et.field_schema,
+          is_seeded: true,
+          created_by: null,
+        },
+        { onConflict: "organization_id,key" },
+      );
+  }
+
   // Stamp the template key.
   await admin
     .from("organizations")
@@ -137,3 +157,125 @@ export async function applyTemplate(
 
   revalidatePath("/dashboard", "layout");
 }
+
+// ── Entity type seeds per template ───────────────────────────────────────────
+
+type EntityTypeSeed = {
+  key: string;
+  label_singular: string;
+  label_plural: string;
+  icon?: string;
+  field_schema: Array<{ key: string; label: string; type: string; required?: boolean; options?: string[] }>;
+};
+
+const VEHICLE_FIELDS: EntityTypeSeed["field_schema"] = [
+  { key: "make",           label: "Make",          type: "text" },
+  { key: "model",          label: "Model",         type: "text" },
+  { key: "year",           label: "Year",          type: "number" },
+  { key: "vin",            label: "VIN",           type: "text" },
+  { key: "license_plate",  label: "License plate", type: "text" },
+  { key: "color",          label: "Color",         type: "text" },
+  { key: "purchase_date",  label: "Purchase date", type: "date" },
+  { key: "purchase_price", label: "Purchase price",type: "currency" },
+];
+
+const PROPERTY_FIELDS: EntityTypeSeed["field_schema"] = [
+  { key: "address",         label: "Address",       type: "text", required: true },
+  { key: "beds",            label: "Beds",          type: "number" },
+  { key: "baths",           label: "Baths",         type: "number" },
+  { key: "square_feet",     label: "Square feet",   type: "number" },
+  { key: "year_built",      label: "Year built",    type: "number" },
+  { key: "purchase_date",   label: "Purchase date", type: "date" },
+  { key: "purchase_price",  label: "Purchase price",type: "currency" },
+];
+
+const PERSON_FIELDS: EntityTypeSeed["field_schema"] = [
+  { key: "relationship", label: "Relationship", type: "text" },
+  { key: "email",        label: "Email",        type: "text" },
+  { key: "phone",        label: "Phone",        type: "text" },
+  { key: "birthday",     label: "Birthday",     type: "date" },
+  { key: "notes",        label: "Notes",        type: "long_text" },
+];
+
+const TEMPLATE_ENTITY_TYPES: Record<TemplateKey, EntityTypeSeed[]> = {
+  personal: [
+    { key: "vehicle",  label_singular: "Vehicle",  label_plural: "Vehicles",  icon: "travel",   field_schema: VEHICLE_FIELDS },
+    { key: "property", label_singular: "Property", label_plural: "Properties",icon: "home",     field_schema: PROPERTY_FIELDS },
+    { key: "person",   label_singular: "Person",   label_plural: "People",    icon: "person",   field_schema: PERSON_FIELDS },
+  ],
+  investor: [
+    { key: "fund",              label_singular: "Fund",              label_plural: "Funds",              icon: "wallet",
+      field_schema: [
+        { key: "manager",       label: "Manager",       type: "text" },
+        { key: "vintage",       label: "Vintage year",  type: "number" },
+        { key: "commitment",    label: "Commitment",    type: "currency" },
+        { key: "strategy",      label: "Strategy",      type: "text" },
+      ]},
+    { key: "deal",              label_singular: "Deal",              label_plural: "Deals",              icon: "scales",
+      field_schema: [
+        { key: "company",       label: "Company",       type: "text", required: true },
+        { key: "stage",         label: "Stage",         type: "enum",
+          options: ["Pre-seed", "Seed", "Series A", "Series B", "Growth", "Other"] },
+        { key: "amount",        label: "Amount",        type: "currency" },
+        { key: "close_date",    label: "Close date",    type: "date" },
+      ]},
+    { key: "portfolio_company", label_singular: "Portfolio Company", label_plural: "Portfolio Companies", icon: "chart",
+      field_schema: [
+        { key: "name",          label: "Company",       type: "text", required: true },
+        { key: "sector",        label: "Sector",        type: "text" },
+        { key: "ownership_pct", label: "Ownership %",   type: "number" },
+        { key: "valuation",     label: "Last valuation",type: "currency" },
+      ]},
+  ],
+  business: [
+    { key: "vendor",   label_singular: "Vendor",   label_plural: "Vendors",  icon: "tag",
+      field_schema: [
+        { key: "contact_name",  label: "Contact",     type: "text" },
+        { key: "email",         label: "Email",       type: "text" },
+        { key: "phone",         label: "Phone",       type: "text" },
+        { key: "service",       label: "Service",     type: "text" },
+        { key: "contract_end",  label: "Contract end",type: "date" },
+      ]},
+    { key: "project",  label_singular: "Project",  label_plural: "Projects", icon: "chart",
+      field_schema: [
+        { key: "client",        label: "Client",      type: "text" },
+        { key: "status",        label: "Status",      type: "enum",
+          options: ["Planning", "Active", "On hold", "Complete"] },
+        { key: "start_date",    label: "Start",       type: "date" },
+        { key: "end_date",      label: "End",         type: "date" },
+        { key: "budget",        label: "Budget",      type: "currency" },
+      ]},
+    { key: "property", label_singular: "Property", label_plural: "Properties",icon: "home", field_schema: PROPERTY_FIELDS },
+    { key: "employee", label_singular: "Employee", label_plural: "Employees", icon: "staff",
+      field_schema: [
+        { key: "title",         label: "Job title",   type: "text" },
+        { key: "department",    label: "Department",  type: "text" },
+        { key: "start_date",    label: "Start date",  type: "date" },
+        { key: "email",         label: "Email",       type: "text" },
+      ]},
+  ],
+  family_office: [
+    { key: "property",   label_singular: "Property",   label_plural: "Properties",  icon: "home",       field_schema: PROPERTY_FIELDS },
+    { key: "investment", label_singular: "Investment", label_plural: "Investments", icon: "chart",
+      field_schema: [
+        { key: "institution",   label: "Institution",  type: "text" },
+        { key: "account",       label: "Account #",    type: "text" },
+        { key: "asset_class",   label: "Asset class",  type: "enum",
+          options: ["Equity", "Fixed income", "Real estate", "Private equity", "Cash", "Other"] },
+        { key: "value",         label: "Current value",type: "currency" },
+        { key: "as_of",         label: "As of",        type: "date" },
+      ]},
+    { key: "vehicle",    label_singular: "Vehicle",    label_plural: "Vehicles",    icon: "travel",    field_schema: VEHICLE_FIELDS },
+    { key: "collection", label_singular: "Collection item", label_plural: "Collection", icon: "gift",
+      field_schema: [
+        { key: "category",      label: "Category",     type: "enum",
+          options: ["Art", "Jewelry", "Wine", "Watch", "Other"] },
+        { key: "artist_maker",  label: "Artist / Maker",type: "text" },
+        { key: "year",          label: "Year",          type: "number" },
+        { key: "appraised_value",label:"Appraised value",type: "currency" },
+        { key: "appraisal_date",label: "Appraisal date",type: "date" },
+      ]},
+    { key: "person",     label_singular: "Person",     label_plural: "People",      icon: "person",    field_schema: PERSON_FIELDS },
+  ],
+  custom: [],
+};
