@@ -1,7 +1,8 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { WORKSPACE_TEMPLATES } from "@/lib/data/workspace-templates";
-import { chooseTemplate } from "./actions";
+import { TemplatePicker } from "@/components/onboarding/template-picker";
+import { chooseTemplates } from "./actions";
 
 export const metadata = { title: "Choose a template" };
 
@@ -40,66 +41,17 @@ export default async function OnboardingTemplatePage() {
             What are you using Oria for?
           </h1>
           <p className="mt-2 text-[14px] text-ink-muted">
-            Pick a starting point. You can always add more sections later.
+            Pick one or more starting points. You can always add more
+            sections later.
           </p>
         </div>
 
-        {/* Main template cards */}
-        <div className="grid gap-4 sm:grid-cols-2">
-          {mainTemplates.map((t) => (
-            <form key={t.key} action={chooseTemplate}>
-              <input type="hidden" name="template" value={t.key} />
-              <button
-                type="submit"
-                className="group w-full rounded-2xl border border-line bg-surface-raised p-5 text-left transition-base hover:border-accent hover:shadow-md"
-              >
-                <div className="mb-3 flex items-center gap-3">
-                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-accent-soft/60 text-[18px]">
-                    {templateEmoji(t.key)}
-                  </span>
-                  <span className="text-[15px] font-medium text-ink">{t.label}</span>
-                </div>
-                <p className="text-[13px] text-ink-muted">{t.description}</p>
-                {t.section_seeds.length > 0 && (
-                  <div className="mt-3 flex flex-wrap gap-1.5">
-                    {t.section_seeds.map((s) => (
-                      <span
-                        key={s.name}
-                        className="rounded-md bg-canvas px-2 py-0.5 text-[11px] text-ink-faint border border-line"
-                      >
-                        {s.name}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </button>
-            </form>
-          ))}
-        </div>
-
-        {/* Custom / Skip — de-emphasized */}
-        <div className="mt-6 text-center">
-          <form action={chooseTemplate}>
-            <input type="hidden" name="template" value={customTemplate.key} />
-            <button
-              type="submit"
-              className="text-[13px] text-ink-faint transition-base hover:text-ink hover:underline"
-            >
-              Skip for now — start with a blank workspace
-            </button>
-          </form>
-        </div>
+        <TemplatePicker
+          templates={mainTemplates}
+          customTemplate={customTemplate}
+          onSubmit={chooseTemplates}
+        />
       </div>
     </main>
   );
-}
-
-function templateEmoji(key: string): string {
-  switch (key) {
-    case "personal":      return "🏠";
-    case "investor":      return "📈";
-    case "business":      return "🏢";
-    case "family_office": return "🏛️";
-    default:              return "✨";
-  }
 }

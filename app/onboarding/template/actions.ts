@@ -2,15 +2,38 @@
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { applyTemplate, type TemplateKey } from "@/lib/data/workspace-templates";
+import {
+  applyTemplates,
+  type TemplateKey,
+} from "@/lib/data/workspace-templates";
+
+const VALID_KEYS = new Set<TemplateKey>([
+  "personal",
+  "investor",
+  "business",
+  "family_office",
+  "custom",
+]);
 
 /**
- * Accept a template choice from the onboarding page.
- * Applies the template to the user's active (personal) workspace and
- * redirects to /dashboard.
+ * Accept one or more template choices from the onboarding picker.
+ *
+ * The picker submits a FormData with `template` entries — one per
+ * selected card. We validate against the known set (a forged value
+ * can't seed unexpected sections), apply the merged template, then
+ * redirect to the guided chat carrying the chosen keys so the AI's
+ * opening context knows what the user just picked.
+ *
+ * An empty / Skip selection collapses to "custom" so the org still
+ * gets a stamped template_key and bypasses this page on the next visit.
  */
-export async function chooseTemplate(formData: FormData): Promise<void> {
-  const templateKey = String(formData.get("template") ?? "custom") as TemplateKey;
+export async function chooseTemplates(formData: FormData): Promise<void> {
+  const rawValues = formData
+    .getAll("template")
+    .map((v) => String(v).trim())
+    .filter(Boolean);
+  const keys: TemplateKey[] = rawValues
+    .filter((v): v is TemplateKey => VALID_KEYS.has(v as TemplateKey));
 
   const supabase = await createClient();
   const {
@@ -33,12 +56,21 @@ export async function chooseTemplate(formData: FormData): Promise<void> {
   let orgId: string | null = null;
   if (personal) {
     orgId = personal.organization_id as string;
-    await applyTemplate(orgId, templateKey);
+    // An empty selection is treated as "custom" so applyTemplates still
+    // stamps the org and we don't keep redirecting back to this page.
+    const toApply: TemplateKey[] = keys.length === 0 ? ["custom"] : keys;
+    await applyTemplates(orgId, toApply);
   }
 
-  // Redirect to guided onboarding for first-time users
+  // Carry the real (non-custom) selections into the guided chat so the
+  // AI's opening context can personalize off them. `custom` is omitted
+  // — it carries no signal.
+  const carried = keys.filter((k) => k !== "custom");
+
   if (orgId) {
-    redirect(`/onboarding/chat?mode=first&workspace=${orgId}`);
+    const qs = new URLSearchParams({ mode: "first", workspace: orgId });
+    if (carried.length > 0) qs.set("templates", carried.join(","));
+    redirect(`/onboarding/chat?${qs.toString()}`);
   }
   redirect("/dashboard");
 }

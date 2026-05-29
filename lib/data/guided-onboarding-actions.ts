@@ -40,6 +40,9 @@ export async function startOnboarding(
 export async function continueOnboarding(
   sessionId: string,
   userMessage: string,
+  /** Template label hints carried from the multi-select picker so the
+   *  AI's follow-ups are grounded in what the user already chose. */
+  templateHints?: string[],
 ): Promise<OnboardingAIResponse | null> {
   const supabase = await createClient();
 
@@ -58,6 +61,7 @@ export async function continueOnboarding(
   const aiResponse = await getOnboardingResponse(
     turns,
     session.mode as "first" | "improve" | "reprompt",
+    templateHints,
   );
   turns.push({ role: "assistant", content: aiResponse.next_message });
 

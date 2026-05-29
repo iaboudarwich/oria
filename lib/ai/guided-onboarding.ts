@@ -70,10 +70,16 @@ Only include what genuinely fits. Quality over quantity.`;
 /**
  * Get the AI's next response in an onboarding conversation.
  * Uses Haiku for conversation, Sonnet-level for final synthesis.
+ *
+ * `templateHints` is the human-readable label list of every template the
+ * user picked on the multi-select picker ("Personal", "Investor /
+ * Portfolio", …). When present it's injected as one extra context line
+ * so suggestions match the merged starting point.
  */
 export async function getOnboardingResponse(
   turns: OnboardingTurn[],
   mode: "first" | "improve" | "reprompt",
+  templateHints?: string[],
 ): Promise<OnboardingAIResponse> {
   const anthropic = getAnthropic();
   if (!anthropic) {
@@ -95,10 +101,18 @@ export async function getOnboardingResponse(
       ? "The user hasn't finished setting up Oria and came back to try."
       : "This is a brand-new user setting up Oria for the first time.";
 
+  // Templates the user picked on the multi-select picker (if any). Listed
+  // so the AI can ground follow-ups + final suggestions against the
+  // merged starting point instead of asking from a blank slate.
+  const templateContext =
+    templateHints && templateHints.length > 0
+      ? `\nWorkspace templates the user just picked: ${templateHints.join(", ")}. Build on these — don't re-ask what they already chose.`
+      : "";
+
   const messages: Anthropic.Messages.MessageParam[] = [
     {
       role: "user",
-      content: `Context: ${modeContext}\n\nConversation history:\n${turns.map((t) => `${t.role}: ${t.content}`).join("\n")}\n\nRespond with JSON only.`,
+      content: `Context: ${modeContext}${templateContext}\n\nConversation history:\n${turns.map((t) => `${t.role}: ${t.content}`).join("\n")}\n\nRespond with JSON only.`,
     },
   ];
 

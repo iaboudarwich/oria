@@ -92,14 +92,97 @@ export const WORKSPACE_TEMPLATES: WorkspaceTemplate[] = [
 ];
 
 /**
- * Apply a template to an existing organization: create the seeded custom
- * sections and set template_key on the org row. Idempotent: if the org
- * already has a template_key, this is a no-op.
+ * Result of a (multi-)template apply. `delegation_prominent` is the OR of
+ * every applied template's flag — it's not persisted on the org row (no
+ * column for it today), so callers that care about that bit at apply time
+ * can read it from this return value.
  */
-export async function applyTemplate(
+export type ApplyTemplatesResult = {
+  /** Template key that was stamped on the org row. `custom` if the user
+   *  picked multiple templates or skipped. */
+  storedKey: TemplateKey;
+  /** OR-merged across every applied template. */
+  delegationProminent: boolean;
+  /** Number of section seeds attempted (post-dedup). */
+  sectionCount: number;
+  /** Number of entity-type seeds attempted (post-dedup). */
+  entityTypeCount: number;
+};
+
+/**
+ * Pure merge of N template selections into the seed lists we'll apply.
+ *
+ * Rules (see Feature 4 spec):
+ *  • Sections de-duped by case-insensitive name; first occurrence wins so
+ *    the order of the user's selection drives the section order.
+ *  • Entity types de-duped by `key`; first occurrence wins.
+ *  • Unknown / `custom` template keys contribute nothing.
+ *  • `delegationProminent` is the OR of the selected templates.
+ *
+ * Exported for unit testing without touching the DB.
+ */
+export function mergeTemplatesForApply(
+  templateKeys: TemplateKey[],
+): {
+  sections: SectionSeed[];
+  entityTypes: EntityTypeSeed[];
+  delegationProminent: boolean;
+} {
+  const seenSection = new Set<string>();
+  const sections: SectionSeed[] = [];
+  const seenEntity = new Set<string>();
+  const entityTypes: EntityTypeSeed[] = [];
+  let delegationProminent = false;
+
+  for (const key of templateKeys) {
+    const template = WORKSPACE_TEMPLATES.find((t) => t.key === key);
+    if (!template) continue;
+    if (template.delegation_prominent) delegationProminent = true;
+
+    for (const s of template.section_seeds) {
+      const lookup = s.name.trim().toLowerCase();
+      if (seenSection.has(lookup)) continue;
+      seenSection.add(lookup);
+      sections.push(s);
+    }
+
+    const entitySeeds = TEMPLATE_ENTITY_TYPES[key] ?? [];
+    for (const et of entitySeeds) {
+      if (seenEntity.has(et.key)) continue;
+      seenEntity.add(et.key);
+      entityTypes.push(et);
+    }
+  }
+
+  return { sections, entityTypes, delegationProminent };
+}
+
+/**
+ * Decide which template key to stamp on the org row. Single selection
+ * stamps that key; multi-selection collapses to `custom` (no column to
+ * persist the full list — see ApplyTemplatesResult.delegationProminent
+ * for the merged flag callers can still act on).
+ *
+ * Skip (empty array, or only `custom`) also stamps `custom`.
+ */
+export function resolveStoredTemplateKey(
+  templateKeys: TemplateKey[],
+): TemplateKey {
+  const real = templateKeys.filter((k) => k !== "custom");
+  if (real.length === 1) return real[0];
+  return "custom";
+}
+
+/**
+ * Apply one or more templates to an existing organization. Creates the
+ * merged set of custom sections and entity types and stamps
+ * `template_key` on the org row. Idempotent: if the org already has a
+ * non-null template_key, this is a no-op.
+ */
+export async function applyTemplates(
   organizationId: string,
-  templateKey: TemplateKey,
-): Promise<void> {
+  templateKeys: TemplateKey[],
+): Promise<ApplyTemplatesResult | null> {
   const admin = createAdminClient();
 
   // Idempotency guard.
@@ -108,15 +191,16 @@ export async function applyTemplate(
     .select("id, template_key")
     .eq("id", organizationId)
     .maybeSingle();
-  if (!org) return;
-  if ((org as { template_key?: string | null }).template_key) return;
+  if (!org) return null;
+  if ((org as { template_key?: string | null }).template_key) return null;
 
-  const template = WORKSPACE_TEMPLATES.find((t) => t.key === templateKey);
-  if (!template) return;
+  const { sections, entityTypes, delegationProminent } =
+    mergeTemplatesForApply(templateKeys);
+  const storedKey = resolveStoredTemplateKey(templateKeys);
 
   // Create seeded custom sections one-by-one so the unique(org_id,name)
   // constraint doesn't abort the whole batch if one already exists.
-  for (const s of template.section_seeds) {
+  for (const s of sections) {
     await admin
       .from("custom_sections")
       .insert({
@@ -129,9 +213,8 @@ export async function applyTemplate(
       .maybeSingle();
   }
 
-  // Seed entity types for this template.
-  const entitySeeds = TEMPLATE_ENTITY_TYPES[templateKey] ?? [];
-  for (const et of entitySeeds) {
+  // Seed merged entity types.
+  for (const et of entityTypes) {
     await admin
       .from("entity_types")
       .upsert(
@@ -149,13 +232,31 @@ export async function applyTemplate(
       );
   }
 
-  // Stamp the template key.
   await admin
     .from("organizations")
-    .update({ template_key: templateKey })
+    .update({ template_key: storedKey })
     .eq("id", organizationId);
 
   revalidatePath("/dashboard", "layout");
+
+  return {
+    storedKey,
+    delegationProminent,
+    sectionCount: sections.length,
+    entityTypeCount: entityTypes.length,
+  };
+}
+
+/**
+ * Single-template apply — kept as a thin wrapper around applyTemplates()
+ * so existing callers (lib/data/mode-actions.ts) keep working without
+ * change. New call sites should prefer applyTemplates().
+ */
+export async function applyTemplate(
+  organizationId: string,
+  templateKey: TemplateKey,
+): Promise<void> {
+  await applyTemplates(organizationId, [templateKey]);
 }
 
 // ── Entity type seeds per template ───────────────────────────────────────────

@@ -8,6 +8,10 @@ type MicButtonProps = {
   targetLanguage?: Locale;
   size?: "sm" | "md" | "lg";
   className?: string;
+  /** When true, the idle state pulses with the slow mic-breathe rhythm
+   *  to draw attention as a primary action (used in the onboarding
+   *  chat). Default is false — secondary placements stay still. */
+  breatheWhenIdle?: boolean;
 };
 
 type RecordingState = "idle" | "recording" | "transcribing" | "error";
@@ -39,6 +43,7 @@ export function MicButton({
   targetLanguage,
   size = "md",
   className = "",
+  breatheWhenIdle = false,
 }: MicButtonProps) {
   const [state, setState] = useState<RecordingState>("idle");
   const [error, setError] = useState<string | null>(null);
@@ -168,12 +173,12 @@ export function MicButton({
         }
         className={`${btnSize} inline-flex items-center justify-center rounded-full transition-base
           ${isRecording
-            ? "bg-claret text-surface animate-pulse"
+            ? "bg-claret text-surface animate-mic-breathe"
             : isTranscribing
             ? "bg-ink/10 text-ink-faint cursor-wait"
             : state === "error"
             ? "bg-claret/10 text-claret"
-            : "bg-canvas border border-line text-ink-muted hover:bg-surface-raised hover:text-ink"
+            : `bg-canvas border border-line text-ink-muted hover:bg-surface-raised hover:text-ink ${breatheWhenIdle ? "animate-mic-breathe" : ""}`
           }
           disabled:cursor-wait`}
       >
