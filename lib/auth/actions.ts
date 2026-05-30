@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { logAnonAuthFailure, logAuditEvent } from "@/lib/data/audit-log";
 
 function siteUrl() {
   return process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
@@ -37,7 +38,14 @@ export async function signIn(formData: FormData) {
 
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) authError("/login", error.message, email, next);
+  if (error) {
+    // Anon failure — we know the email but not a user_id. Log with
+    // null user_id; only admins can see these (RLS hides them from
+    // the everyone-can-see-their-own-log surface so we don't leak
+    // account-existence).
+    await logAnonAuthFailure({ email, reason: error.message });
+    authError("/login", error.message, email, next);
+  }
 
   // After a valid password, check whether the user has a verified TOTP
   // factor. If so the session is currently AAL1 and we need to gate
@@ -46,7 +54,21 @@ export async function signIn(formData: FormData) {
   // `next`. No change to page-side reads is needed: the session itself
   // is already valid; AAL is metadata Supabase tracks alongside it.
   const aal = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-  if (aal.data?.nextLevel === "aal2" && aal.data.currentLevel === "aal1") {
+  const needsMfa =
+    aal.data?.nextLevel === "aal2" && aal.data.currentLevel === "aal1";
+
+  // Successful password step is logged here whether MFA follows or not;
+  // the MFA gate logs its own success/failure on top.
+  const { data: userData } = await supabase.auth.getUser();
+  if (userData.user) {
+    await logAuditEvent({
+      userId: userData.user.id,
+      action: "auth.signin.success",
+      metadata: { method: "password", mfa_required: needsMfa },
+    });
+  }
+
+  if (needsMfa) {
     const params = new URLSearchParams({ next });
     redirect(`/login/mfa?${params.toString()}`);
   }
@@ -118,6 +140,16 @@ export async function signInWithMagicLink(formData: FormData) {
 
 export async function signOut() {
   const supabase = await createClient();
+  // Audit BEFORE the sign-out call so we still have a session to read
+  // user_id from. If the audit insert fails it's swallowed; the actual
+  // sign-out below is the load-bearing part.
+  const { data: userData } = await supabase.auth.getUser();
+  if (userData.user) {
+    await logAuditEvent({
+      userId: userData.user.id,
+      action: "auth.signout",
+    });
+  }
   await supabase.auth.signOut();
   // Sign-out lands on /login; the dashboard tree they're leaving doesn't
   // need a revalidation because they can no longer reach it.

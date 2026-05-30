@@ -19,6 +19,7 @@ import { getCustomSectionById } from "./custom-sections";
 import { SECTION_LABEL } from "@/lib/sections-meta";
 import { checkDailyUploadBytes, checkTotalUserStorage } from "./quotas";
 import { contentHashHex } from "./upload-reuse";
+import { logAuditEvent } from "./audit-log";
 import { rateLimit, RATE_PRESETS } from "@/lib/rate-limit";
 import {
   convertHeicToJpeg,
@@ -379,6 +380,15 @@ export async function uploadFile(formData: FormData): Promise<Result> {
 export async function recordUploadOpened(uploadId: string): Promise<void> {
   const supabase = await createClient();
   await supabase.rpc("mark_upload_opened", { p_upload_id: uploadId });
+  const { data: userData } = await supabase.auth.getUser();
+  if (userData.user) {
+    await logAuditEvent({
+      userId: userData.user.id,
+      action: "upload.view",
+      resourceType: "upload",
+      resourceId: uploadId,
+    });
+  }
 }
 
 /**

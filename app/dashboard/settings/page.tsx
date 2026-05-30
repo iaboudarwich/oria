@@ -15,10 +15,12 @@ import { DeleteAccountPanel } from "@/components/settings/delete-account-panel";
 import { ResetAccountPanel } from "@/components/settings/reset-account-panel";
 import { SectionsEditorLazy } from "@/components/settings/sections-editor-lazy";
 import { SecurityPanel } from "@/components/settings/security-panel";
+import { AuditActivity } from "@/components/settings/audit-activity";
 import {
   countUnusedBackupCodes,
   readMfaEnrolledAt,
 } from "@/lib/auth/mfa";
+import { listRecentAuditEvents } from "@/lib/data/audit-log";
 import { isCurrentUserAdmin } from "@/lib/data/admin";
 import { readSidebarExtras } from "@/lib/data/sidebar-prefs";
 import { setSidebarExtra } from "@/lib/data/sidebar-prefs-actions";
@@ -72,6 +74,12 @@ export default async function SettingsPage({
         backupCodesLeft: await countUnusedBackupCodes(ctx.profile.id),
       }
     : { enrolled: false, backupCodesLeft: 0 };
+  // Audit feed for the Security tab. Cap at the most recent 100 events;
+  // anything older is in the JSON export.
+  const auditEvents =
+    tab === "security" && ctx?.profile.id
+      ? await listRecentAuditEvents(ctx.profile.id, 100)
+      : [];
   const timelineEnabled = extras.has("timeline");
 
   const visible = sections.filter((s) => !s.hidden);
@@ -187,10 +195,13 @@ export default async function SettingsPage({
         )}
 
         {tab === "security" && (
-          <SecurityPanel
-            enrolled={mfa.enrolled}
-            backupCodesLeft={mfa.backupCodesLeft}
-          />
+          <div className="space-y-9">
+            <SecurityPanel
+              enrolled={mfa.enrolled}
+              backupCodesLeft={mfa.backupCodesLeft}
+            />
+            <AuditActivity events={auditEvents} />
+          </div>
         )}
 
         {tab === "privacy" && (

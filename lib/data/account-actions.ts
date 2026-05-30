@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { recordSystemEvent } from "@/lib/data/system-events";
+import { logAuditEvent } from "@/lib/data/audit-log";
 
 const CONFIRMATION_PHRASE = "delete my account";
 
@@ -79,6 +80,15 @@ export async function deleteAccount(
 
     await admin.from("organizations").delete().eq("id", orgId);
   }
+
+  // Log BEFORE the delete. The audit row will cascade-drop with the
+  // profile, which is GDPR-correct (the user's data goes with them);
+  // logging after wouldn't even have a user_id to attach to.
+  await logAuditEvent({
+    userId: user.id,
+    action: "account.delete",
+    metadata: { orgs_dropped: orgIds.length },
+  });
 
   const { error: deleteError } = await admin.auth.admin.deleteUser(user.id);
   if (deleteError) {
@@ -210,12 +220,21 @@ export async function resetAccount(
   //    after a "start fresh" reset.
   await admin.from("user_onboarding").delete().eq("user_id", user.id);
 
-  // Audit log.
+  // Ops + user-visible audit (system_events is ops; audit_log is the
+  // user's own security log on the Settings → Security tab).
   void recordSystemEvent({
     kind: "account.reset",
     severity: "info",
     message: "User reset their account content.",
     actorId: user.id,
+  });
+  await logAuditEvent({
+    userId: user.id,
+    action: "account.reset",
+    metadata: {
+      personal_orgs_wiped: personalOrgIds.length,
+      shared_orgs_pruned: sharedOrgIds.length,
+    },
   });
 
   redirect("/dashboard?notice=Your+account+has+been+reset.");

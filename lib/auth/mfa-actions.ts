@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { rateLimit, RATE_PRESETS } from "@/lib/rate-limit";
+import { logAuditEvent } from "@/lib/data/audit-log";
 import {
   clearBackupCodes,
   consumeBackupCode,
@@ -116,6 +117,11 @@ export async function enrollVerify(
   // Now the factor is verified. Mint backup codes + stamp the profile.
   const backupCodes = await rotateBackupCodes(userData.user.id);
   await markEnrolled(userData.user.id);
+  await logAuditEvent({
+    userId: userData.user.id,
+    action: "mfa.enrolled",
+    metadata: { factor_id: factorId },
+  });
   return { ok: true, backupCodes };
 }
 
@@ -179,6 +185,10 @@ export async function disable(
   await supabase.auth.mfa.unenroll({ factorId: status.factorId });
   await clearBackupCodes(userData.user.id);
   await markUnenrolled(userData.user.id);
+  await logAuditEvent({
+    userId: userData.user.id,
+    action: "mfa.disabled",
+  });
   return { ok: true };
 }
 
@@ -225,11 +235,20 @@ export async function verifyAtSignIn(formData: FormData): Promise<void> {
     supabase,
   });
   if (!ok) {
+    await logAuditEvent({
+      userId: userData.user.id,
+      action: "auth.signin.mfa.failure",
+    });
     redirect(
       `/login/mfa?error=${encodeURIComponent("Code didn't match. Try again.")}&next=${encodeURIComponent(safeNext)}`,
     );
   }
 
+  await logAuditEvent({
+    userId: userData.user.id,
+    action: "auth.signin.mfa.success",
+    metadata: { method: /^\d{6}$/.test(code) ? "totp" : "backup_code" },
+  });
   redirect(safeNext);
 }
 

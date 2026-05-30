@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { listUserSpaces, requireContext } from "./organizations";
 import { recordLearningEvent } from "./learning";
+import { logAuditEvent } from "./audit-log";
 
 function combineDateTime(date: string, time: string): string | null {
   if (!date) return null;
@@ -42,13 +43,27 @@ export async function createReminder(formData: FormData): Promise<void> {
   const ctx = await requireContext();
   const supabase = await createClient();
 
-  await supabase.from("reminders").insert({
-    organization_id: ctx.organization.id,
-    created_by: ctx.profile.id,
-    title,
-    due_at,
-    upload_id,
-    source: "manual",
+  const insert = await supabase
+    .from("reminders")
+    .insert({
+      organization_id: ctx.organization.id,
+      created_by: ctx.profile.id,
+      title,
+      due_at,
+      upload_id,
+      source: "manual",
+    })
+    .select("id")
+    .maybeSingle();
+
+  const newId = (insert.data as { id: string } | null)?.id ?? null;
+  await logAuditEvent({
+    userId: ctx.profile.id,
+    organizationId: ctx.organization.id,
+    action: "reminder.created",
+    resourceType: "reminder",
+    resourceId: newId,
+    metadata: { has_due_at: !!due_at, linked_upload: !!upload_id },
   });
 
   // Narrow scope: calendar is the only surface that lists reminders.
@@ -120,6 +135,14 @@ export async function deleteReminder(formData: FormData): Promise<void> {
     .delete()
     .eq("id", id)
     .in("organization_id", allowedOrgIds);
+
+  await logAuditEvent({
+    userId: ctx.profile.id,
+    organizationId: (before as { organization_id?: string } | null)?.organization_id ?? ctx.organization.id,
+    action: "reminder.deleted",
+    resourceType: "reminder",
+    resourceId: id,
+  });
 
   if (before) {
     const b = before as {

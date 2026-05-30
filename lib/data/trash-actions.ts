@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { requireContext } from "./organizations";
+import { logAuditEvent } from "./audit-log";
 
 function revalidateAll() {
   revalidatePath("/dashboard");
@@ -39,6 +40,15 @@ export async function softDeleteUpload(formData: FormData): Promise<void> {
     .eq("id", id)
     .eq("organization_id", ctx.organization.id);
 
+  await logAuditEvent({
+    userId: ctx.profile.id,
+    organizationId: ctx.organization.id,
+    action: "upload.delete",
+    resourceType: "upload",
+    resourceId: id,
+    metadata: { kind: "soft" },
+  });
+
   revalidateAll();
   if (redirectTo) redirect(redirectTo);
 }
@@ -56,6 +66,14 @@ export async function restoreUpload(formData: FormData): Promise<void> {
     .update({ deleted_at: null, deleted_by: null })
     .eq("id", id)
     .eq("organization_id", ctx.organization.id);
+
+  await logAuditEvent({
+    userId: ctx.profile.id,
+    organizationId: ctx.organization.id,
+    action: "upload.restore",
+    resourceType: "upload",
+    resourceId: id,
+  });
 
   revalidateAll();
 }
@@ -88,6 +106,15 @@ export async function permanentlyDeleteUpload(formData: FormData): Promise<void>
   if (path) {
     await supabase.storage.from("uploads").remove([path]).catch(() => {});
   }
+
+  await logAuditEvent({
+    userId: ctx.profile.id,
+    organizationId: ctx.organization.id,
+    action: "upload.delete",
+    resourceType: "upload",
+    resourceId: id,
+    metadata: { kind: "permanent" },
+  });
 
   revalidateAll();
 }

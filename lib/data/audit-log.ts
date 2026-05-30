@@ -1,0 +1,269 @@
+import "server-only";
+
+import { headers } from "next/headers";
+import { createAdminClient } from "@/lib/supabase/admin";
+
+/**
+ * Self-serve security audit log.
+ *
+ * Distinct from `system_events` (operator-facing, cross-org). This is
+ * user-visible activity scoped to their own account: sign-ins, sign-
+ * outs, uploads they opened, settings they changed, sensitive actions.
+ *
+ * Writes go through the service-role admin client (RLS allows SELECT
+ * only). The helper is fire-and-forget — it must never throw because
+ * a single audit failure should never break a real user action.
+ *
+ * IP + user-agent are captured at call time from the active request
+ * headers. We do NOT enrich here (no GeoIP lookup, no UA parsing) so
+ * inserts stay cheap; the Settings view does the GeoIP / UA-summary
+ * step lazily at render time.
+ */
+
+/**
+ * Action verbs are kebab-snake namespaces. Add to the union when you
+ * wire a new event. Keep the alphabet small — every entry needs to
+ * map to a friendly label in the UI.
+ */
+export type AuditAction =
+  // Auth
+  | "auth.signin.success"
+  | "auth.signin.failure"
+  | "auth.signin.mfa.success"
+  | "auth.signin.mfa.failure"
+  | "auth.signout"
+  | "auth.signout.global"
+  | "auth.session.revoke"
+  // MFA lifecycle
+  | "mfa.enrolled"
+  | "mfa.disabled"
+  | "mfa.backup_codes.rotated"
+  // Settings
+  | "settings.password.changed"
+  | "settings.language.changed"
+  | "settings.theme.changed"
+  // Uploads
+  | "upload.view"
+  | "upload.download"
+  | "upload.delete"
+  | "upload.restore"
+  // Reminders
+  | "reminder.created"
+  | "reminder.deleted"
+  // Members
+  | "member.invite.created"
+  | "member.invite.revoked"
+  | "member.invite.accepted"
+  | "member.removed"
+  // Data lifecycle
+  | "account.export"
+  | "account.reset"
+  | "account.delete";
+
+export type AuditLogInput = {
+  userId: string;
+  action: AuditAction;
+  organizationId?: string | null;
+  resourceType?: string | null;
+  resourceId?: string | null;
+  metadata?: Record<string, unknown>;
+};
+
+/**
+ * Record an audit event. Pulls IP + UA from the request headers at
+ * call time. Safe to call from Server Actions, Route Handlers, and
+ * server components. Never throws.
+ */
+export async function logAuditEvent(input: AuditLogInput): Promise<void> {
+  try {
+    const { ip, userAgent } = await readRequestFingerprint();
+    const admin = createAdminClient();
+    await admin.from("audit_log").insert({
+      user_id: input.userId,
+      organization_id: input.organizationId ?? null,
+      action: input.action,
+      resource_type: input.resourceType ?? null,
+      resource_id: input.resourceId ?? null,
+      ip_address: ip,
+      user_agent: userAgent,
+      metadata: input.metadata ?? {},
+    });
+  } catch {
+    // Fire-and-forget. A single audit failure must not break a real
+    // user action, and the most common failure mode in development
+    // is the table not existing yet (migration not applied).
+  }
+}
+
+/**
+ * Variant for the sign-in failure path where we don't have a Supabase
+ * user yet — we know the email but no user_id. Stored with a null
+ * user_id and the email in metadata so the user can see "someone
+ * tried my email from <ip>" if we ever expose that.
+ *
+ * Today the read RLS requires user_id = auth.uid(), so anon failures
+ * are write-only and visible only to admins via the service role.
+ * That's intentional: surfacing "someone failed your password" to
+ * arbitrary visitors would leak account-existence.
+ */
+export async function logAnonAuthFailure(input: {
+  email: string;
+  reason: string;
+}): Promise<void> {
+  try {
+    const { ip, userAgent } = await readRequestFingerprint();
+    const admin = createAdminClient();
+    await admin.from("audit_log").insert({
+      user_id: null,
+      organization_id: null,
+      action: "auth.signin.failure" satisfies AuditAction,
+      resource_type: null,
+      resource_id: null,
+      ip_address: ip,
+      user_agent: userAgent,
+      metadata: { email: input.email, reason: input.reason },
+    });
+  } catch {
+    // best-effort
+  }
+}
+
+/** Pull the request's client IP + UA. Both can be null in non-request
+ *  contexts (background jobs, cron, etc.); the column types allow it. */
+async function readRequestFingerprint(): Promise<{
+  ip: string | null;
+  userAgent: string | null;
+}> {
+  try {
+    const h = await headers();
+    // Vercel forwards client IP via x-forwarded-for (comma-separated;
+    // the first entry is the original client). x-real-ip is a fallback.
+    const fwd = h.get("x-forwarded-for");
+    const ip =
+      (fwd && fwd.split(",")[0]?.trim()) ||
+      h.get("x-real-ip") ||
+      null;
+    const userAgent = h.get("user-agent") || null;
+    return { ip, userAgent };
+  } catch {
+    // Called from a context without request headers (e.g. inside
+    // Next's after() callback). Audit row still lands; just without
+    // network attribution.
+    return { ip: null, userAgent: null };
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Reads (rendered on the Security tab)                                */
+/* ------------------------------------------------------------------ */
+
+export type AuditEvent = {
+  id: string;
+  user_id: string | null;
+  organization_id: string | null;
+  action: string;
+  resource_type: string | null;
+  resource_id: string | null;
+  ip_address: string | null;
+  user_agent: string | null;
+  metadata: Record<string, unknown>;
+  created_at: string;
+};
+
+/** Most recent audit events for the current user, newest first. */
+export async function listRecentAuditEvents(
+  userId: string,
+  limit = 100,
+): Promise<AuditEvent[]> {
+  const admin = createAdminClient();
+  const { data } = await admin
+    .from("audit_log")
+    .select(
+      "id, user_id, organization_id, action, resource_type, resource_id, ip_address, user_agent, metadata, created_at",
+    )
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  return (data ?? []) as AuditEvent[];
+}
+
+/** Full export of every audit row for a user. Used by the "Download
+ *  full log" button on the Security tab. */
+export async function exportAuditLog(userId: string): Promise<AuditEvent[]> {
+  const admin = createAdminClient();
+  const { data } = await admin
+    .from("audit_log")
+    .select(
+      "id, user_id, organization_id, action, resource_type, resource_id, ip_address, user_agent, metadata, created_at",
+    )
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false });
+  return (data ?? []) as AuditEvent[];
+}
+
+/* ------------------------------------------------------------------ */
+/* UA + GeoIP summarisation (display only, no PII enrichment calls)    */
+/* ------------------------------------------------------------------ */
+
+/** Reduce a raw user-agent string to "Browser on OS" (e.g. "Safari on
+ *  macOS"). Defensive: any unmatched input falls back to "Unknown". */
+export function summariseUserAgent(ua: string | null): string {
+  if (!ua) return "Unknown";
+  const browser = /Edg\//.test(ua)
+    ? "Edge"
+    : /Chrome\//.test(ua) && !/OPR\//.test(ua)
+      ? "Chrome"
+      : /Safari\//.test(ua) && !/Chrome\//.test(ua)
+        ? "Safari"
+        : /Firefox\//.test(ua)
+          ? "Firefox"
+          : /Postman|curl|axios|node/i.test(ua)
+            ? "API client"
+            : "Browser";
+  const os = /Windows NT/.test(ua)
+    ? "Windows"
+    : /Mac OS X|Macintosh/.test(ua)
+      ? "macOS"
+      : /iPhone|iPad|iOS/.test(ua)
+        ? "iOS"
+        : /Android/.test(ua)
+          ? "Android"
+          : /Linux/.test(ua)
+            ? "Linux"
+            : "Unknown OS";
+  return `${browser} on ${os}`;
+}
+
+/** Friendly label for an action verb. Kept here (vs in the UI) so the
+ *  export JSON can include it too. */
+export function actionLabel(action: string): string {
+  const map: Record<string, string> = {
+    "auth.signin.success":          "Signed in",
+    "auth.signin.failure":          "Sign-in failed",
+    "auth.signin.mfa.success":      "Two-factor verified",
+    "auth.signin.mfa.failure":      "Two-factor failed",
+    "auth.signout":                 "Signed out",
+    "auth.signout.global":          "Signed out everywhere",
+    "auth.session.revoke":          "Revoked a session",
+    "mfa.enrolled":                 "Enabled 2FA",
+    "mfa.disabled":                 "Disabled 2FA",
+    "mfa.backup_codes.rotated":     "Rotated backup codes",
+    "settings.password.changed":    "Changed password",
+    "settings.language.changed":    "Changed language",
+    "settings.theme.changed":       "Changed theme",
+    "upload.view":                  "Opened an upload",
+    "upload.download":              "Downloaded an upload",
+    "upload.delete":                "Deleted an upload",
+    "upload.restore":               "Restored an upload",
+    "reminder.created":             "Created a reminder",
+    "reminder.deleted":             "Deleted a reminder",
+    "member.invite.created":        "Sent an invite",
+    "member.invite.revoked":        "Revoked an invite",
+    "member.invite.accepted":       "Accepted an invite",
+    "member.removed":               "Removed a member",
+    "account.export":               "Exported account data",
+    "account.reset":                "Reset account",
+    "account.delete":               "Deleted account",
+  };
+  return map[action] ?? action;
+}

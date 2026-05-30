@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { rateLimit, RATE_PRESETS } from "@/lib/rate-limit";
+import { logAuditEvent } from "@/lib/data/audit-log";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -183,6 +184,12 @@ export async function GET() {
 
   const body = JSON.stringify(payload, null, 2);
   const filename = `oria-export-${user.id.slice(0, 8)}-${exportDate}.json`;
+
+  await logAuditEvent({
+    userId: user.id,
+    action: "account.export",
+    metadata: { bytes: body.length },
+  });
 
   return new Response(body, {
     headers: {
