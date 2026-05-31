@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { logAnonAuthFailure, logAuditEvent } from "@/lib/data/audit-log";
+import { clearReauth, markReauthenticated } from "@/lib/auth/reauth";
 
 function siteUrl() {
   return process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
@@ -66,6 +67,9 @@ export async function signIn(formData: FormData) {
       action: "auth.signin.success",
       metadata: { method: "password", mfa_required: needsMfa },
     });
+    // Open the 5-min re-auth window unless MFA is still required;
+    // when needsMfa is true the MFA gate is the proof, not this.
+    if (!needsMfa) await markReauthenticated(userData.user.id);
   }
 
   if (needsMfa) {
@@ -151,6 +155,8 @@ export async function signOut() {
     });
   }
   await supabase.auth.signOut();
+  // Clear the re-auth window cookie so a returning user starts fresh.
+  await clearReauth();
   // Sign-out lands on /login; the dashboard tree they're leaving doesn't
   // need a revalidation because they can no longer reach it.
   redirect("/login");

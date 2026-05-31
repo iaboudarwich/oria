@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { rateLimit, RATE_PRESETS } from "@/lib/rate-limit";
 import { logAuditEvent } from "@/lib/data/audit-log";
+import { isReauthenticated, markReauthenticated } from "@/lib/auth/reauth";
 import {
   clearBackupCodes,
   consumeBackupCode,
@@ -166,6 +167,11 @@ export async function disable(
   });
   if (pw.error) return { ok: false, error: "Password didn't match." };
 
+  // The password verify above is itself the proof; open / extend the
+  // re-auth window so any follow-up sensitive surface within 5 min
+  // (delete account, export, revoke session) doesn't re-prompt.
+  await markReauthenticated(userData.user.id);
+
   // Verify the second factor.
   const status = await readMfaStatus();
   if (!status.factorId) {
@@ -249,6 +255,10 @@ export async function verifyAtSignIn(formData: FormData): Promise<void> {
     action: "auth.signin.mfa.success",
     metadata: { method: /^\d{6}$/.test(code) ? "totp" : "backup_code" },
   });
+  // Verifying the second factor is a fresh proof of identity. Open the
+  // 5-minute re-auth window so the user can flow into a sensitive
+  // action (disable 2FA, export data, etc.) without re-prompting.
+  await markReauthenticated(userData.user.id);
   redirect(safeNext);
 }
 

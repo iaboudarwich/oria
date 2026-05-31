@@ -15,6 +15,7 @@ import { DeleteAccountPanel } from "@/components/settings/delete-account-panel";
 import { ResetAccountPanel } from "@/components/settings/reset-account-panel";
 import { SectionsEditorLazy } from "@/components/settings/sections-editor-lazy";
 import { SecurityPanel } from "@/components/settings/security-panel";
+import { SessionsPanel } from "@/components/settings/sessions-panel";
 import { AuditActivity } from "@/components/settings/audit-activity";
 import {
   countUnusedBackupCodes,
@@ -200,6 +201,7 @@ export default async function SettingsPage({
               enrolled={mfa.enrolled}
               backupCodesLeft={mfa.backupCodesLeft}
             />
+            <SessionsPanel />
             <AuditActivity events={auditEvents} />
           </div>
         )}
