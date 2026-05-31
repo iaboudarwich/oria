@@ -18,6 +18,8 @@ import { kindsForMode, modeForOrgKind } from "@/lib/data/mode";
 import { isCurrentUserAdmin } from "@/lib/data/admin";
 import { readMfaEnrolledAt } from "@/lib/auth/mfa";
 import { MfaBanner } from "@/components/dashboard/mfa-banner";
+import { BetaDisclaimerModal } from "@/components/dashboard/beta-disclaimer-modal";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export const metadata = {
   title: "Oria",
@@ -147,6 +149,20 @@ export default async function DashboardLayout({ children }: { children: ReactNod
     ? !!(await readMfaEnrolledAt(ctx.profile.id))
     : true; // never compute / never render the banner for non-owners
 
+  // Beta disclaimer: shown once per account on first dashboard load.
+  // Cheap admin read; null means we've never recorded an ack so the
+  // modal mounts. After the user clicks Continue the row is stamped
+  // and this returns truthy on every subsequent render.
+  const admin = createAdminClient();
+  const { data: ackRow } = await admin
+    .from("profiles")
+    .select("beta_disclaimer_acknowledged_at")
+    .eq("id", ctx.profile.id)
+    .maybeSingle();
+  const showBetaDisclaimer = !(
+    ackRow as { beta_disclaimer_acknowledged_at: string | null } | null
+  )?.beta_disclaimer_acknowledged_at;
+
   return (
     <div className="min-h-screen bg-canvas">
       <TimezoneCookie />
@@ -162,6 +178,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
         />
         {children}
       </SidebarShell>
+      {showBetaDisclaimer ? <BetaDisclaimerModal /> : null}
     </div>
   );
 }

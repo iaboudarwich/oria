@@ -336,6 +336,18 @@ export function Sidebar({
                 </li>
               ))}
             </ul>
+            {/* Discreet security-disclosure link at the very bottom.
+                Doesn't merit a top-level nav slot, but every page should
+                give a path to it for outsiders who land here. */}
+            {!collapsed ? (
+              <Link
+                href="/security"
+                prefetch={false}
+                className="mt-3 block px-3 py-1 text-[10.5px] uppercase tracking-[0.10em] text-ink-faint transition-base hover:text-ink-muted"
+              >
+                Security
+              </Link>
+            ) : null}
           </div>
         </nav>
 

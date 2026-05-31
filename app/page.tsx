@@ -221,9 +221,9 @@ function SiteFooter() {
         <Wordmark />
         <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
           <Link href="#" className="hover:text-ink transition-base">Privacy</Link>
-          <Link href="#" className="hover:text-ink transition-base">Security</Link>
+          <Link href="/security" className="hover:text-ink transition-base" prefetch={false}>Security</Link>
           <Link href="#" className="hover:text-ink transition-base">Terms</Link>
-          <Link href="#" className="hover:text-ink transition-base">Contact</Link>
+          <Link href="mailto:hi@heyoria.com" className="hover:text-ink transition-base">Contact</Link>
         </div>
         <p className="text-ink-faint">© {new Date().getFullYear()} Oria</p>
       </div>
