@@ -76,19 +76,25 @@ export async function countUploadsBySection(): Promise<Record<Section, number>> 
   const ctx = await requireContext();
   const supabase = await createClient();
 
-  const entries = await Promise.all(
-    SECTION_KEYS.map(async (s) => {
-      const { count } = await supabase
-        .from("uploads")
-        .select("id", { count: "exact", head: true })
-        .eq("organization_id", ctx.organization.id)
-        .eq("section", s)
-        .is("deleted_at", null);
-      return [s, count ?? 0] as const;
-    }),
-  );
+  // One query instead of one-per-section (was 10 round trips on the dashboard
+  // home and inbox). Pull just the section column for the org's live uploads
+  // and tally in memory; the section column is tiny and indexed.
+  const counts = Object.fromEntries(
+    SECTION_KEYS.map((s) => [s, 0]),
+  ) as Record<Section, number>;
 
-  return Object.fromEntries(entries) as Record<Section, number>;
+  const { data } = await supabase
+    .from("uploads")
+    .select("section")
+    .eq("organization_id", ctx.organization.id)
+    .is("deleted_at", null)
+    .not("section", "is", null);
+
+  for (const row of (data ?? []) as Array<{ section: Section | null }>) {
+    if (row.section && row.section in counts) counts[row.section] += 1;
+  }
+
+  return counts;
 }
 
 /**

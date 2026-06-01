@@ -148,6 +148,16 @@ export function useUploadQueue(opts: {
       t.phase === "pending" || t.phase === "uploading" || t.phase === "reading",
   ).length;
 
+  // Expose in-flight upload count globally so the deploy VersionWatcher can
+  // suppress auto-refresh while a batch is uploading.
+  useEffect(() => {
+    (window as unknown as { __oriaUploadsActive?: number }).__oriaUploadsActive =
+      activeCount;
+    return () => {
+      (window as unknown as { __oriaUploadsActive?: number }).__oriaUploadsActive = 0;
+    };
+  }, [activeCount]);
+
   const clear = useCallback(() => {
     setTasks((prev) =>
       prev.filter(

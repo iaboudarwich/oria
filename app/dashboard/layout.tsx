@@ -18,6 +18,7 @@ import { kindsForMode, modeForOrgKind } from "@/lib/data/mode";
 import { isCurrentUserAdmin } from "@/lib/data/admin";
 import { resolveThingsLabel } from "@/lib/data/things-label";
 import { resolveSpaceTheme, themeCssVars } from "@/lib/data/space-theme";
+import { VersionWatcher } from "@/components/system/version-watcher";
 import { readMfaEnrolledAt } from "@/lib/auth/mfa";
 import { MfaBanner } from "@/components/dashboard/mfa-banner";
 import { BetaDisclaimerModal } from "@/components/dashboard/beta-disclaimer-modal";
@@ -191,6 +192,13 @@ export default async function DashboardLayout({ children }: { children: ReactNod
         {children}
       </SidebarShell>
       {showBetaDisclaimer ? <BetaDisclaimerModal /> : null}
+      <VersionWatcher
+        buildVersion={
+          process.env.VERCEL_GIT_COMMIT_SHA ??
+          process.env.VERCEL_DEPLOYMENT_ID ??
+          "dev"
+        }
+      />
     </div>
   );
 }
