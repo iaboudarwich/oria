@@ -37,16 +37,27 @@ export async function runCategorizeSection(uploadId: string): Promise<void> {
 
   const orgId = upload.organization_id as string;
 
-  // Audit log regardless of confidence.
+  const hasTarget = !!(result.section || result.customSectionId);
+  const decision = !hasTarget
+    ? "none"
+    : result.confidence > HIGH_CONFIDENCE
+      ? "auto-filed"
+      : "suggested";
+
+  // Log EVERY auto-categorization decision with its confidence + the
+  // threshold + the resulting decision, so the 0.7 cutoff can be tuned from
+  // real data later.
   void recordSystemEvent({
     kind: "upload.processed",
     severity: "info",
-    message: `Auto-section inference: ${result.section ?? result.customSectionId ?? "none"} (${Math.round(result.confidence * 100)}%)`,
+    message: `Auto-section inference: ${result.section ?? result.customSectionId ?? "none"} (${Math.round(result.confidence * 100)}%, ${decision})`,
     context: {
       uploadId,
       section: result.section,
       customSectionId: result.customSectionId,
       confidence: result.confidence,
+      threshold: HIGH_CONFIDENCE,
+      decision,
       reasoning: result.reasoning,
     },
     organizationId: orgId,

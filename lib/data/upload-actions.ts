@@ -448,6 +448,44 @@ export async function retryUploadProcessing(
   revalidatePath("/dashboard/inbox");
 }
 
+/**
+ * Re-run the extraction pipeline on demand, regardless of current status.
+ * Unlike retryUploadProcessing (which only rescues stuck/failed rows), this
+ * is the user's recourse when a document extracted poorly but "succeeded":
+ * it re-reads the file from scratch. May consume AI tokens, so the UI gates
+ * it behind a confirmation.
+ */
+export async function reextractUpload(formData: FormData): Promise<void> {
+  const id = String(formData.get("id") ?? "").trim();
+  if (!id) return;
+  const ctx = await requireContext();
+  const supabase = await createClient();
+
+  const { data: row } = await supabase
+    .from("uploads")
+    .select("id, organization_id")
+    .eq("id", id)
+    .eq("organization_id", ctx.organization.id)
+    .maybeSingle();
+  if (!row) return;
+  const upload = row as { id: string; organization_id: string };
+
+  // Flip to processing so the UI reflects the re-run immediately; the
+  // pipeline lands it back on filed/failed.
+  await supabase
+    .from("uploads")
+    .update({ status: "processing" })
+    .eq("id", upload.id)
+    .eq("organization_id", ctx.organization.id);
+
+  after(async () => {
+    await runProcessUploadSafely(upload.id, upload.organization_id);
+  });
+
+  revalidatePath(`/dashboard/uploads/${id}`);
+  revalidatePath("/dashboard/inbox");
+}
+
 const BUILTIN_SECTIONS = new Set([
   "household",
   "travel",
@@ -578,5 +616,17 @@ export async function setUploadSection(formData: FormData): Promise<void> {
   revalidatePath("/dashboard");
   revalidatePath(`/dashboard/uploads/${id}`);
   revalidatePath("/dashboard/sections/review");
+  // Revalidate the DESTINATION section page so the upload shows up there
+  // immediately. This was the gap behind "I assigned it but it isn't there":
+  // the section page is a cached server render keyed by the section, and only
+  // the generic /dashboard + review paths were being revalidated. Also
+  // revalidate the source section it left.
+  if (kind === "builtin" || kind === "custom") {
+    revalidatePath(`/dashboard/sections/${key}`);
+  }
+  if (row.section) revalidatePath(`/dashboard/sections/${row.section}`);
+  if (row.custom_section_id) {
+    revalidatePath(`/dashboard/sections/${row.custom_section_id}`);
+  }
 }
 

@@ -4,6 +4,7 @@ import { Topbar } from "@/components/dashboard/topbar";
 import { Preview } from "@/components/upload/preview";
 import { Thumbnail } from "@/components/upload/thumbnail";
 import { UnderstoodPanel } from "@/components/upload/understood";
+import { ReextractButton } from "@/components/upload/reextract-button";
 import {
   ApprovalsIcon,
   ArrowRightIcon,
@@ -233,6 +234,13 @@ export default async function UploadDetailPage({ params }: Props) {
               skipReason={readSkipReason(upload.metadata)}
             />
             {items.length === 1 ? <div className="mt-4"><SingleItemPanel item={items[0]} /></div> : null}
+            {/* Recourse when a document extracted poorly: re-run the pipeline. */}
+            <div className="mt-4 border-t border-line pt-4">
+              <p className="mb-2 text-[12px] text-ink-faint">
+                Did this extract poorly? Re-read it from scratch.
+              </p>
+              <ReextractButton uploadId={upload.id} />
+            </div>
           </Accordion>
 
           <SectionPanel

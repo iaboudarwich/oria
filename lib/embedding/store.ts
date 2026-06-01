@@ -13,7 +13,7 @@ import * as Sentry from "@sentry/nextjs";
 // and background contexts where no user session cookie is present.
 import { createAdminClient } from "@/lib/supabase/admin";
 import { embedViaService } from "@/lib/extraction/service";
-import { splitIntoChunks, estimateTokens } from "@/lib/extraction/chunk";
+import { splitIntoChunksWithMeta, estimateTokens } from "@/lib/extraction/chunk";
 
 export interface StoreChunksInput {
   uploadId: string;
@@ -38,26 +38,30 @@ export async function storeChunks(
   const { uploadId, organizationId, text, section, filename } = input;
   const supabase = createAdminClient();
 
-  const chunks = splitIntoChunks(text);
+  // Segment-aware chunks: multi-tab spreadsheets and multi-page PDFs carry
+  // per-chunk { sheet_name, sheet_index } / { page_number } metadata so the
+  // retriever can answer about a specific sheet or page.
+  const chunks = splitIntoChunksWithMeta(text);
   if (chunks.length === 0) {
     return { chunkCount: 0, withEmbeddings: false };
   }
 
   // Embed all chunks (batch)
-  const embeddings = await embedViaService(chunks);
+  const embeddings = await embedViaService(chunks.map((c) => c.content));
   const hasEmbeddings = embeddings !== null && embeddings.length === chunks.length;
 
   // Build rows for upsert
-  const rows = chunks.map((content, i) => ({
+  const rows = chunks.map((chunk, i) => ({
     upload_id: uploadId,
     organization_id: organizationId,
     chunk_index: i,
-    content,
+    content: chunk.content,
     embedding: hasEmbeddings ? JSON.stringify(embeddings[i]) : null,
-    token_count: estimateTokens(content),
+    token_count: estimateTokens(chunk.content),
     metadata: {
       ...(section ? { section } : {}),
       ...(filename ? { filename } : {}),
+      ...chunk.meta,
     },
   }));
 

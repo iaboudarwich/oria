@@ -128,7 +128,19 @@ def _extract_pdf(data: bytes, filename: str) -> tuple[str, ExtractionMethod]:
             f.write(data)
             tmp = f.name
         try:
-            md_text = pymupdf4llm.to_markdown(tmp)
+            # page_chunks=True returns one entry per page so we can emit
+            # "## Page N" markers. The TS chunker detects these and tags each
+            # chunk with { page_number }, enabling per-page retrieval/citation.
+            pages = pymupdf4llm.to_markdown(tmp, page_chunks=True)
+            if isinstance(pages, list):
+                parts = []
+                for i, pg in enumerate(pages):
+                    text = pg.get("text", "") if isinstance(pg, dict) else str(pg)
+                    if text and text.strip():
+                        parts.append(f"## Page {i + 1}\n\n{text.strip()}")
+                md_text = "\n\n".join(parts)
+            else:
+                md_text = pages
         finally:
             os.unlink(tmp)
 

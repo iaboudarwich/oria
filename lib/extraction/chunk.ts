@@ -56,6 +56,64 @@ export function splitIntoChunks(text: string): string[] {
   return chunks.filter((c) => c.length > 20); // drop trivially short chunks
 }
 
+export type ChunkWithMeta = { content: string; meta: Record<string, unknown> };
+
+// Segment markers the extractors emit: the Excel sidecar prefixes each sheet
+// with "## Sheet: <name>"; the PDF path emits "## Page <n>". We split on these
+// so each chunk is tagged with the sheet/page it came from, which lets the
+// retriever cite "the Expenses sheet" or "page 3".
+const SEGMENT_MARKER = /^##\s*(Sheet|Page)\s*:?\s*(.*)$/i;
+
+/**
+ * Like splitIntoChunks, but segment-aware: when the text carries sheet/page
+ * markers, each resulting chunk is tagged with { sheet_name, sheet_index } or
+ * { page_number }. Text with no markers behaves exactly like splitIntoChunks
+ * with empty per-chunk metadata.
+ */
+export function splitIntoChunksWithMeta(text: string): ChunkWithMeta[] {
+  if (!text || text.trim().length === 0) return [];
+  const normalised = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+  const lines = normalised.split("\n");
+
+  type Segment = { meta: Record<string, unknown>; lines: string[] };
+  const segments: Segment[] = [];
+  let current: Segment = { meta: {}, lines: [] };
+  let sheetIndex = -1;
+  let sawMarker = false;
+
+  for (const line of lines) {
+    const m = line.match(SEGMENT_MARKER);
+    if (m) {
+      sawMarker = true;
+      if (current.lines.length > 0) segments.push(current);
+      const kind = m[1].toLowerCase();
+      const label = m[2].trim();
+      if (kind === "sheet") {
+        sheetIndex += 1;
+        current = { meta: { sheet_name: label, sheet_index: sheetIndex }, lines: [] };
+      } else {
+        const n = parseInt(label, 10);
+        current = { meta: { page_number: Number.isFinite(n) ? n : label }, lines: [] };
+      }
+    } else {
+      current.lines.push(line);
+    }
+  }
+  if (current.lines.length > 0) segments.push(current);
+
+  if (!sawMarker) {
+    return splitIntoChunks(text).map((content) => ({ content, meta: {} }));
+  }
+
+  const out: ChunkWithMeta[] = [];
+  for (const seg of segments) {
+    for (const content of splitIntoChunks(seg.lines.join("\n"))) {
+      out.push({ content, meta: seg.meta });
+    }
+  }
+  return out;
+}
+
 /** Rough sentence boundary split. */
 function splitBySentence(text: string): string[] {
   // Split on ". ", "! ", "? " followed by capital letter or end of string
