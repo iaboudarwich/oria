@@ -26,12 +26,13 @@ import {
   PulseIcon,
   ScalesIcon,
   SearchIcon,
+  SettingsIcon,
   SparkIcon,
   StaffIcon,
   TagIcon,
-  UploadIcon,
   WalletIcon,
 } from "@/components/ui/icon";
+import { Button } from "@/components/ui/button";
 import {
   SpaceSwitcher,
   type SpaceSummary,
@@ -62,7 +63,7 @@ const primaryAction: NavItem = {
 // extra (Settings → Sidebar), and Members moved into the account menu
 // since it's a per-space management thing, not a place you visit often.
 const personalSecondaryNav: NavItem[] = [
-  { label: "Upload", href: "/dashboard/inbox", icon: UploadIcon },
+  { label: "Inbox", href: "/dashboard/inbox", icon: InboxIcon },
   { label: "Calendar", href: "/dashboard/calendar", icon: CalendarIcon },
   { label: "Things", href: "/dashboard/things", icon: BoxIcon },
   { label: "Trackables", href: "/dashboard/trackables", icon: CheckIcon },
@@ -74,7 +75,7 @@ const personalSecondaryNav: NavItem[] = [
 const workSecondaryNav: NavItem[] = [
   { label: "AI Agent", href: "/dashboard/work/agent", icon: SparkIcon },
   { label: "Analysis", href: "/dashboard/work/analysis", icon: ChartIcon },
-  { label: "Uploads", href: "/dashboard/inbox", icon: UploadIcon },
+  { label: "Inbox", href: "/dashboard/inbox", icon: InboxIcon },
   { label: "Finance", href: "/dashboard/work/finance", icon: WalletIcon },
   { label: "Contracts", href: "/dashboard/work/contracts", icon: ScalesIcon },
   { label: "Invoices", href: "/dashboard/work/invoices", icon: DocumentIcon },
@@ -335,6 +336,23 @@ export function Sidebar({
             )}
           </ul>
 
+          {/* Manage sections: a real, visible button (not a faint gear) so
+              every space, Personal or Work, has an obvious path to edit,
+              hide, and rename its sections. */}
+          {!collapsed ? (
+            <div className="mt-3 px-1">
+              <Button
+                href="/dashboard/settings/sections"
+                variant="secondary"
+                size="sm"
+                className="w-full"
+              >
+                <SettingsIcon size={13} />
+                Manage sections
+              </Button>
+            </div>
+          ) : null}
+
           {/* TIER 4. System. Pinned to the bottom. */}
           <div className="mt-auto pt-4">
             <Divider collapsed={collapsed} />
@@ -508,18 +526,6 @@ function SectionsGroup({
               </li>
             );
           })}
-          <li>
-            <Link
-              href="/dashboard/settings/sections"
-              onClick={onNavigate}
-              className="group flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-[12.5px] text-ink-faint transition-base hover:bg-canvas/60 hover:text-ink-muted"
-            >
-              <span className="inline-flex h-4 w-4 items-center justify-center text-[11px] leading-none">
-                ⚙
-              </span>
-              <span className="flex-1 truncate">Edit sections</span>
-            </Link>
-          </li>
         </ul>
       ) : null}
     </div>

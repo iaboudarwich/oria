@@ -142,8 +142,10 @@ async function bootstrapPrivateWorkSpace(
       .from("organizations")
       .insert({
         slug,
-        name: "Work",
+        name: "My Work",
         kind: "office",
+        parent_kind: "work",
+        is_default_for_kind: true,
         description: "Your private Work area",
         created_by: userId,
       })
@@ -211,6 +213,8 @@ export async function createWorkSpace(formData: FormData): Promise<void> {
       slug,
       name: rawName,
       kind: "office",
+      parent_kind: "work",
+      is_default_for_kind: false,
       description,
       created_by: ctx.profile.id,
     })

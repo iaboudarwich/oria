@@ -142,6 +142,8 @@ async function bootstrapPersonalSpace(
       slug,
       name: "Personal",
       kind: "personal",
+      parent_kind: "personal",
+      is_default_for_kind: true,
       created_by: userId,
     })
     .select()

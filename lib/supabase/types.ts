@@ -100,6 +100,9 @@ export interface Organization {
   // Added in migration 0044
   things_label?: string | null;
   legacy_sections_hidden_at?: TimestampString | null;
+  // Added in migration 0045
+  parent_kind?: "personal" | "work";
+  is_default_for_kind?: boolean;
 }
 
 export interface Invite {
