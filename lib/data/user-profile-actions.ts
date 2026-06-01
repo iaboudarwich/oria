@@ -65,3 +65,18 @@ export async function setUserPreferences(formData: FormData): Promise<void> {
 
   revalidatePath("/dashboard/settings");
 }
+
+/**
+ * Clear the user's derived understanding: deletes all behavior_signals for the
+ * user while keeping their explicit preferences. Audited.
+ */
+export async function resetUnderstanding(): Promise<void> {
+  const ctx = await requireContext();
+  const admin = createAdminClient();
+  await admin.from("behavior_signals").delete().eq("user_id", ctx.profile.id);
+  await logAuditEvent({
+    userId: ctx.profile.id,
+    action: "settings.understanding.reset",
+  });
+  revalidatePath("/dashboard/settings");
+}

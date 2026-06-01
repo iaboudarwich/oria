@@ -3,7 +3,10 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { setUserPreferences } from "@/lib/data/user-profile-actions";
+import {
+  setUserPreferences,
+  resetUnderstanding,
+} from "@/lib/data/user-profile-actions";
 import type { UserPreferences } from "@/lib/data/user-profile";
 
 const LENGTHS: Array<UserPreferences["responseLength"]> = ["short", "medium", "long"];
@@ -75,10 +78,57 @@ export function PreferencesPanel({ initial }: { initial: UserPreferences }) {
         placeholder="bills, travel"
       />
 
-      <Button variant="primary" onClick={save} disabled={pending}>
-        {saved ? "Saved" : pending ? "Saving..." : "Save preferences"}
-      </Button>
+      <div className="flex items-center gap-4 pt-1">
+        <Button variant="primary" onClick={save} disabled={pending}>
+          {saved ? "Saved" : pending ? "Saving..." : "Save preferences"}
+        </Button>
+        <ResetButton />
+      </div>
     </section>
+  );
+}
+
+function ResetButton() {
+  const router = useRouter();
+  const [confirming, setConfirming] = useState(false);
+  const [pending, startTransition] = useTransition();
+
+  if (!confirming) {
+    return (
+      <button
+        type="button"
+        onClick={() => setConfirming(true)}
+        className="text-[12.5px] text-ink-faint transition-base hover:text-ink"
+      >
+        Reset Oria&apos;s understanding
+      </button>
+    );
+  }
+  return (
+    <span className="flex items-center gap-2 text-[12.5px]">
+      <span className="text-ink-muted">Clear what Oria has learned?</span>
+      <button
+        type="button"
+        onClick={() =>
+          startTransition(async () => {
+            await resetUnderstanding();
+            setConfirming(false);
+            router.refresh();
+          })
+        }
+        disabled={pending}
+        className="font-medium text-claret hover:opacity-80 disabled:opacity-50"
+      >
+        Reset
+      </button>
+      <button
+        type="button"
+        onClick={() => setConfirming(false)}
+        className="text-ink-faint hover:text-ink"
+      >
+        Cancel
+      </button>
+    </span>
   );
 }
 

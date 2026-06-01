@@ -17,6 +17,11 @@ import { createClient } from "@/lib/supabase/server";
 import { trackEvent } from "@/lib/analytics";
 import { modeForOrgKind } from "@/lib/data/mode";
 import { recordBehaviorSignal } from "@/lib/data/behavior-signals";
+import { getUserProfile } from "@/lib/data/user-profile";
+import {
+  buildPersonalizationContext,
+  personalContextBlock,
+} from "@/lib/ai/personalization";
 import { sectionLabel } from "@/lib/sections-meta";
 import type { SpaceContext } from "@/lib/ai/agent";
 import type { SectionScope } from "@/lib/data/section-scope";
@@ -189,6 +194,15 @@ export async function POST(request: Request) {
     value: { length: query.length, section: scope?.key ?? null },
   });
 
+  // Personalization: target length, tone, focus areas, pinned metrics.
+  let personalContext: string | null = null;
+  try {
+    const profile = await getUserProfile(ctx.profile.id);
+    personalContext = personalContextBlock(buildPersonalizationContext(profile));
+  } catch {
+    personalContext = null;
+  }
+
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
       try {
@@ -216,6 +230,7 @@ export async function POST(request: Request) {
           timezone: tz,
           nowISO: new Date().toISOString(),
           spaceContext,
+          personalContext,
           telemetry: {
             organizationId: ctx.organization.id,
             actorId: ctx.profile.id,

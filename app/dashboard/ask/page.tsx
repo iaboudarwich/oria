@@ -12,6 +12,8 @@ import { Hint } from "@/components/onboarding/hint";
 import { getSeenHintKeys } from "@/lib/data/onboarding";
 import { getLocale } from "next-intl/server";
 import { suggestedQuestions } from "@/lib/ai/suggested-questions";
+import { getUserProfile } from "@/lib/data/user-profile";
+import { personalizeQuestions } from "@/lib/ai/personalization";
 import type { Locale } from "@/i18n/config";
 
 export const metadata = { title: "Ask Oria" };
@@ -40,17 +42,25 @@ export default async function AskPage() {
   ]);
 
   // Space-aware starter questions: Personal vs Work vs Investor vs Family
-  // Office show different prompts, in the account language.
-  const suggestions = ctx
-    ? suggestedQuestions(
-        {
-          template: ctx.organization.template_key,
-          parentKind: ctx.organization.parent_kind,
-          kind: ctx.organization.kind,
-        },
-        locale as Locale,
-      )
-    : undefined;
+  // Office show different prompts, in the account language. Then weighted
+  // toward the sections this user actually engages with (personalization).
+  let suggestions: string[] | undefined;
+  if (ctx) {
+    const base = suggestedQuestions(
+      {
+        template: ctx.organization.template_key,
+        parentKind: ctx.organization.parent_kind,
+        kind: ctx.organization.kind,
+      },
+      locale as Locale,
+    );
+    const profile = await getUserProfile(ctx.profile.id);
+    suggestions = personalizeQuestions(
+      base,
+      profile.derived.topSections.map((s) => s.key),
+      locale as Locale,
+    );
+  }
 
   return (
     <>

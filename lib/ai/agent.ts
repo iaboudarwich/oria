@@ -90,30 +90,37 @@ export type SpaceContext = {
 
 /**
  * Assemble the Ask system prompt: the base (general or section-scoped) plus an
- * optional SPACE CONTEXT block. Exported and pure so prompt assembly can be
+ * optional SPACE CONTEXT block and an optional PERSONAL CONTEXT block (the
+ * personalization layer). Exported and pure so prompt assembly can be
  * unit-tested without an Anthropic call.
  */
 export function buildAskSystemPrompt(
   scope: SectionScope | null,
   space: SpaceContext | null,
+  personal?: string | null,
 ): string {
-  const base = scope ? sectionSystemPrompt(scope) : GENERAL_SYSTEM_PROMPT;
-  if (!space) return base;
+  let prompt = scope ? sectionSystemPrompt(scope) : GENERAL_SYSTEM_PROMPT;
 
-  const lines: string[] = [
-    "SPACE CONTEXT (use to tailor tone and relevance; it is not itself a source of facts, do not cite it):",
-    `You are answering inside the user's ${space.spaceType} space${space.template ? ` (template: ${space.template})` : ""}.`,
-  ];
-  if (space.topSections.length > 0) {
-    lines.push(`Most-used sections here: ${space.topSections.join(", ")}.`);
+  if (space) {
+    const lines: string[] = [
+      "SPACE CONTEXT (use to tailor tone and relevance; it is not itself a source of facts, do not cite it):",
+      `You are answering inside the user's ${space.spaceType} space${space.template ? ` (template: ${space.template})` : ""}.`,
+    ];
+    if (space.topSections.length > 0) {
+      lines.push(`Most-used sections here: ${space.topSections.join(", ")}.`);
+    }
+    if (space.recentUploads.length > 0) {
+      lines.push(`Most recent uploads: ${space.recentUploads.join("; ")}.`);
+    }
+    lines.push(
+      `The user's account language is ${space.language}; answer in that language and match its register.`,
+    );
+    prompt = `${prompt}\n\n${lines.join("\n")}`;
   }
-  if (space.recentUploads.length > 0) {
-    lines.push(`Most recent uploads: ${space.recentUploads.join("; ")}.`);
-  }
-  lines.push(
-    `The user's account language is ${space.language}; answer in that language and match its register.`,
-  );
-  return `${base}\n\n${lines.join("\n")}`;
+
+  if (personal) prompt = `${prompt}\n\n${personal}`;
+
+  return prompt;
 }
 
 function sectionSystemPrompt(scope: SectionScope): string {
@@ -163,6 +170,8 @@ export async function* streamAnswer(input: {
   telemetry?: AgentTelemetry;
   /** Space + user context for tailoring the answer. */
   spaceContext?: SpaceContext | null;
+  /** PERSONAL CONTEXT block from the personalization layer. */
+  personalContext?: string | null;
 }): AsyncGenerator<string, void, unknown> {
   const client = getAnthropic();
   if (!client) throw new Error("anthropic_not_configured");
@@ -207,6 +216,7 @@ export async function* streamAnswer(input: {
   const system = buildAskSystemPrompt(
     input.scope ?? null,
     input.spaceContext ?? null,
+    input.personalContext ?? null,
   );
 
   const model = getModel();
