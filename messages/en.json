@@ -64,6 +64,9 @@
     "viewport": "Viewport",
     "recent": "Recent action"
   },
+  "legal": {
+    "consent": "I have read and agree to the <terms>Terms of Service</terms> and <privacy>Privacy Policy</privacy>."
+  },
   "empty": {
     "uploads": "No uploads yet.",
     "reminders": "No reminders yet.",

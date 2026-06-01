@@ -64,6 +64,9 @@
     "viewport": "Fenêtre",
     "recent": "Action récente"
   },
+  "legal": {
+    "consent": "J'ai lu et j'accepte les <terms>Conditions d'utilisation</terms> et la <privacy>Politique de confidentialité</privacy>."
+  },
   "empty": {
     "uploads": "Aucun fichier importé.",
     "reminders": "Aucun rappel.",

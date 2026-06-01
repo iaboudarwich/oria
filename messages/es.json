@@ -64,6 +64,9 @@
     "viewport": "Ventana",
     "recent": "Acción reciente"
   },
+  "legal": {
+    "consent": "He leído y acepto los <terms>Términos del servicio</terms> y la <privacy>Política de privacidad</privacy>."
+  },
   "empty": {
     "uploads": "Aún no hay archivos.",
     "reminders": "Aún no hay recordatorios.",

@@ -220,9 +220,9 @@ function SiteFooter() {
       <div className="mx-auto flex max-w-6xl flex-col gap-6 px-6 py-10 text-[12.5px] text-ink-muted sm:flex-row sm:items-center sm:justify-between sm:px-8">
         <Wordmark />
         <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
-          <Link href="#" className="hover:text-ink transition-base">Privacy</Link>
+          <Link href="/privacy" className="hover:text-ink transition-base">Privacy</Link>
           <Link href="/security" className="hover:text-ink transition-base" prefetch={false}>Security</Link>
-          <Link href="#" className="hover:text-ink transition-base">Terms</Link>
+          <Link href="/terms" className="hover:text-ink transition-base">Terms</Link>
           <Link href="mailto:hi@heyoria.com" className="hover:text-ink transition-base">Contact</Link>
         </div>
         <p className="text-ink-faint">© {new Date().getFullYear()} Oria</p>

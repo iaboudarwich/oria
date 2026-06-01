@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { Wordmark } from "@/components/brand/wordmark";
 import { Button } from "@/components/ui/button";
 import { ArrowRightIcon } from "@/components/ui/icon";
@@ -15,6 +16,7 @@ type Props = {
 
 export default async function SignupPage({ searchParams }: Props) {
   const { error, email, next } = await searchParams;
+  const t = await getTranslations("legal");
 
   return (
     <div className="min-h-screen bg-canvas">
@@ -71,6 +73,28 @@ export default async function SignupPage({ searchParams }: Props) {
               required
               minLength={8}
             />
+            <label className="flex items-start gap-2 pt-1 text-[12.5px] text-ink-muted">
+              <input
+                type="checkbox"
+                name="consent"
+                required
+                className="mt-0.5 h-4 w-4 accent-brand"
+              />
+              <span>
+                {t.rich("consent", {
+                  terms: (chunks) => (
+                    <Link href="/terms" className="text-brand hover:opacity-80">
+                      {chunks}
+                    </Link>
+                  ),
+                  privacy: (chunks) => (
+                    <Link href="/privacy" className="text-brand hover:opacity-80">
+                      {chunks}
+                    </Link>
+                  ),
+                })}
+              </span>
+            </label>
             <Button
               type="submit"
               variant="primary"
