@@ -29,6 +29,7 @@ import { SectionSummaryCard } from "@/components/sections/section-summary-card";
 import { SectionViewTabs } from "@/components/sections/section-view-tabs";
 import { TripsView } from "@/components/sections/trips-view";
 import { HealthTimelineView } from "@/components/sections/health-timeline-view";
+import { recordBehaviorSignal } from "@/lib/data/behavior-signals";
 import type { Section } from "@/lib/supabase/types";
 
 type MoveOption = {
@@ -89,6 +90,14 @@ export default async function SectionPage({ params, searchParams }: Props) {
 
   const ctx = await requireContext();
   const orgId = ctx.organization.id;
+
+  // Behavior signal: section visited. Fire-and-forget, never awaited.
+  void recordBehaviorSignal({
+    userId: ctx.profile.id,
+    organizationId: orgId,
+    type: "section_visited",
+    value: { section_key: section },
+  });
 
   // Custom section by UUID.
   if (UUID_RE.test(section)) {

@@ -31,6 +31,8 @@ import { LanguageSwitcher } from "@/components/settings/language-switcher";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { AppearancePanel } from "@/components/settings/appearance-panel";
 import { defaultAccentFor } from "@/lib/data/space-theme";
+import { PreferencesPanel } from "@/components/settings/preferences-panel";
+import { getUserProfile, type UserProfile } from "@/lib/data/user-profile";
 import type { OrgKind } from "@/lib/supabase/types";
 import type { Locale } from "@/i18n/config";
 
@@ -38,6 +40,7 @@ export const metadata = { title: "Settings" };
 
 const TABS = [
   { key: "general",    label: "General" },
+  { key: "preferences", label: "Preferences" },
   { key: "appearance", label: "Appearance" },
   { key: "sections",   label: "Sections" },
   { key: "circles",    label: "Circles" },
@@ -84,6 +87,10 @@ export default async function SettingsPage({
     tab === "security" && ctx?.profile.id
       ? await listRecentAuditEvents(ctx.profile.id, 100)
       : [];
+  const profile: UserProfile | null =
+    tab === "preferences" && ctx?.profile.id
+      ? await getUserProfile(ctx.profile.id)
+      : null;
   const timelineEnabled = extras.has("timeline");
 
   const visible = sections.filter((s) => !s.hidden);
@@ -114,6 +121,13 @@ export default async function SettingsPage({
       </div>
 
       <div className="mx-auto max-w-2xl space-y-9 animate-fade-up">
+        {tab === "preferences" && profile ? (
+          <>
+            <PreferencesPanel initial={profile.preferences} />
+            <NoticedPanel derived={profile.derived} />
+          </>
+        ) : null}
+
         {tab === "appearance" && ctx && (
           <AppearancePanel
             initialAccent={ctx.organization.accent_color ?? null}
@@ -270,6 +284,69 @@ function DataExportPanel() {
  * stays uncluttered for the median user; the toggle posts to
  * setSidebarExtra which revalidates the dashboard layout.
  */
+/**
+ * Read-only "What Oria has noticed about you" panel. Surfaces the derived
+ * signals (most-used sections, query length, active time, reminder dismissal)
+ * so the profile is transparent to the user.
+ */
+function NoticedPanel({ derived }: { derived: UserProfile["derived"] }) {
+  const hasData =
+    derived.topSections.length > 0 ||
+    derived.avgQueryLength !== null ||
+    derived.preferredTime !== null ||
+    derived.reminderDismissalRate !== null;
+
+  return (
+    <section>
+      <h2 className="mb-1 px-1 text-eyebrow">What Oria has noticed</h2>
+      <p className="mb-3 px-1 text-[11.5px] text-ink-faint">
+        Derived from your activity over the last 30 days. Read-only.
+      </p>
+      <div className="rounded-2xl border border-line bg-surface-raised p-4">
+        {!hasData ? (
+          <p className="text-[13px] text-ink-muted">
+            Not enough activity yet. Click around, ask a few questions, and this
+            will fill in within minutes.
+          </p>
+        ) : (
+          <dl className="space-y-2.5 text-[13px]">
+            {derived.topSections.length > 0 ? (
+              <Noticed
+                label="Most-used sections"
+                value={derived.topSections.map((s) => s.key).join(", ")}
+              />
+            ) : null}
+            {derived.avgQueryLength !== null ? (
+              <Noticed
+                label="Average question length"
+                value={`${derived.avgQueryLength} characters`}
+              />
+            ) : null}
+            {derived.preferredTime !== null ? (
+              <Noticed label="Most active" value={derived.preferredTime} />
+            ) : null}
+            {derived.reminderDismissalRate !== null ? (
+              <Noticed
+                label="Reminder dismissal rate"
+                value={`${Math.round(derived.reminderDismissalRate * 100)}%`}
+              />
+            ) : null}
+          </dl>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function Noticed({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-baseline justify-between gap-3">
+      <dt className="text-ink-muted">{label}</dt>
+      <dd className="text-right font-medium capitalize text-ink">{value}</dd>
+    </div>
+  );
+}
+
 function SidebarPrefsPanel({ timelineEnabled }: { timelineEnabled: boolean }) {
   return (
     <GroupedSection

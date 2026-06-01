@@ -16,6 +16,7 @@ import {
 import { createClient } from "@/lib/supabase/server";
 import { trackEvent } from "@/lib/analytics";
 import { modeForOrgKind } from "@/lib/data/mode";
+import { recordBehaviorSignal } from "@/lib/data/behavior-signals";
 import { sectionLabel } from "@/lib/sections-meta";
 import type { SpaceContext } from "@/lib/ai/agent";
 import type { SectionScope } from "@/lib/data/section-scope";
@@ -179,6 +180,14 @@ export async function POST(request: Request) {
   } catch {
     spaceContext = null;
   }
+
+  // Behavior signal: a question was asked. Fire-and-forget, never awaited.
+  void recordBehaviorSignal({
+    userId: ctx.profile.id,
+    organizationId: ctx.organization.id,
+    type: "query_asked",
+    value: { length: query.length, section: scope?.key ?? null },
+  });
 
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
