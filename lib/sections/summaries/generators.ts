@@ -1,6 +1,7 @@
 import "server-only";
 
 import { createClient } from "@/lib/supabase/server";
+import { money, shortDate as fmtDate } from "@/lib/sections/format";
 import type { SummaryData } from "./types";
 
 // ── shared utils ─────────────────────────────────────────────────────────────
@@ -9,28 +10,6 @@ function daysUntil(iso: string): number {
   const d = new Date(iso).getTime();
   if (Number.isNaN(d)) return Number.POSITIVE_INFINITY;
   return Math.ceil((d - Date.now()) / 86_400_000);
-}
-
-function fmtDate(iso: string): string {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return iso;
-  return d.toLocaleDateString(undefined, {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-}
-
-function money(value: number, currency = "USD"): string {
-  try {
-    return new Intl.NumberFormat(undefined, {
-      style: "currency",
-      currency,
-      maximumFractionDigits: 0,
-    }).format(value);
-  } catch {
-    return `${currency} ${Math.round(value)}`;
-  }
 }
 
 function str(v: unknown): string {

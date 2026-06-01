@@ -2,6 +2,7 @@ import "server-only";
 
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { shortDate as fmt } from "@/lib/sections/format";
 
 type FlightRow = { upload_id: string; fields: Record<string, unknown> };
 type Flight = {
@@ -15,12 +16,6 @@ type Flight = {
 
 function s(v: unknown): string {
   return v == null ? "" : String(v);
-}
-function fmt(iso: string): string {
-  const d = new Date(iso);
-  return Number.isNaN(d.getTime())
-    ? iso
-    : d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
 }
 
 /**

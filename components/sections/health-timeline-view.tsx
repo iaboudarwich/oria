@@ -2,6 +2,7 @@ import "server-only";
 
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { shortDate as fmt } from "@/lib/sections/format";
 
 type Row = {
   id: string;
@@ -11,13 +12,6 @@ type Row = {
   occurred_at: string | null;
   created_at: string;
 };
-
-function fmt(iso: string): string {
-  const d = new Date(iso);
-  return Number.isNaN(d.getTime())
-    ? iso
-    : d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
-}
 
 // Map a raw document_type to a coarse timeline category for the filter.
 function categoryOf(docType: string | null): string {

@@ -1,18 +1,7 @@
 import { ReportChartView } from "@/components/work/report-chart";
+import { money } from "@/lib/sections/format";
 import type { ReportChart } from "@/lib/data/workspace-reports";
 import type { BillItem } from "@/lib/data/smart-sections";
-
-function money(value: number, currency = "USD"): string {
-  try {
-    return new Intl.NumberFormat(undefined, {
-      style: "currency",
-      currency,
-      maximumFractionDigits: 0,
-    }).format(value);
-  } catch {
-    return `${currency} ${Math.round(value)}`;
-  }
-}
 
 /**
  * Bills "Spend" view: monthly spend over the last 12 months as a bar chart,
