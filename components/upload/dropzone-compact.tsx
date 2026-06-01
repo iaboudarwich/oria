@@ -17,6 +17,7 @@ import {
   CloseIcon,
   UploadIcon,
 } from "@/components/ui/icon";
+import { useUploadQueue, UploadQueue } from "@/components/upload/upload-queue";
 
 type CompactStatus =
   | { kind: "idle" }
@@ -47,15 +48,11 @@ type Props = {
 };
 
 /**
- * Quiet single-line dropzone used everywhere the hero one would feel
- * heavy: Diet, Bills, section pages, Work AI. When a file is picked it
- * expands into a small two-row block (preview + optional note + Upload)
- * so the note is captured *with* the file, never as a race. Same
- * content+note flow as the full Dropzone, so the AI receives both.
- *
- * After upload it polls the status endpoint and surfaces a tight
- * "Found N items / Filed X" line. same intelligence affordance as
- * the hero dropzone, just in less space.
+ * Quiet single-line dropzone. A single file expands into a small block
+ * (preview + optional note + Upload) so the note is captured with the file.
+ * Selecting MULTIPLE files (picker or drag-drop) skips the note step and
+ * uploads them in parallel (up to 3 at a time) with per-file status. The
+ * dropzone stays interactive while a batch runs, so more files can be added.
  */
 export function DropzoneCompact({
   defaultSection,
@@ -72,6 +69,24 @@ export function DropzoneCompact({
   const [description, setDescription] = useState("");
   const objectUrlRef = useRef<string | null>(null);
   const pollRef = useRef<number | null>(null);
+
+  const buildFormData = useCallback(
+    (file: File) => {
+      const fd = new FormData();
+      fd.append("file", file);
+      if (defaultSection) fd.append("section", defaultSection);
+      if (defaultCustomSectionId)
+        fd.append("custom_section_id", defaultCustomSectionId);
+      if (smartSection) fd.append("smart_section", smartSection);
+      return fd;
+    },
+    [defaultSection, defaultCustomSectionId, smartSection],
+  );
+
+  const queue = useUploadQueue({
+    buildFormData,
+    onComplete: () => router.refresh(),
+  });
 
   useEffect(() => {
     return () => {
@@ -109,9 +124,15 @@ export function DropzoneCompact({
   const handleFiles = useCallback(
     (files: FileList | null) => {
       if (!files || files.length === 0) return;
-      pickFile(files[0]);
+      // One file keeps the note-capture flow. Many files go straight to the
+      // parallel queue (a per-file note doesn't make sense in bulk).
+      if (files.length === 1) {
+        pickFile(files[0]);
+      } else {
+        queue.enqueue(Array.from(files));
+      }
     },
-    [pickFile],
+    [pickFile, queue],
   );
 
   const commit = useCallback(() => {
@@ -185,62 +206,73 @@ export function DropzoneCompact({
     router,
   ]);
 
+  const queueList = (
+    <UploadQueue
+      tasks={queue.tasks}
+      activeCount={queue.activeCount}
+      onClear={queue.clear}
+    />
+  );
+
   if (status.kind === "ready") {
     return (
-      <div className="space-y-2 rounded-xl border border-line-strong bg-surface-raised p-2.5">
-        <div className="flex items-center gap-2.5">
-          {status.previewUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={status.previewUrl}
-              alt={status.file.name}
-              className="h-9 w-9 shrink-0 rounded-md border border-line bg-canvas object-cover"
+      <div className="space-y-2">
+        <div className="space-y-2 rounded-xl border border-line-strong bg-surface-raised p-2.5">
+          <div className="flex items-center gap-2.5">
+            {status.previewUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={status.previewUrl}
+                alt={status.file.name}
+                className="h-9 w-9 shrink-0 rounded-md border border-line bg-canvas object-cover"
+              />
+            ) : (
+              <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-line bg-canvas text-[10px] font-medium text-ink-muted">
+                {(status.file.name.split(".").pop() ?? "FILE")
+                  .toUpperCase()
+                  .slice(0, 4)}
+              </span>
+            )}
+            <p className="min-w-0 flex-1 truncate text-[13px] text-ink">
+              {status.file.name}
+            </p>
+            <button
+              type="button"
+              onClick={reset}
+              aria-label="Remove file"
+              className="inline-flex h-7 w-7 items-center justify-center rounded-md text-ink-faint transition-base hover:bg-canvas hover:text-ink"
+            >
+              <CloseIcon size={12} />
+            </button>
+          </div>
+          <div className="flex items-stretch gap-2">
+            <input
+              type="text"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder={
+                smartSection === "diet"
+                  ? "Lunch: chicken, rice, salad"
+                  : smartSection === "bills"
+                    ? "March electricity for the LA apartment"
+                    : "Optional note. Oria reads it with the file."
+              }
+              maxLength={500}
+              className="block h-9 flex-1 rounded-md border border-line bg-canvas/40 px-2.5 text-[12.5px] text-ink placeholder:text-ink-faint outline-none focus:border-line-strong"
+              autoFocus
             />
-          ) : (
-            <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-line bg-canvas text-[10px] font-medium text-ink-muted">
-              {(status.file.name.split(".").pop() ?? "FILE")
-                .toUpperCase()
-                .slice(0, 4)}
-            </span>
-          )}
-          <p className="min-w-0 flex-1 truncate text-[13px] text-ink">
-            {status.file.name}
-          </p>
-          <button
-            type="button"
-            onClick={reset}
-            aria-label="Remove file"
-            className="inline-flex h-7 w-7 items-center justify-center rounded-md text-ink-faint transition-base hover:bg-canvas hover:text-ink"
-          >
-            <CloseIcon size={12} />
-          </button>
+            <button
+              type="button"
+              onClick={commit}
+              disabled={isPending}
+              className="cta inline-flex h-9 items-center gap-1.5 rounded-md bg-ink px-3 text-[12px] text-surface transition-base hover:bg-ink-soft disabled:cursor-default disabled:opacity-50"
+            >
+              {isPending ? "Uploading" : "Upload"}
+              <ArrowRightIcon size={11} />
+            </button>
+          </div>
         </div>
-        <div className="flex items-stretch gap-2">
-          <input
-            type="text"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder={
-              smartSection === "diet"
-                ? "Lunch: chicken, rice, salad"
-                : smartSection === "bills"
-                  ? "March electricity for the LA apartment"
-                  : "Optional note. Oria reads it with the file."
-            }
-            maxLength={500}
-            className="block h-9 flex-1 rounded-md border border-line bg-canvas/40 px-2.5 text-[12.5px] text-ink placeholder:text-ink-faint outline-none focus:border-line-strong"
-            autoFocus
-          />
-          <button
-            type="button"
-            onClick={commit}
-            disabled={isPending}
-            className="cta inline-flex h-9 items-center gap-1.5 rounded-md bg-ink px-3 text-[12px] text-surface transition-base hover:bg-ink-soft disabled:cursor-default disabled:opacity-50"
-          >
-            {isPending ? "Uploading" : "Upload"}
-            <ArrowRightIcon size={11} />
-          </button>
-        </div>
+        {queueList}
       </div>
     );
   }
@@ -313,6 +345,7 @@ export function DropzoneCompact({
         <input
           id={inputId}
           type="file"
+          multiple
           className="sr-only"
           onChange={(e) => handleFiles(e.target.files)}
         />
@@ -338,6 +371,8 @@ export function DropzoneCompact({
           />
         </label>
       )}
+
+      {queueList}
     </div>
   );
 }

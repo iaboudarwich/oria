@@ -4,6 +4,7 @@ import { useCallback, useEffect, useId, useRef, useState, useTransition } from "
 import { useRouter } from "next/navigation";
 import { uploadFile } from "@/lib/data/upload-actions";
 import { ArrowRightIcon, CameraIcon, CheckIcon, CloseIcon, UploadIcon } from "@/components/ui/icon";
+import { useUploadQueue, UploadQueue } from "@/components/upload/upload-queue";
 
 type Status =
   | { kind: "idle" }
@@ -66,6 +67,23 @@ export function Dropzone({
   const pollRef = useRef<number | null>(null);
   const objectUrlRef = useRef<string | null>(null);
 
+  const buildFormData = useCallback(
+    (file: File) => {
+      const fd = new FormData();
+      fd.append("file", file);
+      if (defaultSection) fd.append("section", defaultSection);
+      if (defaultCustomSectionId)
+        fd.append("custom_section_id", defaultCustomSectionId);
+      if (smartSection) fd.append("smart_section", smartSection);
+      return fd;
+    },
+    [defaultSection, defaultCustomSectionId, smartSection],
+  );
+  const queue = useUploadQueue({
+    buildFormData,
+    onComplete: () => router.refresh(),
+  });
+
   useEffect(() => {
     return () => {
       if (pollRef.current) window.clearInterval(pollRef.current);
@@ -100,9 +118,14 @@ export function Dropzone({
   const handleFiles = useCallback(
     (files: FileList | null) => {
       if (!files || files.length === 0) return;
-      pickFile(files[0]);
+      // One file keeps the note-capture flow; many go to the parallel queue.
+      if (files.length === 1) {
+        pickFile(files[0]);
+      } else {
+        queue.enqueue(Array.from(files));
+      }
     },
-    [pickFile],
+    [pickFile, queue],
   );
 
   const commitUpload = useCallback(() => {
@@ -216,10 +239,17 @@ export function Dropzone({
           <input
             id={fileInputId}
             type="file"
+            multiple
             className="sr-only"
             onChange={(e) => handleFiles(e.target.files)}
           />
         </label>
+
+        <UploadQueue
+          tasks={queue.tasks}
+          activeCount={queue.activeCount}
+          onClear={queue.clear}
+        />
 
         {/* Camera capture. shown only on touch/mobile-sized screens.
             Renders as a tappable secondary button. On mobile browsers
