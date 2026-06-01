@@ -13,6 +13,9 @@ import {
 } from "@/lib/data/smart-sections";
 import { listSectionMemories } from "@/lib/data/section-memory";
 import { listRecentUserQuestions } from "@/lib/data/recent-questions";
+import { requireContext } from "@/lib/data/organizations";
+import { billsSummary } from "@/lib/sections/summaries";
+import { SectionSummaryCard } from "@/components/sections/section-summary-card";
 import type { SectionScope } from "@/lib/data/section-scope";
 
 export const metadata = { title: "Bills" };
@@ -26,10 +29,12 @@ const SUGGESTIONS = [
 ];
 
 export default async function BillsPage() {
-  const [bills, memories, recentQuestions] = await Promise.all([
+  const ctx = await requireContext();
+  const [bills, memories, recentQuestions, summary] = await Promise.all([
     listBills(200),
     listSectionMemories(SCOPE),
     listRecentUserQuestions({ surface: "ask", scope: SCOPE, limit: 3 }),
+    billsSummary(ctx.organization.id),
   ]);
   const now = new Date();
 
@@ -62,6 +67,8 @@ export default async function BillsPage() {
           placeholder="Or type a bill. ‘Rent $2,500 due June 1, monthly’"
           label="Log a bill by text"
         />
+
+        {!empty && summary ? <SectionSummaryCard data={summary} /> : null}
 
         <ForecastStrip forecast={forecast} />
 

@@ -23,6 +23,9 @@ import { relativeTime } from "@/lib/utils";
 import { MovePicker } from "@/components/upload/move-picker";
 import { InlineTrashButton } from "@/components/upload/inline-trash";
 import { SECTION_META } from "@/lib/sections-meta";
+import { requireContext } from "@/lib/data/organizations";
+import { summaryForSection } from "@/lib/sections/summaries";
+import { SectionSummaryCard } from "@/components/sections/section-summary-card";
 import type { Section } from "@/lib/supabase/types";
 
 type MoveOption = {
@@ -73,19 +76,29 @@ export default async function SectionPage({ params }: Props) {
     );
   }
 
+  const ctx = await requireContext();
+  const orgId = ctx.organization.id;
+
   // Custom section by UUID.
   if (UUID_RE.test(section)) {
     const custom = await getCustomSectionById(section);
     if (!custom) notFound();
-    const entries = await listSectionEntries(
-      { kind: "custom", key: custom.id },
-      100,
-    );
+    // Summary generation runs parallel to the entry fetch so it never adds
+    // to TTFB (perf rule).
+    const [entries, summary] = await Promise.all([
+      listSectionEntries({ kind: "custom", key: custom.id }, 100),
+      summaryForSection({ kind: "custom", key: custom.id }, orgId),
+    ]);
     const thumbs = await thumbsForEntries(entries);
     return (
       <Layout
         title={custom.name}
         count={entries.length}
+        summaryNode={
+          entries.length > 0 && summary ? (
+            <SectionSummaryCard data={summary} />
+          ) : null
+        }
         dropzoneNode={
           <DropzoneCompact
             defaultCustomSectionId={custom.id}
@@ -116,13 +129,21 @@ export default async function SectionPage({ params }: Props) {
   const sec = section as Section;
   const meta = SECTION_META[sec];
 
-  const entries = await listSectionEntries({ kind: "builtin", key: sec }, 100);
+  const [entries, summary] = await Promise.all([
+    listSectionEntries({ kind: "builtin", key: sec }, 100),
+    summaryForSection({ kind: "builtin", key: sec }, orgId),
+  ]);
   const thumbs = await thumbsForEntries(entries);
 
   return (
     <Layout
       title={meta.label}
       count={entries.length}
+      summaryNode={
+        entries.length > 0 && summary ? (
+          <SectionSummaryCard data={summary} />
+        ) : null
+      }
       dropzoneNode={
         <DropzoneCompact
           defaultSection={sec}
@@ -199,12 +220,14 @@ function Layout({
   count,
   dropzoneNode,
   textLogNode = null,
+  summaryNode = null,
   children,
 }: {
   title: string;
   count: number;
   dropzoneNode: React.ReactNode;
   textLogNode?: React.ReactNode;
+  summaryNode?: React.ReactNode;
   children: React.ReactNode;
 }) {
   return (
@@ -222,6 +245,8 @@ function Layout({
           {count} {count === 1 ? "item" : "items"}
         </span>
       </div>
+
+      {summaryNode}
 
       {dropzoneNode ? <div className="mb-6">{dropzoneNode}</div> : null}
       {textLogNode ? <div className="mb-6">{textLogNode}</div> : null}
