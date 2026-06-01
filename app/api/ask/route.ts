@@ -15,6 +15,9 @@ import {
 } from "@/lib/data/conversations";
 import { createClient } from "@/lib/supabase/server";
 import { trackEvent } from "@/lib/analytics";
+import { modeForOrgKind } from "@/lib/data/mode";
+import { sectionLabel } from "@/lib/sections-meta";
+import type { SpaceContext } from "@/lib/ai/agent";
 import type { SectionScope } from "@/lib/data/section-scope";
 import type { Section } from "@/lib/supabase/types";
 
@@ -135,6 +138,48 @@ export async function POST(request: Request) {
     void addMessage({ conversationId, role: "user", content: query });
   }
 
+  // Space + user context for tailoring the answer. One lightweight query
+  // covers both the recent-upload titles and the most-used-section tally.
+  let spaceContext: SpaceContext | null = null;
+  try {
+    const supabase = await createClient();
+    const { data: recentRows } = await supabase
+      .from("uploads")
+      .select("title, filename, section")
+      .eq("organization_id", ctx.organization.id)
+      .is("deleted_at", null)
+      .order("created_at", { ascending: false })
+      .limit(60);
+    const rows = (recentRows ?? []) as Array<{
+      title: string | null;
+      filename: string;
+      section: Section | null;
+    }>;
+    const recentUploads = rows
+      .slice(0, 3)
+      .map((r) => r.title || r.filename)
+      .filter(Boolean);
+    const tally = new Map<Section, number>();
+    for (const r of rows) {
+      if (r.section) tally.set(r.section, (tally.get(r.section) ?? 0) + 1);
+    }
+    const topSections = [...tally.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([s]) => sectionLabel(s));
+    const lang = (await cookies()).get("oria_locale")?.value ?? "en";
+    spaceContext = {
+      spaceType:
+        modeForOrgKind(ctx.organization.kind) === "work" ? "Work" : "Personal",
+      template: ctx.organization.template_key ?? null,
+      topSections,
+      recentUploads,
+      language: lang,
+    };
+  } catch {
+    spaceContext = null;
+  }
+
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
       try {
@@ -161,6 +206,7 @@ export async function POST(request: Request) {
           scope,
           timezone: tz,
           nowISO: new Date().toISOString(),
+          spaceContext,
           telemetry: {
             organizationId: ctx.organization.id,
             actorId: ctx.profile.id,

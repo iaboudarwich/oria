@@ -10,6 +10,9 @@ import { listRecentUserQuestions } from "@/lib/data/recent-questions";
 import { listConversations } from "@/lib/data/conversations";
 import { Hint } from "@/components/onboarding/hint";
 import { getSeenHintKeys } from "@/lib/data/onboarding";
+import { getLocale } from "next-intl/server";
+import { suggestedQuestions } from "@/lib/ai/suggested-questions";
+import type { Locale } from "@/i18n/config";
 
 export const metadata = { title: "Ask Oria" };
 
@@ -28,12 +31,26 @@ export default async function AskPage() {
   const crossSpaceAvailable =
     !!ctx && isAccountOwnerInPersonal(ctx) && spaces.length > 1;
 
-  const [conversations, seenHints] = await Promise.all([
+  const [conversations, seenHints, locale] = await Promise.all([
     ctx
       ? listConversations({ userId: ctx.profile.id, limit: 50 })
       : Promise.resolve([]),
     getSeenHintKeys(),
+    getLocale(),
   ]);
+
+  // Space-aware starter questions: Personal vs Work vs Investor vs Family
+  // Office show different prompts, in the account language.
+  const suggestions = ctx
+    ? suggestedQuestions(
+        {
+          template: ctx.organization.template_key,
+          parentKind: ctx.organization.parent_kind,
+          kind: ctx.organization.kind,
+        },
+        locale as Locale,
+      )
+    : undefined;
 
   return (
     <>
@@ -47,6 +64,7 @@ export default async function AskPage() {
           <AskChat
             crossSpaceAvailable={crossSpaceAvailable}
             recentQuestions={recentQuestions}
+            suggestions={suggestions}
           />
         </div>
       </div>

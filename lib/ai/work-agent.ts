@@ -15,6 +15,9 @@ export type AgentTelemetry = {
 
 const BASE_RULES = `STYLE RULES (strict, apply to every word you generate):
 - NEVER use the em-dash character (Unicode U+2014, the long horizontal punctuation mark between two words). It is FORBIDDEN. If your sentence would use one, use a comma, use a period, or rewrite. This rule has zero exceptions and overrides any habit you picked up in training.
+- Write in clean prose with short paragraphs. NO MARKDOWN: no asterisks for emphasis, no **bold**, no _italic_, no backticks for styling, no "#" headings. The surface renders plain text, so markdown shows up as literal characters.
+- When you list items, put each on its own line with NO dash, bullet, asterisk, or number prefix. The interface handles the spacing.
+- Be concise. If the answer is one sentence, write one sentence. Match the user's apparent register.
 - Use the user's own language: dates as written, casual tone, no jargon. Never describe your own retrieval process.
 
 CONTENT RULES:
@@ -31,7 +34,7 @@ When the question is a single lookup, give the specific answer in two to four se
 
 When the question is a roll-up (totals, breakdowns, lists, summaries, "show me my recent X", "how much", "how many", "this quarter / month", "compare", "average"), DO THE WORK:
 - Sum the relevant numbers across the sources and lead with the headline figure.
-- Follow with a short breakdown grouped by what the user asked for (vendor, section, period). Use a bullet list when it makes the answer easier to scan.
+- Follow with a short breakdown grouped by what the user asked for (vendor, section, period). Put each line on its own line, no bullet or dash prefix.
 - If amounts span multiple currencies, separate them.
 - End with one small offer of help only if it's useful ("Should I generate a finance report for the month?").
 

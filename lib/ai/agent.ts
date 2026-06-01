@@ -15,7 +15,9 @@ export type AgentTelemetry = {
 
 const BASE_RULES = `STYLE RULES (strict, apply to every word you generate):
 - NEVER use the em-dash character (Unicode U+2014, the long horizontal punctuation mark between two words). It is FORBIDDEN. If your sentence would use one, use a comma, use a period, or rewrite. This rule has zero exceptions and overrides any habit you picked up in training.
-- Write in natural prose. Use bullet lists ONLY when the user explicitly asks for a list, comparison, or enumeration, or when 4 or more items genuinely need to scan side by side. Default to prose.
+- Write in clean prose with short paragraphs. NO MARKDOWN: no asterisks for emphasis, no **bold**, no _italic_, no backticks for styling, no "#" headings. The chat surface renders plain text, so any markdown shows up as literal characters.
+- When you list items, put each on its own line with NO dash, bullet, asterisk, or number prefix. The interface handles the spacing. Default to prose; only break into separate lines when the user asked for a list or several items genuinely need to scan.
+- Be concise. If the answer is one sentence, write one sentence. Match the user's apparent register: terse for terse questions, fuller for open ones.
 - Use second person ("you", "your"). Never refer to "the user".
 - Do not pad with "I'd be happy to help", "Let me know if you have other questions", "Here's a summary", or any similar filler. Just answer.
 - Do not restate the question. Just answer.
@@ -73,6 +75,47 @@ ${INJECTION_GUARD}
 
 ${BASE_RULES}`;
 
+/** Space + user context passed into every Ask call so the model can tailor
+ *  tone and relevance without the user having to spell it out. */
+export type SpaceContext = {
+  spaceType: "Personal" | "Work";
+  template: string | null;
+  /** Names of the most-used sections in the current space (most first). */
+  topSections: string[];
+  /** Titles of the most-recent uploads in the current space. */
+  recentUploads: string[];
+  /** The user's account/UI language code for tone matching. */
+  language: string;
+};
+
+/**
+ * Assemble the Ask system prompt: the base (general or section-scoped) plus an
+ * optional SPACE CONTEXT block. Exported and pure so prompt assembly can be
+ * unit-tested without an Anthropic call.
+ */
+export function buildAskSystemPrompt(
+  scope: SectionScope | null,
+  space: SpaceContext | null,
+): string {
+  const base = scope ? sectionSystemPrompt(scope) : GENERAL_SYSTEM_PROMPT;
+  if (!space) return base;
+
+  const lines: string[] = [
+    "SPACE CONTEXT (use to tailor tone and relevance; it is not itself a source of facts, do not cite it):",
+    `You are answering inside the user's ${space.spaceType} space${space.template ? ` (template: ${space.template})` : ""}.`,
+  ];
+  if (space.topSections.length > 0) {
+    lines.push(`Most-used sections here: ${space.topSections.join(", ")}.`);
+  }
+  if (space.recentUploads.length > 0) {
+    lines.push(`Most recent uploads: ${space.recentUploads.join("; ")}.`);
+  }
+  lines.push(
+    `The user's account language is ${space.language}; answer in that language and match its register.`,
+  );
+  return `${base}\n\n${lines.join("\n")}`;
+}
+
 function sectionSystemPrompt(scope: SectionScope): string {
   return `You are Oria, scoped to the "${scope.label}" section.
 
@@ -118,6 +161,8 @@ export async function* streamAnswer(input: {
   nowISO?: string | null;
   /** Optional attribution for AI telemetry (cost/latency/errors). */
   telemetry?: AgentTelemetry;
+  /** Space + user context for tailoring the answer. */
+  spaceContext?: SpaceContext | null;
 }): AsyncGenerator<string, void, unknown> {
   const client = getAnthropic();
   if (!client) throw new Error("anthropic_not_configured");
@@ -159,9 +204,10 @@ export async function* streamAnswer(input: {
     { role: "user" as const, content: userMessage },
   ];
 
-  const system = input.scope
-    ? sectionSystemPrompt(input.scope)
-    : GENERAL_SYSTEM_PROMPT;
+  const system = buildAskSystemPrompt(
+    input.scope ?? null,
+    input.spaceContext ?? null,
+  );
 
   const model = getModel();
   const startedAt = Date.now();
