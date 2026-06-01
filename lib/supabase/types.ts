@@ -103,6 +103,9 @@ export interface Organization {
   // Added in migration 0045
   parent_kind?: "personal" | "work";
   is_default_for_kind?: boolean;
+  // Added in migration 0046
+  accent_color?: string | null;
+  shadow_color?: string | null;
 }
 
 export interface Invite {

@@ -29,6 +29,8 @@ import { getUserStorageStats, type StorageStats } from "@/lib/data/quotas";
 import { formatBytes } from "@/lib/utils";
 import { LanguageSwitcher } from "@/components/settings/language-switcher";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { AppearancePanel } from "@/components/settings/appearance-panel";
+import { defaultAccentFor } from "@/lib/data/space-theme";
 import type { OrgKind } from "@/lib/supabase/types";
 import type { Locale } from "@/i18n/config";
 
@@ -36,6 +38,7 @@ export const metadata = { title: "Settings" };
 
 const TABS = [
   { key: "general",    label: "General" },
+  { key: "appearance", label: "Appearance" },
   { key: "sections",   label: "Sections" },
   { key: "circles",    label: "Circles" },
   { key: "workspaces", label: "Workspaces" },
@@ -111,6 +114,14 @@ export default async function SettingsPage({
       </div>
 
       <div className="mx-auto max-w-2xl space-y-9 animate-fade-up">
+        {tab === "appearance" && ctx && (
+          <AppearancePanel
+            initialAccent={ctx.organization.accent_color ?? null}
+            initialShadow={ctx.organization.shadow_color ?? null}
+            defaultAccent={defaultAccentFor(ctx.organization)}
+          />
+        )}
+
         {tab === "general" && (
           <>
             <ModesPanel orgKind={orgKind} />

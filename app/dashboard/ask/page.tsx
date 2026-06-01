@@ -38,9 +38,12 @@ export default async function AskPage() {
   return (
     <>
       <Topbar title="Ask Oria" />
-      <div className="flex flex-col-reverse lg:flex-row gap-6">
+      {/* Top-aligned two-column layout so the history panel and the chat's
+          cross-space toggle never visually collide; the chat column is
+          min-w-0 so it shrinks rather than overflowing under the sidebar. */}
+      <div className="flex flex-col-reverse items-start lg:flex-row gap-6">
         <ConversationSidebar conversations={conversations} />
-        <div className="min-w-0 flex-1">
+        <div className="relative min-w-0 flex-1">
           <AskChat
             crossSpaceAvailable={crossSpaceAvailable}
             recentQuestions={recentQuestions}

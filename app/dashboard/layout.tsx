@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { redirect } from "next/navigation";
 import { SidebarShell } from "@/components/dashboard/sidebar-shell";
 import { TimezoneCookie } from "@/components/section/timezone-cookie";
@@ -17,6 +17,7 @@ import {
 import { kindsForMode, modeForOrgKind } from "@/lib/data/mode";
 import { isCurrentUserAdmin } from "@/lib/data/admin";
 import { resolveThingsLabel } from "@/lib/data/things-label";
+import { resolveSpaceTheme, themeCssVars } from "@/lib/data/space-theme";
 import { readMfaEnrolledAt } from "@/lib/auth/mfa";
 import { MfaBanner } from "@/components/dashboard/mfa-banner";
 import { BetaDisclaimerModal } from "@/components/dashboard/beta-disclaimer-modal";
@@ -166,8 +167,16 @@ export default async function DashboardLayout({ children }: { children: ReactNod
     ackRow as { beta_disclaimer_acknowledged_at: string | null } | null
   )?.beta_disclaimer_acknowledged_at;
 
+  // Per-space theme: override the brand/shadow CSS vars on the dashboard
+  // subtree so the whole UI adopts the active space's accent without any
+  // client re-render (pure CSS cascade).
+  const themeVars = themeCssVars(resolveSpaceTheme(ctx.organization));
+
   return (
-    <div className="min-h-screen bg-canvas">
+    <div
+      className="min-h-screen bg-canvas"
+      style={themeVars as CSSProperties}
+    >
       <TimezoneCookie />
       <SidebarShell
         initialCollapsed={sidebarMode === "collapsed"}
