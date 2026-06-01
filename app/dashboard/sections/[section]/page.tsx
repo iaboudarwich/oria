@@ -26,6 +26,9 @@ import { SECTION_META } from "@/lib/sections-meta";
 import { requireContext } from "@/lib/data/organizations";
 import { summaryForSection } from "@/lib/sections/summaries";
 import { SectionSummaryCard } from "@/components/sections/section-summary-card";
+import { SectionViewTabs } from "@/components/sections/section-view-tabs";
+import { TripsView } from "@/components/sections/trips-view";
+import { HealthTimelineView } from "@/components/sections/health-timeline-view";
 import type { Section } from "@/lib/supabase/types";
 
 type MoveOption = {
@@ -40,10 +43,18 @@ const BUILTIN_SECTIONS: Section[] = [
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-type Props = { params: Promise<{ section: string }> };
+type Props = {
+  params: Promise<{ section: string }>;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+};
 
-export default async function SectionPage({ params }: Props) {
+export default async function SectionPage({ params, searchParams }: Props) {
   const { section } = await params;
+  const sp: Record<string, string | string[] | undefined> = await (
+    searchParams ?? Promise.resolve({})
+  );
+  const view = typeof sp.view === "string" ? sp.view : "files";
+  const htype = typeof sp.htype === "string" ? sp.htype : undefined;
   const t = await getTranslations("empty");
 
   // Special: "review". uploads Oria couldn't confidently classify.
@@ -135,6 +146,21 @@ export default async function SectionPage({ params }: Props) {
   ]);
   const thumbs = await thumbsForEntries(entries);
 
+  // Intelligence view: Travel gets a Trips tab, Health a Timeline tab.
+  const intel =
+    sec === "travel" ? "trips" : sec === "health" ? "timeline" : null;
+  const activeView = intel && view === intel ? intel : "files";
+  const viewTabs = intel
+    ? [
+        { key: "files", label: "Files", href: `/dashboard/sections/${sec}` },
+        {
+          key: intel,
+          label: intel === "trips" ? "Trips" : "Timeline",
+          href: `/dashboard/sections/${sec}?view=${intel}`,
+        },
+      ]
+    : null;
+
   return (
     <Layout
       title={meta.label}
@@ -158,8 +184,15 @@ export default async function SectionPage({ params }: Props) {
           label="Or log by text"
         />
       }
+      viewTabsNode={
+        viewTabs ? <SectionViewTabs active={activeView} tabs={viewTabs} /> : null
+      }
     >
-      {entries.length === 0 ? (
+      {activeView === "trips" ? (
+        <TripsView orgId={orgId} />
+      ) : activeView === "timeline" ? (
+        <HealthTimelineView orgId={orgId} filter={htype} />
+      ) : entries.length === 0 ? (
         <EmptyState compact headline={t("section_headline", { name: meta.label })} />
       ) : (
         <EntryList entries={entries} thumbs={thumbs} />
@@ -221,6 +254,7 @@ function Layout({
   dropzoneNode,
   textLogNode = null,
   summaryNode = null,
+  viewTabsNode = null,
   children,
 }: {
   title: string;
@@ -228,6 +262,7 @@ function Layout({
   dropzoneNode: React.ReactNode;
   textLogNode?: React.ReactNode;
   summaryNode?: React.ReactNode;
+  viewTabsNode?: React.ReactNode;
   children: React.ReactNode;
 }) {
   return (
@@ -250,6 +285,8 @@ function Layout({
 
       {dropzoneNode ? <div className="mb-6">{dropzoneNode}</div> : null}
       {textLogNode ? <div className="mb-6">{textLogNode}</div> : null}
+
+      {viewTabsNode ? <div className="mb-4">{viewTabsNode}</div> : null}
 
       <div className="animate-fade-up">{children}</div>
     </>

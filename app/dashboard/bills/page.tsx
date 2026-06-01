@@ -16,6 +16,8 @@ import { listRecentUserQuestions } from "@/lib/data/recent-questions";
 import { requireContext } from "@/lib/data/organizations";
 import { billsSummary } from "@/lib/sections/summaries";
 import { SectionSummaryCard } from "@/components/sections/section-summary-card";
+import { BillsSpendView } from "@/components/sections/bills-spend-view";
+import { SectionViewTabs } from "@/components/sections/section-view-tabs";
 import type { SectionScope } from "@/lib/data/section-scope";
 
 export const metadata = { title: "Bills" };
@@ -28,7 +30,15 @@ const SUGGESTIONS = [
   "What payments are due this week?",
 ];
 
-export default async function BillsPage() {
+export default async function BillsPage({
+  searchParams,
+}: {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const sp: Record<string, string | string[] | undefined> = await (
+    searchParams ?? Promise.resolve({})
+  );
+  const view = sp.view === "spend" ? "spend" : "overview";
   const ctx = await requireContext();
   const [bills, memories, recentQuestions, summary] = await Promise.all([
     listBills(200),
@@ -78,7 +88,19 @@ export default async function BillsPage() {
           </p>
         ) : null}
 
-        {upcoming.length > 0 ? (
+        {!empty ? (
+          <SectionViewTabs
+            active={view}
+            tabs={[
+              { key: "overview", label: "Overview", href: "/dashboard/bills" },
+              { key: "spend", label: "Spend", href: "/dashboard/bills?view=spend" },
+            ]}
+          />
+        ) : null}
+
+        {view === "spend" && !empty ? <BillsSpendView bills={bills} /> : null}
+
+        {view === "overview" && upcoming.length > 0 ? (
           <section>
             <h2 className="mb-2 px-1 text-eyebrow">
               Upcoming
@@ -91,7 +113,7 @@ export default async function BillsPage() {
           </section>
         ) : null}
 
-        {recurring.length > 0 ? (
+        {view === "overview" && recurring.length > 0 ? (
           <section>
             <h2 className="mb-2 px-1 text-eyebrow">
               Recurring
@@ -104,7 +126,7 @@ export default async function BillsPage() {
           </section>
         ) : null}
 
-        {recent.length > 0 ? (
+        {view === "overview" && recent.length > 0 ? (
           <section>
             <h2 className="mb-2 px-1 text-eyebrow">
               Recent
