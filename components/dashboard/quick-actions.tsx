@@ -44,7 +44,7 @@ export function QuickActions() {
           </span>
           <div>
             <p className="text-[13.5px] font-semibold text-ink">{a.label}</p>
-            <p className="mt-0.5 text-[11.5px] text-ink-faint hidden sm:block">
+            <p className="mt-0.5 text-[11.5px] text-ink-muted hidden sm:block">
               {a.description}
             </p>
           </div>

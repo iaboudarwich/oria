@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 export const revalidate = 86400;
 
 export const metadata: Metadata = {
-  title: "Terms of Service — Oria",
+  title: "Terms of Service · Oria",
   description: "The terms that govern your use of Oria.",
 };
 

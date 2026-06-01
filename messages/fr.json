@@ -146,7 +146,7 @@
   "onboarding": {
     "template_title": "Pourquoi utilisez-vous Oria?",
     "template_subtitle": "Choisissez un point de départ. Vous pouvez ajouter plus de sections plus tard.",
-    "template_skip": "Ignorer pour l'instant — commencer avec un espace vide",
+    "template_skip": "Ignorer pour l'instant, commencer avec un espace vide",
     "chat_title": "Parlez de vous à Oria",
     "chat_subtitle": "Oria vous suggérera des sections, des entités et des rappels utiles.",
     "chat_skip": "Ignorer pour l'instant",

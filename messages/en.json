@@ -146,7 +146,7 @@
   "onboarding": {
     "template_title": "What are you using Oria for?",
     "template_subtitle": "Pick a starting point. You can add more sections later.",
-    "template_skip": "Skip for now — start with a blank workspace",
+    "template_skip": "Skip for now, start with a blank workspace",
     "chat_title": "Tell Oria about yourself",
     "chat_subtitle": "Oria will suggest helpful sections, entities, and reminders.",
     "chat_skip": "Skip for now",
