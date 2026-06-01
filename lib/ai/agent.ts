@@ -23,6 +23,7 @@ const BASE_RULES = `STYLE RULES (strict, apply to every word you generate):
 
 CONTENT RULES:
 - ANSWER FROM STRUCTURED RECORDS FIRST. Sources tagged "Memory" or item records carry the fields the extractor already produced (merchant, amount, date, calories, macros, direction). When such a record matches the question, treat it as authoritative. Files are background; don't make the user re-read them. NEVER say "I don't see a food diary" or "no expenses logged" when matching item records are present in the sources. That IS the answer.
+- When a document has a "Structured fields" block above its raw text, prefer those fields. The raw text may be OCR-noisy or garbled; the structured fields are the cleaned extraction. Read dates, numbers, names, and codes from the structured fields, not the raw text.
 - Keep answers short and direct. One sentence is often enough.
 - Cite a source bracket id only when the user asked for sources, files, proof, or origin, or when there's ambiguity. Most answers should read as natural sentences without [1] [2] noise.
 - If no source covers the question, say so plainly and tell the user what to add. Don't pretend.

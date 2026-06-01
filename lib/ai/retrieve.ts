@@ -9,6 +9,11 @@ import {
 import { sectionLabel } from "@/lib/sections-meta";
 import { listSectionMemories } from "@/lib/data/section-memory";
 import { searchChunks, searchChunksCrossOrg } from "@/lib/embedding/search";
+import {
+  composeUploadSnippet,
+  formatStructuredFields,
+  resolveFields,
+} from "@/lib/ai/structured-context";
 import type { SectionScope } from "@/lib/data/section-scope";
 import type { Section } from "@/lib/supabase/types";
 
@@ -599,6 +604,35 @@ export async function retrieveForQuery(
   };
   const reminders = (remindersRes.data ?? []) as ReminderRow[];
 
+  // -- Structured extraction for matched uploads -----------------------------
+  // The extractor already pulled clean fields (flight number, due date,
+  // amount, etc.) into extracted_entities. Prepend those to each upload's
+  // context block so Oria answers from them instead of OCR-noisy raw text.
+  const structuredByUpload = new Map<string, string>();
+  const matchedUploadIds = Array.from(new Set(uploads.map((u) => u.id)));
+  if (matchedUploadIds.length > 0) {
+    const entitiesRes = await supabase
+      .from("extracted_entities")
+      .select("upload_id, doc_type, fields, user_edited_fields, user_verified")
+      .in("upload_id", matchedUploadIds)
+      .in("organization_id", allowedOrgIds);
+    for (const e of (entitiesRes.data ?? []) as Array<{
+      upload_id: string;
+      doc_type: string;
+      fields: Record<string, unknown> | null;
+      user_edited_fields: Record<string, unknown> | null;
+      user_verified: boolean;
+    }>) {
+      const resolved = resolveFields(
+        e.fields,
+        e.user_edited_fields,
+        e.user_verified,
+      );
+      const block = formatStructuredFields(e.doc_type, resolved, 800);
+      if (block) structuredByUpload.set(e.upload_id, block);
+    }
+  }
+
   // -- Score + build sources -------------------------------------------------
   type Scored = { score: number; src: Omit<RetrievedSource, "id"> };
   const scored: Scored[] = [];
@@ -614,7 +648,8 @@ export async function retrieveForQuery(
     for (const kw of keywords) if (haystack.includes(kw)) score += kw.length;
     if (score === 0) continue;
     const space = spaceById.get(u.organization_id);
-    const isPending = extractedText.length === 0;
+    const structuredBlock = structuredByUpload.get(u.id) ?? "";
+    const isPending = extractedText.length === 0 && !structuredBlock;
     scored.push({
       score,
       src: {
@@ -622,7 +657,10 @@ export async function retrieveForQuery(
         title: u.title || u.filename,
         snippet: isPending
           ? "Oria is still reading this file. Details aren't available yet."
-          : buildUploadSnippet(extractedText, keywords),
+          : composeUploadSnippet(
+              structuredBlock,
+              buildUploadSnippet(extractedText, keywords),
+            ),
         href: `/dashboard/uploads/${u.id}`,
         processing_state: isPending ? "pending" : "ready",
         meta: {
