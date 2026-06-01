@@ -244,9 +244,9 @@ function EnrolledView({ backupCodesLeft }: { backupCodesLeft: number }) {
 
       {!showDisable ? (
         <Button
-          variant="ghost"
+          variant="secondary"
           onClick={() => setShowDisable(true)}
-          className="text-claret hover:bg-claret/5"
+          className="text-claret hover:border-claret/40"
         >
           Disable two-factor auth
         </Button>
@@ -326,58 +326,75 @@ function BackupCodesPanel({
     void navigator.clipboard?.writeText(codes.join("\n"));
   }
 
+  // Rendered as a modal (not an inline panel) so the one-time codes can't be
+  // scrolled past or dismissed by accident. There is no close affordance other
+  // than the acknowledgement-gated Done button: matches the beta-disclaimer
+  // pattern. No backdrop-click or Escape dismissal.
   return (
-    <div className="space-y-4 rounded-2xl border border-brand/30 bg-brand-soft/40 p-5">
-      <div>
-        <h3 className="text-[15px] font-semibold text-ink">
-          Save these backup codes
-        </h3>
-        <p className="mt-1 text-[13px] text-ink-muted">
-          Each code works once if you lose access to your authenticator app.
-          We show them only this once. Store them somewhere safe (a password
-          manager works well).
-        </p>
-      </div>
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="backup-codes-title"
+      className="fixed inset-0 z-[100] flex items-center justify-center px-4 py-6"
+    >
+      <div
+        aria-hidden
+        className="absolute inset-0 bg-ink/40 backdrop-blur-sm animate-fade-in"
+      />
+      <div className="relative z-[101] w-full max-w-md rounded-2xl border border-line bg-surface-raised p-6 shadow-xl animate-scale-in">
+        <div>
+          <h3 id="backup-codes-title" className="text-[16px] font-semibold text-ink">
+            Save these backup codes
+          </h3>
+          <p className="mt-1 text-[13px] text-ink-muted">
+            Each code works once if you lose access to your authenticator app.
+            We show them only this once. Store them somewhere safe (a password
+            manager works well).
+          </p>
+        </div>
 
-      <ul className="grid grid-cols-2 gap-2">
-        {codes.map((c) => (
-          <li
-            key={c}
-            className="rounded-md border border-line bg-surface px-3 py-2 font-mono text-[13px] text-ink"
+        <ul className="mt-4 grid grid-cols-2 gap-2">
+          {codes.map((c) => (
+            <li
+              key={c}
+              className="rounded-md border border-line bg-surface px-3 py-2 font-mono text-[13px] text-ink"
+            >
+              {c}
+            </li>
+          ))}
+        </ul>
+
+        <div className="mt-3 flex items-center gap-3">
+          <button
+            type="button"
+            onClick={copyAll}
+            className="text-[12.5px] font-medium text-brand underline underline-offset-2 transition-base hover:opacity-80"
           >
-            {c}
-          </li>
-        ))}
-      </ul>
+            Copy all
+          </button>
+        </div>
 
-      <div className="flex items-center gap-3">
-        <button
-          type="button"
-          onClick={copyAll}
-          className="text-[12.5px] text-brand hover:opacity-80 transition-base"
-        >
-          Copy all
-        </button>
+        <label className="mt-4 flex items-start gap-2 text-[13px] text-ink">
+          <input
+            type="checkbox"
+            checked={acked}
+            onChange={(e) => onAck(e.target.checked)}
+            className="mt-0.5 h-4 w-4 accent-brand"
+          />
+          I&apos;ve stored these backup codes somewhere safe.
+        </label>
+
+        <div className="mt-5 flex justify-end">
+          <Button
+            type="button"
+            onClick={onClose}
+            variant="primary"
+            disabled={!acked || pending}
+          >
+            Done
+          </Button>
+        </div>
       </div>
-
-      <label className="flex items-start gap-2 text-[13px] text-ink">
-        <input
-          type="checkbox"
-          checked={acked}
-          onChange={(e) => onAck(e.target.checked)}
-          className="mt-0.5 h-4 w-4 accent-brand"
-        />
-        I&apos;ve stored these backup codes somewhere safe.
-      </label>
-
-      <Button
-        type="button"
-        onClick={onClose}
-        variant="primary"
-        disabled={!acked || pending}
-      >
-        Done
-      </Button>
     </div>
   );
 }

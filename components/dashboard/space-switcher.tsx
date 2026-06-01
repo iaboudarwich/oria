@@ -40,6 +40,11 @@ function kindLabel(k: OrgKind): string {
   return k === "personal" ? "Personal" : k === "circle" ? "Circle" : "Workspace";
 }
 
+/** Root page for a space, by kind. Office spaces live under /dashboard/work. */
+function spaceHomePath(kind: OrgKind): string {
+  return kind === "office" ? "/dashboard/work" : "/dashboard";
+}
+
 export function SpaceSwitcher({ active, spaces }: Props) {
   const router = useRouter();
   const { ref, open, setOpen, toggle } = useDismissable<HTMLDivElement>();
@@ -58,11 +63,11 @@ export function SpaceSwitcher({ active, spaces }: Props) {
     startTransition(async () => {
       const result = await switchSpace(target.id);
       if (result.ok) {
-        // Client-side navigation lands on /dashboard with the new cookie
-        // set. switchSpace already called revalidatePath("/dashboard",
-        // "layout"), so the RSC tree refetches automatically. no extra
-        // router.refresh() needed.
-        router.push("/dashboard");
+        // Land on the target space's HOME, not the current sub-page (a Work
+        // contract page makes no sense after switching to a Personal space).
+        // switchSpace already revalidated the layout, so the RSC tree
+        // refetches automatically.
+        router.push(spaceHomePath(target.kind));
       } else {
         setPendingId(null);
       }

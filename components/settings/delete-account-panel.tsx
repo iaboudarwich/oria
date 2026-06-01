@@ -48,7 +48,7 @@ export function DeleteAccountPanel() {
             <button
               type="button"
               onClick={() => setOpen(true)}
-              className="text-[11.5px] text-claret hover:underline"
+              className="inline-flex h-8 items-center rounded-md border border-claret/30 px-3 text-[12px] font-medium text-claret transition-base hover:bg-claret/5"
             >
               Begin
             </button>

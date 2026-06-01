@@ -1,11 +1,24 @@
-import { SearchIcon } from "@/components/ui/icon";
 import { getCurrentContext } from "@/lib/data/organizations";
+import type { OrgKind } from "@/lib/supabase/types";
 import { StatusStrip } from "./status-strip";
 
 type TopbarProps = {
   title: string;
   subtitle?: string;
 };
+
+/**
+ * Personal and Work spaces are auto-named "{Name}'s workspace". That reads
+ * wrong for a personal space, so relabel the type word by space kind for the
+ * breadcrumb. Spaces the user named themselves (circles, named offices) have
+ * no "workspace" token and pass through unchanged.
+ */
+function spaceCrumb(name: string | null, kind: OrgKind | undefined): string | null {
+  if (!name) return name;
+  if (kind === "personal") return name.replace(/workspace/gi, "Personal");
+  if (kind === "office") return name.replace(/workspace/gi, "Work");
+  return name;
+}
 
 /**
  * Page chrome. A thin eyebrow above the title names the active space.
@@ -16,9 +29,12 @@ type TopbarProps = {
  */
 export async function Topbar({ title, subtitle }: TopbarProps) {
   const ctx = await getCurrentContext();
-  const spaceName = ctx?.organization.name ?? null;
+  const spaceName = spaceCrumb(
+    ctx?.organization.name ?? null,
+    ctx?.organization.kind,
+  );
   return (
-    <header className="sticky top-0 z-20 -mx-4 mb-6 border-b border-line bg-canvas/85 px-4 pt-safe pt-4 pb-3 backdrop-blur sm:-mx-6 sm:px-6 sm:pt-5 sm:pb-4 lg:-mx-10 lg:px-10">
+    <header className="sticky top-0 z-20 -mx-4 mb-6 border-b border-line bg-canvas/85 px-4 pt-safe pt-5 pb-3 backdrop-blur sm:-mx-6 sm:px-6 sm:pt-6 sm:pb-4 lg:-mx-10 lg:px-10">
       <div className="flex items-center justify-between gap-4">
         <div className="min-w-0 pl-12 lg:pl-0">
           {spaceName ? (
@@ -39,15 +55,7 @@ export async function Topbar({ title, subtitle }: TopbarProps) {
             <p className="mt-1 text-[13.5px] text-ink-soft">{subtitle}</p>
           ) : null}
         </div>
-        <div className="flex items-center gap-2">
-          <a
-            href="/dashboard/search"
-            className="inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg border border-line bg-surface-raised text-ink-muted transition-base hover:text-ink hover:border-line-strong focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
-            aria-label="Search"
-          >
-            <SearchIcon />
-          </a>
-        </div>
+        {/* Top-right search removed until it is rebuilt. */}
       </div>
       <StatusStrip />
     </header>
