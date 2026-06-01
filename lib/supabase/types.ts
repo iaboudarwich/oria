@@ -97,6 +97,9 @@ export interface Organization {
   content_language?: "en" | "ar" | "fr" | "es";
   // Added in migration 0033
   template_key?: "personal" | "investor" | "business" | "family_office" | "custom" | null;
+  // Added in migration 0044
+  things_label?: string | null;
+  legacy_sections_hidden_at?: TimestampString | null;
 }
 
 export interface Invite {
@@ -240,6 +243,9 @@ export interface SectionSetting {
   custom_section_id: UUID | null;
   sort_order: number;
   hidden: boolean;
+  /** Added in migration 0044. Overrides the display name for any section
+   *  (builtin or custom) when set. */
+  custom_label: string | null;
   created_at: TimestampString;
   updated_at: TimestampString;
 }

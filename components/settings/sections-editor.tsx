@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
-import Link from "next/link";
 import {
   DndContext,
   PointerSensor,
@@ -26,6 +25,7 @@ import { deleteCustomSection } from "@/lib/data/custom-section-actions";
 import {
   toggleSectionHidden,
   reorderSections,
+  renameSection,
 } from "@/lib/data/section-settings-actions";
 import type { MergedSection } from "@/lib/data/all-sections";
 import type { Section } from "@/lib/supabase/types";
@@ -144,6 +144,13 @@ export function SectionsEditor({
                   ),
                 );
               }}
+              onRename={(ref, name) => {
+                setSections((prev) =>
+                  prev.map((x) =>
+                    refId(x.ref) === refId(ref) ? { ...x, name } : x,
+                  ),
+                );
+              }}
               onDelete={(ref) => {
                 setSections((prev) =>
                   prev.filter((x) => refId(x.ref) !== refId(ref)),
@@ -161,12 +168,14 @@ function SortableSectionRow({
   id,
   section,
   onToggleHidden,
+  onRename,
   onDelete,
   wiggleHandle = false,
 }: {
   id: string;
   section: MergedSection;
   onToggleHidden: (ref: MergedSection["ref"], hidden: boolean) => void;
+  onRename: (ref: MergedSection["ref"], name: string) => void;
   onDelete: (ref: MergedSection["ref"]) => void;
   /** When true, the drag handle plays a one-shot wiggle on mount to
    *  teach draggability. Gated upstream by a localStorage flag so the
@@ -182,6 +191,8 @@ function SortableSectionRow({
     isDragging,
   } = useSortable({ id });
 
+  const [renaming, setRenaming] = useState(false);
+
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
@@ -192,6 +203,7 @@ function SortableSectionRow({
       ? SECTION_META[section.ref.key as Section].Icon
       : CustomSectionIcon;
   const isCustom = section.ref.kind === "custom";
+  const canCustomize = section.ref.kind !== "review";
 
   return (
     <li
@@ -227,42 +239,82 @@ function SortableSectionRow({
       </span>
 
       <div className="min-w-0 flex-1">
-        <p className="truncate text-[13.5px] text-ink">{section.name}</p>
-        <p className="text-[11.5px] text-ink-faint">
-          {section.ref.kind === "builtin" ? "Built in" : "Custom"}
-          {section.hidden ? " · hidden" : ""}
-        </p>
-      </div>
-
-      <HideButton
-        target={section.ref}
-        hidden={section.hidden}
-        onOptimistic={(hidden) => onToggleHidden(section.ref, hidden)}
-      />
-
-      {isCustom ? (
-        <>
-          <Link
-            href={`/dashboard/settings/sections/${section.ref.key}/edit`}
-            className="text-[11.5px] text-ink-muted hover:text-ink transition-base"
-          >
-            Edit
-          </Link>
+        {renaming ? (
           <form
             action={async (fd) => {
-              onDelete(section.ref);
-              await deleteCustomSection(fd);
+              const label = String(fd.get("label") ?? "").trim();
+              if (label) onRename(section.ref, label);
+              setRenaming(false);
+              await renameSection(fd);
             }}
+            className="flex items-center gap-1.5"
           >
-            <input type="hidden" name="id" value={section.ref.key} />
+            <input type="hidden" name="kind" value={section.ref.kind} />
+            <input type="hidden" name="key" value={section.ref.key} />
+            <input
+              name="label"
+              defaultValue={section.name}
+              autoFocus
+              maxLength={60}
+              className="h-7 w-full rounded-md border border-line-strong bg-surface px-2 text-[13px] text-ink outline-none focus:border-ink"
+            />
             <button
               type="submit"
-              className="text-[11.5px] text-ink-faint hover:text-claret transition-base"
+              className="shrink-0 rounded-md px-2 py-1 text-[11.5px] text-brand hover:opacity-80"
             >
-              Remove
+              Save
+            </button>
+            <button
+              type="button"
+              onClick={() => setRenaming(false)}
+              className="shrink-0 text-[11.5px] text-ink-faint hover:text-ink"
+            >
+              Cancel
             </button>
           </form>
+        ) : (
+          <>
+            <p className="truncate text-[13.5px] text-ink">{section.name}</p>
+            <p className="text-[11.5px] text-ink-faint">
+              {section.ref.kind === "builtin" ? "Built in" : "Custom"}
+              {section.hidden ? " · hidden" : ""}
+            </p>
+          </>
+        )}
+      </div>
+
+      {canCustomize && !renaming ? (
+        <>
+          <button
+            type="button"
+            onClick={() => setRenaming(true)}
+            className="text-[11.5px] text-ink-muted hover:text-ink transition-base"
+          >
+            Rename
+          </button>
+          <HideButton
+            target={section.ref}
+            hidden={section.hidden}
+            onOptimistic={(hidden) => onToggleHidden(section.ref, hidden)}
+          />
         </>
+      ) : null}
+
+      {isCustom && !renaming ? (
+        <form
+          action={async (fd) => {
+            onDelete(section.ref);
+            await deleteCustomSection(fd);
+          }}
+        >
+          <input type="hidden" name="id" value={section.ref.key} />
+          <button
+            type="submit"
+            className="text-[11.5px] text-ink-faint hover:text-claret transition-base"
+          >
+            Remove
+          </button>
+        </form>
       ) : null}
     </li>
   );

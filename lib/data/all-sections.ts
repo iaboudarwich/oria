@@ -125,7 +125,7 @@ export async function listAllSections(
     const s = settingByBuiltin.get(key);
     merged.push({
       ref: { kind: "builtin", key },
-      name: BUILTIN_LABELS[key],
+      name: s?.custom_label?.trim() || BUILTIN_LABELS[key],
       href: `/dashboard/sections/${key}`,
       sort_order: s?.sort_order ?? idx * 10,
       hidden: s?.hidden ?? false,
@@ -136,7 +136,7 @@ export async function listAllSections(
     const s = settingByCustom.get(c.id);
     merged.push({
       ref: { kind: "custom", key: c.id },
-      name: c.name,
+      name: s?.custom_label?.trim() || c.name,
       href: `/dashboard/sections/${c.id}`,
       sort_order: s?.sort_order ?? 1000 + idx * 10,
       hidden: s?.hidden ?? false,

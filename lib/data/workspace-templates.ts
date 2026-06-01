@@ -233,6 +233,30 @@ export async function applyTemplates(
       );
   }
 
+  // Personal spaces should not surface the estate-oriented builtin
+  // "Properties" section by default. Hide it at apply time (recoverable any
+  // time from Settings -> Sections). Existing Personal spaces are handled by
+  // the one-time backfill in migration 0044.
+  if (storedKey === "personal") {
+    // Fresh org (applyTemplate runs once, before any section_settings exist),
+    // so a plain insert is safe. The unique index here is partial, so we avoid
+    // ON CONFLICT and just guard against a pre-existing row.
+    const { data: existingSetting } = await admin
+      .from("section_settings")
+      .select("id")
+      .eq("organization_id", organizationId)
+      .eq("builtin_section", "properties")
+      .maybeSingle();
+    if (!existingSetting) {
+      await admin.from("section_settings").insert({
+        organization_id: organizationId,
+        builtin_section: "properties",
+        hidden: true,
+        sort_order: 20,
+      });
+    }
+  }
+
   await admin
     .from("organizations")
     .update({ template_key: storedKey })
@@ -302,11 +326,14 @@ const PERSON_FIELDS: EntityTypeSeed["field_schema"] = [
 
 const TEMPLATE_ENTITY_TYPES: Record<TemplateKey, EntityTypeSeed[]> = {
   personal: [
+    // Property is intentionally NOT seeded for Personal. It is an estate /
+    // landlord concept that belongs to the asset-heavy templates (Investor,
+    // Business, Family Office). Personal stays light.
     { key: "vehicle",  label_singular: "Vehicle",  label_plural: "Vehicles",  icon: "travel",   field_schema: VEHICLE_FIELDS },
-    { key: "property", label_singular: "Property", label_plural: "Properties",icon: "home",     field_schema: PROPERTY_FIELDS },
     { key: "person",   label_singular: "Person",   label_plural: "People",    icon: "person",   field_schema: PERSON_FIELDS },
   ],
   investor: [
+    { key: "property", label_singular: "Property", label_plural: "Properties", icon: "home", field_schema: PROPERTY_FIELDS },
     { key: "fund",              label_singular: "Fund",              label_plural: "Funds",              icon: "wallet",
       field_schema: [
         { key: "manager",       label: "Manager",       type: "text" },

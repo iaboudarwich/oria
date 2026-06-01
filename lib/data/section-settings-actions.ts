@@ -23,7 +23,7 @@ function revalidateSections() {
 
 async function upsertSetting(
   ref: SectionRef,
-  values: { sort_order?: number; hidden?: boolean },
+  values: { sort_order?: number; hidden?: boolean; custom_label?: string | null },
 ): Promise<void> {
   const ctx = await requireContext();
   const supabase = await createClient();
@@ -48,8 +48,35 @@ async function upsertSetting(
       custom_section_id: ref.kind === "custom" ? ref.key : null,
       sort_order: values.sort_order ?? 0,
       hidden: values.hidden ?? false,
+      custom_label: values.custom_label ?? null,
     });
   }
+}
+
+/**
+ * Rename any section (builtin or custom) by setting a custom_label override.
+ * An empty/blank label clears the override and reverts to the default name.
+ */
+export async function renameSection(formData: FormData): Promise<void> {
+  const ref = readRef(formData);
+  if (!ref) return;
+  const raw = String(formData.get("label") ?? "").trim();
+  const label = raw.length > 0 ? raw.slice(0, 60) : null;
+
+  const sections = await listAllSections({
+    includeHidden: true,
+    includeReview: false,
+  });
+  const current = sections.find((s) => isSameRef(s.ref, ref));
+  if (!current) return;
+
+  await upsertSetting(ref, {
+    sort_order: current.sort_order,
+    hidden: current.hidden,
+    custom_label: label,
+  });
+
+  revalidateSections();
 }
 
 export async function moveSection(formData: FormData): Promise<void> {

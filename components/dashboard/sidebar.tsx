@@ -115,6 +115,8 @@ export type SidebarProps = {
   user: { name: string; email: string };
   /** Profile id, threaded through for the Report-a-problem context. */
   userId: string;
+  /** Resolved label for the "Things" area (custom, or per-template default). */
+  thingsLabel: string;
   org: { name: string; role: string };
   /** Current top-level mode. Drives which nav cluster appears below the
    * Sections group + which spaces show in the switcher. */
@@ -167,6 +169,7 @@ function iconForSection(s: SidebarSection): React.ComponentType<{ size?: number 
 export function Sidebar({
   user,
   userId,
+  thingsLabel,
   mode,
   sections,
   spaces,
@@ -311,16 +314,24 @@ export function Sidebar({
                 .map((k) => SIDEBAR_EXTRA_ITEMS[k])
                 .filter((it): it is NavItem => !!it),
             ].map(
-              (item) => (
-                <li key={item.href}>
-                  <NavLink
-                    item={item}
-                    pathname={pathname}
-                    onNavigate={close}
-                    collapsed={collapsed}
-                  />
-                </li>
-              ),
+              (raw) => {
+                // The "Things" area is renamable per space (and defaults to
+                // "Assets" for asset-heavy templates).
+                const item =
+                  raw.href === "/dashboard/things"
+                    ? { ...raw, label: thingsLabel }
+                    : raw;
+                return (
+                  <li key={item.href}>
+                    <NavLink
+                      item={item}
+                      pathname={pathname}
+                      onNavigate={close}
+                      collapsed={collapsed}
+                    />
+                  </li>
+                );
+              },
             )}
           </ul>
 

@@ -16,6 +16,7 @@ import {
 } from "@/lib/data/sidebar-prefs";
 import { kindsForMode, modeForOrgKind } from "@/lib/data/mode";
 import { isCurrentUserAdmin } from "@/lib/data/admin";
+import { resolveThingsLabel } from "@/lib/data/things-label";
 import { readMfaEnrolledAt } from "@/lib/auth/mfa";
 import { MfaBanner } from "@/components/dashboard/mfa-banner";
 import { BetaDisclaimerModal } from "@/components/dashboard/beta-disclaimer-modal";
@@ -125,6 +126,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
       email: ctx.profile.email,
     },
     userId: ctx.profile.id,
+    thingsLabel: resolveThingsLabel(ctx.organization),
     org: {
       name: ctx.organization.name,
       role: ctx.membership.role,

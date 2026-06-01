@@ -3,6 +3,8 @@ import { getTranslations } from "next-intl/server";
 import { Topbar } from "@/components/dashboard/topbar";
 import { EmptyState } from "@/components/ui/empty-state";
 import { BoxIcon } from "@/components/ui/icon";
+import { resolveThingsLabel } from "@/lib/data/things-label";
+import { ThingsRename } from "@/components/things/things-rename";
 import {
   listEntityTypes,
   listEntities,
@@ -20,6 +22,7 @@ export default async function ThingsPage({
   const sp: Record<string, string | string[] | undefined> = await (searchParams ?? Promise.resolve({}));
   const t = await getTranslations("empty");
   const ctx = await requireContext();
+  const thingsLabel = resolveThingsLabel(ctx.organization);
   const [types, counts] = await Promise.all([
     listEntityTypes(),
     countEntitiesByType(ctx.organization.id),
@@ -36,20 +39,21 @@ export default async function ThingsPage({
 
   return (
     <>
-      <Topbar title="Things" />
+      <Topbar title={thingsLabel} />
       <div className="flex gap-6 animate-fade-up">
         {/* Sidebar */}
         <aside className="hidden w-48 shrink-0 lg:block">
           <div className="mb-2 flex items-center justify-between px-1">
-            <p className="text-eyebrow">
-              Types
-            </p>
+            <p className="text-eyebrow">Types</p>
             <Link
               href="/dashboard/things/new-type"
               className="text-[11px] text-ink-faint hover:text-ink transition-base"
             >
               + Add
             </Link>
+          </div>
+          <div className="mb-3 px-1">
+            <ThingsRename label={thingsLabel} />
           </div>
           <ul className="space-y-0.5">
             {types.map((t) => (
