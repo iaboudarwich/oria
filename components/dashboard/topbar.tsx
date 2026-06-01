@@ -34,7 +34,7 @@ export async function Topbar({ title, subtitle }: TopbarProps) {
     ctx?.organization.kind,
   );
   return (
-    <header className="sticky top-0 z-20 -mx-4 mb-6 border-b border-line bg-canvas/85 px-4 pt-safe pt-5 pb-3 backdrop-blur sm:-mx-6 sm:px-6 sm:pt-6 sm:pb-4 lg:-mx-10 lg:px-10">
+    <header className="sticky top-0 z-20 -mx-4 mb-6 border-b border-line bg-canvas/85 px-4 pb-3 pt-[max(1.25rem,env(safe-area-inset-top))] backdrop-blur sm:-mx-6 sm:px-6 sm:pb-4 sm:pt-[max(1.5rem,env(safe-area-inset-top))] lg:-mx-10 lg:px-10">
       <div className="flex items-center justify-between gap-4">
         <div className="min-w-0 pl-12 lg:pl-0">
           {spaceName ? (

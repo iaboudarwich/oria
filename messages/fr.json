@@ -120,6 +120,17 @@
     "members_headline": "Juste vous pour l'instant.",
     "members_desc": "Invitez des personnes à partager l'accès."
   },
+  "ask": {
+    "scope": {
+      "aria": "Portée de la recherche",
+      "this_label": "Cet espace de travail",
+      "this_desc": "Rechercher uniquement dans {name}.",
+      "this_fallback": "cet espace",
+      "all_label": "Tout ce auquel j'ai accès",
+      "all_desc": "Rechercher dans tous vos espaces de travail et cercles.",
+      "info": "Cet espace de travail garde les résultats privés à l'espace actif. Tout couvre chaque espace de travail et cercle que vous possédez."
+    }
+  },
   "settings": {
     "title": "Paramètres",
     "tabs": {

@@ -4,7 +4,7 @@ import { forwardRef, useCallback, useEffect, useRef, useState } from "react";
 import { ArrowRightIcon, SparkIcon } from "@/components/ui/icon";
 import { SourceCard, type SourceItem } from "./source-card";
 import { MicButton } from "@/components/ui/mic-button";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import type { Locale } from "@/i18n/config";
 
 type Turn = {
@@ -53,6 +53,8 @@ type AskChatProps = {
    *  org. Rendered as a separate row above the static suggestions so
    *  Oria offers the questions they actually return to. */
   recentQuestions?: string[];
+  /** Name of the active space, shown in the scope control's description. */
+  spaceName?: string | null;
 };
 
 /**
@@ -65,6 +67,7 @@ export function AskChat({
   suggestions,
   crossSpaceAvailable = false,
   recentQuestions = [],
+  spaceName = null,
 }: AskChatProps = {}) {
   const [input, setInput] = useState("");
   const [turns, setTurns] = useState<Turn[]>([]);
@@ -255,12 +258,6 @@ export function AskChat({
     : "h-[calc(100vh-160px)]";
   return (
     <div className={`flex ${containerHeight} flex-col`}>
-      {crossSpaceAvailable && !scope ? (
-        <CrossSpaceToggle
-          on={crossSpace}
-          onToggle={() => setCrossSpace((v) => !v)}
-        />
-      ) : null}
       <div ref={scrollRef} className="flex-1 overflow-y-auto pb-6">
         {turns.length === 0 ? (
           <EmptyState
@@ -283,6 +280,14 @@ export function AskChat({
         )}
       </div>
 
+      {crossSpaceAvailable && !scope ? (
+        <ScopeControl
+          everywhere={crossSpace}
+          onChange={setCrossSpace}
+          spaceName={spaceName}
+        />
+      ) : null}
+
       <Composer
         ref={textareaRef}
         value={input}
@@ -297,40 +302,90 @@ export function AskChat({
 }
 
 /**
- * Personal-owner-only pill: "This space" ↔ "Everywhere I can access".
- * When ON, the server includes every org the user is a member of in
- * retrieval (Personal + Circles + Workspaces). The page only shows the
- * toggle when the user actually has more than one space; the API also
- * re-checks active-org=personal AND role=owner so a forged flag can
- * never broaden a Circle or Workspace search.
+ * Scope segmented control sitting directly above the chat input. Two clear,
+ * side-by-side options with descriptions so the choice is unmissable:
+ * "This workspace" (active space only) vs "Everything I can access" (every
+ * space the user owns). The active option carries the brand accent. Shown
+ * Personal-owner-only; the API re-checks active-org=personal AND role=owner,
+ * so a forged flag can never broaden a Circle or Workspace search.
  */
-function CrossSpaceToggle({
-  on,
-  onToggle,
+function ScopeControl({
+  everywhere,
+  onChange,
+  spaceName,
 }: {
-  on: boolean;
-  onToggle: () => void;
+  everywhere: boolean;
+  onChange: (everywhere: boolean) => void;
+  spaceName: string | null;
+}) {
+  const t = useTranslations("ask.scope");
+  return (
+    <div
+      role="radiogroup"
+      aria-label={t("aria")}
+      className="mb-3 grid grid-cols-2 gap-2"
+    >
+      <ScopeOption
+        active={!everywhere}
+        onClick={() => onChange(false)}
+        title={t("this_label")}
+        description={t("this_desc", { name: spaceName ?? t("this_fallback") })}
+        info={t("info")}
+      />
+      <ScopeOption
+        active={everywhere}
+        onClick={() => onChange(true)}
+        title={t("all_label")}
+        description={t("all_desc")}
+        info={t("info")}
+      />
+    </div>
+  );
+}
+
+function ScopeOption({
+  active,
+  onClick,
+  title,
+  description,
+  info,
+}: {
+  active: boolean;
+  onClick: () => void;
+  title: string;
+  description: string;
+  info: string;
 }) {
   return (
-    <div className="mb-3 flex items-center gap-2 px-1">
-      <button
-        type="button"
-        onClick={onToggle}
-        aria-pressed={on}
-        className={`cursor-pointer rounded-full border px-2.5 py-0.5 text-[11.5px] transition-base focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink ${
-          on
-            ? "border-ink bg-ink text-surface"
-            : "border-line bg-canvas text-ink-muted hover:border-line-strong hover:text-ink"
-        }`}
-      >
-        {on ? "Everywhere I can access" : "This space"}
-      </button>
-      <span className="text-[11.5px] text-ink-faint">
-        {on
-          ? "Searching across Personal, Circles, and Workspaces."
-          : "Only the active space."}
+    <button
+      type="button"
+      role="radio"
+      aria-checked={active}
+      onClick={onClick}
+      className={`relative rounded-xl border px-3 py-2.5 text-left transition-base focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand ${
+        active
+          ? "border-brand bg-brand text-surface shadow-sm"
+          : "border-line bg-canvas text-ink-muted hover:border-line-strong hover:text-ink"
+      }`}
+    >
+      <span className="flex items-center gap-1.5">
+        <span className="text-[12.5px] font-medium">{title}</span>
+        <span
+          title={info}
+          aria-hidden
+          className={`inline-flex h-3.5 w-3.5 items-center justify-center rounded-full border text-[9px] font-semibold leading-none ${
+            active ? "border-surface/50 text-surface/80" : "border-line-strong text-ink-faint"
+          }`}
+        >
+          i
+        </span>
       </span>
-    </div>
+      <span
+        className={`mt-0.5 block text-[11px] ${active ? "text-surface/85" : "text-ink-faint"}`}
+      >
+        {description}
+      </span>
+    </button>
   );
 }
 

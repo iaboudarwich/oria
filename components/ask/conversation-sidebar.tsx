@@ -99,7 +99,7 @@ export function ConversationSidebar({
           onClick={toggle}
           aria-label="Expand history"
           title="History"
-          className="hidden lg:flex shrink-0 w-6 items-start pt-1 text-ink-faint transition-base hover:text-ink"
+          className="hidden md:flex shrink-0 w-6 items-start pt-1 text-ink-faint transition-base hover:text-ink"
         >
           {/* Right-pointing chevron when collapsed */}
           <span className="rotate-[-90deg]">
@@ -113,9 +113,9 @@ export function ConversationSidebar({
         className={[
           // Base
           "shrink-0 overflow-hidden transition-[width,transform] duration-200 ease-out",
-          // Desktop: animate width
-          collapsed ? "hidden lg:block lg:w-0" : "hidden lg:block lg:w-56",
-          // Mobile: overlay that slides in from the left
+          // Tablet + desktop (md+): in-flow column, animate width.
+          collapsed ? "hidden md:block md:w-0" : "hidden md:block md:w-60",
+          // Mobile (<md): off-screen overlay that slides in from the left.
           !collapsed
             ? "fixed inset-y-0 left-0 z-40 flex w-64 flex-col bg-canvas px-4 py-6 shadow-xl md:hidden"
             : "",

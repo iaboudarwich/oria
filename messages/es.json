@@ -120,6 +120,17 @@
     "members_headline": "Solo tú por ahora.",
     "members_desc": "Invita a personas para compartir el acceso."
   },
+  "ask": {
+    "scope": {
+      "aria": "Alcance de la búsqueda",
+      "this_label": "Este espacio de trabajo",
+      "this_desc": "Buscar solo dentro de {name}.",
+      "this_fallback": "este espacio",
+      "all_label": "Todo lo que puedo ver",
+      "all_desc": "Buscar en todos tus espacios de trabajo y círculos.",
+      "info": "Este espacio de trabajo mantiene los resultados privados al espacio activo. Todo abarca cada espacio de trabajo y círculo que posees."
+    }
+  },
   "settings": {
     "title": "Configuración",
     "tabs": {

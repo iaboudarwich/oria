@@ -120,6 +120,17 @@
     "members_headline": "Just you so far.",
     "members_desc": "Invite people to share access."
   },
+  "ask": {
+    "scope": {
+      "aria": "Search scope",
+      "this_label": "This workspace",
+      "this_desc": "Search only inside {name}.",
+      "this_fallback": "this space",
+      "all_label": "Everything I can access",
+      "all_desc": "Search across all your workspaces and circles.",
+      "info": "This workspace keeps results private to the active space. Everything spans every workspace and circle you own."
+    }
+  },
   "settings": {
     "title": "Settings",
     "tabs": {
