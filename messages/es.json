@@ -67,6 +67,30 @@
   "legal": {
     "consent": "He leído y acepto los <terms>Términos del servicio</terms> y la <privacy>Política de privacidad</privacy>."
   },
+  "auth": {
+    "pw_strength": ["Muy débil", "Débil", "Aceptable", "Buena", "Fuerte"],
+    "email_label": "Correo electrónico",
+    "new_password_label": "Nueva contraseña",
+    "verify_title": "Revisa tu bandeja de entrada.",
+    "verify_body": "Enviamos un enlace a {email}. Haz clic en él para confirmar.",
+    "verify_resend": "Reenviar correo",
+    "verify_cooldown": "Reenviar en {seconds}s",
+    "verify_resent": "Enviado. Revisa tu bandeja de entrada.",
+    "forgot_title": "Restablecer tu contraseña",
+    "forgot_body": "Introduce tu correo y te enviaremos un enlace de restablecimiento.",
+    "forgot_submit": "Enviar enlace",
+    "forgot_sent": "Si existe una cuenta para {email}, el enlace de restablecimiento va en camino.",
+    "forgot_back": "Volver a iniciar sesión",
+    "reset_title": "Establecer una nueva contraseña",
+    "reset_body": "Elige una nueva contraseña para tu cuenta.",
+    "reset_submit": "Actualizar contraseña",
+    "recovery_title": "¿Perdiste el acceso a tu autenticador?",
+    "recovery_backup_title": "Primero, prueba un código de respaldo.",
+    "recovery_backup_body": "Cuando configuraste la verificación en dos pasos, te dimos diez códigos de respaldo de un solo uso. Introduce uno en la pantalla anterior en lugar del código de 6 dígitos.",
+    "recovery_none_title": "¿No tienes códigos de respaldo?",
+    "recovery_none_body": "Escríbenos desde el correo de tu cuenta y te ayudaremos a recuperar el acceso:",
+    "recovery_back": "Volver a la pantalla del código"
+  },
   "empty": {
     "uploads": "Aún no hay archivos.",
     "reminders": "Aún no hay recordatorios.",

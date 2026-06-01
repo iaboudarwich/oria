@@ -55,7 +55,7 @@ export default async function LoginPage({ searchParams }: Props) {
               autoComplete="current-password"
               required
               hint={
-                <Link href="#" className="text-[12px] text-brand hover:opacity-80 transition-base">
+                <Link href="/auth/forgot" className="text-[12px] text-brand hover:opacity-80 transition-base">
                   Forgot?
                 </Link>
               }

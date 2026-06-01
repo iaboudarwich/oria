@@ -17,6 +17,14 @@ type Props = {
 export default async function SignupPage({ searchParams }: Props) {
   const { error, email, next } = await searchParams;
   const t = await getTranslations("legal");
+  const ta = await getTranslations("auth");
+  const strengthLabels = ta.raw("pw_strength") as [
+    string,
+    string,
+    string,
+    string,
+    string,
+  ];
 
   return (
     <div className="min-h-screen bg-canvas">
@@ -72,6 +80,8 @@ export default async function SignupPage({ searchParams }: Props) {
               autoComplete="new-password"
               required
               minLength={8}
+              showStrength
+              strengthLabels={strengthLabels}
             />
             <label className="flex items-start gap-2 pt-1 text-[12.5px] text-ink-muted">
               <input

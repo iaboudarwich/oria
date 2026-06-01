@@ -67,6 +67,30 @@
   "legal": {
     "consent": "J'ai lu et j'accepte les <terms>Conditions d'utilisation</terms> et la <privacy>Politique de confidentialité</privacy>."
   },
+  "auth": {
+    "pw_strength": ["Trop faible", "Faible", "Moyen", "Bon", "Fort"],
+    "email_label": "E-mail",
+    "new_password_label": "Nouveau mot de passe",
+    "verify_title": "Vérifiez votre boîte de réception.",
+    "verify_body": "Nous avons envoyé un lien à {email}. Cliquez dessus pour confirmer.",
+    "verify_resend": "Renvoyer l'e-mail",
+    "verify_cooldown": "Renvoyer dans {seconds}s",
+    "verify_resent": "Envoyé. Vérifiez votre boîte de réception.",
+    "forgot_title": "Réinitialiser votre mot de passe",
+    "forgot_body": "Saisissez votre e-mail et nous vous enverrons un lien de réinitialisation.",
+    "forgot_submit": "Envoyer le lien",
+    "forgot_sent": "Si un compte existe pour {email}, un lien de réinitialisation est en route.",
+    "forgot_back": "Retour à la connexion",
+    "reset_title": "Définir un nouveau mot de passe",
+    "reset_body": "Choisissez un nouveau mot de passe pour votre compte.",
+    "reset_submit": "Mettre à jour le mot de passe",
+    "recovery_title": "Accès perdu à votre authentificateur?",
+    "recovery_backup_title": "D'abord, essayez un code de secours.",
+    "recovery_backup_body": "Lors de la configuration de l'authentification à deux facteurs, nous vous avons fourni dix codes de secours à usage unique. Saisissez-en un sur l'écran précédent à la place du code à 6 chiffres.",
+    "recovery_none_title": "Pas de codes de secours?",
+    "recovery_none_body": "Écrivez-nous depuis l'adresse e-mail de votre compte et nous vous aiderons à récupérer l'accès:",
+    "recovery_back": "Retour à l'écran du code"
+  },
   "empty": {
     "uploads": "Aucun fichier importé.",
     "reminders": "Aucun rappel.",

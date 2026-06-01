@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Wordmark } from "@/components/brand/wordmark";
 import { Button } from "@/components/ui/button";
@@ -91,14 +92,16 @@ export default async function MfaPromptPage({ searchParams }: Props) {
           </form>
 
           <p className="mt-5 text-center text-[12px] text-ink-faint">
-            Lost access? Email{" "}
-            <a
+            <Link
               className="text-brand hover:opacity-80"
-              href="mailto:security@heyoria.com"
+              href={`/login/mfa/recovery${
+                safeNext !== "/dashboard"
+                  ? `?next=${encodeURIComponent(safeNext)}`
+                  : ""
+              }`}
             >
-              security@heyoria.com
-            </a>
-            .
+              Lost access to your authenticator?
+            </Link>
           </p>
         </div>
       </div>

@@ -109,12 +109,11 @@ export async function signUp(formData: FormData) {
   if (error) authError("/signup", error.message, email, next);
 
   if (!data.session) {
-    const params = new URLSearchParams({
-      notice: "Check your email to confirm your account.",
-      email,
-    });
+    // No session yet means email confirmation is required. Send the user
+    // to the dedicated verification screen, which can resend the link.
+    const params = new URLSearchParams({ email });
     if (next !== "/dashboard") params.set("next", next);
-    redirect(`/login?${params.toString()}`);
+    redirect(`/auth/verify?${params.toString()}`);
   }
 
   // Session exists — email was auto-confirmed (e.g. local dev or OTP disabled)
@@ -143,6 +142,80 @@ export async function signInWithMagicLink(formData: FormData) {
   });
   if (next !== "/dashboard") params.set("next", next);
   redirect(`/login?${params.toString()}`);
+}
+
+/**
+ * Resend the sign-up confirmation email. Called from /auth/verify. Returns
+ * a plain result object (not a redirect) so the client can run a cooldown
+ * timer. Never reveals whether the address is registered.
+ */
+export async function resendSignupEmail(
+  email: string,
+): Promise<{ ok: boolean }> {
+  const trimmed = email.trim();
+  if (!trimmed) return { ok: false };
+  const supabase = await createClient();
+  const callbackUrl = new URL(`${siteUrl()}/auth/callback`);
+  // Swallow errors: we always report success to avoid leaking which
+  // addresses have pending sign-ups.
+  await supabase.auth.resend({
+    type: "signup",
+    email: trimmed,
+    options: { emailRedirectTo: callbackUrl.toString() },
+  });
+  return { ok: true };
+}
+
+/**
+ * Start the forgot-password flow. Sends a recovery link that lands on
+ * /auth/callback (which exchanges the code for a session) and then
+ * forwards to /auth/reset. Always redirects to a neutral confirmation so
+ * we never disclose whether an account exists for the address.
+ */
+export async function requestPasswordReset(formData: FormData) {
+  const email = String(formData.get("email") ?? "").trim();
+  if (!email) authError("/login", "Email required");
+
+  const supabase = await createClient();
+  const redirectTo = new URL(`${siteUrl()}/auth/callback`);
+  redirectTo.searchParams.set("next", "/auth/reset");
+  await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: redirectTo.toString(),
+  });
+
+  redirect(`/auth/forgot?sent=1&email=${encodeURIComponent(email)}`);
+}
+
+/**
+ * Complete the forgot-password flow. Requires the recovery session created
+ * by the callback. Updates the password, audits it, and bounces to sign-in.
+ */
+export async function updatePassword(formData: FormData) {
+  const password = String(formData.get("password") ?? "");
+  if (password.length < 8) {
+    redirect("/auth/reset?error=" + encodeURIComponent("Password must be at least 8 characters."));
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    redirect("/auth/forgot?error=" + encodeURIComponent("Your reset link expired. Request a new one."));
+  }
+
+  const { error } = await supabase.auth.updateUser({ password });
+  if (error) {
+    redirect("/auth/reset?error=" + encodeURIComponent(error.message));
+  }
+
+  await logAuditEvent({
+    userId: user.id,
+    action: "settings.password.changed",
+    metadata: { via: "reset" },
+  });
+
+  redirect("/login?notice=" + encodeURIComponent("Password updated. You can sign in now."));
 }
 
 export async function signOut() {

@@ -67,6 +67,30 @@
   "legal": {
     "consent": "I have read and agree to the <terms>Terms of Service</terms> and <privacy>Privacy Policy</privacy>."
   },
+  "auth": {
+    "pw_strength": ["Too weak", "Weak", "Fair", "Good", "Strong"],
+    "email_label": "Email",
+    "new_password_label": "New password",
+    "verify_title": "Check your inbox.",
+    "verify_body": "We sent a link to {email}. Click it to confirm.",
+    "verify_resend": "Resend email",
+    "verify_cooldown": "Resend in {seconds}s",
+    "verify_resent": "Sent. Check your inbox.",
+    "forgot_title": "Reset your password",
+    "forgot_body": "Enter your email and we will send you a reset link.",
+    "forgot_submit": "Send reset link",
+    "forgot_sent": "If an account exists for {email}, a reset link is on its way.",
+    "forgot_back": "Back to sign in",
+    "reset_title": "Set a new password",
+    "reset_body": "Choose a new password for your account.",
+    "reset_submit": "Update password",
+    "recovery_title": "Lost access to your authenticator?",
+    "recovery_backup_title": "First, try a backup code.",
+    "recovery_backup_body": "When you set up two-factor, we gave you ten single-use backup codes. Enter one on the previous screen in place of the 6-digit code.",
+    "recovery_none_title": "No backup codes?",
+    "recovery_none_body": "Email us from the address on your account and we will help you regain access:",
+    "recovery_back": "Back to the code screen"
+  },
   "empty": {
     "uploads": "No uploads yet.",
     "reminders": "No reminders yet.",

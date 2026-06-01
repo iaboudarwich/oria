@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useTransition } from "react";
+import { useEffect, useState, useRef, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { MicButton } from "@/components/ui/mic-button";
 import {
@@ -53,7 +53,25 @@ export function OnboardingChatClient({
     trackableCategories: Set<string>;
   }>({ sections: new Set(), entityTypeKeys: new Set(), entityNames: new Set(), trackableCategories: new Set() });
   const [pending, startTransition] = useTransition();
+  // If a reply takes longer than 10s, reassure the user instead of leaving
+  // them staring at a silent typing indicator. The opening message itself
+  // is static and arrives instantly, so this only ever covers a slow AI turn.
+  const [slow, setSlow] = useState(false);
+  const [prevPending, setPrevPending] = useState(pending);
   const bottomRef = useRef<HTMLDivElement>(null);
+
+  // Clear the "taking longer" note as soon as a turn finishes. Done in
+  // render (not an effect) so there's no flash of stale state.
+  if (pending !== prevPending) {
+    setPrevPending(pending);
+    if (!pending) setSlow(false);
+  }
+
+  useEffect(() => {
+    if (!pending) return;
+    const id = window.setTimeout(() => setSlow(true), 10000);
+    return () => window.clearTimeout(id);
+  }, [pending]);
 
   async function send(text: string) {
     if (!text.trim() || pending) return;
@@ -284,7 +302,7 @@ export function OnboardingChatClient({
         )}
 
         {pending && (
-          <div className="flex justify-start">
+          <div className="flex flex-col items-start gap-1.5">
             <div className="bg-surface-raised border border-line rounded-2xl rounded-bl-sm px-4 py-3">
               <span className="inline-flex gap-1">
                 <span className="h-1.5 w-1.5 rounded-full bg-ink-faint animate-bounce [animation-delay:0ms]" />
@@ -292,6 +310,11 @@ export function OnboardingChatClient({
                 <span className="h-1.5 w-1.5 rounded-full bg-ink-faint animate-bounce [animation-delay:300ms]" />
               </span>
             </div>
+            {slow && (
+              <p className="px-1 text-[12px] text-ink-faint">
+                Oria is taking a little longer than usual. Hang tight.
+              </p>
+            )}
           </div>
         )}
         <div ref={bottomRef} />
