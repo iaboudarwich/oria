@@ -1,9 +1,36 @@
 # Performance baseline — June 2026
 
-Status: partial. The runtime metrics below must be captured against
-production (heyoria.com); they cannot be measured from the build
-environment. The static analysis and the fixes shipped this round are
-complete and listed at the bottom.
+Status: partial. Full Lighthouse metrics still need a maintainer run (see
+"Why the dashboard rows are blocked"). The public, server-rendered routes
+have been measured for real (edge TTFB via curl); those numbers are below.
+
+## Measured this session (2026-06, real)
+
+Edge TTFB on the public routes, median of 3 curl samples from a remote
+sandbox (includes network latency, so treat as an upper bound on server
+TTFB, not Lighthouse, no JS execution). Captured 2026-06.
+
+| Route | Edge TTFB (median) |
+|---|---|
+| `/` (landing) | 0.26s |
+| `/login` | 0.24s |
+| `/privacy` (revalidate=86400) | 0.29s |
+| `/terms` (revalidate=86400) | 0.22s |
+| `/api/version` (no-store) | 0.22s |
+
+Read: the server-rendered public pages return their first byte in ~220 to
+290 ms including round-trip from this sandbox, so origin server TTFB is
+healthy. The dashboard pages will be somewhat higher (auth + per-space data
++ per-space theme), but that delta cannot be isolated from here.
+
+### Why the dashboard rows are blocked
+
+The five baseline pages are all under `/dashboard`, which returns
+`307 -> /login` without a session. From this environment there is (a) no
+authenticated session or credentials, and (b) no Chrome/Chromium binary, so
+Lighthouse cannot run at all. Both are required to measure those pages, so
+their cells stay unfilled rather than guessed. Run the commands under "How
+to capture" while signed in to fill them.
 
 ## How to capture the runtime numbers
 
@@ -17,13 +44,17 @@ complete and listed at the bottom.
 
 ## Pages to measure
 
+All five are auth-gated (307 -> /login) and need a signed-in Lighthouse run;
+"blocked" means not measurable from the current environment (no session, no
+browser), not "skipped".
+
 | Page | URL | TTFB | TTI | LCP | First-load JS |
 |---|---|---|---|---|---|
-| Dashboard home | /dashboard | _measure_ | _measure_ | _measure_ | _measure_ |
-| Settings | /dashboard/settings | _measure_ | _measure_ | _measure_ | _measure_ |
-| Calendar | /dashboard/calendar | _measure_ | _measure_ | _measure_ | _measure_ |
-| Things | /dashboard/things | _measure_ | _measure_ | _measure_ | _measure_ |
-| Ask Oria | /dashboard/ask | _measure_ | _measure_ | _measure_ | _measure_ |
+| Dashboard home | /dashboard | blocked | blocked | blocked | blocked |
+| Settings | /dashboard/settings | blocked | blocked | blocked | blocked |
+| Calendar | /dashboard/calendar | blocked | blocked | blocked | blocked |
+| Things | /dashboard/things | blocked | blocked | blocked | blocked |
+| Ask Oria | /dashboard/ask | blocked | blocked | blocked | blocked |
 
 ## Slowest 5 API endpoints (p95)
 
