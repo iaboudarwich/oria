@@ -2,6 +2,7 @@ import "server-only";
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { DocumentType } from "@/lib/supabase/types";
+import { reminderEligibilityForItem } from "@/lib/ai/reminder-eligibility";
 
 /**
  * Smart calendar/reminder bridge.
@@ -49,22 +50,10 @@ type Proposal = {
   organization_id: string;
   title: string;
   due_at: string;
+  lead_days: number;
   upload_id: string | null;
   source: "suggested";
 };
-
-const ACTION_DOC_TYPES = new Set<DocumentType>([
-  "invoice",
-  "contract",
-  "form",
-]);
-
-const EVENT_DOC_TYPES = new Set<DocumentType>([
-  "boarding_pass",
-  "ticket",
-  "itinerary",
-  "schedule",
-]);
 
 export async function proposeAutoReminders(input: {
   uploadId: string;
@@ -130,21 +119,24 @@ async function runProposalsForItems(
     if (Number.isNaN(dueMs)) continue;
     if (dueMs <= nowMs) continue; // already happened
 
-    const isEventDoc =
-      it.document_type !== null && EVENT_DOC_TYPES.has(it.document_type);
-    if (isEventDoc) continue; // already on the calendar via occurred_at
-
-    const isActionDoc =
-      it.document_type !== null && ACTION_DOC_TYPES.has(it.document_type);
-    const isBill = it.smart_section === "bills";
-    const isRecurring = it.is_recurring === true;
-
-    if (!isActionDoc && !isBill && !isRecurring) continue;
+    // Positive-list gate: only reminder-eligible kinds auto-create. Meals,
+    // photos, notes, and one-off receipts produce nothing. See
+    // reminder-eligibility.ts for the full mapping.
+    const eligibility = reminderEligibilityForItem({
+      document_type: it.document_type,
+      smart_section: it.smart_section,
+      is_recurring: it.is_recurring,
+    });
+    if (!eligibility.eligible) continue;
 
     proposals.push({
       organization_id: scope.organizationId,
-      title: composeTitle(it, { isBill, isRecurring }),
+      title: composeTitle(it, {
+        isBill: eligibility.kind === "bill",
+        isRecurring: it.is_recurring === true,
+      }),
       due_at: it.occurred_at,
+      lead_days: eligibility.leadDays,
       upload_id: scope.uploadId,
       source: "suggested",
     });
