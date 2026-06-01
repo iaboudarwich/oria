@@ -4,6 +4,8 @@ import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
 import { isRtl, type Locale } from "@/i18n/config";
 import { ThemeProvider } from "@/components/ui/theme-provider";
+import { NavigationBreadcrumbs } from "@/components/feedback/navigation-breadcrumbs";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 const inter = Inter({
@@ -45,9 +47,11 @@ export default async function RootLayout({
       <body className="min-h-full bg-canvas text-ink">
         <ThemeProvider>
           <NextIntlClientProvider messages={messages}>
+            <NavigationBreadcrumbs />
             {children}
           </NextIntlClientProvider>
         </ThemeProvider>
+        <Analytics />
       </body>
     </html>
   );

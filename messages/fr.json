@@ -41,7 +41,28 @@
     "generic": "Une erreur s'est produite. Veuillez réessayer.",
     "unauthorized": "Vous n'êtes pas autorisé à effectuer cette action.",
     "not_found": "Introuvable.",
-    "network": "Erreur réseau. Vérifiez votre connexion."
+    "network": "Erreur réseau. Vérifiez votre connexion.",
+    "notFound_title": "Nous n'avons pas trouvé cette page.",
+    "notFound_back": "Retour au tableau de bord",
+    "boundary_title": "Une erreur est survenue de notre côté. Nous y travaillons.",
+    "tryAgain": "Réessayer",
+    "report": "Signaler"
+  },
+  "feedback": {
+    "trigger": "Signaler un problème",
+    "title": "Signaler un problème",
+    "description_label": "Que s'est-il passé?",
+    "description_placeholder": "Dites-nous ce qui n'a pas fonctionné ou ce qui semblait anormal.",
+    "context_note": "Nous joindrons quelques détails techniques pour faciliter le diagnostic:",
+    "submit": "Envoyer le signalement",
+    "sending": "Envoi...",
+    "thanks": "Merci, c'est bien reçu",
+    "cancel": "Annuler",
+    "close": "Fermer",
+    "url": "Page",
+    "browser": "Navigateur",
+    "viewport": "Fenêtre",
+    "recent": "Action récente"
   },
   "empty": {
     "uploads": "Aucun fichier importé.",

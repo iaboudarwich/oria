@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { listUserSpaces, requireContext } from "./organizations";
 import { recordLearningEvent } from "./learning";
 import { logAuditEvent } from "./audit-log";
+import { trackEvent } from "@/lib/analytics";
 
 function combineDateTime(date: string, time: string): string | null {
   if (!date) return null;
@@ -65,6 +66,13 @@ export async function createReminder(formData: FormData): Promise<void> {
     resourceId: newId,
     metadata: { has_due_at: !!due_at, linked_upload: !!upload_id },
   });
+
+  // Fire first_reminder_created on the user's very first reminder.
+  const { count: reminderCount } = await supabase
+    .from("reminders")
+    .select("id", { count: "exact", head: true })
+    .eq("created_by", ctx.profile.id);
+  if ((reminderCount ?? 0) === 1) trackEvent("first_reminder_created");
 
   // Narrow scope: calendar is the only surface that lists reminders.
   // Hitting "/dashboard" used to invalidate the entire layout (sidebar

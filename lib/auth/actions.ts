@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { logAnonAuthFailure, logAuditEvent } from "@/lib/data/audit-log";
 import { clearReauth, markReauthenticated } from "@/lib/auth/reauth";
+import { trackEvent } from "@/lib/analytics";
 
 function siteUrl() {
   return process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
@@ -116,6 +117,8 @@ export async function signUp(formData: FormData) {
     redirect(`/login?${params.toString()}`);
   }
 
+  // Session exists — email was auto-confirmed (e.g. local dev or OTP disabled)
+  trackEvent("signup_completed");
   redirect(next);
 }
 

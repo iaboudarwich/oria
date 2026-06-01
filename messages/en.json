@@ -41,7 +41,28 @@
     "generic": "Something went wrong. Please try again.",
     "unauthorized": "You are not authorized to do this.",
     "not_found": "Not found.",
-    "network": "Network error. Check your connection."
+    "network": "Network error. Check your connection.",
+    "notFound_title": "We could not find that page.",
+    "notFound_back": "Back to dashboard",
+    "boundary_title": "Something went wrong on our end. We are looking into it.",
+    "tryAgain": "Try again",
+    "report": "Report this"
+  },
+  "feedback": {
+    "trigger": "Report a problem",
+    "title": "Report a problem",
+    "description_label": "What happened?",
+    "description_placeholder": "Tell us what went wrong or what felt off.",
+    "context_note": "We will include a few technical details to help us debug:",
+    "submit": "Send report",
+    "sending": "Sending...",
+    "thanks": "Thanks, we got it",
+    "cancel": "Cancel",
+    "close": "Close",
+    "url": "Page",
+    "browser": "Browser",
+    "viewport": "Viewport",
+    "recent": "Recent action"
   },
   "empty": {
     "uploads": "No uploads yet.",

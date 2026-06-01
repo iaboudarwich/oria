@@ -21,6 +21,7 @@ import { checkDailyUploadBytes, checkTotalUserStorage } from "./quotas";
 import { contentHashHex } from "./upload-reuse";
 import { logAuditEvent } from "./audit-log";
 import { rateLimit, RATE_PRESETS } from "@/lib/rate-limit";
+import { trackEvent } from "@/lib/analytics";
 import {
   convertHeicToJpeg,
   heicNameToJpeg,
@@ -361,6 +362,15 @@ export async function uploadFile(formData: FormData): Promise<Result> {
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/inbox");
   revalidatePath("/dashboard/timeline");
+
+  // Fire first_upload only on the user's very first successful upload.
+  // Count is cheap (index-only on uploads.uploaded_by).
+  const { count: uploadCount } = await supabase
+    .from("uploads")
+    .select("id", { count: "exact", head: true })
+    .eq("uploaded_by", ctx.profile.id)
+    .is("deleted_at", null);
+  if ((uploadCount ?? 0) === 1) trackEvent("first_upload");
 
   // Calm, non-blocking storage warning once a user crosses 80% of their
   // lifetime cap. We already passed the hard check above; this just gives

@@ -13,6 +13,8 @@ import {
   createConversation,
   addMessage,
 } from "@/lib/data/conversations";
+import { createClient } from "@/lib/supabase/server";
+import { trackEvent } from "@/lib/analytics";
 import type { SectionScope } from "@/lib/data/section-scope";
 import type { Section } from "@/lib/supabase/types";
 
@@ -180,6 +182,20 @@ export async function POST(request: Request) {
             role: "assistant",
             content: fullAnswer,
           });
+        }
+
+        // Fire first_ask_oria_query on the user's very first Ask Oria query.
+        // Only when this request opened a new conversation (client sent no
+        // conversationId). Count is an index-only scan on conversations.user_id.
+        if (!body.conversationId && fullAnswer) {
+          void (async () => {
+            const supabase = await createClient();
+            const { count } = await supabase
+              .from("conversations")
+              .select("id", { count: "exact", head: true })
+              .eq("user_id", ctx.profile.id);
+            if ((count ?? 0) === 1) trackEvent("first_ask_oria_query");
+          })();
         }
 
         // Fire-and-forget telemetry. Same shape as search.queried so the

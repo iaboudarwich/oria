@@ -477,3 +477,31 @@ export function CameraIcon({ size = 16, ...rest }: IconProps) {
     </svg>
   );
 }
+
+export function BugIcon({ size = 16, ...rest }: IconProps) {
+  return (
+    <svg {...base(size, rest)}>
+      <rect x="8" y="6" width="8" height="12" rx="4" />
+      <path d="M9 6a3 3 0 0 1 6 0" />
+      <path d="M3 12h5M16 12h5M4 8l3 1.5M20 8l-3 1.5M4 16l3-1.5M20 16l-3-1.5M12 6v12" />
+    </svg>
+  );
+}
+
+export function RotateIcon({ size = 16, ...rest }: IconProps) {
+  return (
+    <svg {...base(size, rest)}>
+      <path d="M3 12a9 9 0 1 0 2.6-6.4L3 8" />
+      <path d="M3 3v5h5" />
+    </svg>
+  );
+}
+
+export function AlertIcon({ size = 18, ...rest }: IconProps) {
+  return (
+    <svg {...base(size, rest)}>
+      <path d="M10.3 4.3 2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 4.3a2 2 0 0 0-3.4 0z" />
+      <path d="M12 9v4M12 17h.01" />
+    </svg>
+  );
+}

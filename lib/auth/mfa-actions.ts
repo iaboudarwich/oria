@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { rateLimit, RATE_PRESETS } from "@/lib/rate-limit";
 import { logAuditEvent } from "@/lib/data/audit-log";
 import { isReauthenticated, markReauthenticated } from "@/lib/auth/reauth";
+import { trackEvent } from "@/lib/analytics";
 import {
   clearBackupCodes,
   consumeBackupCode,
@@ -123,6 +124,7 @@ export async function enrollVerify(
     action: "mfa.enrolled",
     metadata: { factor_id: factorId },
   });
+  trackEvent("2fa_enrolled");
   return { ok: true, backupCodes };
 }
 

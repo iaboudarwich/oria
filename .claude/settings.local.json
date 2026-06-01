@@ -154,7 +154,10 @@
       "Bash(npx vitest *)",
       "Bash(echo \"configured email: $\\(git config user.email\\)\")",
       "Bash(echo \"configured name: $\\(git config user.name\\)\")",
-      "Bash(find . *)"
+      "Bash(find . *)",
+      "Bash(npx tsc *)",
+      "Bash(grep -E \"\\\\.\\(json|ts\\)$\")",
+      "Bash(awk '{print $NF}')"
     ]
   }
 }

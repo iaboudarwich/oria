@@ -5,6 +5,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
 import { getOnboardingResponse, getOpeningMessage } from "@/lib/ai/guided-onboarding";
 import type { OnboardingTurn, OnboardingAIResponse, OnboardingSuggestions } from "@/lib/ai/guided-onboarding";
+import { trackEvent } from "@/lib/analytics";
 
 type StartResult = {
   sessionId: string;
@@ -171,6 +172,7 @@ export async function applyOnboarding(
     .update({ has_completed_guided_onboarding: true })
     .eq("id", user.id);
 
+  trackEvent("onboarding_completed");
   revalidatePath("/dashboard", "layout");
 }
 

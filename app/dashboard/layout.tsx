@@ -124,6 +124,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
       name: ctx.profile.full_name ?? ctx.profile.email,
       email: ctx.profile.email,
     },
+    userId: ctx.profile.id,
     org: {
       name: ctx.organization.name,
       role: ctx.membership.role,

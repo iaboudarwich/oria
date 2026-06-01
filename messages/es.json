@@ -41,7 +41,28 @@
     "generic": "Algo salió mal. Por favor, inténtelo de nuevo.",
     "unauthorized": "No está autorizado para hacer esto.",
     "not_found": "No encontrado.",
-    "network": "Error de red. Verifique su conexión."
+    "network": "Error de red. Verifique su conexión.",
+    "notFound_title": "No pudimos encontrar esa página.",
+    "notFound_back": "Volver al panel de control",
+    "boundary_title": "Algo salió mal de nuestro lado. Lo estamos investigando.",
+    "tryAgain": "Reintentar",
+    "report": "Informar de esto"
+  },
+  "feedback": {
+    "trigger": "Informar de un problema",
+    "title": "Informar de un problema",
+    "description_label": "¿Qué pasó?",
+    "description_placeholder": "Cuéntanos qué salió mal o qué no te pareció bien.",
+    "context_note": "Incluiremos algunos detalles técnicos para ayudarnos a depurar:",
+    "submit": "Enviar informe",
+    "sending": "Enviando...",
+    "thanks": "Gracias, lo recibimos",
+    "cancel": "Cancelar",
+    "close": "Cerrar",
+    "url": "Página",
+    "browser": "Navegador",
+    "viewport": "Ventana",
+    "recent": "Acción reciente"
   },
   "empty": {
     "uploads": "Aún no hay archivos.",

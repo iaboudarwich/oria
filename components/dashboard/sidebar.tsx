@@ -38,6 +38,7 @@ import {
 } from "@/components/dashboard/space-switcher";
 import { ModeToggle } from "@/components/dashboard/mode-toggle";
 import { UserMenu } from "@/components/dashboard/user-menu";
+import { ReportProblemButton } from "@/components/feedback/report-problem-button";
 
 type NavItem = {
   label: string;
@@ -112,6 +113,8 @@ type SidebarSection = {
 
 export type SidebarProps = {
   user: { name: string; email: string };
+  /** Profile id, threaded through for the Report-a-problem context. */
+  userId: string;
   org: { name: string; role: string };
   /** Current top-level mode. Drives which nav cluster appears below the
    * Sections group + which spaces show in the switcher. */
@@ -163,6 +166,7 @@ function iconForSection(s: SidebarSection): React.ComponentType<{ size?: number 
 
 export function Sidebar({
   user,
+  userId,
   mode,
   sections,
   spaces,
@@ -336,6 +340,10 @@ export function Sidebar({
                 </li>
               ))}
             </ul>
+            {/* Report a problem: persistent, quiet, available from every
+                dashboard page. Opens the shared report dialog. */}
+            <ReportProblemButton userId={userId} collapsed={collapsed} />
+
             {/* Discreet security-disclosure link at the very bottom.
                 Doesn't merit a top-level nav slot, but every page should
                 give a path to it for outsiders who land here. */}

@@ -2,6 +2,7 @@ import "server-only";
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
+import { trackEvent } from "@/lib/analytics";
 
 export type TemplateKey =
   | "personal"
@@ -237,6 +238,7 @@ export async function applyTemplates(
     .update({ template_key: storedKey })
     .eq("id", organizationId);
 
+  trackEvent("workspace_template_selected", { template: storedKey });
   revalidatePath("/dashboard", "layout");
 
   return {
