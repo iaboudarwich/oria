@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { Topbar } from "@/components/dashboard/topbar";
+import { EmptyState } from "@/components/ui/empty-state";
 import { DropzoneCompact } from "@/components/upload/dropzone-compact";
 import { TextLogForm } from "@/components/section/text-log-form";
 import { Thumbnail } from "@/components/upload/thumbnail";
@@ -39,6 +41,7 @@ type Props = { params: Promise<{ section: string }> };
 
 export default async function SectionPage({ params }: Props) {
   const { section } = await params;
+  const t = await getTranslations("empty");
 
   // Special: "review". uploads Oria couldn't confidently classify.
   if (section === "review") {
@@ -100,9 +103,7 @@ export default async function SectionPage({ params }: Props) {
         }
       >
         {entries.length === 0 ? (
-          <p className="px-1 text-[13px] text-ink-faint">
-            Nothing here yet.
-          </p>
+          <EmptyState compact headline={t("section_headline", { name: custom.name })} />
         ) : (
           <EntryList entries={entries} thumbs={thumbs} />
         )}
@@ -138,9 +139,7 @@ export default async function SectionPage({ params }: Props) {
       }
     >
       {entries.length === 0 ? (
-        <p className="px-1 text-[13px] text-ink-faint">
-          Nothing here yet.
-        </p>
+        <EmptyState compact headline={t("section_headline", { name: meta.label })} />
       ) : (
         <EntryList entries={entries} thumbs={thumbs} />
       )}

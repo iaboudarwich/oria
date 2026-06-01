@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
+import { EmptyState } from "@/components/ui/empty-state";
 import {
   actionLabel,
   summariseUserAgent,
@@ -22,7 +24,8 @@ type Props = {
  * honest baseline; a future iteration can add a server-side
  * batch-resolve if we want country labels.
  */
-export function AuditActivity({ events }: Props) {
+export async function AuditActivity({ events }: Props) {
+  const t = await getTranslations("empty");
   return (
     <section className="space-y-4">
       <div>
@@ -36,9 +39,7 @@ export function AuditActivity({ events }: Props) {
       </div>
 
       {events.length === 0 ? (
-        <div className="rounded-2xl border border-line bg-canvas px-4 py-3 text-[13px] text-ink-muted">
-          No activity yet.
-        </div>
+        <EmptyState compact headline={t("audit_headline")} />
       ) : (
         <div className="overflow-hidden rounded-2xl border border-line bg-surface-raised">
           <table className="w-full text-[12.5px]">

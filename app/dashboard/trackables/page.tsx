@@ -1,5 +1,8 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { Topbar } from "@/components/dashboard/topbar";
+import { EmptyState } from "@/components/ui/empty-state";
+import { PulseIcon } from "@/components/ui/icon";
 import { listTrackables, daysUntilRenewal } from "@/lib/data/trackables";
 import type { Trackable } from "@/lib/data/trackables";
 
@@ -61,6 +64,7 @@ function formatCost(t: Trackable): string {
 }
 
 export default async function TrackablesPage() {
+  const t = await getTranslations("empty");
   const trackables = await listTrackables();
 
   // Group by category
@@ -77,13 +81,12 @@ export default async function TrackablesPage() {
       <Topbar title="Trackables" />
       <div className="animate-fade-up space-y-8">
         {trackables.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-line px-6 py-12 text-center">
-            <p className="text-[14px] font-medium text-ink">No trackables yet</p>
-            <p className="mt-1 text-[13px] text-ink-muted">
-              Upload an insurance policy, subscription invoice, or ID document.
-              Oria will detect it automatically.
-            </p>
-          </div>
+          <EmptyState
+            icon={<PulseIcon size={22} />}
+            headline={t("trackables_headline")}
+            description={t("trackables_desc")}
+            cta={{ label: t("trackables_cta"), href: "/dashboard/inbox" }}
+          />
         ) : (
           sortedCategories.map((cat) => {
             const items = groups.get(cat) ?? [];

@@ -1,10 +1,13 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import {
+  CalendarIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
 } from "@/components/ui/icon";
+import { EmptyState } from "@/components/ui/empty-state";
 import {
   CALENDAR_CATEGORY_LABEL,
   CALENDAR_TOPIC_LABEL,
@@ -513,12 +516,15 @@ function ListView({
   showSpacePill: boolean;
   activeSpaceId: string;
 }) {
+  const t = useTranslations("empty");
   const groups = useMemo(() => groupList(entries), [entries]);
   if (groups.length === 0) {
     return (
-      <p className="px-1 text-[13px] text-ink-faint">
-        Nothing on the calendar yet.
-      </p>
+      <EmptyState
+        icon={<CalendarIcon size={22} />}
+        headline={t("calendar_headline")}
+        description={t("calendar_desc")}
+      />
     );
   }
   return (

@@ -1,5 +1,8 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { Topbar } from "@/components/dashboard/topbar";
+import { EmptyState } from "@/components/ui/empty-state";
+import { UploadIcon } from "@/components/ui/icon";
 import { DropzoneCompact } from "@/components/upload/dropzone-compact";
 import { Thumbnail } from "@/components/upload/thumbnail";
 import { SearchHero } from "@/components/dashboard/search-hero";
@@ -26,6 +29,7 @@ import { QuickActions } from "@/components/dashboard/quick-actions";
 import type { Section } from "@/lib/supabase/types";
 
 export default async function DashboardHome() {
+  const t = await getTranslations("empty");
   const ctx = await getCurrentContext();
   const greeting = ctx?.profile.full_name
     ? `Hi, ${ctx.profile.full_name.split(" ")[0]}`
@@ -94,7 +98,12 @@ export default async function DashboardHome() {
         <InsightsCard insights={insights} />
 
         {isEmpty ? (
-          <Onboarding orgKind={ctx?.organization.kind ?? "personal"} />
+          <EmptyState
+            icon={<UploadIcon size={22} />}
+            headline={t("home_headline")}
+            description={t("home_desc")}
+            cta={{ label: t("home_cta"), href: "/dashboard/inbox" }}
+          />
         ) : (
           <Recent uploads={uploads} thumbs={thumbs} />
         )}
@@ -120,50 +129,6 @@ export default async function DashboardHome() {
 
 function AddRow() {
   return <DropzoneCompact />;
-}
-
-function Onboarding({ orgKind }: { orgKind: string }) {
-  const steps: Array<{ title: string; href: string }> = [
-    { title: "Upload your first file", href: "/dashboard/inbox" },
-    { title: "Ask Oria a question", href: "/dashboard/ask" },
-    orgKind === "personal"
-      ? {
-          title: "Invite a family member to a Circle",
-          href: "/dashboard/circles/new",
-        }
-      : { title: "Invite a teammate", href: "/dashboard/circle" },
-    orgKind === "personal"
-      ? {
-          title: "Create a Workspace for work or property",
-          href: "/dashboard/work/spaces/new",
-        }
-      : { title: "Switch to Personal", href: "/dashboard" },
-  ];
-  return (
-    <section>
-      <h2 className="mb-2 px-1 text-eyebrow">
-        Get started
-      </h2>
-      <ul className="rounded-2xl border border-line bg-surface-raised divide-y divide-line">
-        {steps.map((s, i) => (
-          <li key={s.href}>
-            <Link
-              href={s.href}
-              className="flex items-center gap-3 px-3.5 py-2.5 transition-base hover:bg-canvas/60"
-            >
-              <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-line text-[10.5px] text-ink-muted">
-                {i + 1}
-              </span>
-              <span className="min-w-0 flex-1 truncate text-[13px] text-ink">
-                {s.title}
-              </span>
-              <span className="text-[11px] text-ink-faint">Open</span>
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </section>
-  );
 }
 
 function Recent({

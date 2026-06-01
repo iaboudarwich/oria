@@ -1,5 +1,8 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { Topbar } from "@/components/dashboard/topbar";
+import { EmptyState } from "@/components/ui/empty-state";
+import { InboxIcon } from "@/components/ui/icon";
 import { DropzoneCompact } from "@/components/upload/dropzone-compact";
 import { UploadsPoller } from "@/components/upload/uploads-poller";
 import { SectionsGrid } from "@/components/dashboard/sections-grid";
@@ -22,6 +25,7 @@ import {
 export const metadata = { title: "Upload" };
 
 export default async function UploadPage() {
+  const t = await getTranslations("empty");
   // Best-effort: recover any uploads stuck in "processing" before we
   // list them, so the row either flips fast or shows a real Failed
   // pill instead of pretending it's still reading.
@@ -77,7 +81,15 @@ export default async function UploadPage() {
           </Link>
         ) : null}
         <SectionSuggestionsBanner suggestions={pendingSuggestions} />
-        <InboxList items={uploads} thumbs={thumbs} />
+        {uploads.length === 0 ? (
+          <EmptyState
+            icon={<InboxIcon size={22} />}
+            headline={t("inbox_headline")}
+            description={t("inbox_desc")}
+          />
+        ) : (
+          <InboxList items={uploads} thumbs={thumbs} />
+        )}
         <SectionsGrid sections={allSections} counts={counts} />
       </div>
 

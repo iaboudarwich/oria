@@ -1,5 +1,8 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { Topbar } from "@/components/dashboard/topbar";
+import { EmptyState } from "@/components/ui/empty-state";
+import { BoxIcon } from "@/components/ui/icon";
 import {
   listEntityTypes,
   listEntities,
@@ -15,6 +18,7 @@ export default async function ThingsPage({
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const sp: Record<string, string | string[] | undefined> = await (searchParams ?? Promise.resolve({}));
+  const t = await getTranslations("empty");
   const ctx = await requireContext();
   const [types, counts] = await Promise.all([
     listEntityTypes(),
@@ -78,20 +82,12 @@ export default async function ThingsPage({
         {/* Main area */}
         <div className="min-w-0 flex-1">
           {!activeType ? (
-            <div className="rounded-2xl border border-dashed border-line px-6 py-12 text-center">
-              <p className="text-[14px] font-medium text-ink">
-                Create your first entity type
-              </p>
-              <p className="mt-1 text-[13px] text-ink-muted">
-                Track anything: cars, properties, vendors, art, equipment.
-              </p>
-              <Link
-                href="/dashboard/things/new-type"
-                className="mt-4 inline-flex h-10 items-center rounded-xl bg-ink px-4 text-[13px] text-surface hover:bg-ink-soft transition-base"
-              >
-                Create a type
-              </Link>
-            </div>
+            <EmptyState
+              icon={<BoxIcon size={22} />}
+              headline={t("things_headline")}
+              description={t("things_desc")}
+              cta={{ label: t("things_cta"), href: "/dashboard/inbox" }}
+            />
           ) : (
             <>
               <div className="mb-4 flex items-center justify-between">
@@ -107,17 +103,14 @@ export default async function ThingsPage({
               </div>
 
               {entities.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-line px-6 py-10 text-center">
-                  <p className="text-[13px] text-ink-faint">
-                    No {activeType.label_plural.toLowerCase()} yet.
-                  </p>
-                  <Link
-                    href={`/dashboard/things/new?type=${activeType.id}`}
-                    className="mt-2 inline-block text-[12px] text-ink-muted hover:text-ink"
-                  >
-                    Add one
-                  </Link>
-                </div>
+                <EmptyState
+                  compact
+                  headline={t("things_type_empty")}
+                  cta={{
+                    label: `+ ${activeType.label_singular}`,
+                    href: `/dashboard/things/new?type=${activeType.id}`,
+                  }}
+                />
               ) : (
                 <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   {entities.map((e) => {
