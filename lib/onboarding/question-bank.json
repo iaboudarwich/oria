@@ -1,0 +1,64 @@
+{
+  "initial_setup": [
+    {
+      "id": "role",
+      "type": "text",
+      "base": "What do you do? Tell me in a sentence.",
+      "field": "roles"
+    },
+    {
+      "id": "role_followup",
+      "type": "text",
+      "base": "Tell me a bit more about that.",
+      "adaptive": true,
+      "field": "roles",
+      "dependsOn": "role"
+    },
+    {
+      "id": "chaos",
+      "type": "multiple_choice",
+      "base": "What feels most chaotic right now?",
+      "options": [
+        "Email overflow",
+        "Bills and finances",
+        "Documents everywhere",
+        "Calendar and appointments",
+        "Honestly, all of it"
+      ],
+      "field": "chaos_areas"
+    },
+    {
+      "id": "data_sources",
+      "type": "text",
+      "base": "Where does most of your life live? Email, paper, apps?",
+      "field": "data_sources"
+    },
+    {
+      "id": "collaborators",
+      "type": "text",
+      "base": "Anyone else in this with you? Family, a partner, a team?",
+      "field": "collaborators"
+    },
+    {
+      "id": "priority",
+      "type": "text",
+      "base": "If Oria could help with one thing this week, what would it be?",
+      "field": "week_one_priority"
+    }
+  ],
+  "reconfigure": [
+    {
+      "id": "reconfig_clarify",
+      "type": "text",
+      "base": "Tell me a little more about what you want to set up.",
+      "adaptive": true,
+      "field": "notes"
+    },
+    {
+      "id": "reconfig_scope",
+      "type": "text",
+      "base": "Anything specific it should include or leave out?",
+      "field": "notes"
+    }
+  ]
+}
