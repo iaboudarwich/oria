@@ -74,6 +74,10 @@ export type AuditAction =
   // Learned routing
   | "routing_rule_learned"
   | "routing_rule_removed"
+  // Onboarding + reshape
+  | "onboarding_executed"
+  | "setup_reconfigured"
+  | "setup_change_reverted"
   // Account security
   | "email.verified"
   | "2fa.prompt_shown"
@@ -295,6 +299,9 @@ export function actionLabel(action: string): string {
     "section.created_from_suggestion": "Created a section from a suggestion",
     "routing_rule_learned":         "Taught Oria a filing rule",
     "routing_rule_removed":         "Removed a learned filing rule",
+    "onboarding_executed":          "Built the initial workspace setup",
+    "setup_reconfigured":           "Reshaped the workspace setup",
+    "setup_change_reverted":        "Undid a setup change",
     "email.verified":               "Verified email address",
     "2fa.prompt_shown":             "Shown the two-factor setup prompt",
     "2fa.prompt_dismissed":         "Dismissed the two-factor setup prompt",

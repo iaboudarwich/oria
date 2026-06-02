@@ -1,9 +1,11 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { getLocale } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { ConversationEngine } from "@/lib/onboarding/conversation-engine";
 import { generateSetupPlan } from "@/lib/onboarding/template-generator";
+import { executeSetupPlan } from "@/lib/onboarding/plan-executor";
 import {
   EMPTY_USER_CONTEXT,
   type ConversationState,
@@ -38,4 +40,16 @@ export async function generateOnboardingPlan(userContext: UserContext): Promise<
   if (!user) return { spaces: [] };
   const locale = await getLocale();
   return generateSetupPlan(userContext, locale);
+}
+
+/** Build everything the (possibly user-edited) plan describes, in one go. */
+export async function executeOnboardingPlan(plan: SetupPlan): Promise<{ ok: boolean }> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false };
+  const result = await executeSetupPlan({ userId: user.id, plan, source: "initial_setup" });
+  if (result.ok) revalidatePath("/dashboard", "layout");
+  return { ok: result.ok };
 }
