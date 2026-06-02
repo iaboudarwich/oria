@@ -120,3 +120,28 @@ export async function setAiConnectionStatus(
     })
     .eq("user_id", userId);
 }
+
+export type PendingAiNotice = { provider: ProviderName; status: ConnectionStatus; at: string };
+
+/** Queue the one-time fallback notice (set when a query falls back at runtime). */
+export async function setPendingAiNotice(userId: string, notice: PendingAiNotice): Promise<void> {
+  const admin = createAdminClient();
+  await admin.from("profiles").update({ pending_ai_notice: notice }).eq("id", userId);
+}
+
+/** Read the pending fallback notice for the user, or null. */
+export async function getPendingAiNotice(userId: string): Promise<PendingAiNotice | null> {
+  const admin = createAdminClient();
+  const { data } = await admin
+    .from("profiles")
+    .select("pending_ai_notice")
+    .eq("id", userId)
+    .maybeSingle();
+  return ((data as { pending_ai_notice: PendingAiNotice | null } | null)?.pending_ai_notice) ?? null;
+}
+
+/** Clear the pending notice after the toast is shown. */
+export async function clearPendingAiNotice(userId: string): Promise<void> {
+  const admin = createAdminClient();
+  await admin.from("profiles").update({ pending_ai_notice: null }).eq("id", userId);
+}

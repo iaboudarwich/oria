@@ -1,5 +1,10 @@
 {
   "ai": {
+    "fallback_rate_limited": "بلغ {name} حد المعدل. تستخدم Oria ذكاءها الافتراضي حتى تعيد الربط.",
+    "fallback_out_of_credits": "نفد رصيد {name}. تستخدم Oria ذكاءها الافتراضي في هذه الأثناء.",
+    "fallback_invalid": "توقف مفتاح {name} عن العمل. تستخدم Oria ذكاءها الافتراضي حتى تعيد الربط.",
+    "fallback_cta": "فتح إعدادات الذكاء الاصطناعي",
+    "fallback_dismiss": "إخفاء",
     "choose_title": "اربط ذكاءك الاصطناعي",
     "choose_subtitle": "استخدم Claude أو ChatGPT أو Gemini الخاص بك لتشغيل Ask Oria.",
     "desc_anthropic": "Claude من Anthropic",

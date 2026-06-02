@@ -1,7 +1,7 @@
 import "server-only";
 
-import { getProvider } from "@/lib/ai-providers";
 import type { Message as ProviderMessage } from "@/lib/ai-providers";
+import { streamConversation } from "./conversation-stream";
 import { recordAiCall, recordAiError } from "./telemetry";
 import type { RetrievedSource } from "./retrieve";
 import type { SectionScope } from "@/lib/data/section-scope";
@@ -176,11 +176,8 @@ export async function* streamAnswer(input: {
   /** PERSONAL CONTEXT block from the personalization layer. */
   personalContext?: string | null;
 }): AsyncGenerator<string, void, unknown> {
-  // Conversation surface: route through the user's connected AI when present,
-  // else Oria's default (resolved by getProvider).
-  const adapter = await getProvider(input.userId, "conversation");
-  if (!adapter) throw new Error("anthropic_not_configured");
-
+  // Conversation surface: routed through the user's connected AI when active,
+  // else Oria's default, with silent fallback (streamConversation).
   const sourceBlock =
     input.sources.length === 0
       ? "(no sources matched the question)"
@@ -228,12 +225,16 @@ export async function* streamAnswer(input: {
   let usage = { input: 0, output: 0 };
 
   try {
-    for await (const delta of adapter.streamComplete(messages, {
-      tier: "fast",
-      maxTokens: 800,
-      onUsage: (u) => {
-        usedModel = u.model;
-        usage = u.tokens;
+    for await (const delta of streamConversation({
+      userId: input.userId,
+      messages,
+      options: {
+        tier: "fast",
+        maxTokens: 800,
+        onUsage: (u) => {
+          usedModel = u.model;
+          usage = u.tokens;
+        },
       },
     })) {
       yield delta;
@@ -241,7 +242,7 @@ export async function* streamAnswer(input: {
   } catch (e) {
     recordAiError({
       surface,
-      model: usedModel || adapter.provider,
+      model: usedModel || "conversation",
       latencyMs: Date.now() - startedAt,
       error: e,
       organizationId: input.telemetry?.organizationId ?? null,

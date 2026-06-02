@@ -1,5 +1,10 @@
 {
   "ai": {
+    "fallback_rate_limited": "Your {name} hit a rate limit. Oria is using its default AI until you reconnect.",
+    "fallback_out_of_credits": "Your {name} ran out of credits. Oria is using its default AI until you fix it.",
+    "fallback_invalid": "Your {name} key stopped working. Oria is using its default AI until you reconnect.",
+    "fallback_cta": "Open AI settings",
+    "fallback_dismiss": "Dismiss",
     "choose_title": "Connect your AI",
     "choose_subtitle": "Use your own Claude, ChatGPT, or Gemini to power Ask Oria.",
     "desc_anthropic": "Claude by Anthropic",

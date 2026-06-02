@@ -1,5 +1,10 @@
 {
   "ai": {
+    "fallback_rate_limited": "Tu {name} alcanzó un límite de uso. Oria usa su IA predeterminada hasta que reconectes.",
+    "fallback_out_of_credits": "Tu {name} se quedó sin créditos. Oria usa su IA predeterminada mientras tanto.",
+    "fallback_invalid": "Tu clave de {name} dejó de funcionar. Oria usa su IA predeterminada hasta que reconectes.",
+    "fallback_cta": "Abrir ajustes de IA",
+    "fallback_dismiss": "Descartar",
     "choose_title": "Conecta tu IA",
     "choose_subtitle": "Usa tu propio Claude, ChatGPT o Gemini para impulsar Ask Oria.",
     "desc_anthropic": "Claude de Anthropic",

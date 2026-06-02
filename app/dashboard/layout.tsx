@@ -4,6 +4,8 @@ import { SidebarShell } from "@/components/dashboard/sidebar-shell";
 import { CommandPalette } from "@/components/command/command-palette";
 import { FeatureTour } from "@/components/onboarding/feature-tour";
 import { OnboardingReveal } from "@/components/onboarding/onboarding-reveal";
+import { AiFallbackToast } from "@/components/ai/fallback-toast";
+import { getPendingAiNotice } from "@/lib/data/ai-connections";
 import { getSeenHintKeys } from "@/lib/data/onboarding";
 import { shouldShowReveal } from "@/lib/onboarding/reveal";
 import { listGmailConnections } from "@/lib/integrations/gmail/connections";
@@ -88,6 +90,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
   ]);
 
   const showReveal = await shouldShowReveal(ctx.profile.id);
+  const aiNotice = await getPendingAiNotice(ctx.profile.id);
 
   // Sidebar connection dot reflects ALL connected services across Google and
   // Microsoft (mail + calendar + files): red if any is in error/revoked, green
@@ -246,6 +249,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
         />
       ) : null}
       {showBetaDisclaimer ? <BetaDisclaimerModal /> : null}
+      <AiFallbackToast notice={aiNotice} />
       <VersionWatcher
         buildVersion={
           process.env.VERCEL_GIT_COMMIT_SHA ??

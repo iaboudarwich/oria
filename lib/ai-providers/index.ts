@@ -1,5 +1,7 @@
 import "server-only";
 
+import { createAdminClient } from "@/lib/supabase/admin";
+import { decryptToken } from "@/lib/security/token-crypto";
 import { AnthropicAdapter } from "./anthropic";
 import { OpenAIAdapter } from "./openai";
 import { GeminiAdapter } from "./gemini";
@@ -35,13 +37,25 @@ export function oriaDefaultAdapter(): ProviderAdapter | null {
 
 /**
  * Resolve the adapter for a conversation query: the user's connected provider
- * when active, else null (caller falls back to Oria's default). Implemented in
- * F3 against user_ai_connections; a stub here keeps F1 self-contained so the
- * conversation surfaces already route through getProvider().
+ * when its status is active, else null (caller falls back to Oria's default).
+ * A non-active status (invalid / rate_limited / out_of_credits) silently falls
+ * back. Reads user_ai_connections directly to avoid a data-layer import cycle.
  */
 async function resolveUserConversationAdapter(userId: string): Promise<ProviderAdapter | null> {
-  void userId; // F3 reads user_ai_connections here; F1 always falls back to Oria.
-  return null;
+  try {
+    const admin = createAdminClient();
+    const { data } = await admin
+      .from("user_ai_connections")
+      .select("provider, encrypted_api_key, status")
+      .eq("user_id", userId)
+      .maybeSingle();
+    if (!data) return null;
+    const r = data as { provider: ProviderName; encrypted_api_key: string; status: string };
+    if (r.status !== "active") return null;
+    return buildAdapter(r.provider, decryptToken(r.encrypted_api_key));
+  } catch {
+    return null;
+  }
 }
 
 /**

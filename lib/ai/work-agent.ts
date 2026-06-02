@@ -1,7 +1,7 @@
 import "server-only";
 
-import { getProvider } from "@/lib/ai-providers";
 import type { Message as ProviderMessage } from "@/lib/ai-providers";
+import { streamConversation } from "./conversation-stream";
 import { recordAiCall, recordAiError } from "./telemetry";
 import type { RetrievedSource } from "./retrieve";
 import type { WorkspaceContext } from "@/lib/data/workspace-context";
@@ -96,9 +96,6 @@ export async function* streamWorkAgent(input: {
   /** Optional attribution for AI telemetry (cost/latency/errors). */
   telemetry?: AgentTelemetry;
 }): AsyncGenerator<string, void, unknown> {
-  const adapter = await getProvider(input.userId, "conversation");
-  if (!adapter) throw new Error("anthropic_not_configured");
-
   const sourceBlock =
     input.sources.length === 0
       ? "(no sources matched this question. Be honest about what you don't have.)"
@@ -117,12 +114,16 @@ export async function* streamWorkAgent(input: {
   let usage = { input: 0, output: 0 };
 
   try {
-    for await (const delta of adapter.streamComplete(messages, {
-      tier: "fast",
-      maxTokens: 1200,
-      onUsage: (u) => {
-        usedModel = u.model;
-        usage = u.tokens;
+    for await (const delta of streamConversation({
+      userId: input.userId,
+      messages,
+      options: {
+        tier: "fast",
+        maxTokens: 1200,
+        onUsage: (u) => {
+          usedModel = u.model;
+          usage = u.tokens;
+        },
       },
     })) {
       yield delta;
@@ -130,7 +131,7 @@ export async function* streamWorkAgent(input: {
   } catch (e) {
     recordAiError({
       surface: "work-agent",
-      model: usedModel || adapter.provider,
+      model: usedModel || "conversation",
       latencyMs: Date.now() - startedAt,
       error: e,
       organizationId: input.telemetry?.organizationId ?? null,

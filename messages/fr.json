@@ -1,5 +1,10 @@
 {
   "ai": {
+    "fallback_rate_limited": "Votre {name} a atteint une limite de débit. Oria utilise son IA par défaut jusqu'à reconnexion.",
+    "fallback_out_of_credits": "Votre {name} n'a plus de crédits. Oria utilise son IA par défaut en attendant.",
+    "fallback_invalid": "Votre clé {name} a cessé de fonctionner. Oria utilise son IA par défaut jusqu'à reconnexion.",
+    "fallback_cta": "Ouvrir les réglages IA",
+    "fallback_dismiss": "Masquer",
     "choose_title": "Connectez votre IA",
     "choose_subtitle": "Utilisez votre propre Claude, ChatGPT ou Gemini pour alimenter Ask Oria.",
     "desc_anthropic": "Claude par Anthropic",
