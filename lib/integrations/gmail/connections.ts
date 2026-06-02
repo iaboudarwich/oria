@@ -3,6 +3,7 @@ import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { encryptToken, decryptToken } from "@/lib/security/token-crypto";
+import { refreshAccessToken } from "./oauth";
 import type { TokenResponse } from "./oauth";
 
 export type ConnectionStatus = "active" | "paused" | "revoked" | "error";
@@ -123,6 +124,72 @@ export async function getGmailConnectionTokens(
     tokenExpiresAt: r.token_expires_at,
     status: r.status,
   };
+}
+
+/**
+ * Return a valid access token for the user's connection, refreshing it (and
+ * re-persisting the encrypted value) when it has expired or is within 2 min of
+ * expiry. Returns null when there is no connection or no refresh token.
+ * Server-only; the returned token is never logged or sent to the client.
+ */
+export async function getFreshGmailAccessToken(
+  userId: string,
+): Promise<{ connectionId: string; email: string; accessToken: string } | null> {
+  const conn = await getGmailConnectionTokens(userId);
+  if (!conn) return null;
+
+  const expiresMs = conn.tokenExpiresAt
+    ? new Date(conn.tokenExpiresAt).getTime()
+    : 0;
+  const stillValid = expiresMs - Date.now() > 120_000;
+  if (stillValid) {
+    return { connectionId: conn.id, email: conn.email, accessToken: conn.accessToken };
+  }
+
+  if (!conn.refreshToken) {
+    await markConnectionError(userId, "Token expired and no refresh token");
+    return null;
+  }
+
+  try {
+    const refreshed = await refreshAccessToken(conn.refreshToken);
+    const admin = createAdminClient();
+    await admin
+      .from("email_connections")
+      .update({
+        access_token_encrypted: encryptToken(refreshed.accessToken),
+        token_expires_at: refreshed.expiresAt,
+        status: "active",
+        last_error: null,
+      })
+      .eq("id", conn.id);
+    return { connectionId: conn.id, email: conn.email, accessToken: refreshed.accessToken };
+  } catch {
+    await markConnectionError(userId, "Failed to refresh access token");
+    return null;
+  }
+}
+
+/** Flag the connection as needing attention (no token material touched). */
+export async function markConnectionError(
+  userId: string,
+  message: string,
+): Promise<void> {
+  const admin = createAdminClient();
+  await admin
+    .from("email_connections")
+    .update({ status: "error", last_error: message })
+    .eq("user_id", userId)
+    .eq("provider", "gmail");
+}
+
+/** Stamp last_synced_at after a successful scan/sync. */
+export async function markConnectionSynced(connectionId: string): Promise<void> {
+  const admin = createAdminClient();
+  await admin
+    .from("email_connections")
+    .update({ last_synced_at: new Date().toISOString(), status: "active", last_error: null })
+    .eq("id", connectionId);
 }
 
 export async function deleteGmailConnection(userId: string, connectionId: string): Promise<void> {

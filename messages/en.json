@@ -141,6 +141,26 @@
     "consent_continue": "Continue to Google",
     "consent_cancel": "Not now"
   },
+  "gmailReview": {
+    "title": "Email items",
+    "subtitle": "Things Oria found in your inbox. Nothing is added until you approve it.",
+    "scanning_title": "Scanning your inbox",
+    "scanning_progress": "{processed} of {total} emails checked",
+    "scanning_starting": "Starting scan...",
+    "scan_failed": "The scan could not finish. Please try again.",
+    "found_count": "{count} items found",
+    "rescan": "Scan again",
+    "empty_title": "Nothing to review yet",
+    "empty_body": "Once a scan finishes, anything worth tracking shows up here.",
+    "confidence": "{percent}% match",
+    "from": "From {sender}",
+    "type_subscription": "Subscription",
+    "type_bill": "Bill",
+    "type_flight": "Flight",
+    "type_booking": "Booking",
+    "type_receipt": "Receipt",
+    "type_other": "Other"
+  },
   "ask": {
     "scope": {
       "aria": "Search scope",

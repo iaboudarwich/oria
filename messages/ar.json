@@ -141,6 +141,26 @@
     "consent_continue": "المتابعة إلى Google",
     "consent_cancel": "ليس الآن"
   },
+  "gmailReview": {
+    "title": "عناصر البريد",
+    "subtitle": "ما عثرت عليه أوريا في بريدك الوارد. لا يُضاف أي شيء حتى توافق عليه.",
+    "scanning_title": "جارٍ فحص بريدك الوارد",
+    "scanning_progress": "تم فحص {processed} من {total} رسالة",
+    "scanning_starting": "جارٍ بدء الفحص...",
+    "scan_failed": "تعذّر إكمال الفحص. يرجى المحاولة مرة أخرى.",
+    "found_count": "تم العثور على {count} عنصراً",
+    "rescan": "إعادة الفحص",
+    "empty_title": "لا يوجد شيء للمراجعة بعد",
+    "empty_body": "بمجرد انتهاء الفحص، سيظهر هنا كل ما يستحق المتابعة.",
+    "confidence": "تطابق {percent}%",
+    "from": "من {sender}",
+    "type_subscription": "اشتراك",
+    "type_bill": "فاتورة",
+    "type_flight": "رحلة طيران",
+    "type_booking": "حجز",
+    "type_receipt": "إيصال",
+    "type_other": "أخرى"
+  },
   "ask": {
     "scope": {
       "aria": "نطاق البحث",

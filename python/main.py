@@ -3,9 +3,10 @@ Oria Python Extraction Service
 FastAPI sidecar for multi-stage document ingestion.
 
 Endpoints:
-  POST /extract   — extract text from a document
-  POST /embed     — embed text chunks
-  GET  /health    — liveness check
+  POST /extract     — extract text from a document
+  POST /embed       — embed text chunks
+  POST /gmail/scan  — fetch + parse recent Gmail messages (read-only)
+  GET  /health      — liveness check
 
 Start locally:
   uvicorn main:app --host 0.0.0.0 --port 8000 --reload
@@ -26,6 +27,11 @@ from typing import Optional
 from fastapi import Depends, FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+
+import base64
+
+import httpx
+from bs4 import BeautifulSoup
 
 from extractors.router import route
 from extractors.embed import embed_texts, embed_query
@@ -210,3 +216,147 @@ def embed_query_endpoint(req: QueryEmbedRequest):
         model="all-MiniLM-L6-v2",
         dimensions=384,
     )
+
+
+# ── /gmail/scan ────────────────────────────────────────────────────────────────
+# Fetch and parse a window of Gmail messages so the Node app can classify them
+# with Claude. We only READ mail (the OAuth scope is gmail.readonly) and never
+# send, delete, or modify anything. Promotions and social mail are excluded so
+# marketing email is never scanned.
+#
+# SECURITY: the access token arrives in the signed request body and is used only
+# to call the Gmail API. It is NEVER logged. Only counts and message ids appear
+# in logs.
+
+_GMAIL_API = "https://gmail.googleapis.com/gmail/v1/users/me"
+
+
+class GmailScanRequest(BaseModel):
+    access_token: str
+    timeframe_months: int = 6
+    # Gmail search suffix appended to the timeframe filter, e.g. "after:2026/01/01"
+    # used by ongoing sync to fetch only mail newer than the last scan.
+    since_query: Optional[str] = None
+    max_messages: int = 200
+
+
+class ScannedEmail(BaseModel):
+    id: str
+    subject: str
+    sender: str
+    date: Optional[str] = None
+    snippet: str
+    body: str
+
+
+class GmailScanResponse(BaseModel):
+    emails: list[ScannedEmail]
+    total: int
+
+
+def _decode_b64url(data: str) -> str:
+    """Decode a Gmail base64url body part to text, tolerating bad padding."""
+    if not data:
+        return ""
+    padded = data + "=" * (-len(data) % 4)
+    try:
+        return base64.urlsafe_b64decode(padded).decode("utf-8", errors="replace")
+    except Exception:
+        return ""
+
+
+def _extract_body(payload: dict) -> str:
+    """Walk a Gmail message payload, preferring text/plain, falling back to
+    HTML stripped to text. Returns at most ~4000 chars."""
+    plain_parts: list[str] = []
+    html_parts: list[str] = []
+
+    def walk(part: dict) -> None:
+        mime = part.get("mimeType", "")
+        body = part.get("body", {})
+        data = body.get("data")
+        if data:
+            if mime == "text/plain":
+                plain_parts.append(_decode_b64url(data))
+            elif mime == "text/html":
+                html_parts.append(_decode_b64url(data))
+        for sub in part.get("parts", []) or []:
+            walk(sub)
+
+    walk(payload)
+
+    if plain_parts:
+        text = "\n".join(plain_parts)
+    elif html_parts:
+        text = BeautifulSoup("\n".join(html_parts), "html.parser").get_text(" ", strip=True)
+    else:
+        text = ""
+    return text[:4000]
+
+
+def _header(headers: list[dict], name: str) -> str:
+    for h in headers:
+        if h.get("name", "").lower() == name.lower():
+            return h.get("value", "")
+    return ""
+
+
+@app.post("/gmail/scan", response_model=GmailScanResponse, dependencies=[Depends(require_signature)])
+def gmail_scan(req: GmailScanRequest):
+    """List and parse recent, non-promotional Gmail messages for classification."""
+    months = max(1, min(req.timeframe_months, 24))
+    query = req.since_query or f"newer_than:{months}m"
+    # Exclude chats, promotions and social so marketing mail is never scanned.
+    query = f"{query} -in:chats -category:promotions -category:social"
+    max_messages = max(1, min(req.max_messages, 400))
+
+    auth = {"Authorization": f"Bearer {req.access_token}"}
+    emails: list[ScannedEmail] = []
+
+    with httpx.Client(timeout=30.0) as client:
+        # 1) Collect message ids (paginated) up to max_messages.
+        ids: list[str] = []
+        page_token: Optional[str] = None
+        while len(ids) < max_messages:
+            params = {
+                "q": query,
+                "maxResults": min(100, max_messages - len(ids)),
+            }
+            if page_token:
+                params["pageToken"] = page_token
+            resp = client.get(f"{_GMAIL_API}/messages", headers=auth, params=params)
+            if resp.status_code == 401:
+                raise HTTPException(status_code=401, detail="Gmail token rejected")
+            if resp.status_code != 200:
+                raise HTTPException(status_code=502, detail=f"Gmail list failed: {resp.status_code}")
+            data = resp.json()
+            ids.extend(m["id"] for m in data.get("messages", []) or [])
+            page_token = data.get("nextPageToken")
+            if not page_token:
+                break
+
+        # 2) Fetch + parse each message.
+        for mid in ids[:max_messages]:
+            resp = client.get(
+                f"{_GMAIL_API}/messages/{mid}",
+                headers=auth,
+                params={"format": "full"},
+            )
+            if resp.status_code != 200:
+                continue
+            msg = resp.json()
+            payload = msg.get("payload", {})
+            headers = payload.get("headers", []) or []
+            emails.append(
+                ScannedEmail(
+                    id=mid,
+                    subject=_header(headers, "Subject"),
+                    sender=_header(headers, "From"),
+                    date=_header(headers, "Date") or None,
+                    snippet=msg.get("snippet", ""),
+                    body=_extract_body(payload),
+                )
+            )
+
+    logger.info("Gmail scan: parsed %d of %d messages", len(emails), len(ids))
+    return GmailScanResponse(emails=emails, total=len(emails))

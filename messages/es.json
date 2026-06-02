@@ -141,6 +141,26 @@
     "consent_continue": "Continuar a Google",
     "consent_cancel": "Ahora no"
   },
+  "gmailReview": {
+    "title": "Elementos de correo",
+    "subtitle": "Lo que Oria encontró en tu bandeja de entrada. No se agrega nada hasta que lo apruebes.",
+    "scanning_title": "Analizando tu bandeja de entrada",
+    "scanning_progress": "{processed} de {total} correos revisados",
+    "scanning_starting": "Iniciando análisis...",
+    "scan_failed": "El análisis no pudo completarse. Inténtalo de nuevo.",
+    "found_count": "{count} elementos encontrados",
+    "rescan": "Analizar de nuevo",
+    "empty_title": "Nada que revisar todavía",
+    "empty_body": "Cuando termine un análisis, todo lo que valga la pena seguir aparecerá aquí.",
+    "confidence": "{percent}% de coincidencia",
+    "from": "De {sender}",
+    "type_subscription": "Suscripción",
+    "type_bill": "Factura",
+    "type_flight": "Vuelo",
+    "type_booking": "Reserva",
+    "type_receipt": "Recibo",
+    "type_other": "Otro"
+  },
   "ask": {
     "scope": {
       "aria": "Alcance de la búsqueda",
