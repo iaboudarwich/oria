@@ -145,6 +145,11 @@
     "members_desc": "Invite people to share access."
   },
   "connections": {
+    "ms_title": "Microsoft services",
+    "ms_subtitle": "Outlook, Calendar, and OneDrive, grouped by account.",
+    "add_outlook": "Connect Outlook",
+    "add_outlook_calendar": "Connect Outlook Calendar",
+    "add_onedrive": "Connect OneDrive",
     "cloud_title": "Google services",
     "cloud_subtitle": "Calendar and Drive, grouped by account.",
     "add_calendar": "Connect Calendar",
@@ -236,6 +241,14 @@
     "details_subtitle": "For the technically curious: the full, binding policy."
   },
   "features": {
+    "connect_outlook": {
+      "title": "Microsoft Outlook",
+      "desc": "Scan Outlook mail for things worth tracking, like Gmail."
+    },
+    "connect_onedrive": {
+      "title": "Microsoft OneDrive",
+      "desc": "Link files (Word, Excel, PowerPoint); Oria reads them on demand."
+    },
     "connect_calendar": {
       "title": "Google Calendar",
       "desc": "Sync events and let Oria file them by what they are."
@@ -459,6 +472,7 @@
     "link_connect": "Connect",
     "link_available": "Available",
     "link_via_drive": "Available once Google Drive is connected",
+    "link_via_onedrive": "Available once Microsoft OneDrive is connected",
     "link_connected": "Connected",
     "link_coming_soon": "Coming soon",
     "link_desc_gmail": "Scan your inbox for bills, subscriptions, and bookings.",

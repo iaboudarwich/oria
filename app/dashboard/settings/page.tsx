@@ -15,6 +15,7 @@ import { DeleteAccountPanel } from "@/components/settings/delete-account-panel";
 import { ResetAccountPanel } from "@/components/settings/reset-account-panel";
 import { ConnectionsPanel } from "@/components/settings/connections-panel";
 import { CloudServicesPanel } from "@/components/settings/cloud-services-panel";
+import { MicrosoftServicesPanel } from "@/components/settings/microsoft-services-panel";
 import { SectionsEditorLazy } from "@/components/settings/sections-editor-lazy";
 import { SecurityPanel } from "@/components/settings/security-panel";
 import { SessionsPanel } from "@/components/settings/sessions-panel";
@@ -234,6 +235,7 @@ export default async function SettingsPage({
               notice={typeof sp.notice === "string" ? sp.notice : undefined}
             />
             <CloudServicesPanel userId={ctx.profile.id} />
+            <MicrosoftServicesPanel userId={ctx.profile.id} />
           </div>
         )}
 

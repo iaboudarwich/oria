@@ -145,6 +145,11 @@
     "members_desc": "Invitez des personnes à partager l'accès."
   },
   "connections": {
+    "ms_title": "Services Microsoft",
+    "ms_subtitle": "Outlook, Agenda et OneDrive, regroupés par compte.",
+    "add_outlook": "Connecter Outlook",
+    "add_outlook_calendar": "Connecter l'agenda Outlook",
+    "add_onedrive": "Connecter OneDrive",
     "cloud_title": "Services Google",
     "cloud_subtitle": "Agenda et Drive, regroupés par compte.",
     "add_calendar": "Connecter l'agenda",
@@ -236,6 +241,14 @@
     "details_subtitle": "Pour les curieux techniques : la politique complète et contraignante."
   },
   "features": {
+    "connect_outlook": {
+      "title": "Microsoft Outlook",
+      "desc": "Analyse le courrier Outlook pour ce qui mérite un suivi, comme Gmail."
+    },
+    "connect_onedrive": {
+      "title": "Microsoft OneDrive",
+      "desc": "Liez des fichiers (Word, Excel, PowerPoint); Oria les lit à la demande."
+    },
     "connect_calendar": {
       "title": "Google Agenda",
       "desc": "Synchronisez les événements et laissez Oria les classer."
@@ -459,6 +472,7 @@
     "link_connect": "Connecter",
     "link_available": "Disponible",
     "link_via_drive": "Disponible une fois Google Drive connecté",
+    "link_via_onedrive": "Disponible une fois Microsoft OneDrive connecté",
     "link_connected": "Connecté",
     "link_coming_soon": "Bientôt",
     "link_desc_gmail": "Analyser votre boîte pour factures, abonnements et réservations.",

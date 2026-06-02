@@ -8,6 +8,7 @@ import { getSeenHintKeys } from "@/lib/data/onboarding";
 import { shouldShowReveal } from "@/lib/onboarding/reveal";
 import { listGmailConnections } from "@/lib/integrations/gmail/connections";
 import { listCloudConnections } from "@/lib/google/cloud-connections";
+import { listOutlookConnections } from "@/lib/microsoft/connections";
 import { TimezoneCookie } from "@/components/section/timezone-cookie";
 import {
   getCurrentContext,
@@ -70,6 +71,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
     seenHints,
     gmailConnections,
     cloudConnections,
+    outlookConnections,
   ] = await Promise.all([
     listAllSections({ includeHidden: false }),
     listUserSpaces(),
@@ -82,15 +84,18 @@ export default async function DashboardLayout({ children }: { children: ReactNod
     getSeenHintKeys(),
     listGmailConnections(ctx.profile.id),
     listCloudConnections(ctx.profile.id),
+    listOutlookConnections(ctx.profile.id),
   ]);
 
   const showReveal = await shouldShowReveal(ctx.profile.id);
 
-  // Sidebar connection dot reflects ALL Google services (Mail + Calendar +
-  // Drive): red if any is in error/revoked, green if any is connected.
+  // Sidebar connection dot reflects ALL connected services across Google and
+  // Microsoft (mail + calendar + files): red if any is in error/revoked, green
+  // if any is connected.
   const allConnStatuses = [
     ...gmailConnections.map((c) => c.status),
     ...cloudConnections.map((c) => c.status),
+    ...outlookConnections.map((c) => c.status),
   ];
   const connectionsHealth: "ok" | "error" | "none" =
     allConnStatuses.length === 0

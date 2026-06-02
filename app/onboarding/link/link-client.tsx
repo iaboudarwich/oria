@@ -9,42 +9,47 @@ type Connector = {
   name: string;
   live?: boolean;
   href?: string;
-  // Docs/Sheets/Slides come through Drive: enabled once Drive is connected.
-  viaDrive?: boolean;
+  // Office-type connectors come through a parent file service: they light up
+  // once that service is connected (Docs/Sheets/Slides via Drive; Word/Excel/
+  // PowerPoint via OneDrive).
+  via?: "drive" | "onedrive";
 };
 
-// Gmail, Google Calendar, and Google Drive are live. Docs/Sheets/Slides are
-// reached through Drive (drive.file), so they light up once Drive is connected.
-// Microsoft + Banking remain coming-soon so the user sees the ambition.
+// Google (Gmail, Calendar, Drive) and Microsoft (Outlook, OneDrive) are live.
+// Office formats light up via their parent file service. Banking stays
+// coming-soon so the user sees the ambition.
 const CONNECTORS: Connector[] = [
   { id: "gmail", name: "Gmail", live: true, href: "/api/oauth/gmail/start" },
   { id: "gcal", name: "Google Calendar", live: true, href: "/api/oauth/google/connect?service=calendar" },
   { id: "gdrive", name: "Google Drive", live: true, href: "/api/oauth/google/connect?service=drive" },
-  { id: "gdocs", name: "Google Docs", viaDrive: true },
-  { id: "gsheets", name: "Google Sheets", viaDrive: true },
-  { id: "gslides", name: "Google Slides", viaDrive: true },
-  { id: "outlook", name: "Microsoft Outlook" },
-  { id: "onedrive", name: "Microsoft OneDrive" },
-  { id: "word", name: "Word" },
-  { id: "excel", name: "Excel" },
-  { id: "powerpoint", name: "PowerPoint" },
+  { id: "gdocs", name: "Google Docs", via: "drive" },
+  { id: "gsheets", name: "Google Sheets", via: "drive" },
+  { id: "gslides", name: "Google Slides", via: "drive" },
+  { id: "outlook", name: "Microsoft Outlook", live: true, href: "/api/oauth/microsoft/connect?service=mail" },
+  { id: "onedrive", name: "Microsoft OneDrive", live: true, href: "/api/oauth/microsoft/connect?service=onedrive" },
+  { id: "word", name: "Word", via: "onedrive" },
+  { id: "excel", name: "Excel", via: "onedrive" },
+  { id: "powerpoint", name: "PowerPoint", via: "onedrive" },
   { id: "banking", name: "Banking" },
 ];
 
 /**
- * Link-everything step. Gmail, Calendar, and Drive connect via OAuth;
- * Docs/Sheets/Slides light up once Drive is connected (they are linked through
- * the Drive Picker). Everything else is a clear "coming soon". Either action
- * proceeds to the reveal on the dashboard.
+ * Link-everything step. Google and Microsoft mail/file/calendar connect via
+ * OAuth; the Office-format cards light up once their parent file service is
+ * connected. Banking is "coming soon". Either action proceeds to the reveal.
  */
 export function LinkClient({
   gmailConnected,
   calendarConnected,
   driveConnected,
+  outlookConnected,
+  onedriveConnected,
 }: {
   gmailConnected: boolean;
   calendarConnected: boolean;
   driveConnected: boolean;
+  outlookConnected: boolean;
+  onedriveConnected: boolean;
 }) {
   const t = useTranslations("onboarding");
   const router = useRouter();
@@ -52,7 +57,12 @@ export function LinkClient({
   const isConnected = (id: string): boolean =>
     (id === "gmail" && gmailConnected) ||
     (id === "gcal" && calendarConnected) ||
-    (id === "gdrive" && driveConnected);
+    (id === "gdrive" && driveConnected) ||
+    (id === "outlook" && outlookConnected) ||
+    (id === "onedrive" && onedriveConnected);
+
+  const viaReady = (c: Connector): boolean =>
+    (c.via === "drive" && driveConnected) || (c.via === "onedrive" && onedriveConnected);
 
   return (
     <div className="flex min-h-screen flex-col bg-canvas">
@@ -76,13 +86,13 @@ export function LinkClient({
         <div className="mt-6 grid gap-2.5 sm:grid-cols-2">
           {CONNECTORS.map((c) => {
             const connected = isConnected(c.id);
-            // Docs/Sheets/Slides: enabled (shown as available) once Drive is on.
-            const viaDriveReady = c.viaDrive && driveConnected;
+            // Office cards show as "available" once their parent file service is on.
+            const ready = viaReady(c);
             const badge = connected ? (
               <span className="rounded-md bg-sage/15 px-2 py-0.5 text-[11px] font-medium text-[#3f5240]">
                 {t("link_connected")}
               </span>
-            ) : viaDriveReady ? (
+            ) : ready ? (
               <span className="rounded-md bg-sage/15 px-2 py-0.5 text-[11px] font-medium text-[#3f5240]">
                 {t("link_available")}
               </span>
@@ -95,7 +105,12 @@ export function LinkClient({
                 {t("link_coming_soon")}
               </span>
             );
-            const desc = c.viaDrive && !driveConnected ? t("link_via_drive") : t(`link_desc_${c.id}`);
+            const desc =
+              c.via && !ready
+                ? c.via === "onedrive"
+                  ? t("link_via_onedrive")
+                  : t("link_via_drive")
+                : t(`link_desc_${c.id}`);
             const body = (
               <div className="flex h-full items-start justify-between gap-3 rounded-2xl border border-line bg-surface-raised p-4">
                 <div className="min-w-0">
@@ -113,8 +128,8 @@ export function LinkClient({
                 </a>
               );
             }
-            // viaDrive items are dimmed until Drive is connected.
-            const dim = (!c.live && !c.viaDrive) || (c.viaDrive && !driveConnected);
+            // Office cards are dimmed until their parent service is connected.
+            const dim = (!c.live && !c.via) || (!!c.via && !ready);
             return (
               <div key={c.id} className={dim ? "opacity-70" : ""}>
                 {body}

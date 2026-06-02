@@ -36,6 +36,8 @@ const GROUPS: { group: string; items: Item[] }[] = [
       { id: "connect_email", href: "/dashboard/settings?tab=connections" },
       { id: "connect_calendar", href: "/dashboard/settings?tab=connections" },
       { id: "connect_drive", href: "/dashboard/settings?tab=connections" },
+      { id: "connect_outlook", href: "/dashboard/settings?tab=connections" },
+      { id: "connect_onedrive", href: "/dashboard/settings?tab=connections" },
       { id: "routing", href: "/dashboard/settings?tab=connections" },
     ],
   },

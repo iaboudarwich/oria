@@ -145,6 +145,11 @@
     "members_desc": "ادعُ أشخاصاً لمشاركة الوصول."
   },
   "connections": {
+    "ms_title": "خدمات Microsoft",
+    "ms_subtitle": "Outlook والتقويم وOneDrive، مجمّعة حسب الحساب.",
+    "add_outlook": "ربط Outlook",
+    "add_outlook_calendar": "ربط تقويم Outlook",
+    "add_onedrive": "ربط OneDrive",
     "cloud_title": "خدمات Google",
     "cloud_subtitle": "التقويم وDrive، مجمّعة حسب الحساب.",
     "add_calendar": "ربط التقويم",
@@ -236,6 +241,14 @@
     "details_subtitle": "للمهتمين بالجوانب التقنية: السياسة الكاملة والمُلزمة."
   },
   "features": {
+    "connect_outlook": {
+      "title": "Microsoft Outlook",
+      "desc": "يفحص بريد Outlook بحثاً عما يستحق المتابعة، مثل Gmail."
+    },
+    "connect_onedrive": {
+      "title": "Microsoft OneDrive",
+      "desc": "اربط الملفات (Word وExcel وPowerPoint)؛ تقرؤها Oria عند الحاجة."
+    },
     "connect_calendar": {
       "title": "تقويم Google",
       "desc": "زامِن الأحداث ودع Oria تصنّفها حسب نوعها."
@@ -459,6 +472,7 @@
     "link_connect": "ربط",
     "link_available": "متاح",
     "link_via_drive": "متاح بعد ربط Google Drive",
+    "link_via_onedrive": "متاح بعد ربط Microsoft OneDrive",
     "link_connected": "مُتصل",
     "link_coming_soon": "قريباً",
     "link_desc_gmail": "فحص بريدك بحثاً عن الفواتير والاشتراكات والحجوزات.",
