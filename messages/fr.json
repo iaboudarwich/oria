@@ -159,7 +159,22 @@
     "type_flight": "Vol",
     "type_booking": "Réservation",
     "type_receipt": "Reçu",
-    "type_other": "Autre"
+    "type_other": "Autre",
+    "approve": "Approuver",
+    "dismiss": "Ignorer",
+    "approve_n": "Approuver {count}",
+    "dismiss_n": "Ignorer {count}",
+    "select_all": "Tout sélectionner",
+    "clear": "Effacer",
+    "suggest_high": "Approuver tous ceux à forte confiance",
+    "tab_all": "Tout",
+    "view_source": "Voir la source",
+    "hide_source": "Masquer",
+    "working": "En cours...",
+    "renews_on": "Renouvellement le {date}",
+    "event_on": "Le {date}",
+    "all_clear": "Vous êtes à jour. Plus rien à examiner.",
+    "approved_toast": "Ajouté à votre espace."
   },
   "ask": {
     "scope": {

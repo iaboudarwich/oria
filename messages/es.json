@@ -159,7 +159,22 @@
     "type_flight": "Vuelo",
     "type_booking": "Reserva",
     "type_receipt": "Recibo",
-    "type_other": "Otro"
+    "type_other": "Otro",
+    "approve": "Aprobar",
+    "dismiss": "Descartar",
+    "approve_n": "Aprobar {count}",
+    "dismiss_n": "Descartar {count}",
+    "select_all": "Seleccionar todo",
+    "clear": "Limpiar",
+    "suggest_high": "Aprobar todos los de alta confianza",
+    "tab_all": "Todos",
+    "view_source": "Ver origen",
+    "hide_source": "Ocultar",
+    "working": "Procesando...",
+    "renews_on": "Se renueva el {date}",
+    "event_on": "El {date}",
+    "all_clear": "Estás al día. No queda nada por revisar.",
+    "approved_toast": "Añadido a tu espacio."
   },
   "ask": {
     "scope": {

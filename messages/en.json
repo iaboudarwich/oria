@@ -159,7 +159,22 @@
     "type_flight": "Flight",
     "type_booking": "Booking",
     "type_receipt": "Receipt",
-    "type_other": "Other"
+    "type_other": "Other",
+    "approve": "Approve",
+    "dismiss": "Dismiss",
+    "approve_n": "Approve {count}",
+    "dismiss_n": "Dismiss {count}",
+    "select_all": "Select all",
+    "clear": "Clear",
+    "suggest_high": "Approve all high-confidence",
+    "tab_all": "All",
+    "view_source": "View source",
+    "hide_source": "Hide",
+    "working": "Working...",
+    "renews_on": "Renews {date}",
+    "event_on": "On {date}",
+    "all_clear": "You're all caught up. Nothing left to review.",
+    "approved_toast": "Added to your space."
   },
   "ask": {
     "scope": {

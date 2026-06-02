@@ -159,7 +159,22 @@
     "type_flight": "رحلة طيران",
     "type_booking": "حجز",
     "type_receipt": "إيصال",
-    "type_other": "أخرى"
+    "type_other": "أخرى",
+    "approve": "موافقة",
+    "dismiss": "تجاهل",
+    "approve_n": "الموافقة على {count}",
+    "dismiss_n": "تجاهل {count}",
+    "select_all": "تحديد الكل",
+    "clear": "مسح",
+    "suggest_high": "الموافقة على كل ما له ثقة عالية",
+    "tab_all": "الكل",
+    "view_source": "عرض المصدر",
+    "hide_source": "إخفاء",
+    "working": "جارٍ التنفيذ...",
+    "renews_on": "يتجدد في {date}",
+    "event_on": "في {date}",
+    "all_clear": "أنت مُحدَّث. لا يوجد شيء آخر للمراجعة.",
+    "approved_toast": "تمت الإضافة إلى مساحتك."
   },
   "ask": {
     "scope": {
