@@ -474,6 +474,11 @@
     }
   },
   "onboarding": {
+    "ai_card_title": "Connect your AI",
+    "ai_card_body": "Use your own Claude, ChatGPT, or Gemini. Or skip and use Oria's default.",
+    "ai_card_connect": "Connect",
+    "ai_card_connected": "Connected: {name}",
+    "ai_card_connected_body": "Your AI now powers Ask Oria.",
     "demo_slide1": "Capture anything. Upload, snap a photo, record a note, forward an email, or just paste.",
     "demo_slide2": "Oria sorts it. Bills, travel, health, work, each in its place.",
     "demo_slide3": "Ask anything. \"What was my electric bill last month?\" Get the answer.",

@@ -474,6 +474,11 @@
     }
   },
   "onboarding": {
+    "ai_card_title": "Conecta tu IA",
+    "ai_card_body": "Usa tu propio Claude, ChatGPT o Gemini. O sáltalo y usa la IA predeterminada de Oria.",
+    "ai_card_connect": "Conectar",
+    "ai_card_connected": "Conectado: {name}",
+    "ai_card_connected_body": "Tu IA ahora impulsa Ask Oria.",
     "demo_slide1": "Captura cualquier cosa. Sube, haz una foto, graba una nota, reenvía un correo o solo pega.",
     "demo_slide2": "Oria lo ordena. Facturas, viajes, salud, trabajo, cada cosa en su lugar.",
     "demo_slide3": "Pregunta lo que sea. \"¿Cuánto fue mi factura de luz el mes pasado?\" Obtén la respuesta.",

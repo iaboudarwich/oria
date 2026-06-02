@@ -1,8 +1,17 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Wordmark } from "@/components/brand/wordmark";
+import { ConnectionModal } from "@/components/ai/connection-modal";
+import type { ProviderName } from "@/lib/ai-providers";
+
+const AI_PROVIDER_NAME: Record<string, string> = {
+  anthropic: "Claude",
+  openai: "ChatGPT",
+  gemini: "Gemini",
+};
 
 type Connector = {
   id: string;
@@ -44,15 +53,19 @@ export function LinkClient({
   driveConnected,
   outlookConnected,
   onedriveConnected,
+  aiProvider,
 }: {
   gmailConnected: boolean;
   calendarConnected: boolean;
   driveConnected: boolean;
   outlookConnected: boolean;
   onedriveConnected: boolean;
+  aiProvider: ProviderName | null;
 }) {
   const t = useTranslations("onboarding");
   const router = useRouter();
+  const [aiModalOpen, setAiModalOpen] = useState(false);
+  const [connectedAi, setConnectedAi] = useState<ProviderName | null>(aiProvider);
 
   const isConnected = (id: string): boolean =>
     (id === "gmail" && gmailConnected) ||
@@ -82,6 +95,45 @@ export function LinkClient({
           {t("link_title")}
         </h1>
         <p className="mt-1 text-[13.5px] text-ink-muted">{t("link_subtitle")}</p>
+
+        {/* Featured "Connect your AI" card. Additive and skippable. */}
+        <div className="mt-6 rounded-2xl border border-accent/30 bg-accent-soft/20 p-5">
+          {connectedAi ? (
+            <div className="flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-[15px] font-semibold text-ink">
+                  {t("ai_card_connected", { name: AI_PROVIDER_NAME[connectedAi] ?? connectedAi })}
+                </p>
+                <p className="mt-0.5 text-[12.5px] text-ink-muted">{t("ai_card_connected_body")}</p>
+              </div>
+              <span className="rounded-md bg-sage/15 px-2 py-0.5 text-[11px] font-medium text-[#3f5240]">
+                {t("link_connected")}
+              </span>
+            </div>
+          ) : (
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-[15px] font-semibold text-ink">{t("ai_card_title")}</p>
+                <p className="mt-0.5 text-[12.5px] text-ink-muted">{t("ai_card_body")}</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setAiModalOpen(true)}
+                  className="rounded-lg bg-ink px-4 py-2 text-[13px] font-medium text-surface transition-base hover:bg-ink-soft"
+                >
+                  {t("ai_card_connect")}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <ConnectionModal
+          open={aiModalOpen}
+          onClose={() => setAiModalOpen(false)}
+          onConnected={(p) => setConnectedAi(p)}
+        />
 
         <div className="mt-6 grid gap-2.5 sm:grid-cols-2">
           {CONNECTORS.map((c) => {
