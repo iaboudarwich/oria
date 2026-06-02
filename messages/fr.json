@@ -148,7 +148,17 @@
     "disconnect_keep": "Déconnecter et conserver mes éléments",
     "disconnect_keep_desc": "Les suivis et rappels que vous avez approuvés restent dans votre espace.",
     "disconnect_delete": "Déconnecter et tout supprimer",
-    "disconnect_delete_desc": "Supprimer tous les suivis et rappels créés à partir de Gmail, ainsi que tous les éléments détectés."
+    "disconnect_delete_desc": "Supprimer tous les suivis et rappels créés à partir de Gmail, ainsi que tous les éléments détectés.",
+    "route_title": "Ce qu'Oria ajoute automatiquement",
+    "route_always_review": "Toujours examiner chaque élément avant de l'ajouter",
+    "route_auto_confident": "Ajouter automatiquement les éléments sûrs, examiner le reste",
+    "route_auto_all": "Ajouter automatiquement tout ce qu'Oria trouve"
+  },
+  "sectionSuggest": {
+    "title": "Organiser les éléments liés",
+    "body": "Oria a trouvé {count} éléments qui conviennent à une nouvelle section : {name}.",
+    "create": "Créer la section",
+    "dismiss": "Pas maintenant"
   },
   "gmailReview": {
     "title": "Éléments d'e-mail",

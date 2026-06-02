@@ -22,6 +22,8 @@ import { relativeTime } from "@/lib/utils";
 import { computeUserInsights } from "@/lib/data/insights";
 import { readDismissedInsightIds } from "@/lib/data/insights-dismiss";
 import { InsightsCard } from "@/components/dashboard/insights-card";
+import { getActiveSectionSuggestion } from "@/lib/sections/suggest-sections";
+import { SectionSuggestionBanner } from "@/components/dashboard/section-suggestion-banner";
 import { Hint } from "@/components/onboarding/hint";
 import { getSeenHintKeys } from "@/lib/data/onboarding";
 import { OnboardingRepromptBanner } from "@/components/dashboard/onboarding-reprompt-banner";
@@ -53,8 +55,11 @@ export default async function DashboardHome() {
   });
   const insightsP = computeUserInsights();
   const dismissedP = readDismissedInsightIds();
+  const suggestionP = ctx
+    ? getActiveSectionSuggestion(ctx.organization.id)
+    : Promise.resolve(null);
   const uploads = await uploadsP;
-  const [sectionCounts, allSections, thumbs, rawInsights, dismissed] =
+  const [sectionCounts, allSections, thumbs, rawInsights, dismissed, suggestion] =
     await Promise.all([
       sectionCountsP,
       allSectionsP,
@@ -63,6 +68,7 @@ export default async function DashboardHome() {
       ),
       insightsP,
       dismissedP,
+      suggestionP,
     ]);
   const insights = rawInsights.filter((i) => !dismissed.has(i.id));
 
@@ -96,6 +102,8 @@ export default async function DashboardHome() {
         <TodayPulse activeSpaceId={ctx?.organization.id ?? ""} />
 
         <InsightsCard insights={insights} />
+
+        {suggestion ? <SectionSuggestionBanner suggestion={suggestion} /> : null}
 
         {isEmpty ? (
           <EmptyState

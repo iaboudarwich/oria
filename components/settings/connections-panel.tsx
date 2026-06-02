@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 import {
   getGmailConnection,
   getGmailItemCounts,
+  getAutoRoutePreference,
 } from "@/lib/integrations/gmail/connections";
 import { isGmailOAuthConfigured } from "@/lib/integrations/gmail/oauth";
 import { isTokenCryptoConfigured } from "@/lib/security/token-crypto";
@@ -14,7 +15,9 @@ import { GmailCard } from "./gmail-card";
  */
 export async function ConnectionsPanel({ userId }: { userId: string }) {
   const summary = await getGmailConnection(userId);
-  const counts = summary ? await getGmailItemCounts(userId) : { pending: 0, approved: 0 };
+  const [counts, routePref] = summary
+    ? await Promise.all([getGmailItemCounts(userId), getAutoRoutePreference(userId)])
+    : [{ pending: 0, approved: 0 }, "auto_confident" as const];
   const configured = isGmailOAuthConfigured() && isTokenCryptoConfigured();
   const t = await getTranslations("connections");
 
@@ -27,6 +30,7 @@ export async function ConnectionsPanel({ userId }: { userId: string }) {
       <GmailCard
         configured={configured}
         counts={counts}
+        routePref={routePref}
         summary={
           summary
             ? {

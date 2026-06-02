@@ -192,6 +192,21 @@ export async function markConnectionSynced(connectionId: string): Promise<void> 
     .eq("id", connectionId);
 }
 
+/** The user's auto-routing preference (defaults to auto_confident). */
+export async function getAutoRoutePreference(
+  userId: string,
+): Promise<"always_review" | "auto_confident" | "auto_all"> {
+  const admin = createAdminClient();
+  const { data } = await admin
+    .from("profiles")
+    .select("auto_route_preference")
+    .eq("id", userId)
+    .maybeSingle();
+  const pref = (data as { auto_route_preference?: string } | null)?.auto_route_preference;
+  if (pref === "always_review" || pref === "auto_all") return pref;
+  return "auto_confident";
+}
+
 /** Pending + approved detected-item counts for the settings card. */
 export async function getGmailItemCounts(
   userId: string,

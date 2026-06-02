@@ -148,7 +148,17 @@
     "disconnect_keep": "Disconnect and keep my items",
     "disconnect_keep_desc": "Trackables and reminders you approved stay in your space.",
     "disconnect_delete": "Disconnect and delete everything",
-    "disconnect_delete_desc": "Remove every trackable and reminder created from Gmail, plus all detected items."
+    "disconnect_delete_desc": "Remove every trackable and reminder created from Gmail, plus all detected items.",
+    "route_title": "What Oria adds automatically",
+    "route_always_review": "Always review every item before adding",
+    "route_auto_confident": "Auto-add confident items, review the rest",
+    "route_auto_all": "Auto-add everything Oria finds"
+  },
+  "sectionSuggest": {
+    "title": "Organize related items",
+    "body": "Oria found {count} items that fit a new section: {name}.",
+    "create": "Create section",
+    "dismiss": "Not now"
   },
   "gmailReview": {
     "title": "Email items",

@@ -4,7 +4,11 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
-import { setGmailPaused } from "@/lib/integrations/gmail/connection-actions";
+import {
+  setGmailPaused,
+  setAutoRoutePreference,
+  type AutoRoutePreference,
+} from "@/lib/integrations/gmail/connection-actions";
 
 export type GmailCardSummary = {
   email: string;
@@ -32,16 +36,27 @@ export function GmailCard({
   summary,
   configured,
   counts,
+  routePref,
 }: {
   summary: GmailCardSummary;
   configured: boolean;
   counts: { pending: number; approved: number };
+  routePref: AutoRoutePreference;
 }) {
   const t = useTranslations("connections");
   const router = useRouter();
   const [consentOpen, setConsentOpen] = useState(false);
   const [disconnectOpen, setDisconnectOpen] = useState(false);
+  const [pref, setPref] = useState<AutoRoutePreference>(routePref);
   const [pending, startTransition] = useTransition();
+
+  function changePref(next: AutoRoutePreference) {
+    setPref(next);
+    startTransition(async () => {
+      await setAutoRoutePreference(next);
+      router.refresh();
+    });
+  }
 
   function disconnect(deleteData: boolean) {
     startTransition(async () => {
@@ -132,6 +147,30 @@ export function GmailCard({
 
       {!configured && !summary ? (
         <p className="mt-3 text-[12px] text-ink-faint">{t("not_configured")}</p>
+      ) : null}
+
+      {summary ? (
+        <div className="mt-4 border-t border-line pt-4">
+          <p className="text-[12.5px] font-medium text-ink">{t("route_title")}</p>
+          <div className="mt-2 flex flex-col gap-1.5">
+            {(["always_review", "auto_confident", "auto_all"] as const).map((opt) => (
+              <label
+                key={opt}
+                className="flex cursor-pointer items-start gap-2.5 rounded-lg px-1 py-1"
+              >
+                <input
+                  type="radio"
+                  name="route-pref"
+                  checked={pref === opt}
+                  onChange={() => changePref(opt)}
+                  disabled={pending}
+                  className="mt-0.5 h-3.5 w-3.5 shrink-0 accent-ink"
+                />
+                <span className="text-[12.5px] text-ink-soft">{t(`route_${opt}`)}</span>
+              </label>
+            ))}
+          </div>
+        </div>
       ) : null}
 
       {consentOpen ? (

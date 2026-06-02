@@ -4,6 +4,8 @@ import { createHmac } from "node:crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getFreshGmailAccessToken, markConnectionError, markConnectionSynced } from "./connections";
 import { classifyEmail, type ScannedEmail, type EmailClassification } from "./classify";
+import { autoRoutePendingItems } from "./apply";
+import { computeSectionSuggestions } from "@/lib/sections/suggest-sections";
 import { logAuditEvent } from "@/lib/data/audit-log";
 
 const SIDECAR_URL =
@@ -274,6 +276,12 @@ async function processScan(input: {
       resourceId: input.jobId,
       metadata: { source: "gmail", emails_total: emails.length, items_found: found },
     });
+
+    // Auto-route per preference, then look for a new-section suggestion.
+    if (input.organizationId) {
+      await autoRoutePendingItems(input.userId, input.organizationId);
+      await computeSectionSuggestions(input.userId, input.organizationId);
+    }
   } catch (err) {
     await admin
       .from("email_scan_jobs")

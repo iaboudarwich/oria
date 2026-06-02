@@ -67,7 +67,14 @@ export type AuditAction =
   | "email.scan_completed"
   | "email.item_approved"
   | "email.item_dismissed"
-  | "email.trackable_renewed";
+  | "email.trackable_renewed"
+  // Sections
+  | "section.suggested"
+  | "section.created_from_suggestion"
+  // Account security
+  | "email.verified"
+  | "2fa.prompt_shown"
+  | "2fa.prompt_dismissed";
 
 export type AuditLogInput = {
   userId: string;
@@ -281,6 +288,11 @@ export function actionLabel(action: string): string {
     "email.item_approved":          "Approved an email item",
     "email.item_dismissed":         "Dismissed an email item",
     "email.trackable_renewed":      "Renewed a trackable from email",
+    "section.suggested":            "Suggested a new section",
+    "section.created_from_suggestion": "Created a section from a suggestion",
+    "email.verified":               "Verified email address",
+    "2fa.prompt_shown":             "Shown the two-factor setup prompt",
+    "2fa.prompt_dismissed":         "Dismissed the two-factor setup prompt",
   };
   return map[action] ?? action;
 }

@@ -1,7 +1,32 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { setGmailConnectionStatus } from "./connections";
+
+export type AutoRoutePreference = "always_review" | "auto_confident" | "auto_all";
+const VALID_PREFS: AutoRoutePreference[] = ["always_review", "auto_confident", "auto_all"];
+
+/** Save the user's auto-routing preference (how aggressively to auto-add). */
+export async function setAutoRoutePreference(
+  pref: AutoRoutePreference,
+): Promise<{ ok: boolean }> {
+  if (!VALID_PREFS.includes(pref)) return { ok: false };
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false };
+  // Admin client: profiles updates are gated by a trigger-friendly RLS policy,
+  // and this only writes the user's own row.
+  await createAdminClient()
+    .from("profiles")
+    .update({ auto_route_preference: pref })
+    .eq("id", user.id);
+  revalidatePath("/dashboard/settings");
+  return { ok: true };
+}
 
 /**
  * Pause or resume the user's Gmail sync. Paused connections are skipped by the
