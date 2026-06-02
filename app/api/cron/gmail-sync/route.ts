@@ -2,6 +2,7 @@ import "server-only";
 
 import { type NextRequest, NextResponse } from "next/server";
 import { syncAllGmailConnections } from "@/lib/integrations/gmail/sync";
+import { syncAllOutlookConnections } from "@/lib/microsoft/outlook-scan";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -25,6 +26,9 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const result = await syncAllGmailConnections();
-  return NextResponse.json(result);
+  const [gmail, outlook] = await Promise.all([
+    syncAllGmailConnections(),
+    syncAllOutlookConnections(),
+  ]);
+  return NextResponse.json({ gmail, outlook });
 }

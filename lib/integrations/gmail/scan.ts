@@ -303,41 +303,48 @@ export async function startGmailScan(input: {
   return {
     jobId,
     process: async () => {
-      await processScan({
-        ...input,
+      await runEmailScan({
+        userId: input.userId,
+        organizationId: input.organizationId,
         jobId,
         connectionId: token.connectionId,
-        accessToken: token.accessToken,
-        filters,
+        source: "gmail",
         workspaceRouting,
         routingMode,
         routingTargets,
+        fetch: () =>
+          fetchGmailMessages({
+            accessToken: token.accessToken,
+            timeframeMonths: input.timeframeMonths,
+            sinceQuery: input.sinceQuery,
+            filters,
+          }),
       });
     },
   };
 }
 
-async function processScan(input: {
+/**
+ * Shared post-fetch ingest loop for any email provider (Gmail, Outlook). Given
+ * a provider-specific `fetch` thunk that returns parsed messages, it classifies,
+ * routes, stores detected items, tracks the scan job, audits, and auto-routes,
+ * recording a job failure on error. The classify/store/route logic is identical
+ * across providers; only the fetch + the audit `source` differ.
+ */
+export async function runEmailScan(input: {
   userId: string;
   organizationId: string | null;
-  timeframeMonths: number;
-  sinceQuery?: string | null;
   jobId: string;
   connectionId: string;
-  accessToken: string;
-  filters: ConnectionFilters;
+  source: "gmail" | "outlook";
   workspaceRouting: WorkspaceRouting;
   routingMode: "auto" | "fixed";
   routingTargets: string[];
+  fetch: () => Promise<{ emails: ScannedEmail[]; skipped: number }>;
 }): Promise<void> {
   const admin = createAdminClient();
   try {
-    const { emails, skipped } = await fetchGmailMessages({
-      accessToken: input.accessToken,
-      timeframeMonths: input.timeframeMonths,
-      sinceQuery: input.sinceQuery,
-      filters: input.filters,
-    });
+    const { emails, skipped } = await input.fetch();
 
     // Resolve workspace orgs once for per-email routing.
     const orgs = await resolveWorkspaceOrgs(input.userId);
@@ -415,7 +422,7 @@ async function processScan(input: {
       action: "email.scan_completed",
       resourceType: "email_scan_job",
       resourceId: input.jobId,
-      metadata: { source: "gmail", emails_total: emails.length, items_found: found },
+      metadata: { source: input.source, emails_total: emails.length, items_found: found },
     });
 
     // Auto-route this connection's pending items per preference, then look for

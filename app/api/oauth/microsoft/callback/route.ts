@@ -1,8 +1,9 @@
 import "server-only";
 
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentContext } from "@/lib/data/organizations";
 import {
   exchangeCodeForMicrosoftTokens,
   fetchMicrosoftPrimaryEmail,
@@ -10,6 +11,7 @@ import {
   cloudServiceFor,
 } from "@/lib/microsoft/oauth";
 import { upsertOutlookConnection } from "@/lib/microsoft/connections";
+import { startOutlookScan } from "@/lib/microsoft/outlook-scan";
 import { upsertCloudConnection } from "@/lib/google/cloud-connections";
 import { logAuditEvent } from "@/lib/data/audit-log";
 import { MS_STATE_COOKIE, MS_SERVICE_COOKIE } from "../connect/route";
@@ -67,6 +69,14 @@ export async function GET(request: Request) {
         resourceId: id,
         metadata: { source: "outlook", email },
       });
+      // Kick off the first scan in the background.
+      const ctx = await getCurrentContext();
+      const started = await startOutlookScan({
+        userId: user.id,
+        connectionId: id,
+        organizationId: ctx?.organization.id ?? null,
+      });
+      if (started) after(started.process());
       return settingsRedirect("notice=outlook_connected");
     }
 

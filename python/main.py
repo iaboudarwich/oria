@@ -43,6 +43,7 @@ from google_clients import (
     calendar_list_events,
     FOLDER_MIME,
 )
+from microsoft_clients import outlook_fetch_messages
 
 logging.basicConfig(
     level=logging.INFO,
@@ -604,3 +605,56 @@ def calendar_sync_endpoint(req: CalendarSyncRequest):
     events = [e for e in (_event_from_api(it) for it in items) if e is not None]
     logger.info("Calendar sync: %d events", len(events))
     return CalendarSyncResponse(events=events)
+
+
+# ── /outlook/scan ────────────────────────────────────────────────────────────
+# Outlook mail parity with Gmail: fetch + parse recent messages via Graph
+# (Mail.Read) so the Node app can classify them. Confidentiality filters are
+# applied here, before any message is returned. Tokens are NEVER logged.
+
+
+class OutlookScanRequest(BaseModel):
+    access_token: str
+    since_iso: Optional[str] = None
+    max_messages: int = 150
+    exclude_keywords: list[str] = []
+    exclude_senders: list[str] = []
+    exclude_with_attachments: bool = False
+
+
+@app.post("/outlook/scan", response_model=GmailScanResponse, dependencies=[Depends(require_signature)])
+def outlook_scan(req: OutlookScanRequest):
+    """List and parse recent Outlook messages for classification."""
+    max_messages = max(1, min(req.max_messages, 400))
+    emails: list[ScannedEmail] = []
+    skipped = 0
+
+    with httpx.Client(timeout=30.0) as client:
+        messages = outlook_fetch_messages(client, req.access_token, req.since_iso, max_messages)
+
+    for m in messages:
+        subject = m["subject"]
+        sender = m["sender"]
+        body = m["body"]
+        if req.exclude_with_attachments and m.get("has_attachments"):
+            skipped += 1
+            continue
+        if _sender_excluded(sender, req.exclude_senders):
+            skipped += 1
+            continue
+        if _matches_keyword(f"{subject}\n{body[:500]}", req.exclude_keywords):
+            skipped += 1
+            continue
+        emails.append(
+            ScannedEmail(
+                id=m["id"],
+                subject=subject,
+                sender=sender,
+                date=m.get("date"),
+                snippet=m.get("snippet", ""),
+                body=body,
+            )
+        )
+
+    logger.info("Outlook scan: parsed %d, skipped %d of %d", len(emails), skipped, len(messages))
+    return GmailScanResponse(emails=emails, total=len(emails), skipped=skipped)
