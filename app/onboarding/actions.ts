@@ -3,7 +3,14 @@
 import { getLocale } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { ConversationEngine } from "@/lib/onboarding/conversation-engine";
-import { EMPTY_USER_CONTEXT, type ConversationState, type EngineStep } from "@/lib/onboarding/types";
+import { generateSetupPlan } from "@/lib/onboarding/template-generator";
+import {
+  EMPTY_USER_CONTEXT,
+  type ConversationState,
+  type EngineStep,
+  type SetupPlan,
+  type UserContext,
+} from "@/lib/onboarding/types";
 
 /**
  * Advance the onboarding/reshape conversation: given the answers so far, return
@@ -20,4 +27,15 @@ export async function onboardingNextStep(state: ConversationState): Promise<Engi
   const locale = await getLocale();
   const engine = new ConversationEngine(state.mode ?? "initial_setup", locale);
   return engine.nextStep(state);
+}
+
+/** Turn a finished UserContext into a tailored, multi-space SetupPlan. */
+export async function generateOnboardingPlan(userContext: UserContext): Promise<SetupPlan> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { spaces: [] };
+  const locale = await getLocale();
+  return generateSetupPlan(userContext, locale);
 }
