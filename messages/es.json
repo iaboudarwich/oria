@@ -187,6 +187,17 @@
   "status": {
     "view_in_history": "Ver en el historial"
   },
+  "learnRule": {
+    "prompt": "¿Quieres que Oria envíe automáticamente los próximos elementos de {vendor} a {section}?",
+    "yes": "Sí",
+    "no": "No, no preguntar",
+    "later": "Ahora no",
+    "rules_title": "Reglas de archivado aprendidas",
+    "rules_subtitle": "Reglas que Oria aprendió de tus correcciones. Elimina las que quieras cuando quieras.",
+    "rules_empty": "Aún no hay reglas aprendidas. Cuando muevas un elemento, Oria puede ofrecerse a recordar dónde va.",
+    "rule_line": "{vendor} → {section}",
+    "remove": "Eliminar"
+  },
   "sectionSuggest": {
     "title": "Organizar elementos relacionados",
     "body": "Oria encontró {count} elementos que encajan en una nueva sección: {name}.",

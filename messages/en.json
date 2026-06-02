@@ -187,6 +187,17 @@
   "status": {
     "view_in_history": "View in history"
   },
+  "learnRule": {
+    "prompt": "Want Oria to send future {vendor} items to {section} automatically?",
+    "yes": "Yes",
+    "no": "No, don't ask",
+    "later": "Not now",
+    "rules_title": "Learned filing rules",
+    "rules_subtitle": "Rules Oria learned from your corrections. Remove any anytime.",
+    "rules_empty": "No learned rules yet. When you move an item, Oria may offer to remember where it goes.",
+    "rule_line": "{vendor} → {section}",
+    "remove": "Remove"
+  },
   "sectionSuggest": {
     "title": "Organize related items",
     "body": "Oria found {count} items that fit a new section: {name}.",

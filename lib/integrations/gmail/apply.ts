@@ -3,7 +3,12 @@ import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { logAuditEvent } from "@/lib/data/audit-log";
 import { TRACKABLE_LEAD_DAYS, type TrackableCategory } from "@/lib/ai/detect-trackable";
-import { findSectionForItem, routeItemToSection } from "@/lib/sections/routing";
+import {
+  findSectionForItem,
+  routeItemToSection,
+  senderDomain,
+  hasLearnedVendorRule,
+} from "@/lib/sections/routing";
 
 type ItemRow = {
   id: string;
@@ -11,6 +16,7 @@ type ItemRow = {
   organization_id: string | null;
   item_type: string;
   source_subject: string | null;
+  source_from: string | null;
   source_date: string | null;
   extracted: {
     title?: string;
@@ -55,7 +61,7 @@ export async function applyDetectedItem(input: {
 
   const { data } = await admin
     .from("email_detected_items")
-    .select("id, user_id, organization_id, item_type, source_subject, source_date, extracted")
+    .select("id, user_id, organization_id, item_type, source_subject, source_from, source_date, extracted")
     .eq("id", input.itemId)
     .eq("user_id", input.userId)
     .eq("status", "pending")
@@ -138,7 +144,15 @@ export async function applyDetectedItem(input: {
   }
 
   // Route into a section so it appears in that section's view.
-  const target = await findSectionForItem(item.item_type, ex.appointment_type ?? null, orgId);
+  const target = await findSectionForItem({
+    itemType: item.item_type,
+    appointmentType: ex.appointment_type ?? null,
+    orgId,
+    userId: input.userId,
+    vendor: ex.vendor ?? null,
+    senderDomain: senderDomain(item.source_from),
+    keywordText: `${ex.title ?? ""} ${item.source_subject ?? ""}`,
+  });
   if (target) {
     await routeItemToSection({
       orgId,
@@ -210,7 +224,7 @@ export async function autoRoutePendingItems(
   // Only this connection's pending items, so each inbox auto-routes its own.
   const { data: rows } = await admin
     .from("email_detected_items")
-    .select("id, item_type, confidence, extracted, organization_id")
+    .select("id, item_type, confidence, extracted, source_from, organization_id")
     .eq("user_id", userId)
     .eq("connection_id", connectionId)
     .eq("status", "pending");
@@ -219,7 +233,8 @@ export async function autoRoutePendingItems(
         id: string;
         item_type: string;
         confidence: number | null;
-        extracted: { appointment_type?: string | null };
+        extracted: { appointment_type?: string | null; vendor?: string | null; title?: string | null };
+        source_from: string | null;
         organization_id: string | null;
       }[]
     | null) ?? [];
@@ -227,13 +242,24 @@ export async function autoRoutePendingItems(
   let applied = 0;
   for (const it of items) {
     const orgId = it.organization_id;
+    if (!orgId) continue;
+    const ex = it.extracted ?? {};
     if (pref === "auto_confident") {
-      if ((it.confidence ?? 0) < AUTO_ROUTE_CONFIDENCE) continue;
-      if (!orgId) continue; // can't resolve a section without an org
-      const target = await findSectionForItem(it.item_type, it.extracted?.appointment_type ?? null, orgId);
+      // A user-confirmed vendor rule is a strong signal: auto-route even if the
+      // classifier confidence is below the usual bar.
+      const learned = await hasLearnedVendorRule(userId, orgId, ex.vendor ?? null);
+      if (!learned && (it.confidence ?? 0) < AUTO_ROUTE_CONFIDENCE) continue;
+      const target = await findSectionForItem({
+        itemType: it.item_type,
+        appointmentType: ex.appointment_type ?? null,
+        orgId,
+        userId,
+        vendor: ex.vendor ?? null,
+        senderDomain: senderDomain(it.source_from),
+        keywordText: ex.title ?? null,
+      });
       if (!target) continue; // confident but no home -> leave for review
     }
-    if (!orgId) continue;
     const r = await applyDetectedItem({ itemId: it.id, userId, orgId });
     if (r.ok) applied += 1;
   }

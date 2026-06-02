@@ -71,6 +71,9 @@ export type AuditAction =
   // Sections
   | "section.suggested"
   | "section.created_from_suggestion"
+  // Learned routing
+  | "routing_rule_learned"
+  | "routing_rule_removed"
   // Account security
   | "email.verified"
   | "2fa.prompt_shown"
@@ -290,6 +293,8 @@ export function actionLabel(action: string): string {
     "email.trackable_renewed":      "Renewed a trackable from email",
     "section.suggested":            "Suggested a new section",
     "section.created_from_suggestion": "Created a section from a suggestion",
+    "routing_rule_learned":         "Taught Oria a filing rule",
+    "routing_rule_removed":         "Removed a learned filing rule",
     "email.verified":               "Verified email address",
     "2fa.prompt_shown":             "Shown the two-factor setup prompt",
     "2fa.prompt_dismissed":         "Dismissed the two-factor setup prompt",

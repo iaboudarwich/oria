@@ -221,6 +221,26 @@ export function detectAggregateIntent(query: string): AggregateIntent {
   return { isAggregate, sinceISO, wantsAmounts, wantsMacros };
 }
 
+// Theme words that signal a built-in section. Used to detect multi-section
+// questions ("spent on travel and food") so an unscoped query can pull standing
+// context from each relevant section, not just rely on keyword-matched rows.
+const SECTION_THEME_PATTERNS: Array<{ section: Section; re: RegExp }> = [
+  { section: "travel", re: /\b(travel|trip|trips|flight|flights|hotel|hotels|booking|bookings|vacation|itinerary)\b/i },
+  { section: "finance", re: /\b(bill|bills|spend|spent|spending|subscription|subscriptions|receipt|receipts|invoice|invoices|payment|payments|expense|expenses|food|dining|restaurant|restaurants|grocery|groceries)\b/i },
+  { section: "health", re: /\b(health|medical|doctor|appointment|appointments|prescription|prescriptions|insurance)\b/i },
+  { section: "properties", re: /\b(property|properties|home|house|rent|lease|mortgage|utilities)\b/i },
+  { section: "legal", re: /\b(legal|contract|contracts|agreement|nda|policy)\b/i },
+];
+
+/** Built-in sections whose themes the query mentions (deduped). */
+export function detectSectionThemes(query: string): Section[] {
+  const out: Section[] = [];
+  for (const { section, re } of SECTION_THEME_PATTERNS) {
+    if (re.test(query) && !out.includes(section)) out.push(section);
+  }
+  return out;
+}
+
 /**
  * Retrieve the most relevant uploads + reminders for a query.
  *
@@ -336,6 +356,38 @@ export async function retrieveForQuery(
           },
         },
       });
+    }
+  } else {
+    // Cross-section reasoning: an unscoped question that names two or more
+    // section themes ("travel and food") pulls each section's standing memory
+    // so the agent can synthesise one coherent answer across them.
+    const themes = detectSectionThemes(query);
+    if (themes.length >= 2) {
+      const space = spaceById.get(activeOrgId);
+      for (const section of themes) {
+        const label = sectionLabel(section);
+        const memories = await listSectionMemories({ kind: "builtin", key: section, label });
+        for (const m of memories) {
+          let score = 2;
+          const hay = m.content.toLowerCase();
+          for (const kw of keywords) if (hay.includes(kw)) score += kw.length;
+          memoryRows.push({
+            score,
+            src: {
+              kind: "memory",
+              title: `Memory · ${label}`,
+              snippet: m.content,
+              href: `/dashboard/sections/${section}`,
+              processing_state: "ready",
+              meta: {
+                section_label: label,
+                space_name: space?.name ?? ctx.organization.name,
+                date_label: null,
+              },
+            },
+          });
+        }
+      }
     }
   }
 

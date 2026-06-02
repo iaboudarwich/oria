@@ -187,6 +187,17 @@
   "status": {
     "view_in_history": "Voir dans l'historique"
   },
+  "learnRule": {
+    "prompt": "Voulez-vous qu'Oria envoie automatiquement les futurs éléments de {vendor} vers {section} ?",
+    "yes": "Oui",
+    "no": "Non, ne plus demander",
+    "later": "Pas maintenant",
+    "rules_title": "Règles de classement apprises",
+    "rules_subtitle": "Règles qu'Oria a apprises de vos corrections. Supprimez-en à tout moment.",
+    "rules_empty": "Aucune règle apprise pour l'instant. Quand vous déplacez un élément, Oria peut proposer de retenir sa destination.",
+    "rule_line": "{vendor} → {section}",
+    "remove": "Supprimer"
+  },
   "sectionSuggest": {
     "title": "Organiser les éléments liés",
     "body": "Oria a trouvé {count} éléments qui conviennent à une nouvelle section : {name}.",
