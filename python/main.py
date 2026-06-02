@@ -48,6 +48,8 @@ from microsoft_clients import (
     onedrive_get_metadata,
     onedrive_fetch_text,
     onedrive_meta_dict,
+    outlook_calendar_list_events,
+    outlook_event_dict,
 )
 
 logging.basicConfig(
@@ -712,3 +714,13 @@ def onedrive_fetch_endpoint(req: OneDriveFetchRequest):
             client, req.access_token, req.item_id, req.mime_type, ""
         )
     return DriveFetchResponse(text=text, accessible=accessible)
+
+
+@app.post("/outlook/calendar/sync", response_model=CalendarSyncResponse, dependencies=[Depends(require_signature)])
+def outlook_calendar_sync_endpoint(req: CalendarSyncRequest):
+    """List + normalize Outlook calendar events in the requested window."""
+    with httpx.Client(timeout=60.0) as client:
+        items = outlook_calendar_list_events(client, req.access_token, req.past_days, req.future_days)
+    events = [CalendarEvent(**d) for d in (outlook_event_dict(it) for it in items) if d is not None]
+    logger.info("Outlook calendar sync: %d events", len(events))
+    return CalendarSyncResponse(events=events)

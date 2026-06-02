@@ -116,7 +116,7 @@ function isCategory(v: string): v is EventCategory {
   return ["travel", "health", "meeting", "personal", "family", "finance", "other"].includes(v);
 }
 
-/** Sync one Calendar connection: pull, classify, route, upsert. Returns count. */
+/** Sync one Google Calendar connection: pull, classify, route, upsert. */
 export async function syncCalendarConnection(input: {
   userId: string;
   connectionId: string;
@@ -126,8 +126,25 @@ export async function syncCalendarConnection(input: {
 }): Promise<number> {
   const token = await getFreshCloudAccessToken(input.connectionId);
   if (!token) return 0;
-
   const events = await calendarSync(token.accessToken, 30, 90);
+  return ingestCalendarEvents({ ...input, events });
+}
+
+/**
+ * Provider-agnostic ingest for a window of calendar events: categorize (heuristic
+ * + batched Haiku), route to a section, upsert into calendar_events, mark synced,
+ * and audit. Shared by Google Calendar and Outlook Calendar; only the fetch
+ * differs. Returns the number of events upserted.
+ */
+export async function ingestCalendarEvents(input: {
+  userId: string;
+  connectionId: string;
+  routingMode: "auto" | "fixed";
+  routingTargetOrgIds: string[];
+  accountEmail: string;
+  events: SyncedCalendarEvent[];
+}): Promise<number> {
+  const events = input.events;
   if (events.length === 0) {
     await markCloudConnectionSynced(input.connectionId);
     return 0;

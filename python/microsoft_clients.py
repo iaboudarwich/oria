@@ -171,6 +171,74 @@ def onedrive_fetch_text(
         return "", True
 
 
+def outlook_calendar_list_events(
+    client: httpx.Client, token: str, past_days: int, future_days: int
+) -> list[dict]:
+    """List Outlook calendar events in [-past_days, +future_days] via calendarView
+    (recurring events are expanded into instances). Times are requested in UTC."""
+    from datetime import datetime, timedelta, timezone
+
+    now = datetime.now(timezone.utc)
+    start = (now - timedelta(days=max(0, past_days))).strftime("%Y-%m-%dT%H:%M:%SZ")
+    end = (now + timedelta(days=max(0, future_days))).strftime("%Y-%m-%dT%H:%M:%SZ")
+    headers = {**_auth(token), "Prefer": 'outlook.timezone="UTC"'}
+
+    out: list[dict] = []
+    url = (
+        f"{GRAPH}/me/calendarView?startDateTime={start}&endDateTime={end}"
+        "&$select=id,subject,bodyPreview,location,start,end,isAllDay,organizer,attendees,webLink"
+        "&$orderby=start/dateTime&$top=250"
+    )
+    next_link: Optional[str] = None
+    while len(out) < 1000:
+        resp = client.get(next_link or url, headers=headers)
+        if resp.status_code != 200:
+            break
+        data = resp.json()
+        out.extend(data.get("value", []) or [])
+        next_link = data.get("@odata.nextLink")
+        if not next_link:
+            break
+    return out
+
+
+def _iso_utc(dt: Optional[dict]) -> Optional[str]:
+    if not dt:
+        return None
+    val = dt.get("dateTime")
+    if not val:
+        return None
+    return val if val.endswith("Z") else val + "Z"
+
+
+def outlook_event_dict(item: dict) -> Optional[dict]:
+    """Normalize a Graph calendar event into the shared event shape."""
+    starts_at = _iso_utc(item.get("start"))
+    ends_at = _iso_utc(item.get("end")) or starts_at
+    if not starts_at:
+        return None
+    attendees = [
+        {
+            "email": (a.get("emailAddress") or {}).get("address", ""),
+            "name": (a.get("emailAddress") or {}).get("name"),
+        }
+        for a in (item.get("attendees") or [])
+        if (a.get("emailAddress") or {}).get("address")
+    ]
+    return {
+        "provider_event_id": item.get("id", ""),
+        "title": item.get("subject") or "(no title)",
+        "description": item.get("bodyPreview"),
+        "location": (item.get("location") or {}).get("displayName"),
+        "starts_at": starts_at,
+        "ends_at": ends_at,
+        "is_all_day": bool(item.get("isAllDay")),
+        "organizer_email": ((item.get("organizer") or {}).get("emailAddress") or {}).get("address"),
+        "attendees": attendees,
+        "web_view_link": item.get("webLink"),
+    }
+
+
 def onedrive_meta_dict(item: dict, excerpt: str = "", accessible: bool = True) -> dict:
     """Normalize Graph item metadata into the provider-agnostic file meta shape."""
     size = item.get("size")

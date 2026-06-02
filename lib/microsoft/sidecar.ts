@@ -1,7 +1,7 @@
 import "server-only";
 
 import { sidecarAuthHeaders } from "@/lib/google/shared/sidecar-auth";
-import type { DriveFileMeta, DriveFetchResult } from "@/lib/google/sidecar";
+import type { DriveFileMeta, DriveFetchResult, SyncedCalendarEvent } from "@/lib/google/sidecar";
 
 // Next.js -> sidecar client for OneDrive (index + fetch-on-demand). Reuses the
 // same metadata/fetch shapes as the Drive client so the cloud_files pipeline is
@@ -50,4 +50,18 @@ export async function onedriveFetch(
     { access_token: accessToken, item_id: itemId, mime_type: mimeType },
     60_000,
   );
+}
+
+/** Pull a window of Outlook calendar events for classification + routing. */
+export async function outlookCalendarSync(
+  accessToken: string,
+  pastDays: number,
+  futureDays: number,
+): Promise<SyncedCalendarEvent[]> {
+  const out = await postSidecar<{ events: SyncedCalendarEvent[] }>(
+    "/outlook/calendar/sync",
+    { access_token: accessToken, past_days: pastDays, future_days: futureDays },
+    120_000,
+  );
+  return out?.events ?? [];
 }

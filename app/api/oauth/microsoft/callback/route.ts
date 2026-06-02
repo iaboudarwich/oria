@@ -12,6 +12,7 @@ import {
 } from "@/lib/microsoft/oauth";
 import { upsertOutlookConnection } from "@/lib/microsoft/connections";
 import { startOutlookScan } from "@/lib/microsoft/outlook-scan";
+import { syncUserOutlookCalendars } from "@/lib/microsoft/calendar";
 import { upsertCloudConnection } from "@/lib/google/cloud-connections";
 import { logAuditEvent } from "@/lib/data/audit-log";
 import { MS_STATE_COOKIE, MS_SERVICE_COOKIE } from "../connect/route";
@@ -96,6 +97,10 @@ export async function GET(request: Request) {
       resourceId: result.id,
       metadata: { provider: "microsoft", service: cloudService, account_email: email },
     });
+    // Calendar: kick off the first sync in the background.
+    if (cloudService === "outlook_calendar") {
+      after(syncUserOutlookCalendars(user.id).then(() => undefined).catch(() => undefined));
+    }
     const notice = service === "onedrive" ? "onedrive_connected" : "outlook_calendar_connected";
     return settingsRedirect(`notice=${notice}`);
   } catch {
