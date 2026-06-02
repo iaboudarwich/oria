@@ -1,5 +1,28 @@
 {
   "ai": {
+    "settings_title": "Tu IA",
+    "settings_subtitle": "Trae tu propio Claude, ChatGPT o Gemini y Oria se construye a su alrededor.",
+    "state_connected": "{name} impulsa Ask Oria.",
+    "state_not_connected": "Usando la IA predeterminada de Oria.",
+    "state_not_connected_body": "Conecta la tuya para traer la memoria de tu IA a Oria.",
+    "connect": "Conecta tu IA",
+    "disconnect": "Desconectar",
+    "last_validated": "Validada el {date}",
+    "st_active": "Activa",
+    "st_invalid": "La clave necesita atención",
+    "st_rate_limited": "Límite de uso",
+    "st_out_of_credits": "Sin créditos",
+    "story_eyes_title": "Tu IA obtiene ojos en tu vida.",
+    "story_eyes_body": "Oria tiene tus correos, archivos, calendario y la estructura que has creado. Cada pregunta pasa ese contexto a tu IA.",
+    "story_brain_title": "Oria obtiene un cerebro que ya te conoce.",
+    "story_brain_body": "Tu IA aporta su propia memoria de cada conversación que has tenido con ella en otros lugares. Juntas responden mejor que por separado.",
+    "privacy_body": "Las consultas fluyen por tu proveedor. Oria no guarda ninguna conversación de IA de su lado. Desconecta cuando quieras.",
+    "disconnect_confirm_title": "¿Desconectar tu {name}?",
+    "disconnect_confirm_body": "Ask Oria volverá a la IA predeterminada de Oria. Tus datos quedan exactamente como están.",
+    "disconnect_cancel": "Cancelar",
+    "disconnect_confirm": "Desconectar",
+    "powered_by_user": "Impulsado por tu {name}",
+    "powered_by_default": "Impulsado por la IA predeterminada de Oria",
     "fallback_rate_limited": "Tu {name} alcanzó un límite de uso. Oria usa su IA predeterminada hasta que reconectes.",
     "fallback_out_of_credits": "Tu {name} se quedó sin créditos. Oria usa su IA predeterminada mientras tanto.",
     "fallback_invalid": "Tu clave de {name} dejó de funcionar. Oria usa su IA predeterminada hasta que reconectes.",
@@ -272,6 +295,10 @@
     "details_subtitle": "Para los curiosos técnicos: la política completa y vinculante."
   },
   "features": {
+    "connect_ai": {
+      "title": "Conecta tu IA",
+      "desc": "Usa tu propio Claude, ChatGPT o Gemini para impulsar Ask Oria."
+    },
     "connect_outlook": {
       "title": "Microsoft Outlook",
       "desc": "Analiza el correo de Outlook en busca de cosas que rastrear, como Gmail."

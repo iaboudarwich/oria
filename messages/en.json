@@ -1,5 +1,28 @@
 {
   "ai": {
+    "settings_title": "Your AI",
+    "settings_subtitle": "Bring your own Claude, ChatGPT, or Gemini, and Oria builds around it.",
+    "state_connected": "{name} is powering Ask Oria.",
+    "state_not_connected": "Using Oria's default AI.",
+    "state_not_connected_body": "Connect your own to bring your AI's memory of you into Oria.",
+    "connect": "Connect your AI",
+    "disconnect": "Disconnect",
+    "last_validated": "Validated {date}",
+    "st_active": "Active",
+    "st_invalid": "Key needs attention",
+    "st_rate_limited": "Rate limited",
+    "st_out_of_credits": "Out of credits",
+    "story_eyes_title": "Your AI gets eyes into your life.",
+    "story_eyes_body": "Oria has your emails, files, calendar, and the structure you've built. Every question you ask passes that context to your AI.",
+    "story_brain_title": "Oria gets a brain that already knows you.",
+    "story_brain_body": "Your AI brings its own memory of every conversation you've had with it elsewhere. Together they answer better than either alone.",
+    "privacy_body": "Queries flow through your provider. Oria stores no AI conversations on its side. Disconnect anytime.",
+    "disconnect_confirm_title": "Disconnect your {name}?",
+    "disconnect_confirm_body": "Ask Oria will switch back to Oria's default AI. Your data stays exactly as it is.",
+    "disconnect_cancel": "Cancel",
+    "disconnect_confirm": "Disconnect",
+    "powered_by_user": "Powered by your {name}",
+    "powered_by_default": "Powered by Oria's default AI",
     "fallback_rate_limited": "Your {name} hit a rate limit. Oria is using its default AI until you reconnect.",
     "fallback_out_of_credits": "Your {name} ran out of credits. Oria is using its default AI until you fix it.",
     "fallback_invalid": "Your {name} key stopped working. Oria is using its default AI until you reconnect.",
@@ -272,6 +295,10 @@
     "details_subtitle": "For the technically curious: the full, binding policy."
   },
   "features": {
+    "connect_ai": {
+      "title": "Connect your AI",
+      "desc": "Use your own Claude, ChatGPT, or Gemini to power Ask Oria."
+    },
     "connect_outlook": {
       "title": "Microsoft Outlook",
       "desc": "Scan Outlook mail for things worth tracking, like Gmail."

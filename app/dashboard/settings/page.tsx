@@ -16,6 +16,8 @@ import { ResetAccountPanel } from "@/components/settings/reset-account-panel";
 import { ConnectionsPanel } from "@/components/settings/connections-panel";
 import { CloudServicesPanel } from "@/components/settings/cloud-services-panel";
 import { MicrosoftServicesPanel } from "@/components/settings/microsoft-services-panel";
+import { AiSettings } from "@/components/ai/ai-settings";
+import { getAiConnection } from "@/lib/data/ai-connections";
 import { SectionsEditorLazy } from "@/components/settings/sections-editor-lazy";
 import { SecurityPanel } from "@/components/settings/security-panel";
 import { SessionsPanel } from "@/components/settings/sessions-panel";
@@ -52,6 +54,7 @@ const TABS = [
   { key: "workspaces", label: "Workspaces" },
   { key: "storage",    label: "Storage" },
   { key: "connections", label: "Connections" },
+  { key: "ai",         label: "AI" },
   { key: "security",   label: "Security" },
   { key: "privacy",    label: "Privacy" },
 ] as const;
@@ -93,6 +96,8 @@ export default async function SettingsPage({
     tab === "security" && ctx?.profile.id
       ? await listRecentAuditEvents(ctx.profile.id, 100)
       : [];
+  const aiConnection =
+    tab === "ai" && ctx?.profile.id ? await getAiConnection(ctx.profile.id) : null;
   const profile: UserProfile | null =
     tab === "preferences" && ctx?.profile.id
       ? await getUserProfile(ctx.profile.id)
@@ -238,6 +243,8 @@ export default async function SettingsPage({
             <MicrosoftServicesPanel userId={ctx.profile.id} />
           </div>
         )}
+
+        {tab === "ai" && <AiSettings connection={aiConnection} />}
 
         {tab === "security" && (
           <div className="space-y-9">

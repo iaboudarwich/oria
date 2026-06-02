@@ -1,5 +1,28 @@
 {
   "ai": {
+    "settings_title": "ذكاؤك الاصطناعي",
+    "settings_subtitle": "أحضر Claude أو ChatGPT أو Gemini الخاص بك، وتبني Oria حوله.",
+    "state_connected": "يشغّل {name} تطبيق Ask Oria.",
+    "state_not_connected": "تستخدم ذكاء Oria الافتراضي.",
+    "state_not_connected_body": "اربط ذكاءك الخاص لتجلب ذاكرته عنك إلى Oria.",
+    "connect": "اربط ذكاءك الاصطناعي",
+    "disconnect": "فصل",
+    "last_validated": "تم التحقق في {date}",
+    "st_active": "نشط",
+    "st_invalid": "المفتاح يحتاج انتباهاً",
+    "st_rate_limited": "حد المعدل",
+    "st_out_of_credits": "نفد الرصيد",
+    "story_eyes_title": "يحصل ذكاؤك على عيون في حياتك.",
+    "story_eyes_body": "لدى Oria بريدك وملفاتك وتقويمك والبنية التي أنشأتها. كل سؤال تطرحه يمرر هذا السياق إلى ذكائك.",
+    "story_brain_title": "تحصل Oria على عقل يعرفك مسبقاً.",
+    "story_brain_body": "يجلب ذكاؤك ذاكرته الخاصة عن كل محادثة أجريتها معه في أماكن أخرى. معاً يجيبان أفضل من كل بمفرده.",
+    "privacy_body": "تمر الاستعلامات عبر مزودك. لا تخزّن Oria أي محادثات ذكاء اصطناعي لديها. افصل في أي وقت.",
+    "disconnect_confirm_title": "فصل {name} الخاص بك؟",
+    "disconnect_confirm_body": "سيعود Ask Oria إلى ذكاء Oria الافتراضي. تبقى بياناتك كما هي تماماً.",
+    "disconnect_cancel": "إلغاء",
+    "disconnect_confirm": "فصل",
+    "powered_by_user": "مدعوم بـ {name} الخاص بك",
+    "powered_by_default": "مدعوم بذكاء Oria الافتراضي",
     "fallback_rate_limited": "بلغ {name} حد المعدل. تستخدم Oria ذكاءها الافتراضي حتى تعيد الربط.",
     "fallback_out_of_credits": "نفد رصيد {name}. تستخدم Oria ذكاءها الافتراضي في هذه الأثناء.",
     "fallback_invalid": "توقف مفتاح {name} عن العمل. تستخدم Oria ذكاءها الافتراضي حتى تعيد الربط.",
@@ -272,6 +295,10 @@
     "details_subtitle": "للمهتمين بالجوانب التقنية: السياسة الكاملة والمُلزمة."
   },
   "features": {
+    "connect_ai": {
+      "title": "اربط ذكاءك الاصطناعي",
+      "desc": "استخدم Claude أو ChatGPT أو Gemini الخاص بك لتشغيل Ask Oria."
+    },
     "connect_outlook": {
       "title": "Microsoft Outlook",
       "desc": "يفحص بريد Outlook بحثاً عما يستحق المتابعة، مثل Gmail."

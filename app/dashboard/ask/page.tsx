@@ -14,6 +14,8 @@ import { getLocale } from "next-intl/server";
 import { suggestedQuestions } from "@/lib/ai/suggested-questions";
 import { getUserProfile } from "@/lib/data/user-profile";
 import { personalizeQuestions } from "@/lib/ai/personalization";
+import { getAiConnection } from "@/lib/data/ai-connections";
+import { PoweredBy } from "@/components/ai/powered-by";
 import type { Locale } from "@/i18n/config";
 
 export const metadata = { title: "Ask Oria" };
@@ -33,12 +35,13 @@ export default async function AskPage() {
   const crossSpaceAvailable =
     !!ctx && isAccountOwnerInPersonal(ctx) && spaces.length > 1;
 
-  const [conversations, seenHints, locale] = await Promise.all([
+  const [conversations, seenHints, locale, aiConnection] = await Promise.all([
     ctx
       ? listConversations({ userId: ctx.profile.id, limit: 50 })
       : Promise.resolve([]),
     getSeenHintKeys(),
     getLocale(),
+    ctx?.profile.id ? getAiConnection(ctx.profile.id) : Promise.resolve(null),
   ]);
 
   // Space-aware starter questions: Personal vs Work vs Investor vs Family
@@ -78,6 +81,7 @@ export default async function AskPage() {
             suggestions={suggestions}
             spaceName={ctx?.organization.name ?? null}
           />
+          <PoweredBy provider={aiConnection?.provider ?? null} />
         </div>
       </div>
       <Hint
