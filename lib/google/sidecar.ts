@@ -1,11 +1,9 @@
 import "server-only";
 
-import { createHmac } from "node:crypto";
+import { sidecarAuthHeaders } from "./shared/sidecar-auth";
 
 // Next.js -> Python sidecar client for the Google cloud services (Drive fetch +
-// indexing, Calendar sync). Mirrors the HMAC scheme used by the Gmail scan and
-// the extraction service: every request carries X-Oria-Timestamp and
-// X-Oria-Signature = sha256=HMAC(secret, "<ts>:<METHOD>:<path>").
+// indexing, Calendar sync). Uses the shared HMAC auth header builder.
 //
 // The access token travels only in the signed server-to-server request body and
 // is never logged.
@@ -13,19 +11,11 @@ import { createHmac } from "node:crypto";
 const SIDECAR_URL =
   process.env.PYTHON_EXTRACTION_URL?.replace(/\/$/, "") ?? "http://localhost:8000";
 
-function authHeaders(method: "POST", path: string): Record<string, string> {
-  const secret = process.env.ORIA_SIDECAR_SECRET;
-  if (!secret) return {};
-  const ts = Math.floor(Date.now() / 1000).toString();
-  const sig = createHmac("sha256", secret).update(`${ts}:${method}:${path}`).digest("hex");
-  return { "X-Oria-Timestamp": ts, "X-Oria-Signature": `sha256=${sig}` };
-}
-
 async function postSidecar<T>(path: string, body: unknown, timeoutMs: number): Promise<T | null> {
   try {
     const res = await fetch(`${SIDECAR_URL}${path}`, {
       method: "POST",
-      headers: { "Content-Type": "application/json", ...authHeaders("POST", path) },
+      headers: { "Content-Type": "application/json", ...sidecarAuthHeaders("POST", path) },
       body: JSON.stringify(body),
       signal: AbortSignal.timeout(timeoutMs),
     });

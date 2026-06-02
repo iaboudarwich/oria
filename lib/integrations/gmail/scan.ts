@@ -1,7 +1,7 @@
 import "server-only";
 
-import { createHmac } from "node:crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { sidecarAuthHeaders } from "@/lib/google/shared/sidecar-auth";
 import { getFreshGmailAccessToken, markConnectionError, markConnectionSynced } from "./connections";
 import { classifyEmail, type ScannedEmail, type EmailClassification } from "./classify";
 import { autoRoutePendingItems } from "./apply";
@@ -15,15 +15,6 @@ import { logAuditEvent } from "@/lib/data/audit-log";
 
 const SIDECAR_URL =
   process.env.PYTHON_EXTRACTION_URL?.replace(/\/$/, "") ?? "http://localhost:8000";
-
-/** HMAC headers matching the sidecar's require_signature scheme. */
-function sidecarAuthHeaders(method: "POST", path: string): Record<string, string> {
-  const secret = process.env.ORIA_SIDECAR_SECRET;
-  if (!secret) return {};
-  const ts = Math.floor(Date.now() / 1000).toString();
-  const sig = createHmac("sha256", secret).update(`${ts}:${method}:${path}`).digest("hex");
-  return { "X-Oria-Timestamp": ts, "X-Oria-Signature": `sha256=${sig}` };
-}
 
 /**
  * Ask the Python sidecar to fetch + parse recent Gmail messages.

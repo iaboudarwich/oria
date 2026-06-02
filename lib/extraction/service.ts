@@ -12,8 +12,8 @@
  * older than 60 s.  /health is intentionally unprotected.
  */
 
-import { createHmac } from "node:crypto";
 import * as Sentry from "@sentry/nextjs";
+import { sidecarAuthHeaders } from "@/lib/google/shared/sidecar-auth";
 import type { ExtractionServiceResult } from "./types";
 
 const BASE_URL =
@@ -21,30 +21,6 @@ const BASE_URL =
   "http://localhost:8000";
 
 const TIMEOUT_MS = 60_000; // 60 s. Docling on large docs can be slow
-
-// ── HMAC signing ─────────────────────────────────────────────────────────────
-
-/**
- * Build the X-Oria-Timestamp and X-Oria-Signature headers for a sidecar request.
- * When ORIA_SIDECAR_SECRET is absent (local dev without secret), returns an
- * empty object so callers work unchanged in un-secured dev environments.
- */
-function sidecarAuthHeaders(
-  method: "POST",
-  path: string
-): Record<string, string> {
-  const secret = process.env.ORIA_SIDECAR_SECRET;
-  if (!secret) return {};
-
-  const ts = Math.floor(Date.now() / 1000).toString();
-  const payload = `${ts}:${method}:${path}`;
-  const sig = createHmac("sha256", secret).update(payload).digest("hex");
-
-  return {
-    "X-Oria-Timestamp": ts,
-    "X-Oria-Signature": `sha256=${sig}`,
-  };
-}
 
 /** True when the Python service responded to /health in the last probe. */
 let _available: boolean | null = null;

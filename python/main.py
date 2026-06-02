@@ -54,7 +54,7 @@ logger = logging.getLogger(__name__)
 # Shared secret set via ORIA_SIDECAR_SECRET env var.
 # When the env var is absent (local dev without secret), auth is skipped so
 # existing dev workflows keep working. In production (Railway), the var MUST
-# be set — requests without a valid signature are rejected with 401/403.
+# be set; requests without a valid signature are rejected with 401/403.
 #
 # Signature scheme:
 #   X-Oria-Timestamp: <unix seconds, integer>
@@ -67,7 +67,7 @@ _SIGNATURE_TTL_S: int = 60
 
 
 async def require_signature(request: Request) -> None:
-    """FastAPI dependency — verify HMAC signature on protected endpoints."""
+    """FastAPI dependency: verify HMAC signature on protected endpoints."""
     if not _SIDECAR_SECRET:
         # Dev mode: no secret configured → unauthenticated (log once per run).
         return
