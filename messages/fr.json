@@ -436,23 +436,6 @@
     "reveal_spaces": "Chaque espace de la barre latérale est façonné pour cette partie de votre vie.",
     "reveal_sections": "Les sections sont l'endroit où les choses atterrissent. Renommez, masquez ou ajoutez à tout moment.",
     "reveal_scan": "Votre première analyse d'e-mails est en cours, les éléments apparaîtront bientôt.",
-    "reveal_dismiss": "Compris, laissez-moi explorer",
-    "template_title": "Pourquoi utilisez-vous Oria?",
-    "template_subtitle": "Choisissez un point de départ. Vous pouvez ajouter plus de sections plus tard.",
-    "template_skip": "Ignorer pour l'instant, commencer avec un espace vide",
-    "chat_title": "Parlez de vous à Oria",
-    "chat_subtitle": "Oria vous suggérera des sections, des entités et des rappels utiles.",
-    "chat_skip": "Ignorer pour l'instant",
-    "chat_type_instead": "Saisir à la place",
-    "chat_use_voice": "Utiliser la voix",
-    "chat_placeholder": "Saisir un message...",
-    "review_title": "Voici ce que je suggère",
-    "review_apply": "Appliquer la sélection",
-    "review_sections": "Sections",
-    "review_entity_types": "Types d'entités",
-    "review_trackables": "Catégories de suivi",
-    "done_title": "C'est prêt",
-    "done_subtitle": "Votre espace de travail est prêt.",
-    "done_cta": "Aller au tableau de bord"
+    "reveal_dismiss": "Compris, laissez-moi explorer"
   }
 }

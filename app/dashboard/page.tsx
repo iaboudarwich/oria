@@ -98,9 +98,7 @@ export default async function DashboardHome() {
       {ctx ? <TwoFactorPrompt enrolled={!!mfaEnrolledAt} /> : null}
 
       <div className="space-y-7 animate-fade-up">
-        {showReprompt && ctx && (
-          <OnboardingRepromptBanner orgId={ctx.organization.id} />
-        )}
+        {showReprompt && ctx && <OnboardingRepromptBanner />}
         <SearchHero />
 
         <QuickActions />

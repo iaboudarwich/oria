@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import Link from "next/link";
 import { dismissReprompt } from "@/lib/data/guided-onboarding-actions";
 
-export function OnboardingRepromptBanner({ orgId }: { orgId: string }) {
+export function OnboardingRepromptBanner() {
   const [dismissed, setDismissed] = useState(false);
   const [, startTransition] = useTransition();
 
@@ -19,7 +19,7 @@ export function OnboardingRepromptBanner({ orgId }: { orgId: string }) {
         </p>
       </div>
       <Link
-        href={`/onboarding/chat?mode=reprompt&workspace=${orgId}`}
+        href="/onboarding/demo"
         className="shrink-0 inline-flex h-8 items-center rounded-lg bg-ink px-3 text-[12px] text-surface hover:bg-ink-soft transition-base"
       >
         Start

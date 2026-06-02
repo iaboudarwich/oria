@@ -436,23 +436,6 @@
     "reveal_spaces": "Each space in the sidebar is shaped for that part of your life.",
     "reveal_sections": "Sections are where things land. Rename, hide, or add anything anytime.",
     "reveal_scan": "Your first email scan is running, items will appear soon.",
-    "reveal_dismiss": "Got it, let me explore",
-    "template_title": "What are you using Oria for?",
-    "template_subtitle": "Pick a starting point. You can add more sections later.",
-    "template_skip": "Skip for now, start with a blank workspace",
-    "chat_title": "Tell Oria about yourself",
-    "chat_subtitle": "Oria will suggest helpful sections, entities, and reminders.",
-    "chat_skip": "Skip for now",
-    "chat_type_instead": "Type instead",
-    "chat_use_voice": "Use voice",
-    "chat_placeholder": "Type a message...",
-    "review_title": "Here's what I suggest",
-    "review_apply": "Apply selected",
-    "review_sections": "Sections",
-    "review_entity_types": "Entity types",
-    "review_trackables": "Trackable categories",
-    "done_title": "You're all set",
-    "done_subtitle": "Your workspace is ready.",
-    "done_cta": "Go to dashboard"
+    "reveal_dismiss": "Got it, let me explore"
   }
 }

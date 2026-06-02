@@ -76,13 +76,21 @@ describe("AI prompts must contain zero em-dashes", () => {
 });
 
 describe("User-facing AI greeting strings are em-dash free", () => {
-  // Spot-check the chat opening lines explicitly. These are the very
-  // first thing a user sees from Oria, and they used to contain em-dashes.
-  it("guided-onboarding opening messages", async () => {
-    const mod = await import("@/lib/ai/guided-onboarding");
-    for (const mode of ["first", "improve", "reprompt"] as const) {
-      const msg = mod.getOpeningMessage(mode);
-      expect(msg.next_message).not.toContain(EM_DASH);
+  // Spot-check the onboarding conversation question bank. These base
+  // questions are the very first thing a user sees from Oria.
+  it("onboarding question bank base strings", async () => {
+    const bank = (await import("@/lib/onboarding/question-bank.json"))
+      .default as Record<
+      string,
+      Array<{ base: string; options?: string[] }>
+    >;
+    for (const questions of Object.values(bank)) {
+      for (const q of questions) {
+        expect(q.base).not.toContain(EM_DASH);
+        for (const opt of q.options ?? []) {
+          expect(opt).not.toContain(EM_DASH);
+        }
+      }
     }
   });
 });

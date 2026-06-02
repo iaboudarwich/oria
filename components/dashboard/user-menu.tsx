@@ -97,9 +97,9 @@ export function UserMenu({
               />
             ) : null}
             <MenuLink
-              href="/onboarding/chat?mode=improve"
+              href="/dashboard/reshape"
               icon={SparkIcon}
-              label="Improve my Oria"
+              label="Reshape my Oria"
               onSelect={() => setOpen(false)}
             />
             <MenuLink
