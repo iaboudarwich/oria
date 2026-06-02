@@ -22,6 +22,7 @@ const GROUPS: { group: string; items: Item[] }[] = [
     items: [
       { id: "sections", href: "/dashboard/settings/sections" },
       { id: "things", href: "/dashboard/things" },
+      { id: "reshape", href: "/dashboard/reshape" },
       { id: "learned_rules", href: "/dashboard/settings?tab=preferences" },
     ],
   },

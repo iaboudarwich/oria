@@ -78,6 +78,51 @@ Return JSON ONLY:
   }
 }
 
+/**
+ * Reshape generator (F5): given the user's stated request, the short clarifying
+ * answers, and the names of what they already have, produce ONLY the new
+ * spaces/workspaces/sections to add. Additive by design; deletions/renames are
+ * handled separately with explicit confirmation. Falls back to empty.
+ */
+export async function generateReshapePlan(
+  intent: string,
+  answers: string,
+  existing: string[],
+  locale = "en",
+): Promise<SetupPlan> {
+  const anthropic = getAnthropic();
+  if (!anthropic) return { spaces: [] };
+  const language = LANG[locale] ?? "English";
+
+  const system = `The user already has Oria set up and wants to add something. From their request, output ONLY the new spaces/workspaces/sections to CREATE. Do not recreate anything that already exists. If they only want a few sections in an existing area, return one workspace in the matching area with just those sections.
+
+- Write all user-facing strings in ${language}, in the user's words.
+- A new role or job is usually a Work workspace (area "work", kind "office"). A life area is usually the Personal area.
+- Section icons MUST be one of: home, travel, properties, staff, events, finance, legal, personal, vendors, health, wallet, scales, tag, heart, chart, plane, person.
+- Never use the em-dash character (Unicode U+2014).
+
+Return JSON ONLY in the setup-plan shape:
+{"spaces":[{"label":"...","area":"personal"|"work","workspaces":[{"name":"...","kind":"personal"|"office"|"circle","description":"...","accent_color":"#rrggbb","template_id":"custom","sections":[{"key":"snake","title":"...","icon":"...","priority":0}],"ask_oria_starters":[]}]}]}`;
+
+  const user = `The user said: "${intent}"\nClarifying answers: ${answers || "(none)"}\nThey already have: ${existing.join(", ") || "(nothing yet)"}\n\nReturn the additions as JSON.`;
+
+  try {
+    const model = process.env.ANTHROPIC_SYNTHESIS_MODEL ?? getModel();
+    const msg = await anthropic.messages.create({
+      model,
+      max_tokens: 1500,
+      system,
+      messages: [{ role: "user", content: user }],
+    });
+    const raw = msg.content[0]?.type === "text" ? msg.content[0].text.trim() : "{}";
+    const cleaned = raw.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim();
+    const parsed = JSON.parse(cleaned) as { spaces?: unknown };
+    return sanitizePlan(parsed.spaces);
+  } catch {
+    return { spaces: [] };
+  }
+}
+
 function sanitizePlan(spaces: unknown): SetupPlan {
   if (!Array.isArray(spaces)) return { spaces: [] };
   const out: SpacePlan[] = [];

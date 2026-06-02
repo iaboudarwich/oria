@@ -105,7 +105,9 @@ export async function executeSetupPlan(input: {
 
     await admin.from("onboarding_setup_plans").insert({
       user_id: input.userId,
-      plan: input.plan,
+      // Store the plan plus the ids we created, so the F5 undo knows exactly
+      // which orgs to remove (the reused personal org is never in this list).
+      plan: { ...input.plan, created_org_ids: createdOrgIds },
       source: input.source,
     });
 

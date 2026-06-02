@@ -34,6 +34,7 @@ import { AppearancePanel } from "@/components/settings/appearance-panel";
 import { defaultAccentFor } from "@/lib/data/space-theme";
 import { PreferencesPanel } from "@/components/settings/preferences-panel";
 import { LearnedRulesPanel } from "@/components/settings/learned-rules-panel";
+import { ReshapePanel } from "@/components/settings/reshape-panel";
 import { getUserProfile, type UserProfile } from "@/lib/data/user-profile";
 import type { OrgKind } from "@/lib/supabase/types";
 import type { Locale } from "@/i18n/config";
@@ -129,6 +130,7 @@ export default async function SettingsPage({
             <PreferencesPanel initial={profile.preferences} />
             <NoticedPanel derived={profile.derived} />
             <LearnedRulesPanel />
+            <ReshapePanel />
           </>
         ) : null}
 
