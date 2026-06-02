@@ -1,6 +1,7 @@
 import type { CSSProperties, ReactNode } from "react";
 import { redirect } from "next/navigation";
 import { SidebarShell } from "@/components/dashboard/sidebar-shell";
+import { CommandPalette } from "@/components/command/command-palette";
 import { TimezoneCookie } from "@/components/section/timezone-cookie";
 import {
   getCurrentContext,
@@ -191,6 +192,13 @@ export default async function DashboardLayout({ children }: { children: ReactNod
         />
         {children}
       </SidebarShell>
+      <CommandPalette
+        spaces={userSpaces.map((s) => ({
+          id: s.organization.id,
+          name: s.organization.name,
+          kind: s.organization.kind,
+        }))}
+      />
       {showBetaDisclaimer ? <BetaDisclaimerModal /> : null}
       <VersionWatcher
         buildVersion={

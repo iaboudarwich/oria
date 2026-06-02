@@ -190,6 +190,30 @@
   "status": {
     "view_in_history": "View in history"
   },
+  "command": {
+    "title": "Search and commands",
+    "button": "Search",
+    "placeholder": "Search or jump to anything...",
+    "empty": "No matches.",
+    "group_actions": "Actions",
+    "group_spaces": "Spaces",
+    "group_sections": "Sections",
+    "group_things": "Things",
+    "group_uploads": "Uploads",
+    "group_reminders": "Reminders",
+    "ask": { "label": "Ask Oria", "desc": "Ask a question about your stuff" },
+    "upload": { "label": "Upload", "desc": "Add files, receipts, screenshots" },
+    "connect_email": { "label": "Connect email", "desc": "Scan Gmail for bills and bookings" },
+    "create_reminder": { "label": "Reminders", "desc": "See and add reminders" },
+    "manage_sections": { "label": "Manage sections", "desc": "Organize your sections" },
+    "email_routing": { "label": "Email routing & filters", "desc": "Where email items go, what to skip" },
+    "features": { "label": "What can Oria do?", "desc": "Browse every feature" },
+    "settings": { "label": "Settings", "desc": "Account and preferences" },
+    "security": { "label": "Security", "desc": "Password, 2FA, sessions, activity" },
+    "export_data": { "label": "Export data", "desc": "Download your data" },
+    "trash": { "label": "Deleted", "desc": "Restore or purge deleted items" },
+    "timeline": { "label": "Timeline", "desc": "Recent activity" }
+  },
   "learnRule": {
     "prompt": "Want Oria to send future {vendor} items to {section} automatically?",
     "yes": "Yes",

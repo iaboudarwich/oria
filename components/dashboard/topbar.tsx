@@ -1,6 +1,7 @@
 import { getCurrentContext } from "@/lib/data/organizations";
 import type { OrgKind } from "@/lib/supabase/types";
 import { StatusStrip } from "./status-strip";
+import { CommandSearchButton } from "@/components/command/command-search-button";
 
 type TopbarProps = {
   title: string;
@@ -55,7 +56,9 @@ export async function Topbar({ title, subtitle }: TopbarProps) {
             <p className="mt-1 text-[13.5px] text-ink-soft">{subtitle}</p>
           ) : null}
         </div>
-        {/* Top-right search removed until it is rebuilt. */}
+        <div className="shrink-0">
+          <CommandSearchButton />
+        </div>
       </div>
       <StatusStrip />
     </header>

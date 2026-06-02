@@ -190,6 +190,30 @@
   "status": {
     "view_in_history": "Voir dans l'historique"
   },
+  "command": {
+    "title": "Recherche et commandes",
+    "button": "Rechercher",
+    "placeholder": "Rechercher ou accéder à n'importe quoi...",
+    "empty": "Aucun résultat.",
+    "group_actions": "Actions",
+    "group_spaces": "Espaces",
+    "group_sections": "Sections",
+    "group_things": "Choses",
+    "group_uploads": "Fichiers",
+    "group_reminders": "Rappels",
+    "ask": { "label": "Demander à Oria", "desc": "Poser une question sur vos données" },
+    "upload": { "label": "Charger", "desc": "Ajouter fichiers, reçus, captures" },
+    "connect_email": { "label": "Connecter un e-mail", "desc": "Analyser Gmail pour factures et réservations" },
+    "create_reminder": { "label": "Rappels", "desc": "Voir et ajouter des rappels" },
+    "manage_sections": { "label": "Gérer les sections", "desc": "Organiser vos sections" },
+    "email_routing": { "label": "Routage et filtres d'e-mail", "desc": "Où vont les éléments, quoi ignorer" },
+    "features": { "label": "Que peut faire Oria ?", "desc": "Parcourir toutes les fonctionnalités" },
+    "settings": { "label": "Paramètres", "desc": "Compte et préférences" },
+    "security": { "label": "Sécurité", "desc": "Mot de passe, 2FA, sessions, activité" },
+    "export_data": { "label": "Exporter les données", "desc": "Télécharger vos données" },
+    "trash": { "label": "Supprimés", "desc": "Restaurer ou purger les éléments supprimés" },
+    "timeline": { "label": "Historique", "desc": "Activité récente" }
+  },
   "learnRule": {
     "prompt": "Voulez-vous qu'Oria envoie automatiquement les futurs éléments de {vendor} vers {section} ?",
     "yes": "Oui",

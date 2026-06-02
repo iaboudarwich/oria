@@ -50,6 +50,11 @@ export type LiveSearchResult = {
     label: string;
     href: string;
   }>;
+  entities: Array<{
+    id: string;
+    name: string;
+    href: string;
+  }>;
 };
 
 const STATIC_PAGES: { id: string; label: string; href: string; keywords: string[] }[] = [
@@ -88,7 +93,7 @@ function sectionLabel(r: SearchResult): string {
 export async function liveSearch(query: string): Promise<LiveSearchResult> {
   const q = query.trim();
   if (q.length < 1) {
-    return { uploads: [], sections: [], reminders: [], pages: [] };
+    return { uploads: [], sections: [], reminders: [], pages: [], entities: [] };
   }
 
   const ctx = await requireContext();
@@ -129,6 +134,17 @@ export async function liveSearch(query: string): Promise<LiveSearchResult> {
       Pick<Reminder, "id" | "title" | "due_at" | "upload_id">
     >) ?? [];
 
+  // 3b. Entities (things). match by name.
+  const entitiesRes = await supabase
+    .from("entities")
+    .select("id, name")
+    .eq("organization_id", ctx.organization.id)
+    .is("archived_at", null)
+    .ilike("name", `%${q.replace(/[%_]/g, "")}%`)
+    .order("created_at", { ascending: false })
+    .limit(5);
+  const entityRows = (entitiesRes.data as Array<{ id: string; name: string }>) ?? [];
+
   // 4. Static pages. keyword match.
   const pages = STATIC_PAGES.filter(
     (p) =>
@@ -157,6 +173,11 @@ export async function liveSearch(query: string): Promise<LiveSearchResult> {
         : "/dashboard/reminders",
     })),
     pages: pages.map((p) => ({ id: p.id, label: p.label, href: p.href })),
+    entities: entityRows.map((e) => ({
+      id: e.id,
+      name: e.name,
+      href: `/dashboard/things/${e.id}`,
+    })),
   };
 }
 
