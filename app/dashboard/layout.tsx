@@ -2,6 +2,9 @@ import type { CSSProperties, ReactNode } from "react";
 import { redirect } from "next/navigation";
 import { SidebarShell } from "@/components/dashboard/sidebar-shell";
 import { CommandPalette } from "@/components/command/command-palette";
+import { FeatureTour } from "@/components/onboarding/feature-tour";
+import { getSeenHintKeys } from "@/lib/data/onboarding";
+import { listGmailConnections } from "@/lib/integrations/gmail/connections";
 import { TimezoneCookie } from "@/components/section/timezone-cookie";
 import {
   getCurrentContext,
@@ -61,6 +64,8 @@ export default async function DashboardLayout({ children }: { children: ReactNod
     sidebarWidth,
     sidebarExtras,
     isAdmin,
+    seenHints,
+    gmailConnections,
   ] = await Promise.all([
     listAllSections({ includeHidden: false }),
     listUserSpaces(),
@@ -70,7 +75,16 @@ export default async function DashboardLayout({ children }: { children: ReactNod
     readSidebarWidth(),
     readSidebarExtras(),
     isCurrentUserAdmin(),
+    getSeenHintKeys(),
+    listGmailConnections(ctx.profile.id),
   ]);
+
+  const connectionsHealth: "ok" | "error" | "none" =
+    gmailConnections.length === 0
+      ? "none"
+      : gmailConnections.some((c) => c.status === "error" || c.status === "revoked")
+        ? "error"
+        : "ok";
 
   // Mode follows the active space's kind. Personal/Circle orgs → Personal
   // mode; Office orgs → Work mode. The space switcher only shows orgs of
@@ -143,6 +157,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
     isAdmin,
     orgKind: ctx.organization.kind,
     extras: Array.from(sidebarExtras),
+    connectionsHealth,
   };
 
   // Soft-requirement banner for Workspace owners without 2FA.
@@ -198,6 +213,12 @@ export default async function DashboardLayout({ children }: { children: ReactNod
           name: s.organization.name,
           kind: s.organization.kind,
         }))}
+      />
+      <FeatureTour
+        initialOpen={
+          !!(ctx.profile as unknown as { has_completed_guided_onboarding?: boolean })
+            .has_completed_guided_onboarding && !seenHints.has("feature_tour")
+        }
       />
       {showBetaDisclaimer ? <BetaDisclaimerModal /> : null}
       <VersionWatcher

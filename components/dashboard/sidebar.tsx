@@ -18,7 +18,7 @@ import {
   HeartIcon,
   HomeIcon,
   InboxIcon,
-  LockIcon,
+  LinkIcon,
   MenuIcon,
   PersonIcon,
   PlaneIcon,
@@ -99,9 +99,12 @@ export const SIDEBAR_EXTRA_ITEMS: Record<string, NavItem> = {
 // System tier, always at the bottom. Settings used to live here too,
 // but it moved into the account menu (UserMenu) so the sidebar stays
 // focused on places and the account row owns account-level actions.
+// System tier. "Private Oria" moved into the feature index (rare/long-tail);
+// "What can Oria do?" surfaces the full feature list. Connections gets its own
+// status row below (rendered separately so it can show a health dot).
 const systemNav: NavItem[] = [
+  { label: "What can Oria do?", href: "/dashboard/features", icon: SparkIcon },
   { label: "Deleted", href: "/dashboard/trash", icon: CloseIcon },
-  { label: "Private Oria", href: "/dashboard/private", icon: LockIcon, badge: "Preview" },
 ];
 
 type SidebarSection = {
@@ -135,6 +138,8 @@ export type SidebarProps = {
   /** Opt-in sidebar rows the user has enabled (Settings → Sidebar).
    *  Layout resolves these from a cookie; sidebar just renders them. */
   extras: string[];
+  /** Email-connection sync health for the utility-cluster status dot. */
+  connectionsHealth?: "ok" | "error" | "none";
   /** Desktop only. Mobile sidebar always shows full content when open. */
   collapsed?: boolean;
   onToggle?: () => void;
@@ -178,6 +183,7 @@ export function Sidebar({
   isAdmin,
   orgKind,
   extras,
+  connectionsHealth = "none",
   collapsed = false,
   onToggle,
   sectionsOpen = true,
@@ -368,6 +374,24 @@ export function Sidebar({
                   />
                 </li>
               ))}
+              {/* Connections status: persistent path to email sync health with
+                  an at-a-glance dot (green active, red needs attention). */}
+              <li>
+                <NavLink
+                  item={{ label: "Connections", href: "/dashboard/settings?tab=connections", icon: LinkIcon }}
+                  pathname={pathname}
+                  onNavigate={close}
+                  quiet
+                  collapsed={collapsed}
+                  trailingDot={
+                    connectionsHealth === "none"
+                      ? undefined
+                      : connectionsHealth === "error"
+                        ? "bg-claret"
+                        : "bg-sage"
+                  }
+                />
+              </li>
             </ul>
             {/* Report a problem: persistent, quiet, available from every
                 dashboard page. Opens the shared report dialog. */}
@@ -538,12 +562,15 @@ function NavLink({
   onNavigate,
   quiet,
   collapsed,
+  trailingDot,
 }: {
   item: NavItem;
   pathname: string;
   onNavigate?: () => void;
   quiet?: boolean;
   collapsed?: boolean;
+  /** Tailwind bg-* class for a small status dot, or undefined for none. */
+  trailingDot?: string;
 }) {
   const active =
     item.href === "/dashboard"
@@ -581,6 +608,9 @@ function NavLink({
       {!collapsed ? (
         <>
           <span className="flex-1 truncate">{item.label}</span>
+          {trailingDot ? (
+            <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${trailingDot}`} aria-hidden />
+          ) : null}
           {item.badge ? (
             <span className="rounded-md bg-ink/[0.05] px-1.5 py-0.5 text-[10.5px] text-ink-muted">
               {item.badge}

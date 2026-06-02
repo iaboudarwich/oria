@@ -10,13 +10,15 @@ export type HintKey =
   | "first_upload"
   | "try_ask_oria"
   | "create_circle"
-  | "take_photo_mobile";
+  | "take_photo_mobile"
+  | "feature_tour";
 
 export const ALL_HINT_KEYS: HintKey[] = [
   "first_upload",
   "try_ask_oria",
   "create_circle",
   "take_photo_mobile",
+  "feature_tour",
 ];
 
 /**
