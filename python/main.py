@@ -221,8 +221,10 @@ def embed_query_endpoint(req: QueryEmbedRequest):
 # ── /gmail/scan ────────────────────────────────────────────────────────────────
 # Fetch and parse a window of Gmail messages so the Node app can classify them
 # with Claude. We only READ mail (the OAuth scope is gmail.readonly) and never
-# send, delete, or modify anything. Promotions and social mail are excluded so
-# marketing email is never scanned.
+# send, delete, or modify anything. Only Social is excluded at the query level;
+# Updates, Promotions, Forums, and the inbox itself are all included because
+# e-commerce receipts and order confirmations live in Promotions. The AI
+# classifier (not the query) decides what is actually transactional.
 #
 # SECURITY: the access token arrives in the signed request body and is used only
 # to call the Gmail API. It is NEVER logged. Only counts and message ids appear
@@ -303,11 +305,13 @@ def _header(headers: list[dict], name: str) -> str:
 
 @app.post("/gmail/scan", response_model=GmailScanResponse, dependencies=[Depends(require_signature)])
 def gmail_scan(req: GmailScanRequest):
-    """List and parse recent, non-promotional Gmail messages for classification."""
+    """List and parse recent Gmail messages (Social excluded) for classification."""
     months = max(1, min(req.timeframe_months, 24))
     query = req.since_query or f"newer_than:{months}m"
-    # Exclude chats, promotions and social so marketing mail is never scanned.
-    query = f"{query} -in:chats -category:promotions -category:social"
+    # Only exclude Social: it is almost never a transactional signal. Updates,
+    # Promotions, Forums, and the inbox stay in so receipts (which often land in
+    # Promotions) are scanned. The classifier discriminates from here.
+    query = f"{query} -category:social"
     max_messages = max(1, min(req.max_messages, 400))
 
     auth = {"Authorization": f"Bearer {req.access_token}"}

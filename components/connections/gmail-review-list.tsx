@@ -26,6 +26,13 @@ export type ReviewItem = {
     renewal_date?: string | null;
     event_date?: string | null;
     summary?: string | null;
+    order_id?: string | null;
+    due_date?: string | null;
+    origin?: string | null;
+    destination?: string | null;
+    departure?: string | null;
+    location?: string | null;
+    provider?: string | null;
   };
 };
 
@@ -35,10 +42,19 @@ const TYPE_KEYS: Record<string, string> = {
   flight: "type_flight",
   booking: "type_booking",
   receipt: "type_receipt",
+  appointment: "type_appointment",
   other: "type_other",
 };
 
 const HIGH_CONFIDENCE = 0.8;
+
+/** Worded confidence badge: >=0.75 confident, >=0.5 likely, else maybe. */
+function confidenceKey(c: number | null): string {
+  if (c == null) return "conf_maybe";
+  if (c >= 0.75) return "conf_high";
+  if (c >= 0.5) return "conf_likely";
+  return "conf_maybe";
+}
 
 /**
  * Interactive review + approval list. Groups detected items by type, supports
@@ -60,7 +76,7 @@ export function GmailReviewList({ items }: { items: ReviewItem[] }) {
 
   // Types present, in a stable display order.
   const tabs = useMemo(() => {
-    const order = ["subscription", "bill", "flight", "booking", "receipt", "other"];
+    const order = ["receipt", "bill", "subscription", "flight", "booking", "appointment", "other"];
     const present = order.filter((tp) => items.some((i) => i.itemType === tp));
     return ["all", ...present];
   }, [items]);
@@ -106,15 +122,6 @@ export function GmailReviewList({ items }: { items: ReviewItem[] }) {
   }
 
   const selectedInVisible = visible.filter((i) => selected.has(i.id)).length;
-
-  if (items.length === 0) {
-    return (
-      <div className="rounded-2xl border border-line bg-surface-raised px-5 py-10 text-center">
-        <p className="text-[14px] font-medium text-ink">{t("empty_title")}</p>
-        <p className="mt-1 text-[13px] text-ink-muted">{t("all_clear")}</p>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-4">
@@ -186,7 +193,6 @@ export function GmailReviewList({ items }: { items: ReviewItem[] }) {
       {/* Items */}
       <ul className="space-y-2">
         {visible.map((item) => {
-          const pct = item.confidence != null ? Math.round(item.confidence * 100) : null;
           const ex = item.extracted ?? {};
           const isOpen = expanded === item.id;
           return (
@@ -207,11 +213,16 @@ export function GmailReviewList({ items }: { items: ReviewItem[] }) {
                     <p className="truncate text-[14px] font-medium text-ink">
                       {ex.title || item.sourceSubject || t("type_other")}
                     </p>
-                    {pct != null ? (
-                      <span className="ml-auto shrink-0 text-[11px] text-ink-faint">
-                        {t("confidence", { percent: pct })}
-                      </span>
-                    ) : null}
+                    <span
+                      className="ml-auto shrink-0 rounded-full bg-surface px-2 py-0.5 text-[10.5px] font-medium text-ink-faint"
+                      title={
+                        item.confidence != null
+                          ? `${Math.round(item.confidence * 100)}%`
+                          : undefined
+                      }
+                    >
+                      {t(confidenceKey(item.confidence))}
+                    </span>
                   </div>
 
                   <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[12px] text-ink-muted">
@@ -222,8 +233,15 @@ export function GmailReviewList({ items }: { items: ReviewItem[] }) {
                         {ex.period ? ` / ${ex.period}` : ""}
                       </span>
                     ) : null}
+                    {ex.origin && ex.destination ? (
+                      <span>
+                        {ex.origin} {"→"} {ex.destination}
+                      </span>
+                    ) : null}
                     {ex.renewal_date ? <span>{t("renews_on", { date: fmtDate(ex.renewal_date) })}</span> : null}
+                    {ex.due_date ? <span>{t("due_on", { date: fmtDate(ex.due_date) })}</span> : null}
                     {ex.event_date ? <span>{t("event_on", { date: fmtDate(ex.event_date) })}</span> : null}
+                    {ex.order_id ? <span>#{ex.order_id}</span> : null}
                   </div>
 
                   <div className="mt-2 flex items-center gap-2">

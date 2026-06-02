@@ -108,6 +108,14 @@ export type DetectedItem = {
     renewal_date?: string | null;
     event_date?: string | null;
     summary?: string | null;
+    order_id?: string | null;
+    due_date?: string | null;
+    origin?: string | null;
+    destination?: string | null;
+    departure?: string | null;
+    location?: string | null;
+    provider?: string | null;
+    [key: string]: unknown;
   };
 };
 
@@ -138,6 +146,10 @@ export async function listDetectedItems(
 }
 
 const CLASSIFY_BATCH = 6;
+
+// Store anything the classifier is at least this sure of. Deliberately low:
+// the review UI shows the confidence so the user does the final filtering.
+const MIN_CONFIDENCE = 0.4;
 
 /**
  * Begin a Gmail scan: refresh the token and create a `running` job row.
@@ -218,7 +230,11 @@ async function processScan(input: {
       );
 
       for (const { email, classification } of results) {
-        if (classification && classification.is_relevant) {
+        if (
+          classification &&
+          classification.is_relevant &&
+          classification.confidence >= MIN_CONFIDENCE
+        ) {
           const inserted = await insertDetectedItem({
             userId: input.userId,
             organizationId: input.organizationId,
@@ -298,10 +314,26 @@ async function insertDetectedItem(input: {
         vendor: c.vendor ?? null,
         amount: c.amount ?? null,
         currency: c.currency ?? null,
+        summary: c.summary ?? null,
         period: c.period ?? null,
         renewal_date: c.renewal_date ?? null,
         event_date: c.event_date ?? null,
-        summary: c.summary ?? null,
+        order_id: c.order_id ?? null,
+        item_description: c.item_description ?? null,
+        due_date: c.due_date ?? null,
+        account: c.account ?? null,
+        period_covered: c.period_covered ?? null,
+        airline: c.airline ?? null,
+        flight_number: c.flight_number ?? null,
+        origin: c.origin ?? null,
+        destination: c.destination ?? null,
+        departure: c.departure ?? null,
+        arrival: c.arrival ?? null,
+        passenger: c.passenger ?? null,
+        booking_type: c.booking_type ?? null,
+        location: c.location ?? null,
+        provider: c.provider ?? null,
+        appointment_type: c.appointment_type ?? null,
       },
       confidence: c.confidence,
       status: "pending",

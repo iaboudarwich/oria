@@ -6,6 +6,7 @@ import { getGmailConnection } from "@/lib/integrations/gmail/connections";
 import { getLatestScanJob, listDetectedItems } from "@/lib/integrations/gmail/scan";
 import { ScanProgress } from "@/components/connections/scan-progress";
 import { GmailReviewList } from "@/components/connections/gmail-review-list";
+import { ScanEmptyState } from "@/components/connections/scan-empty-state";
 
 export const metadata = { title: "Email items" };
 export const dynamic = "force-dynamic";
@@ -35,7 +36,17 @@ export default async function GmailReviewPage() {
           hasItems={items.length > 0}
         />
 
-        <GmailReviewList items={items} />
+        {items.length > 0 ? (
+          <GmailReviewList items={items} />
+        ) : (
+          <ScanEmptyState
+            job={
+              job
+                ? { status: job.status, emailsTotal: job.emailsTotal, itemsFound: job.itemsFound }
+                : null
+            }
+          />
+        )}
       </div>
     </>
   );

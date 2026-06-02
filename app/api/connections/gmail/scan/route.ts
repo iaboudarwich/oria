@@ -1,6 +1,6 @@
 import "server-only";
 
-import { NextResponse, after } from "next/server";
+import { type NextRequest, NextResponse, after } from "next/server";
 import { getCurrentContext } from "@/lib/data/organizations";
 import { startGmailScan, getLatestScanJob } from "@/lib/integrations/gmail/scan";
 
@@ -11,15 +11,23 @@ const DEFAULT_TIMEFRAME_MONTHS = 6;
 
 /**
  * POST /api/connections/gmail/scan
- * Starts an initial scan (default 6 months). Returns the job id immediately;
- * the fetch + classify runs in the background via after(). Idempotent-ish: if a
- * scan is already running we return that job instead of starting another.
+ * Body: { months?: number } (clamped 1..24, default 6).
+ * Starts a scan and returns the job id immediately; the fetch + classify runs
+ * in the background via after(). Idempotent-ish: if a scan is already running
+ * we return that job instead of starting another.
  */
-export async function POST() {
+export async function POST(req: NextRequest) {
   const ctx = await getCurrentContext();
   if (!ctx) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
+
+  const months = await req
+    .json()
+    .then((b: { months?: number }) =>
+      Math.max(1, Math.min(24, Math.round(Number(b?.months)) || DEFAULT_TIMEFRAME_MONTHS)),
+    )
+    .catch(() => DEFAULT_TIMEFRAME_MONTHS);
 
   const existing = await getLatestScanJob(ctx.profile.id);
   if (existing && existing.status === "running") {
@@ -29,7 +37,7 @@ export async function POST() {
   const started = await startGmailScan({
     userId: ctx.profile.id,
     organizationId: ctx.organization.id,
-    timeframeMonths: DEFAULT_TIMEFRAME_MONTHS,
+    timeframeMonths: months,
   });
   if (!started) {
     return NextResponse.json({ error: "not_connected" }, { status: 400 });
