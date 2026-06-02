@@ -34,6 +34,7 @@ export async function LinkedFilesPanel({
         remove: t("remove"),
         inaccessible: t("inaccessible"),
         empty: t("no_files_yet"),
+        view: t("view"),
       }}
     />
   );

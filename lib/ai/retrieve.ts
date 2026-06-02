@@ -9,6 +9,7 @@ import {
 import { sectionLabel } from "@/lib/sections-meta";
 import { listSectionMemories } from "@/lib/data/section-memory";
 import { searchChunks, searchChunksCrossOrg } from "@/lib/embedding/search";
+import { searchCloudFiles, fetchCloudFileContent } from "@/lib/google/cloud-files";
 import {
   composeUploadSnippet,
   formatStructuredFields,
@@ -29,7 +30,7 @@ import type { Section } from "@/lib/supabase/types";
  */
 export type RetrievedSource = {
   id: number; // 1-based slot for citations
-  kind: "upload" | "reminder" | "memory";
+  kind: "upload" | "reminder" | "memory" | "cloud_file";
   title: string;
   snippet: string;
   href: string;
@@ -1004,6 +1005,55 @@ export async function retrieveForQuery(
   } catch (err) {
     // Semantic search failure is never fatal, keyword results still return.
     console.warn("[retrieve] semantic search error (degrading to keyword-only):", err);
+  }
+
+  // ── Linked Drive files (cloud_files) pass ──────────────────────────────
+  // Gated on the active org actually having linked files, so an Ask in an org
+  // with no Drive links pays only one cheap indexed count. For the single best
+  // match above a confidence bar, fetch live content (fetch-on-demand, never
+  // stored) for grounding; the rest contribute their stored summary. The Drive
+  // web link is cited so the user can click through.
+  try {
+    const { count: cloudCount } = await supabase
+      .from("cloud_files")
+      .select("id", { count: "exact", head: true })
+      .eq("organization_id", activeOrgId)
+      .eq("accessible", true)
+      .not("summary_embedding", "is", null);
+
+    if ((cloudCount ?? 0) > 0) {
+      const matches = await searchCloudFiles(activeOrgId, query, 5, 0.35);
+      let grounded = false;
+      for (const m of matches) {
+        let snippet = m.contentSummary ?? m.name;
+        if (!grounded && m.similarity >= 0.55) {
+          const content = await fetchCloudFileContent(ctx.profile.id, m.id);
+          if (content.status === "ok" && content.text) {
+            snippet = buildUploadSnippet(content.text, keywords) || snippet;
+            grounded = true;
+          } else if (content.status === "inaccessible") {
+            snippet = "This linked Drive file is no longer accessible in Drive.";
+          }
+        }
+        scored.push({
+          score: Math.round(m.similarity * 20),
+          src: {
+            kind: "cloud_file",
+            title: m.name,
+            snippet,
+            href: m.webViewLink ?? "/dashboard",
+            processing_state: "ready",
+            meta: {
+              section_label: "Drive",
+              space_name: ctx.organization.name,
+              date_label: null,
+            },
+          },
+        });
+      }
+    }
+  } catch (err) {
+    console.warn("[retrieve] cloud-files search error (degrading):", err);
   }
 
   scored.sort((a, b) => b.score - a.score);

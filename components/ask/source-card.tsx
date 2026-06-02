@@ -3,7 +3,7 @@ import { CalendarIcon, DocumentIcon, SparkIcon } from "@/components/ui/icon";
 
 export type SourceItem = {
   id: number;
-  kind: "upload" | "reminder" | "memory";
+  kind: "upload" | "reminder" | "memory" | "cloud_file";
   title: string;
   snippet: string;
   href: string;
@@ -25,7 +25,7 @@ export function SourceCard({ source }: { source: SourceItem }) {
   const Icon =
     source.kind === "memory"
       ? SparkIcon
-      : source.kind === "upload"
+      : source.kind === "upload" || source.kind === "cloud_file"
         ? DocumentIcon
         : CalendarIcon;
   const isPending = source.processing_state === "pending";

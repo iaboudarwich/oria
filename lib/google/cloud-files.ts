@@ -3,9 +3,10 @@ import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getAnthropic, getModel } from "@/lib/ai/anthropic";
-import { embedViaService } from "@/lib/extraction/service";
+import { embedViaService, embedQueryViaService } from "@/lib/extraction/service";
 import { getFreshCloudAccessToken } from "./token-refresh";
-import { driveIndex, driveListFolder, type DriveFileMeta } from "./sidecar";
+import { driveIndex, driveListFolder, driveFetch, type DriveFileMeta } from "./sidecar";
+import { kvGet, kvSet } from "@/lib/cache/kv";
 
 const FOLDER_MIME = "application/vnd.google-apps.folder";
 
@@ -216,11 +217,19 @@ async function applyIndexedMeta(connectionId: string, meta: DriveFileMeta): Prom
 export async function getCloudFileForFetch(
   userId: string,
   fileId: string,
-): Promise<{ id: string; connectionId: string; providerFileId: string; mimeType: string; name: string; webViewLink: string | null } | null> {
+): Promise<{
+  id: string;
+  connectionId: string;
+  providerFileId: string;
+  mimeType: string;
+  name: string;
+  webViewLink: string | null;
+  modifiedTime: string | null;
+} | null> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("cloud_files")
-    .select("id, connection_id, provider_file_id, mime_type, name, web_view_link")
+    .select("id, connection_id, provider_file_id, mime_type, name, web_view_link, modified_time")
     .eq("user_id", userId)
     .eq("id", fileId)
     .maybeSingle();
@@ -232,6 +241,7 @@ export async function getCloudFileForFetch(
     mime_type: string;
     name: string;
     web_view_link: string | null;
+    modified_time: string | null;
   };
   return {
     id: r.id,
@@ -240,7 +250,103 @@ export async function getCloudFileForFetch(
     mimeType: r.mime_type,
     name: r.name,
     webViewLink: r.web_view_link,
+    modifiedTime: r.modified_time,
   };
+}
+
+export type CloudFileMatch = {
+  id: string;
+  name: string;
+  mimeType: string;
+  webViewLink: string | null;
+  contentSummary: string | null;
+  connectionId: string;
+  providerFileId: string;
+  similarity: number;
+};
+
+/** Semantic search over linked Drive files in one org (for Ask Oria). */
+export async function searchCloudFiles(
+  organizationId: string,
+  query: string,
+  topK = 6,
+  similarityThreshold = 0.3,
+): Promise<CloudFileMatch[]> {
+  const embedding = await embedQueryViaService(query);
+  if (!embedding || embedding.length !== 384) return [];
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("match_cloud_files", {
+    query_embedding: JSON.stringify(embedding),
+    match_org_id: organizationId,
+    match_count: topK,
+    similarity_threshold: similarityThreshold,
+  });
+  if (error || !data) return [];
+  return (data as Array<{
+    id: string;
+    name: string;
+    mime_type: string;
+    web_view_link: string | null;
+    content_summary: string | null;
+    connection_id: string;
+    provider_file_id: string;
+    similarity: number;
+  }>).map((r) => ({
+    id: r.id,
+    name: r.name,
+    mimeType: r.mime_type,
+    webViewLink: r.web_view_link,
+    contentSummary: r.content_summary,
+    connectionId: r.connection_id,
+    providerFileId: r.provider_file_id,
+    similarity: r.similarity,
+  }));
+}
+
+export type CloudFileContent = {
+  status: "ok" | "inaccessible" | "unavailable" | "not_found";
+  text?: string;
+  name?: string;
+  webViewLink?: string | null;
+};
+
+/**
+ * Fetch-on-demand content for one linked file. Caches the parsed text in Redis
+ * for 5 minutes (keyed on provider id + modified time, so a source edit
+ * invalidates it). Never persists content to the database. On a 403/404 from
+ * Drive the file is flagged inaccessible.
+ */
+export async function fetchCloudFileContent(
+  userId: string,
+  fileId: string,
+): Promise<CloudFileContent> {
+  const file = await getCloudFileForFetch(userId, fileId);
+  if (!file) return { status: "not_found" };
+
+  const cacheKey = `cloudcontent:${file.providerFileId}:${file.modifiedTime ?? "x"}`;
+  const cached = await kvGet(cacheKey);
+  if (cached !== null) {
+    return { status: "ok", text: cached, name: file.name, webViewLink: file.webViewLink };
+  }
+
+  const token = await getFreshCloudAccessToken(file.connectionId);
+  if (!token) return { status: "unavailable" };
+
+  const result = await driveFetch(token.accessToken, file.providerFileId, file.mimeType);
+  if (!result) return { status: "unavailable" };
+  if (!result.accessible) {
+    await markCloudFileInaccessible(file.id);
+    return { status: "inaccessible", name: file.name, webViewLink: file.webViewLink };
+  }
+
+  await kvSet(cacheKey, result.text, 300); // 5-minute TTL
+  const admin = createAdminClient();
+  await admin
+    .from("cloud_files")
+    .update({ last_fetched_at: new Date().toISOString() })
+    .eq("id", file.id);
+
+  return { status: "ok", text: result.text, name: file.name, webViewLink: file.webViewLink };
 }
 
 /** Mark a linked file inaccessible (after a 403/404 from Drive). */

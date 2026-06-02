@@ -24,6 +24,7 @@ export type LinkedFilesLabels = {
   remove: string;
   inaccessible: string;
   empty: string;
+  view: string;
 };
 
 /**
@@ -45,6 +46,8 @@ export function LinkedFilesList({
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [removing, setRemoving] = useState<string | null>(null);
+  const [viewing, setViewing] = useState<{ name: string; text: string } | null>(null);
+  const [loadingView, setLoadingView] = useState<string | null>(null);
 
   async function remove(id: string) {
     setRemoving(id);
@@ -56,7 +59,28 @@ export function LinkedFilesList({
     }
   }
 
+  async function view(id: string, name: string) {
+    setLoadingView(id);
+    try {
+      const res = await fetch(`/api/cloud-files/${id}/content`);
+      if (res.status === 410) {
+        setViewing({ name, text: labels.inaccessible });
+        startTransition(() => router.refresh());
+        return;
+      }
+      if (!res.ok) {
+        setViewing({ name, text: labels.unavailable });
+        return;
+      }
+      const data = (await res.json()) as { text: string };
+      setViewing({ name, text: data.text || "" });
+    } finally {
+      setLoadingView(null);
+    }
+  }
+
   return (
+    <>
     <section className="rounded-2xl border border-line bg-surface-raised p-4">
       <div className="mb-3 flex items-center justify-between gap-3">
         <h2 className="text-[13px] font-semibold uppercase tracking-[0.05em] text-ink-faint">
@@ -102,6 +126,16 @@ export function LinkedFilesList({
                   </p>
                 ) : null}
               </div>
+              {f.accessible && !f.isFolder ? (
+                <button
+                  type="button"
+                  onClick={() => view(f.id, f.name)}
+                  disabled={loadingView === f.id}
+                  className="shrink-0 text-[11.5px] text-ink-faint opacity-0 transition-opacity group-hover:opacity-100 hover:text-ink disabled:opacity-40"
+                >
+                  {loadingView === f.id ? "…" : labels.view}
+                </button>
+              ) : null}
               {f.webViewLink ? (
                 <a
                   href={f.webViewLink}
@@ -125,5 +159,32 @@ export function LinkedFilesList({
         </ul>
       )}
     </section>
+
+    {viewing ? (
+      <div
+        className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4"
+        onClick={() => setViewing(null)}
+      >
+        <div
+          className="flex max-h-[80vh] w-full max-w-2xl flex-col rounded-2xl bg-surface shadow-xl"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="flex items-center justify-between gap-3 border-b border-line px-4 py-3">
+            <p className="truncate text-[14px] font-medium text-ink">{viewing.name}</p>
+            <button
+              type="button"
+              onClick={() => setViewing(null)}
+              className="shrink-0 text-[13px] text-ink-faint hover:text-ink"
+            >
+              ✕
+            </button>
+          </div>
+          <pre className="overflow-auto whitespace-pre-wrap px-4 py-3 text-[12.5px] leading-relaxed text-ink-muted">
+            {viewing.text || labels.empty}
+          </pre>
+        </div>
+      </div>
+    ) : null}
+    </>
   );
 }
