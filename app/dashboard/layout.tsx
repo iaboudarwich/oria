@@ -7,6 +7,7 @@ import { OnboardingReveal } from "@/components/onboarding/onboarding-reveal";
 import { getSeenHintKeys } from "@/lib/data/onboarding";
 import { shouldShowReveal } from "@/lib/onboarding/reveal";
 import { listGmailConnections } from "@/lib/integrations/gmail/connections";
+import { listCloudConnections } from "@/lib/google/cloud-connections";
 import { TimezoneCookie } from "@/components/section/timezone-cookie";
 import {
   getCurrentContext,
@@ -68,6 +69,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
     isAdmin,
     seenHints,
     gmailConnections,
+    cloudConnections,
   ] = await Promise.all([
     listAllSections({ includeHidden: false }),
     listUserSpaces(),
@@ -79,14 +81,21 @@ export default async function DashboardLayout({ children }: { children: ReactNod
     isCurrentUserAdmin(),
     getSeenHintKeys(),
     listGmailConnections(ctx.profile.id),
+    listCloudConnections(ctx.profile.id),
   ]);
 
   const showReveal = await shouldShowReveal(ctx.profile.id);
 
+  // Sidebar connection dot reflects ALL Google services (Mail + Calendar +
+  // Drive): red if any is in error/revoked, green if any is connected.
+  const allConnStatuses = [
+    ...gmailConnections.map((c) => c.status),
+    ...cloudConnections.map((c) => c.status),
+  ];
   const connectionsHealth: "ok" | "error" | "none" =
-    gmailConnections.length === 0
+    allConnStatuses.length === 0
       ? "none"
-      : gmailConnections.some((c) => c.status === "error" || c.status === "revoked")
+      : allConnStatuses.some((s) => s === "error" || s === "revoked")
         ? "error"
         : "ok";
 

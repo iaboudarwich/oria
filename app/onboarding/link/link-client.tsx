@@ -4,17 +4,25 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Wordmark } from "@/components/brand/wordmark";
 
-type Connector = { id: string; name: string; live?: boolean };
+type Connector = {
+  id: string;
+  name: string;
+  live?: boolean;
+  href?: string;
+  // Docs/Sheets/Slides come through Drive: enabled once Drive is connected.
+  viaDrive?: boolean;
+};
 
-// Gmail is live (existing OAuth). The rest are visible-but-coming-soon so the
-// user sees the ambition. Names are brand proper nouns; descriptions localize.
+// Gmail, Google Calendar, and Google Drive are live. Docs/Sheets/Slides are
+// reached through Drive (drive.file), so they light up once Drive is connected.
+// Microsoft + Banking remain coming-soon so the user sees the ambition.
 const CONNECTORS: Connector[] = [
-  { id: "gmail", name: "Gmail", live: true },
-  { id: "gcal", name: "Google Calendar" },
-  { id: "gdrive", name: "Google Drive" },
-  { id: "gdocs", name: "Google Docs" },
-  { id: "gsheets", name: "Google Sheets" },
-  { id: "gslides", name: "Google Slides" },
+  { id: "gmail", name: "Gmail", live: true, href: "/api/oauth/gmail/start" },
+  { id: "gcal", name: "Google Calendar", live: true, href: "/api/oauth/google/connect?service=calendar" },
+  { id: "gdrive", name: "Google Drive", live: true, href: "/api/oauth/google/connect?service=drive" },
+  { id: "gdocs", name: "Google Docs", viaDrive: true },
+  { id: "gsheets", name: "Google Sheets", viaDrive: true },
+  { id: "gslides", name: "Google Slides", viaDrive: true },
   { id: "outlook", name: "Microsoft Outlook" },
   { id: "onedrive", name: "Microsoft OneDrive" },
   { id: "word", name: "Word" },
@@ -24,13 +32,27 @@ const CONNECTORS: Connector[] = [
 ];
 
 /**
- * Link-everything step. Gmail connects via the existing OAuth flow (its first
- * scan kicks off in the callback); everything else is shown with a clear
- * "coming soon" badge. Either action proceeds to the reveal on the dashboard.
+ * Link-everything step. Gmail, Calendar, and Drive connect via OAuth;
+ * Docs/Sheets/Slides light up once Drive is connected (they are linked through
+ * the Drive Picker). Everything else is a clear "coming soon". Either action
+ * proceeds to the reveal on the dashboard.
  */
-export function LinkClient({ gmailConnected }: { gmailConnected: boolean }) {
+export function LinkClient({
+  gmailConnected,
+  calendarConnected,
+  driveConnected,
+}: {
+  gmailConnected: boolean;
+  calendarConnected: boolean;
+  driveConnected: boolean;
+}) {
   const t = useTranslations("onboarding");
   const router = useRouter();
+
+  const isConnected = (id: string): boolean =>
+    (id === "gmail" && gmailConnected) ||
+    (id === "gcal" && calendarConnected) ||
+    (id === "gdrive" && driveConnected);
 
   return (
     <div className="flex min-h-screen flex-col bg-canvas">
@@ -53,39 +75,48 @@ export function LinkClient({ gmailConnected }: { gmailConnected: boolean }) {
 
         <div className="mt-6 grid gap-2.5 sm:grid-cols-2">
           {CONNECTORS.map((c) => {
-            const connected = c.id === "gmail" && gmailConnected;
+            const connected = isConnected(c.id);
+            // Docs/Sheets/Slides: enabled (shown as available) once Drive is on.
+            const viaDriveReady = c.viaDrive && driveConnected;
+            const badge = connected ? (
+              <span className="rounded-md bg-sage/15 px-2 py-0.5 text-[11px] font-medium text-[#3f5240]">
+                {t("link_connected")}
+              </span>
+            ) : viaDriveReady ? (
+              <span className="rounded-md bg-sage/15 px-2 py-0.5 text-[11px] font-medium text-[#3f5240]">
+                {t("link_available")}
+              </span>
+            ) : c.live ? (
+              <span className="rounded-md bg-ink px-2 py-0.5 text-[11px] font-medium text-surface">
+                {t("link_connect")}
+              </span>
+            ) : (
+              <span className="rounded-md border border-line px-2 py-0.5 text-[11px] text-ink-faint">
+                {t("link_coming_soon")}
+              </span>
+            );
+            const desc = c.viaDrive && !driveConnected ? t("link_via_drive") : t(`link_desc_${c.id}`);
             const body = (
               <div className="flex h-full items-start justify-between gap-3 rounded-2xl border border-line bg-surface-raised p-4">
                 <div className="min-w-0">
                   <p className="text-[14px] font-semibold text-ink">{c.name}</p>
-                  <p className="mt-0.5 text-[12px] text-ink-muted">{t(`link_desc_${c.id}`)}</p>
+                  <p className="mt-0.5 text-[12px] text-ink-muted">{desc}</p>
                 </div>
-                <span className="shrink-0">
-                  {connected ? (
-                    <span className="rounded-md bg-sage/15 px-2 py-0.5 text-[11px] font-medium text-[#3f5240]">
-                      {t("link_connected")}
-                    </span>
-                  ) : c.live ? (
-                    <span className="rounded-md bg-ink px-2 py-0.5 text-[11px] font-medium text-surface">
-                      {t("link_connect")}
-                    </span>
-                  ) : (
-                    <span className="rounded-md border border-line px-2 py-0.5 text-[11px] text-ink-faint">
-                      {t("link_coming_soon")}
-                    </span>
-                  )}
-                </span>
+                <span className="shrink-0">{badge}</span>
               </div>
             );
-            if (c.live && !connected) {
+            // Live + not yet connected -> link to its OAuth connect.
+            if (c.live && !connected && c.href) {
               return (
-                <a key={c.id} href="/api/oauth/gmail/start" className="block">
+                <a key={c.id} href={c.href} className="block">
                   {body}
                 </a>
               );
             }
+            // viaDrive items are dimmed until Drive is connected.
+            const dim = (!c.live && !c.viaDrive) || (c.viaDrive && !driveConnected);
             return (
-              <div key={c.id} className={c.live ? "" : "opacity-70"}>
+              <div key={c.id} className={dim ? "opacity-70" : ""}>
                 {body}
               </div>
             );

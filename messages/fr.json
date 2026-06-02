@@ -137,6 +137,16 @@
     "members_desc": "Invitez des personnes à partager l'accès."
   },
   "connections": {
+    "cloud_title": "Services Google",
+    "cloud_subtitle": "Agenda et Drive, regroupés par compte.",
+    "add_calendar": "Connecter l'agenda",
+    "add_drive": "Connecter Drive",
+    "svc_mail": "Messagerie",
+    "svc_calendar": "Agenda",
+    "svc_drive": "Fichiers",
+    "mail_managed": "Géré ci-dessus",
+    "svc_not_connected": "Non connecté",
+    "microsoft_soon": "Microsoft (Outlook, OneDrive, Office) arrive bientôt.",
     "title": "Connexions",
     "subtitle": "Connectez des comptes pour qu'Oria trouve automatiquement l'essentiel.",
     "gmail": "Gmail",
@@ -218,6 +228,14 @@
     "details_subtitle": "Pour les curieux techniques : la politique complète et contraignante."
   },
   "features": {
+    "connect_calendar": {
+      "title": "Google Agenda",
+      "desc": "Synchronisez les événements et laissez Oria les classer."
+    },
+    "connect_drive": {
+      "title": "Google Drive",
+      "desc": "Liez des fichiers et dossiers; Oria les lit à la demande, sans les stocker."
+    },
     "title": "Que peut faire Oria ?",
     "subtitle": "Tout ce qu'Oria sait faire, au même endroit.",
     "take_tour": "Faire la visite",
@@ -431,6 +449,8 @@
     "link_skip": "Passer pour l'instant",
     "link_done": "J'ai connecté ce que je voulais",
     "link_connect": "Connecter",
+    "link_available": "Disponible",
+    "link_via_drive": "Disponible une fois Google Drive connecté",
     "link_connected": "Connecté",
     "link_coming_soon": "Bientôt",
     "link_desc_gmail": "Analyser votre boîte pour factures, abonnements et réservations.",

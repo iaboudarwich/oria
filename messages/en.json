@@ -137,6 +137,16 @@
     "members_desc": "Invite people to share access."
   },
   "connections": {
+    "cloud_title": "Google services",
+    "cloud_subtitle": "Calendar and Drive, grouped by account.",
+    "add_calendar": "Connect Calendar",
+    "add_drive": "Connect Drive",
+    "svc_mail": "Mail",
+    "svc_calendar": "Calendar",
+    "svc_drive": "Files",
+    "mail_managed": "Managed above",
+    "svc_not_connected": "Not connected",
+    "microsoft_soon": "Microsoft (Outlook, OneDrive, Office) is coming soon.",
     "title": "Connections",
     "subtitle": "Connect accounts so Oria can find what matters automatically.",
     "gmail": "Gmail",
@@ -218,6 +228,14 @@
     "details_subtitle": "For the technically curious: the full, binding policy."
   },
   "features": {
+    "connect_calendar": {
+      "title": "Google Calendar",
+      "desc": "Sync events and let Oria file them by what they are."
+    },
+    "connect_drive": {
+      "title": "Google Drive",
+      "desc": "Link files and folders; Oria reads them on demand, never stores them."
+    },
     "title": "What can Oria do?",
     "subtitle": "Everything Oria can do, in one place.",
     "take_tour": "Take the tour",
@@ -431,6 +449,8 @@
     "link_skip": "Skip for now",
     "link_done": "I connected what I wanted",
     "link_connect": "Connect",
+    "link_available": "Available",
+    "link_via_drive": "Available once Google Drive is connected",
     "link_connected": "Connected",
     "link_coming_soon": "Coming soon",
     "link_desc_gmail": "Scan your inbox for bills, subscriptions, and bookings.",
