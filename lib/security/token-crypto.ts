@@ -2,9 +2,11 @@ import "server-only";
 
 import { createCipheriv, createDecipheriv, randomBytes } from "node:crypto";
 
-// AES-256-GCM encryption for OAuth tokens at rest. Uses a dedicated key
-// (GMAIL_TOKEN_ENCRYPTION_KEY, 32 bytes as 64 hex chars) kept separate from
-// any other secret, so a leak of one does not compromise the other.
+// AES-256-GCM encryption for OAuth tokens at rest. Uses a dedicated key kept
+// separate from any other secret, so a leak of one does not compromise the
+// other. Both Gmail and the other Google services (Calendar, Drive) share this
+// key: read GOOGLE_TOKEN_ENCRYPTION_KEY first, then fall back to the original
+// GMAIL_TOKEN_ENCRYPTION_KEY so existing deployments keep working unchanged.
 //
 // Format: "<ivHex>:<authTagHex>:<ciphertextHex>". A fresh random IV per call.
 //
@@ -14,11 +16,16 @@ import { createCipheriv, createDecipheriv, randomBytes } from "node:crypto";
 const ALGO = "aes-256-gcm";
 const IV_BYTES = 12; // standard GCM nonce length
 
+/** The configured encryption key, preferring the new generalized name. */
+function configuredKeyHex(): string | undefined {
+  return process.env.GOOGLE_TOKEN_ENCRYPTION_KEY ?? process.env.GMAIL_TOKEN_ENCRYPTION_KEY;
+}
+
 function getKey(): Buffer {
-  const hex = process.env.GMAIL_TOKEN_ENCRYPTION_KEY;
+  const hex = configuredKeyHex();
   if (!hex || !/^[0-9a-fA-F]{64}$/.test(hex)) {
     throw new Error(
-      "GMAIL_TOKEN_ENCRYPTION_KEY must be set to 64 hex characters (32 bytes).",
+      "GOOGLE_TOKEN_ENCRYPTION_KEY (or GMAIL_TOKEN_ENCRYPTION_KEY) must be set to 64 hex characters (32 bytes).",
     );
   }
   return Buffer.from(hex, "hex");
@@ -52,8 +59,8 @@ export function decryptToken(cipher: string): string {
   return plain.toString("utf8");
 }
 
-/** True when the encryption key is configured (gates the Gmail UI/flow). */
+/** True when the encryption key is configured (gates the Google connect flows). */
 export function isTokenCryptoConfigured(): boolean {
-  const hex = process.env.GMAIL_TOKEN_ENCRYPTION_KEY;
+  const hex = configuredKeyHex();
   return !!hex && /^[0-9a-fA-F]{64}$/.test(hex);
 }

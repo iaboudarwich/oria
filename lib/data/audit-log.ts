@@ -68,6 +68,12 @@ export type AuditAction =
   | "email.item_approved"
   | "email.item_dismissed"
   | "email.trackable_renewed"
+  // Cloud services (Google Calendar, Drive)
+  | "cloud.connected"
+  | "cloud.disconnected"
+  | "cloud.calendar_synced"
+  | "cloud.file_linked"
+  | "cloud.file_unlinked"
   // Sections
   | "section.suggested"
   | "section.created_from_suggestion"
@@ -295,6 +301,11 @@ export function actionLabel(action: string): string {
     "email.item_approved":          "Approved an email item",
     "email.item_dismissed":         "Dismissed an email item",
     "email.trackable_renewed":      "Renewed a trackable from email",
+    "cloud.connected":              "Connected a Google service",
+    "cloud.disconnected":           "Disconnected a Google service",
+    "cloud.calendar_synced":        "Synced calendar events",
+    "cloud.file_linked":            "Linked a Google Drive file",
+    "cloud.file_unlinked":          "Removed a linked Drive file",
     "section.suggested":            "Suggested a new section",
     "section.created_from_suggestion": "Created a section from a suggestion",
     "routing_rule_learned":         "Taught Oria a filing rule",
