@@ -41,7 +41,7 @@ const TYPES = "subscription, bill, flight, booking, receipt, other";
  * Classify a single email into a structured detected item via Haiku.
  * Returns is_relevant=false for newsletters, personal mail, and anything
  * that is not a subscription / bill / flight / booking / receipt.
- * Never throws — returns null on any failure so a scan keeps going.
+ * Never throws; returns null on any failure so a scan keeps going.
  */
 export async function classifyEmail(
   email: ScannedEmail,

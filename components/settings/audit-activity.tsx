@@ -7,8 +7,11 @@ import {
   type AuditEvent,
 } from "@/lib/data/audit-log";
 
+type AuditFilter = "all" | "email";
+
 type Props = {
   events: AuditEvent[];
+  filter?: AuditFilter;
 };
 
 /**
@@ -24,8 +27,14 @@ type Props = {
  * honest baseline; a future iteration can add a server-side
  * batch-resolve if we want country labels.
  */
-export async function AuditActivity({ events }: Props) {
+export async function AuditActivity({ events, filter = "all" }: Props) {
   const t = await getTranslations("empty");
+  const shown =
+    filter === "email" ? events.filter((e) => e.action.startsWith("email.")) : events;
+  const filters: { key: AuditFilter; label: string }[] = [
+    { key: "all", label: "All activity" },
+    { key: "email", label: "Email" },
+  ];
   return (
     <section className="space-y-4">
       <div>
@@ -38,7 +47,24 @@ export async function AuditActivity({ events }: Props) {
         </p>
       </div>
 
-      {events.length === 0 ? (
+      <div className="flex gap-1.5">
+        {filters.map((f) => (
+          <Link
+            key={f.key}
+            href={`/dashboard/settings?tab=security&audit=${f.key}`}
+            scroll={false}
+            className={`rounded-full px-3 py-1 text-[12px] transition-base ${
+              filter === f.key
+                ? "bg-ink text-surface"
+                : "border border-line text-ink-muted hover:text-ink"
+            }`}
+          >
+            {f.label}
+          </Link>
+        ))}
+      </div>
+
+      {shown.length === 0 ? (
         <EmptyState compact headline={t("audit_headline")} />
       ) : (
         <div className="overflow-hidden rounded-2xl border border-line bg-surface-raised">
@@ -51,7 +77,7 @@ export async function AuditActivity({ events }: Props) {
               </tr>
             </thead>
             <tbody className="divide-y divide-line">
-              {events.map((e) => (
+              {shown.map((e) => (
                 <tr key={e.id} className="align-top">
                   <td className="whitespace-nowrap px-3 py-2 text-ink-soft tabular-nums">
                     {formatStamp(e.created_at)}

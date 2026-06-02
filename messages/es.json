@@ -139,7 +139,16 @@
     "consent_title": "Conectar Gmail",
     "consent_body": "Conectar Gmail permite a Oria encontrar automáticamente tus suscripciones, facturas y reservas. Solo leemos tu correo; nunca enviamos, eliminamos ni modificamos nada. Puedes desconectarte cuando quieras, y eliminamos todo lo que nos pidas.",
     "consent_continue": "Continuar a Google",
-    "consent_cancel": "Ahora no"
+    "consent_cancel": "Ahora no",
+    "items_summary": "{pending} por revisar · {approved} añadidos",
+    "pause": "Pausar",
+    "resume": "Reanudar",
+    "disconnect_title": "¿Desconectar Gmail?",
+    "disconnect_body": "Dejaremos de analizar tu bandeja de entrada y revocaremos el acceso de Oria en Google. Elige qué hacer con lo que ya encontramos.",
+    "disconnect_keep": "Desconectar y conservar mis elementos",
+    "disconnect_keep_desc": "Los seguimientos y recordatorios que aprobaste permanecen en tu espacio.",
+    "disconnect_delete": "Desconectar y eliminar todo",
+    "disconnect_delete_desc": "Eliminar todos los seguimientos y recordatorios creados desde Gmail, además de todos los elementos detectados."
   },
   "gmailReview": {
     "title": "Elementos de correo",

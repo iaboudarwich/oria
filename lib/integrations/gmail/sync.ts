@@ -41,7 +41,7 @@ async function primaryOrgId(userId: string): Promise<string | null> {
  *  3. email a short "items to review" summary when new pending items remain.
  *
  * Designed to be called from the cron route. Never throws on a single
- * connection's failure — it records the error and moves on.
+ * connection's failure; it records the error and moves on.
  */
 export async function syncAllGmailConnections(): Promise<SyncResult> {
   const admin = createAdminClient();

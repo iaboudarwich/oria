@@ -3,10 +3,10 @@ Oria Python Extraction Service
 FastAPI sidecar for multi-stage document ingestion.
 
 Endpoints:
-  POST /extract     — extract text from a document
-  POST /embed       — embed text chunks
-  POST /gmail/scan  — fetch + parse recent Gmail messages (read-only)
-  GET  /health      — liveness check
+  POST /extract     : extract text from a document
+  POST /embed       : embed text chunks
+  POST /gmail/scan  : fetch + parse recent Gmail messages (read-only)
+  GET  /health      : liveness check
 
 Start locally:
   uvicorn main:app --host 0.0.0.0 --port 8000 --reload

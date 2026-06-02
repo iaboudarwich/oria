@@ -192,6 +192,66 @@ export async function markConnectionSynced(connectionId: string): Promise<void> 
     .eq("id", connectionId);
 }
 
+/** Pending + approved detected-item counts for the settings card. */
+export async function getGmailItemCounts(
+  userId: string,
+): Promise<{ pending: number; approved: number }> {
+  const admin = createAdminClient();
+  const [pendingRes, approvedRes] = await Promise.all([
+    admin
+      .from("email_detected_items")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", userId)
+      .eq("status", "pending"),
+    admin
+      .from("email_detected_items")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", userId)
+      .eq("status", "approved"),
+  ]);
+  return { pending: pendingRes.count ?? 0, approved: approvedRes.count ?? 0 };
+}
+
+/** Pause or resume sync without disconnecting. */
+export async function setGmailConnectionStatus(
+  userId: string,
+  status: ConnectionStatus,
+): Promise<void> {
+  const admin = createAdminClient();
+  await admin
+    .from("email_connections")
+    .update({ status })
+    .eq("user_id", userId)
+    .eq("provider", "gmail");
+}
+
+/**
+ * Delete the trackables and reminders that were created from this user's Gmail
+ * detected items. Call this BEFORE deleting the connection, because detected
+ * items cascade-delete with the connection and we need their linkage first.
+ */
+export async function purgeGmailDerivedData(userId: string): Promise<void> {
+  const admin = createAdminClient();
+  const { data } = await admin
+    .from("email_detected_items")
+    .select("resulting_trackable_id, resulting_reminder_id")
+    .eq("user_id", userId)
+    .eq("status", "approved");
+  const rows = (data as
+    | { resulting_trackable_id: string | null; resulting_reminder_id: string | null }[]
+    | null) ?? [];
+
+  const trackableIds = rows.map((r) => r.resulting_trackable_id).filter((x): x is string => !!x);
+  const reminderIds = rows.map((r) => r.resulting_reminder_id).filter((x): x is string => !!x);
+
+  if (reminderIds.length > 0) {
+    await admin.from("reminders").delete().in("id", reminderIds);
+  }
+  if (trackableIds.length > 0) {
+    await admin.from("trackables").delete().in("id", trackableIds);
+  }
+}
+
 export async function deleteGmailConnection(userId: string, connectionId: string): Promise<void> {
   const admin = createAdminClient();
   await admin

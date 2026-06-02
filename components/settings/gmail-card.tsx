@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
+import { setGmailPaused } from "@/lib/integrations/gmail/connection-actions";
 
 export type GmailCardSummary = {
   email: string;
@@ -30,18 +31,35 @@ function relativeTime(iso: string | null): string {
 export function GmailCard({
   summary,
   configured,
+  counts,
 }: {
   summary: GmailCardSummary;
   configured: boolean;
+  counts: { pending: number; approved: number };
 }) {
   const t = useTranslations("connections");
   const router = useRouter();
   const [consentOpen, setConsentOpen] = useState(false);
+  const [disconnectOpen, setDisconnectOpen] = useState(false);
   const [pending, startTransition] = useTransition();
 
-  function disconnect() {
+  function disconnect(deleteData: boolean) {
     startTransition(async () => {
-      await fetch("/api/connections/gmail/disconnect", { method: "POST" });
+      await fetch("/api/connections/gmail/disconnect", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ deleteData }),
+      });
+      setDisconnectOpen(false);
+      router.refresh();
+    });
+  }
+
+  function togglePause() {
+    if (!summary) return;
+    const next = summary.status !== "paused";
+    startTransition(async () => {
+      await setGmailPaused(next);
       router.refresh();
     });
   }
@@ -66,20 +84,38 @@ export function GmailCard({
                 : ""}
             </p>
           ) : null}
+          {summary ? (
+            <p className="mt-1.5 text-[12px] text-ink-muted">
+              {t("items_summary", { pending: counts.pending, approved: counts.approved })}
+            </p>
+          ) : null}
         </div>
 
         {summary ? (
           <div className="flex shrink-0 items-center gap-2">
             <Button href="/dashboard/connections/gmail/review" variant="secondary" size="sm">
               {t("review")}
+              {counts.pending > 0 ? (
+                <span className="ml-1.5 rounded-full bg-ink px-1.5 text-[10.5px] font-semibold text-surface">
+                  {counts.pending}
+                </span>
+              ) : null}
             </Button>
             <button
               type="button"
-              onClick={disconnect}
+              onClick={togglePause}
+              disabled={pending}
+              className="inline-flex h-8 items-center rounded-lg border border-line-strong px-3 text-[12px] font-medium text-ink transition-base hover:bg-surface disabled:opacity-50"
+            >
+              {summary.status === "paused" ? t("resume") : t("pause")}
+            </button>
+            <button
+              type="button"
+              onClick={() => setDisconnectOpen(true)}
               disabled={pending}
               className="inline-flex h-8 items-center rounded-lg border border-line-strong px-3 text-[12px] font-medium text-claret transition-base hover:bg-claret/5 disabled:opacity-50"
             >
-              {pending ? t("disconnecting") : t("disconnect")}
+              {t("disconnect")}
             </button>
           </div>
         ) : (
@@ -131,6 +167,65 @@ export function GmailCard({
               >
                 {t("consent_continue")}
               </a>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {disconnectOpen ? (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="gmail-disconnect-title"
+          className="fixed inset-0 z-[120] flex items-center justify-center px-4 py-6"
+        >
+          <div
+            aria-hidden
+            onClick={() => !pending && setDisconnectOpen(false)}
+            className="absolute inset-0 bg-ink/40 backdrop-blur-sm animate-fade-in"
+          />
+          <div className="relative z-[121] w-full max-w-md rounded-2xl border border-line bg-surface-raised p-6 shadow-xl animate-scale-in">
+            <h2 id="gmail-disconnect-title" className="text-title text-ink">
+              {t("disconnect_title")}
+            </h2>
+            <p className="mt-3 text-body text-ink-soft">{t("disconnect_body")}</p>
+            <div className="mt-5 space-y-2.5">
+              <button
+                type="button"
+                onClick={() => disconnect(false)}
+                disabled={pending}
+                className="w-full rounded-xl border border-line-strong px-4 py-3 text-left transition-base hover:bg-surface disabled:opacity-50"
+              >
+                <span className="block text-[13.5px] font-medium text-ink">
+                  {t("disconnect_keep")}
+                </span>
+                <span className="mt-0.5 block text-[12px] text-ink-muted">
+                  {t("disconnect_keep_desc")}
+                </span>
+              </button>
+              <button
+                type="button"
+                onClick={() => disconnect(true)}
+                disabled={pending}
+                className="w-full rounded-xl border border-claret/30 px-4 py-3 text-left transition-base hover:bg-claret/5 disabled:opacity-50"
+              >
+                <span className="block text-[13.5px] font-medium text-claret">
+                  {t("disconnect_delete")}
+                </span>
+                <span className="mt-0.5 block text-[12px] text-ink-muted">
+                  {t("disconnect_delete_desc")}
+                </span>
+              </button>
+            </div>
+            <div className="mt-5 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setDisconnectOpen(false)}
+                disabled={pending}
+                className="text-[12.5px] text-ink-faint transition-base hover:text-ink disabled:opacity-50"
+              >
+                {pending ? t("disconnecting") : t("consent_cancel")}
+              </button>
             </div>
           </div>
         </div>

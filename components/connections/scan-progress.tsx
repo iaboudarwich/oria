@@ -66,7 +66,7 @@ export function ScanProgress({
           return;
         }
       } catch {
-        // transient — keep polling
+        // transient; keep polling
       }
       if (active) window.setTimeout(tick, 2500);
     };

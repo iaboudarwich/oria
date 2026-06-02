@@ -233,7 +233,10 @@ export default async function SettingsPage({
               backupCodesLeft={mfa.backupCodesLeft}
             />
             <SessionsPanel />
-            <AuditActivity events={auditEvents} />
+            <AuditActivity
+              events={auditEvents}
+              filter={sp.audit === "email" ? "email" : "all"}
+            />
           </div>
         )}
 

@@ -139,7 +139,16 @@
     "consent_title": "Connect Gmail",
     "consent_body": "Connecting Gmail lets Oria find your subscriptions, bills, and bookings automatically. We only read your email; we never send, delete, or modify it. You can disconnect anytime, and we delete everything you ask us to.",
     "consent_continue": "Continue to Google",
-    "consent_cancel": "Not now"
+    "consent_cancel": "Not now",
+    "items_summary": "{pending} to review · {approved} added",
+    "pause": "Pause",
+    "resume": "Resume",
+    "disconnect_title": "Disconnect Gmail?",
+    "disconnect_body": "We'll stop scanning your inbox and revoke Oria's access at Google. Choose what to do with what we've already found.",
+    "disconnect_keep": "Disconnect and keep my items",
+    "disconnect_keep_desc": "Trackables and reminders you approved stay in your space.",
+    "disconnect_delete": "Disconnect and delete everything",
+    "disconnect_delete_desc": "Remove every trackable and reminder created from Gmail, plus all detected items."
   },
   "gmailReview": {
     "title": "Email items",

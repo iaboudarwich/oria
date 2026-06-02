@@ -142,11 +142,11 @@ const CLASSIFY_BATCH = 6;
 /**
  * Begin a Gmail scan: refresh the token and create a `running` job row.
  * Returns the job id plus a `process()` runnable that does the heavy
- * fetch + classify + store. The caller decides how to run it — a route wraps
+ * fetch + classify + store. The caller decides how to run it: a route wraps
  * `process` in `after()` so the HTTP response returns immediately, while the
  * cron (F4) can `await` it directly.
  *
- * Detected items are NEVER auto-applied — approval (F3) creates the trackable.
+ * Detected items are NEVER auto-applied; approval (F3) creates the trackable.
  * Returns null when there is no usable connection.
  */
 export async function startGmailScan(input: {

@@ -1,15 +1,20 @@
 import { getTranslations } from "next-intl/server";
-import { getGmailConnection } from "@/lib/integrations/gmail/connections";
+import {
+  getGmailConnection,
+  getGmailItemCounts,
+} from "@/lib/integrations/gmail/connections";
 import { isGmailOAuthConfigured } from "@/lib/integrations/gmail/oauth";
 import { isTokenCryptoConfigured } from "@/lib/security/token-crypto";
 import { GmailCard } from "./gmail-card";
 
 /**
  * Settings -> Connections. Currently one provider (Gmail). Server-rendered;
- * the card handles the consent modal and disconnect on the client.
+ * the card handles the consent modal, pause/resume, and disconnect on the
+ * client.
  */
 export async function ConnectionsPanel({ userId }: { userId: string }) {
   const summary = await getGmailConnection(userId);
+  const counts = summary ? await getGmailItemCounts(userId) : { pending: 0, approved: 0 };
   const configured = isGmailOAuthConfigured() && isTokenCryptoConfigured();
   const t = await getTranslations("connections");
 
@@ -21,6 +26,7 @@ export async function ConnectionsPanel({ userId }: { userId: string }) {
       </div>
       <GmailCard
         configured={configured}
+        counts={counts}
         summary={
           summary
             ? {
