@@ -6,7 +6,33 @@ import { getAnthropic, getModel } from "@/lib/ai/anthropic";
 import { embedViaService, embedQueryViaService } from "@/lib/extraction/service";
 import { getFreshCloudAccessToken } from "./token-refresh";
 import { driveIndex, driveListFolder, driveFetch, type DriveFileMeta } from "./sidecar";
+import { getFreshMicrosoftCloudToken } from "@/lib/microsoft/token-refresh";
+import { onedriveIndex, onedriveFetch } from "@/lib/microsoft/sidecar";
 import { kvGet, kvSet } from "@/lib/cache/kv";
+
+/** Provider of one cloud connection (defaults to google for legacy rows). */
+async function connectionProvider(connectionId: string): Promise<"google" | "microsoft"> {
+  const admin = createAdminClient();
+  const { data } = await admin
+    .from("cloud_connections")
+    .select("provider")
+    .eq("id", connectionId)
+    .maybeSingle();
+  return (data as { provider?: string } | null)?.provider === "microsoft" ? "microsoft" : "google";
+}
+
+/** Fresh access token for a connection, by provider. */
+async function freshAccessToken(
+  connectionId: string,
+  provider: "google" | "microsoft",
+): Promise<string | null> {
+  if (provider === "microsoft") {
+    const t = await getFreshMicrosoftCloudToken(connectionId);
+    return t?.accessToken ?? null;
+  }
+  const t = await getFreshCloudAccessToken(connectionId);
+  return t?.accessToken ?? null;
+}
 
 const FOLDER_MIME = "application/vnd.google-apps.folder";
 
@@ -23,6 +49,7 @@ export type CloudFileSummary = {
   isFolder: boolean;
   accessible: boolean;
   hasSummary: boolean;
+  provider: "google" | "microsoft";
 };
 
 type Row = {
@@ -37,12 +64,14 @@ type Row = {
   is_folder: boolean;
   accessible: boolean;
   content_summary: string | null;
+  cloud_connections: { provider: string } | { provider: string }[] | null;
 };
 
 const SUMMARY_COLS =
-  "id, name, mime_type, web_view_link, icon_link, thumbnail_link, size_bytes, modified_time, is_folder, accessible, content_summary";
+  "id, name, mime_type, web_view_link, icon_link, thumbnail_link, size_bytes, modified_time, is_folder, accessible, content_summary, cloud_connections(provider)";
 
 function toSummary(r: Row): CloudFileSummary {
+  const conn = Array.isArray(r.cloud_connections) ? r.cloud_connections[0] : r.cloud_connections;
   return {
     id: r.id,
     name: r.name,
@@ -55,6 +84,7 @@ function toSummary(r: Row): CloudFileSummary {
     isFolder: r.is_folder,
     accessible: r.accessible,
     hasSummary: !!r.content_summary,
+    provider: conn?.provider === "microsoft" ? "microsoft" : "google",
   };
 }
 
@@ -164,10 +194,14 @@ export async function indexConnectionFiles(connectionId: string): Promise<number
   const pending = ((data as { provider_file_id: string }[]) ?? []).map((r) => r.provider_file_id);
   if (pending.length === 0) return 0;
 
-  const token = await getFreshCloudAccessToken(connectionId);
-  if (!token) return 0;
+  const provider = await connectionProvider(connectionId);
+  const accessToken = await freshAccessToken(connectionId, provider);
+  if (!accessToken) return 0;
 
-  const metas = await driveIndex(token.accessToken, pending);
+  const metas =
+    provider === "microsoft"
+      ? await onedriveIndex(accessToken, pending)
+      : await driveIndex(accessToken, pending);
   let indexed = 0;
   for (const meta of metas) {
     await applyIndexedMeta(connectionId, meta);
@@ -329,10 +363,14 @@ export async function fetchCloudFileContent(
     return { status: "ok", text: cached, name: file.name, webViewLink: file.webViewLink };
   }
 
-  const token = await getFreshCloudAccessToken(file.connectionId);
-  if (!token) return { status: "unavailable" };
+  const provider = await connectionProvider(file.connectionId);
+  const accessToken = await freshAccessToken(file.connectionId, provider);
+  if (!accessToken) return { status: "unavailable" };
 
-  const result = await driveFetch(token.accessToken, file.providerFileId, file.mimeType);
+  const result =
+    provider === "microsoft"
+      ? await onedriveFetch(accessToken, file.providerFileId, file.mimeType)
+      : await driveFetch(accessToken, file.providerFileId, file.mimeType);
   if (!result) return { status: "unavailable" };
   if (!result.accessible) {
     await markCloudFileInaccessible(file.id);

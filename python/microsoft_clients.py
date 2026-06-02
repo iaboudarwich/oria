@@ -80,3 +80,109 @@ def outlook_fetch_messages(
         if not next_link:
             break
     return out
+
+
+# ── OneDrive files ────────────────────────────────────────────────────────────
+
+from extractors.router import route  # noqa: E402  (kept local to this section)
+
+DOCX_MIME = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+XLSX_MIME = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+PPTX_MIME = "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+
+_ITEM_SELECT = "id,name,file,size,webUrl,lastModifiedDateTime"
+
+
+def onedrive_get_metadata(client: httpx.Client, token: str, item_id: str) -> Optional[dict]:
+    """Fetch one item's metadata. Returns None if inaccessible (403/404)."""
+    resp = client.get(
+        f"{GRAPH}/me/drive/items/{item_id}",
+        headers=_auth(token),
+        params={"$select": _ITEM_SELECT},
+    )
+    if resp.status_code in (403, 404):
+        return None
+    if resp.status_code != 200:
+        return None
+    return resp.json()
+
+
+def _parse_docx(data: bytes) -> str:
+    from docx import Document
+
+    doc = Document(io.BytesIO(data))
+    return "\n".join(p.text for p in doc.paragraphs if p.text)
+
+
+def _parse_xlsx(data: bytes) -> str:
+    from openpyxl import load_workbook
+
+    wb = load_workbook(io.BytesIO(data), read_only=True, data_only=True)
+    out: list[str] = []
+    for ws in wb.worksheets:
+        out.append(f"# {ws.title}")
+        for row in ws.iter_rows(values_only=True):
+            cells = ["" if c is None else str(c) for c in row]
+            if any(cells):
+                out.append(",".join(cells))
+    return "\n".join(out)
+
+
+def _parse_pptx(data: bytes) -> str:
+    from pptx import Presentation
+
+    prs = Presentation(io.BytesIO(data))
+    out: list[str] = []
+    for i, slide in enumerate(prs.slides, start=1):
+        out.append(f"# Slide {i}")
+        for shape in slide.shapes:
+            if shape.has_text_frame:
+                for para in shape.text_frame.paragraphs:
+                    text = "".join(run.text for run in para.runs)
+                    if text:
+                        out.append(text)
+    return "\n".join(out)
+
+
+def onedrive_fetch_text(
+    client: httpx.Client, token: str, item_id: str, mime_type: str, name: str
+) -> tuple[str, bool]:
+    """Download + parse one OneDrive item. Returns (text, accessible). Office
+    formats are parsed locally; everything else goes through the extractor."""
+    resp = client.get(f"{GRAPH}/me/drive/items/{item_id}/content", headers=_auth(token))
+    if resp.status_code in (403, 404):
+        return "", False
+    if resp.status_code not in (200, 302):
+        return "", True
+    data = resp.content
+    try:
+        if mime_type == DOCX_MIME or name.lower().endswith(".docx"):
+            return _parse_docx(data), True
+        if mime_type == XLSX_MIME or name.lower().endswith(".xlsx"):
+            return _parse_xlsx(data), True
+        if mime_type == PPTX_MIME or name.lower().endswith(".pptx"):
+            return _parse_pptx(data), True
+        if mime_type.startswith("text/") or name.lower().endswith((".txt", ".md", ".csv")):
+            return data.decode("utf-8", errors="replace"), True
+        # PDFs, images, and anything else: the shared extractor (incl. OCR).
+        text, _method = route(data, mime_type or "application/octet-stream", name or "file")
+        return text, True
+    except Exception:
+        return "", True
+
+
+def onedrive_meta_dict(item: dict, excerpt: str = "", accessible: bool = True) -> dict:
+    """Normalize Graph item metadata into the provider-agnostic file meta shape."""
+    size = item.get("size")
+    return {
+        "provider_file_id": item.get("id", ""),
+        "name": item.get("name", "Untitled"),
+        "mime_type": (item.get("file") or {}).get("mimeType", "application/octet-stream"),
+        "web_view_link": item.get("webUrl"),
+        "icon_link": None,
+        "thumbnail_link": None,
+        "size_bytes": int(size) if isinstance(size, int) else None,
+        "modified_time": item.get("lastModifiedDateTime"),
+        "excerpt": excerpt,
+        "accessible": accessible,
+    }

@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { GooglePicker } from "./google-picker";
+import { MicrosoftPicker, type MicrosoftPickerLabels } from "./microsoft-picker";
 
 export type LinkedFile = {
   id: string;
@@ -13,6 +14,7 @@ export type LinkedFile = {
   modifiedTime: string | null;
   isFolder: boolean;
   accessible: boolean;
+  provider: "google" | "microsoft";
 };
 
 export type LinkedFilesLabels = {
@@ -21,27 +23,32 @@ export type LinkedFilesLabels = {
   connectDrive: string;
   unavailable: string;
   openInDrive: string;
+  openInOneDrive: string;
   remove: string;
   inaccessible: string;
   empty: string;
   view: string;
+  onedriveLink: string;
+  ms: MicrosoftPickerLabels;
 };
 
 /**
- * Linked Drive files for one section: a list with the Picker button to add
- * more. Remove unlinks the reference (the file in Drive is untouched). The
- * "View" affordance (fetch-on-demand) is added in F3.
+ * Linked cloud files for one section: a list with the Drive and/or OneDrive
+ * picker to add more. Remove unlinks the reference (the file itself is
+ * untouched). View fetches content on demand.
  */
 export function LinkedFilesList({
   organizationId,
   sectionKey,
   files,
   labels,
+  onedriveConnectionId,
 }: {
   organizationId: string;
   sectionKey: string;
   files: LinkedFile[];
   labels: LinkedFilesLabels;
+  onedriveConnectionId?: string | null;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -86,13 +93,24 @@ export function LinkedFilesList({
         <h2 className="text-[13px] font-semibold uppercase tracking-[0.05em] text-ink-faint">
           {labels.heading}
         </h2>
-        <GooglePicker
-          organizationId={organizationId}
-          sectionKey={sectionKey}
-          label={labels.link}
-          connectDriveLabel={labels.connectDrive}
-          unavailableLabel={labels.unavailable}
-        />
+        <div className="flex flex-wrap items-center gap-2">
+          <GooglePicker
+            organizationId={organizationId}
+            sectionKey={sectionKey}
+            label={labels.link}
+            connectDriveLabel={labels.connectDrive}
+            unavailableLabel={labels.unavailable}
+          />
+          {onedriveConnectionId ? (
+            <MicrosoftPicker
+              organizationId={organizationId}
+              sectionKey={sectionKey}
+              connectionId={onedriveConnectionId}
+              label={labels.onedriveLink}
+              labels={labels.ms}
+            />
+          ) : null}
+        </div>
       </div>
 
       {files.length === 0 ? (
@@ -143,7 +161,7 @@ export function LinkedFilesList({
                   rel="noopener noreferrer"
                   className="shrink-0 text-[11.5px] text-ink-faint opacity-0 transition-opacity group-hover:opacity-100 hover:text-ink"
                 >
-                  {labels.openInDrive}
+                  {f.provider === "microsoft" ? labels.openInOneDrive : labels.openInDrive}
                 </a>
               ) : null}
               <button

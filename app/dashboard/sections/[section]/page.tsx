@@ -45,13 +45,25 @@ async function loadSectionCloud(
   userId: string,
   orgId: string,
   sectionKey: string,
-): Promise<{ files: LinkedFile[]; driveConnected: boolean; events: UpcomingEvent[] }> {
-  const [files, driveConns, events] = await Promise.all([
+): Promise<{
+  files: LinkedFile[];
+  driveConnected: boolean;
+  onedriveConnectionId: string | null;
+  events: UpcomingEvent[];
+}> {
+  const [files, driveConns, onedriveConns, events] = await Promise.all([
     listCloudFilesForSection(userId, orgId, sectionKey),
     listCloudConnectionsByService(userId, "drive"),
+    listCloudConnectionsByService(userId, "onedrive"),
     listSectionEvents(userId, orgId, sectionKey),
   ]);
-  return { files, driveConnected: driveConns.length > 0, events };
+  const onedrive = onedriveConns.find((c) => c.status === "active") ?? onedriveConns[0];
+  return {
+    files,
+    driveConnected: driveConns.length > 0,
+    onedriveConnectionId: onedrive?.id ?? null,
+    events,
+  };
 }
 
 /** Both cloud panels (linked Drive files + calendar events) for a section. */
@@ -62,7 +74,12 @@ function SectionCloudPanels({
 }: {
   orgId: string;
   sectionKey: string;
-  cloud: { files: LinkedFile[]; driveConnected: boolean; events: UpcomingEvent[] };
+  cloud: {
+    files: LinkedFile[];
+    driveConnected: boolean;
+    onedriveConnectionId: string | null;
+    events: UpcomingEvent[];
+  };
 }) {
   return (
     <div className="space-y-4">
@@ -71,6 +88,7 @@ function SectionCloudPanels({
         sectionKey={sectionKey}
         files={cloud.files}
         driveConnected={cloud.driveConnected}
+        onedriveConnectionId={cloud.onedriveConnectionId}
       />
       <SectionEventsPanel events={cloud.events} />
     </div>

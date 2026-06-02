@@ -2,7 +2,7 @@ import "server-only";
 
 import { NextResponse, after } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { listCloudConnectionsByService } from "@/lib/google/cloud-connections";
+import { listCloudConnectionsByService, getCloudConnection } from "@/lib/google/cloud-connections";
 import { linkCloudFiles, indexConnectionFiles, type PickedFile } from "@/lib/google/cloud-files";
 import { logAuditEvent } from "@/lib/data/audit-log";
 import { revalidatePath } from "next/cache";
@@ -40,12 +40,17 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "bad_request" }, { status: 400 });
   }
 
-  // Resolve the Drive connection: the explicit one, else the user's first.
-  const driveConns = await listCloudConnectionsByService(user.id, "drive");
-  const conn = body.connectionId
-    ? driveConns.find((c) => c.id === body.connectionId)
-    : driveConns[0];
-  if (!conn) return NextResponse.json({ error: "no_drive_connection" }, { status: 409 });
+  // Resolve the file-storage connection. With an explicit id (Drive or OneDrive
+  // picker), validate it belongs to the user; otherwise default to the first
+  // Google Drive connection.
+  let conn = null as Awaited<ReturnType<typeof getCloudConnection>>;
+  if (body.connectionId) {
+    const c = await getCloudConnection(user.id, body.connectionId);
+    if (c && (c.service === "drive" || c.service === "onedrive")) conn = c;
+  } else {
+    conn = (await listCloudConnectionsByService(user.id, "drive"))[0] ?? null;
+  }
+  if (!conn) return NextResponse.json({ error: "no_file_connection" }, { status: 409 });
 
   const { linked } = await linkCloudFiles({
     userId: user.id,

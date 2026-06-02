@@ -1044,7 +1044,7 @@ export async function retrieveForQuery(
             href: m.webViewLink ?? "/dashboard",
             processing_state: "ready",
             meta: {
-              section_label: "Drive",
+              section_label: "Files",
               space_name: ctx.organization.name,
               date_label: null,
             },

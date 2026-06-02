@@ -43,7 +43,12 @@ from google_clients import (
     calendar_list_events,
     FOLDER_MIME,
 )
-from microsoft_clients import outlook_fetch_messages
+from microsoft_clients import (
+    outlook_fetch_messages,
+    onedrive_get_metadata,
+    onedrive_fetch_text,
+    onedrive_meta_dict,
+)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -658,3 +663,52 @@ def outlook_scan(req: OutlookScanRequest):
 
     logger.info("Outlook scan: parsed %d, skipped %d of %d", len(emails), skipped, len(messages))
     return GmailScanResponse(emails=emails, total=len(emails), skipped=skipped)
+
+
+# ── /cloud/onedrive/* ─────────────────────────────────────────────────────────
+# OneDrive parity with Drive (Files.Read). Office formats are parsed locally;
+# other binaries go through the extractor. Content fetched on demand, never
+# persisted. Tokens NEVER logged. Reuses the Drive request/response models.
+
+
+class OneDriveIndexRequest(BaseModel):
+    access_token: str
+    item_ids: list[str]
+
+
+@app.post("/cloud/onedrive/index", response_model=DriveListResponse, dependencies=[Depends(require_signature)])
+def onedrive_index(req: OneDriveIndexRequest):
+    """Fetch metadata + a short text excerpt for each picked OneDrive item."""
+    out: list[DriveFileMeta] = []
+    with httpx.Client(timeout=60.0) as client:
+        for item_id in req.item_ids[:50]:
+            meta = onedrive_get_metadata(client, req.access_token, item_id)
+            if meta is None:
+                out.append(DriveFileMeta(provider_file_id=item_id, name="", mime_type="", accessible=False))
+                continue
+            mime = (meta.get("file") or {}).get("mimeType", "")
+            text, accessible = onedrive_fetch_text(
+                client, req.access_token, item_id, mime, meta.get("name", "")
+            )
+            if not accessible:
+                out.append(DriveFileMeta(**onedrive_meta_dict(meta, accessible=False)))
+                continue
+            out.append(DriveFileMeta(**onedrive_meta_dict(meta, excerpt=text[:_EXCERPT_CHARS])))
+    logger.info("OneDrive index: %d items", len(out))
+    return DriveListResponse(files=out)
+
+
+class OneDriveFetchRequest(BaseModel):
+    access_token: str
+    item_id: str
+    mime_type: str
+
+
+@app.post("/cloud/onedrive/fetch", response_model=DriveFetchResponse, dependencies=[Depends(require_signature)])
+def onedrive_fetch_endpoint(req: OneDriveFetchRequest):
+    """Fetch + parse the full text of one OneDrive item (fetch-on-demand)."""
+    with httpx.Client(timeout=45.0) as client:
+        text, accessible = onedrive_fetch_text(
+            client, req.access_token, req.item_id, req.mime_type, ""
+        )
+    return DriveFetchResponse(text=text, accessible=accessible)

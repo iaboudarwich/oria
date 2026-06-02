@@ -1,5 +1,13 @@
 {
   "cloud": {
+    "open_in_onedrive": "Ouvrir dans OneDrive",
+    "onedrive_link_files": "Lier des fichiers OneDrive",
+    "picker_home": "Accueil",
+    "picker_select": "Lier la sélection",
+    "picker_cancel": "Annuler",
+    "picker_loading": "Chargement...",
+    "picker_empty": "Ce dossier est vide.",
+    "picker_error": "Impossible de charger OneDrive.",
     "upcoming_heading": "Bientôt",
     "dismiss": "Masquer",
     "events_heading": "Depuis votre agenda",

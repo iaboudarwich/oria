@@ -1,5 +1,13 @@
 {
   "cloud": {
+    "open_in_onedrive": "Open in OneDrive",
+    "onedrive_link_files": "Link OneDrive files",
+    "picker_home": "Home",
+    "picker_select": "Link selected",
+    "picker_cancel": "Cancel",
+    "picker_loading": "Loading...",
+    "picker_empty": "This folder is empty.",
+    "picker_error": "Could not load OneDrive.",
     "upcoming_heading": "Coming up",
     "dismiss": "Dismiss",
     "events_heading": "From your calendar",

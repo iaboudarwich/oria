@@ -1,5 +1,13 @@
 {
   "cloud": {
+    "open_in_onedrive": "فتح في OneDrive",
+    "onedrive_link_files": "ربط ملفات OneDrive",
+    "picker_home": "الرئيسية",
+    "picker_select": "ربط المحدد",
+    "picker_cancel": "إلغاء",
+    "picker_loading": "جارٍ التحميل...",
+    "picker_empty": "هذا المجلد فارغ.",
+    "picker_error": "تعذّر تحميل OneDrive.",
     "upcoming_heading": "قادم قريباً",
     "dismiss": "إخفاء",
     "events_heading": "من تقويمك",
