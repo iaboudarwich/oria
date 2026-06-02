@@ -7,9 +7,12 @@ import {
   exchangeCodeForTokens,
   fetchPrimaryEmail,
 } from "@/lib/integrations/gmail/oauth";
-import { upsertGmailConnection } from "@/lib/integrations/gmail/connections";
+import {
+  upsertGmailConnection,
+  seedDefaultConfidentialKeywords,
+} from "@/lib/integrations/gmail/connections";
 import { logAuditEvent } from "@/lib/data/audit-log";
-import { STATE_COOKIE } from "../start/route";
+import { STATE_COOKIE, SKIP_CONFIDENTIAL_COOKIE } from "../start/route";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -35,7 +38,9 @@ export async function GET(request: Request) {
 
   const store = await cookies();
   const expected = store.get(STATE_COOKIE)?.value ?? null;
+  const skipConfidentialSeed = store.get(SKIP_CONFIDENTIAL_COOKIE)?.value === "1";
   store.delete(STATE_COOKIE);
+  store.delete(SKIP_CONFIDENTIAL_COOKIE);
 
   if (url.searchParams.get("error")) return settingsRedirect("denied");
   if (!code || !state || !expected || state !== expected) {
@@ -55,6 +60,11 @@ export async function GET(request: Request) {
 
     const id = await upsertGmailConnection({ userId: user.id, email, tokens });
     if (!id) return settingsRedirect("save_failed");
+
+    // First-connect default: skip clearly confidential mail unless opted out.
+    if (!skipConfidentialSeed) {
+      await seedDefaultConfidentialKeywords(user.id);
+    }
 
     await logAuditEvent({
       userId: user.id,

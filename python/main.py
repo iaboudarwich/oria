@@ -21,6 +21,7 @@ import hashlib
 import hmac
 import logging
 import os
+import re
 import time
 from typing import Optional
 
@@ -240,6 +241,11 @@ class GmailScanRequest(BaseModel):
     # used by ongoing sync to fetch only mail newer than the last scan.
     since_query: Optional[str] = None
     max_messages: int = 200
+    # Confidentiality filters: emails matching are dropped here, before they are
+    # ever returned or sent to the classifier. Never stored.
+    exclude_keywords: list[str] = []
+    exclude_senders: list[str] = []
+    exclude_with_attachments: bool = False
 
 
 class ScannedEmail(BaseModel):
@@ -254,6 +260,7 @@ class ScannedEmail(BaseModel):
 class GmailScanResponse(BaseModel):
     emails: list[ScannedEmail]
     total: int
+    skipped: int = 0
 
 
 def _decode_b64url(data: str) -> str:
@@ -303,6 +310,37 @@ def _header(headers: list[dict], name: str) -> str:
     return ""
 
 
+def _has_attachment(payload: dict) -> bool:
+    """True if any message part is a real file attachment (has a filename)."""
+    def walk(part: dict) -> bool:
+        if (part.get("filename") or "").strip():
+            return True
+        return any(walk(sub) for sub in part.get("parts", []) or [])
+    return walk(payload)
+
+
+def _matches_keyword(text: str, keywords: list[str]) -> bool:
+    """Case-insensitive whole-word match of any keyword in text."""
+    if not keywords:
+        return False
+    lowered = text.lower()
+    for kw in keywords:
+        k = kw.strip().lower()
+        if not k:
+            continue
+        if re.search(rf"(?<!\w){re.escape(k)}(?!\w)", lowered):
+            return True
+    return False
+
+
+def _sender_excluded(sender: str, exclude_senders: list[str]) -> bool:
+    """Match the sender's address/domain against the exclude list (substring)."""
+    if not exclude_senders:
+        return False
+    s = sender.lower()
+    return any(e.strip().lower() in s for e in exclude_senders if e.strip())
+
+
 @app.post("/gmail/scan", response_model=GmailScanResponse, dependencies=[Depends(require_signature)])
 def gmail_scan(req: GmailScanRequest):
     """List and parse recent Gmail messages (Social excluded) for classification."""
@@ -316,6 +354,7 @@ def gmail_scan(req: GmailScanRequest):
 
     auth = {"Authorization": f"Bearer {req.access_token}"}
     emails: list[ScannedEmail] = []
+    skipped = 0
 
     with httpx.Client(timeout=30.0) as client:
         # 1) Collect message ids (paginated) up to max_messages.
@@ -351,16 +390,37 @@ def gmail_scan(req: GmailScanRequest):
             msg = resp.json()
             payload = msg.get("payload", {})
             headers = payload.get("headers", []) or []
+            subject = _header(headers, "Subject")
+            sender = _header(headers, "From")
+            body = _extract_body(payload)
+
+            # Confidentiality filters: drop the email entirely, before it is
+            # returned or classified. We check only subject + first 500 chars.
+            if req.exclude_with_attachments and _has_attachment(payload):
+                skipped += 1
+                continue
+            if _sender_excluded(sender, req.exclude_senders):
+                skipped += 1
+                continue
+            if _matches_keyword(f"{subject}\n{body[:500]}", req.exclude_keywords):
+                skipped += 1
+                continue
+
             emails.append(
                 ScannedEmail(
                     id=mid,
-                    subject=_header(headers, "Subject"),
-                    sender=_header(headers, "From"),
+                    subject=subject,
+                    sender=sender,
                     date=_header(headers, "Date") or None,
                     snippet=msg.get("snippet", ""),
-                    body=_extract_body(payload),
+                    body=body,
                 )
             )
 
-    logger.info("Gmail scan: parsed %d of %d messages", len(emails), len(ids))
-    return GmailScanResponse(emails=emails, total=len(emails))
+    logger.info(
+        "Gmail scan: parsed %d, skipped %d by filter, of %d messages",
+        len(emails),
+        skipped,
+        len(ids),
+    )
+    return GmailScanResponse(emails=emails, total=len(emails), skipped=skipped)

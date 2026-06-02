@@ -5,6 +5,11 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { getFreshGmailAccessToken, markConnectionError, markConnectionSynced } from "./connections";
 import { classifyEmail, type ScannedEmail, type EmailClassification } from "./classify";
 import { autoRoutePendingItems } from "./apply";
+import {
+  resolveWorkspaceOrgs,
+  chooseOrgForEmail,
+  type WorkspaceRouting,
+} from "./workspace";
 import { computeSectionSuggestions } from "@/lib/sections/suggest-sections";
 import { logAuditEvent } from "@/lib/data/audit-log";
 
@@ -25,12 +30,19 @@ function sidecarAuthHeaders(method: "POST", path: string): Record<string, string
  * The access token travels only in this signed server-to-server request body
  * and is never logged. Returns [] when the sidecar is unreachable.
  */
+export type ConnectionFilters = {
+  excludeKeywords: string[];
+  excludeSenders: string[];
+  excludeWithAttachments: boolean;
+};
+
 async function fetchGmailMessages(input: {
   accessToken: string;
   timeframeMonths: number;
   sinceQuery?: string | null;
   maxMessages?: number;
-}): Promise<ScannedEmail[]> {
+  filters?: ConnectionFilters;
+}): Promise<{ emails: ScannedEmail[]; skipped: number }> {
   try {
     const res = await fetch(`${SIDECAR_URL}/gmail/scan`, {
       method: "POST",
@@ -43,14 +55,17 @@ async function fetchGmailMessages(input: {
         timeframe_months: input.timeframeMonths,
         since_query: input.sinceQuery ?? null,
         max_messages: input.maxMessages ?? 150,
+        exclude_keywords: input.filters?.excludeKeywords ?? [],
+        exclude_senders: input.filters?.excludeSenders ?? [],
+        exclude_with_attachments: input.filters?.excludeWithAttachments ?? false,
       }),
       signal: AbortSignal.timeout(120_000),
     });
     if (!res.ok) {
       throw new Error(`sidecar /gmail/scan HTTP ${res.status}`);
     }
-    const json = (await res.json()) as { emails: ScannedEmail[] };
-    return json.emails ?? [];
+    const json = (await res.json()) as { emails: ScannedEmail[]; skipped?: number };
+    return { emails: json.emails ?? [], skipped: json.skipped ?? 0 };
   } catch (err) {
     // Never include the token; surface only the error name.
     console.warn("[gmail/scan] sidecar request failed:", (err as Error).name);
@@ -64,6 +79,7 @@ export type ScanJobStatus = {
   emailsTotal: number;
   emailsProcessed: number;
   itemsFound: number;
+  emailsSkipped: number;
   startedAt: string;
   completedAt: string | null;
   lastError: string | null;
@@ -74,7 +90,7 @@ export async function getLatestScanJob(userId: string): Promise<ScanJobStatus | 
   const admin = createAdminClient();
   const { data } = await admin
     .from("email_scan_jobs")
-    .select("id, status, emails_total, emails_processed, items_found, started_at, completed_at, last_error")
+    .select("id, status, emails_total, emails_processed, items_found, emails_skipped, started_at, completed_at, last_error")
     .eq("user_id", userId)
     .order("started_at", { ascending: false })
     .limit(1)
@@ -84,6 +100,7 @@ export async function getLatestScanJob(userId: string): Promise<ScanJobStatus | 
   return {
     id: r.id as string,
     status: r.status as ScanJobStatus["status"],
+    emailsSkipped: (r.emails_skipped as number) ?? 0,
     emailsTotal: (r.emails_total as number) ?? 0,
     emailsProcessed: (r.emails_processed as number) ?? 0,
     itemsFound: (r.items_found as number) ?? 0,
@@ -174,6 +191,25 @@ export async function startGmailScan(input: {
   const token = await getFreshGmailAccessToken(input.userId);
   if (!token) return null;
 
+  // Load this connection's confidentiality filters + workspace routing.
+  const { data: connRow } = await admin
+    .from("email_connections")
+    .select("exclude_keywords, exclude_senders, exclude_with_attachments, workspace_routing")
+    .eq("id", token.connectionId)
+    .maybeSingle();
+  const conn = (connRow as {
+    exclude_keywords?: string[];
+    exclude_senders?: string[];
+    exclude_with_attachments?: boolean;
+    workspace_routing?: WorkspaceRouting;
+  } | null) ?? {};
+  const filters: ConnectionFilters = {
+    excludeKeywords: conn.exclude_keywords ?? [],
+    excludeSenders: conn.exclude_senders ?? [],
+    excludeWithAttachments: conn.exclude_with_attachments ?? false,
+  };
+  const workspaceRouting: WorkspaceRouting = conn.workspace_routing ?? "personal";
+
   const { data: jobRow } = await admin
     .from("email_scan_jobs")
     .insert({
@@ -195,6 +231,8 @@ export async function startGmailScan(input: {
         jobId,
         connectionId: token.connectionId,
         accessToken: token.accessToken,
+        filters,
+        workspaceRouting,
       });
     },
   };
@@ -208,18 +246,25 @@ async function processScan(input: {
   jobId: string;
   connectionId: string;
   accessToken: string;
+  filters: ConnectionFilters;
+  workspaceRouting: WorkspaceRouting;
 }): Promise<void> {
   const admin = createAdminClient();
   try {
-    const emails = await fetchGmailMessages({
+    const { emails, skipped } = await fetchGmailMessages({
       accessToken: input.accessToken,
       timeframeMonths: input.timeframeMonths,
       sinceQuery: input.sinceQuery,
+      filters: input.filters,
     });
+
+    // Resolve workspace orgs once for per-email routing.
+    const orgs = await resolveWorkspaceOrgs(input.userId);
+    const fallbackOrg = input.organizationId;
 
     await admin
       .from("email_scan_jobs")
-      .update({ emails_total: emails.length })
+      .update({ emails_total: emails.length, emails_skipped: skipped })
       .eq("id", input.jobId);
 
     let processed = 0;
@@ -237,9 +282,18 @@ async function processScan(input: {
           classification.is_relevant &&
           classification.confidence >= MIN_CONFIDENCE
         ) {
+          const targetOrg = fallbackOrg
+            ? chooseOrgForEmail({
+                routing: input.workspaceRouting,
+                orgs,
+                sender: email.sender,
+                subject: email.subject,
+                fallbackOrgId: fallbackOrg,
+              })
+            : null;
           const inserted = await insertDetectedItem({
             userId: input.userId,
-            organizationId: input.organizationId,
+            organizationId: targetOrg,
             connectionId: input.connectionId,
             scanJobId: input.jobId,
             email,

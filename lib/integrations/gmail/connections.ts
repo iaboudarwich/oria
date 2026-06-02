@@ -192,6 +192,78 @@ export async function markConnectionSynced(connectionId: string): Promise<void> 
     .eq("id", connectionId);
 }
 
+/** Suggested at first connect (default on): skip clearly confidential mail. */
+export const DEFAULT_CONFIDENTIAL_KEYWORDS = [
+  "confidential",
+  "NDA",
+  "attorney-client",
+  "privileged",
+  "private",
+];
+
+/** Seed the default confidential keywords, but only if none are set yet. */
+export async function seedDefaultConfidentialKeywords(userId: string): Promise<void> {
+  const admin = createAdminClient();
+  await admin
+    .from("email_connections")
+    .update({ exclude_keywords: DEFAULT_CONFIDENTIAL_KEYWORDS })
+    .eq("user_id", userId)
+    .eq("provider", "gmail")
+    .eq("exclude_keywords", "{}");
+}
+
+export type ConnectionFilterConfig = {
+  excludeKeywords: string[];
+  excludeSenders: string[];
+  excludeWithAttachments: boolean;
+  workspaceRouting: "personal" | "work" | "auto";
+};
+
+/** Read the connection's confidentiality filters + workspace routing. */
+export async function getConnectionFilters(
+  userId: string,
+): Promise<ConnectionFilterConfig | null> {
+  const admin = createAdminClient();
+  const { data } = await admin
+    .from("email_connections")
+    .select("exclude_keywords, exclude_senders, exclude_with_attachments, workspace_routing")
+    .eq("user_id", userId)
+    .eq("provider", "gmail")
+    .maybeSingle();
+  if (!data) return null;
+  const r = data as {
+    exclude_keywords: string[] | null;
+    exclude_senders: string[] | null;
+    exclude_with_attachments: boolean | null;
+    workspace_routing: string | null;
+  };
+  const routing = r.workspace_routing;
+  return {
+    excludeKeywords: r.exclude_keywords ?? [],
+    excludeSenders: r.exclude_senders ?? [],
+    excludeWithAttachments: r.exclude_with_attachments ?? false,
+    workspaceRouting: routing === "work" || routing === "auto" ? routing : "personal",
+  };
+}
+
+/** Update the connection's filters. Used by the settings panel. */
+export async function updateConnectionFilters(
+  userId: string,
+  config: ConnectionFilterConfig,
+): Promise<void> {
+  const admin = createAdminClient();
+  await admin
+    .from("email_connections")
+    .update({
+      exclude_keywords: config.excludeKeywords,
+      exclude_senders: config.excludeSenders,
+      exclude_with_attachments: config.excludeWithAttachments,
+      workspace_routing: config.workspaceRouting,
+    })
+    .eq("user_id", userId)
+    .eq("provider", "gmail");
+}
+
 /** The user's auto-routing preference (defaults to auto_confident). */
 export async function getAutoRoutePreference(
   userId: string,

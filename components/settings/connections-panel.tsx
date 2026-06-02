@@ -3,10 +3,13 @@ import {
   getGmailConnection,
   getGmailItemCounts,
   getAutoRoutePreference,
+  getConnectionFilters,
 } from "@/lib/integrations/gmail/connections";
+import { getLatestScanJob } from "@/lib/integrations/gmail/scan";
 import { isGmailOAuthConfigured } from "@/lib/integrations/gmail/oauth";
 import { isTokenCryptoConfigured } from "@/lib/security/token-crypto";
 import { GmailCard } from "./gmail-card";
+import { GmailFilters } from "./gmail-filters";
 
 /**
  * Settings -> Connections. Currently one provider (Gmail). Server-rendered;
@@ -15,9 +18,14 @@ import { GmailCard } from "./gmail-card";
  */
 export async function ConnectionsPanel({ userId }: { userId: string }) {
   const summary = await getGmailConnection(userId);
-  const [counts, routePref] = summary
-    ? await Promise.all([getGmailItemCounts(userId), getAutoRoutePreference(userId)])
-    : [{ pending: 0, approved: 0 }, "auto_confident" as const];
+  const [counts, routePref, filters, lastJob] = summary
+    ? await Promise.all([
+        getGmailItemCounts(userId),
+        getAutoRoutePreference(userId),
+        getConnectionFilters(userId),
+        getLatestScanJob(userId),
+      ])
+    : [{ pending: 0, approved: 0 }, "auto_confident" as const, null, null];
   const configured = isGmailOAuthConfigured() && isTokenCryptoConfigured();
   const t = await getTranslations("connections");
 
@@ -42,6 +50,18 @@ export async function ConnectionsPanel({ userId }: { userId: string }) {
             : null
         }
       />
+      {summary && filters ? (
+        <div className="rounded-2xl border border-line bg-surface-raised p-5">
+          <h3 className="text-[14px] font-semibold text-ink">{t("filter_title")}</h3>
+          <p className="mt-1 text-[12.5px] text-ink-muted">{t("filter_subtitle")}</p>
+          {lastJob && lastJob.emailsSkipped > 0 ? (
+            <p className="mt-2 text-[12px] text-ink-faint">
+              {t("filter_skipped_summary", { count: lastJob.emailsSkipped })}
+            </p>
+          ) : null}
+          <GmailFilters initial={filters} />
+        </div>
+      ) : null}
     </section>
   );
 }

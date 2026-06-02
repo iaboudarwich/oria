@@ -10,6 +10,7 @@ export type SyncResult = {
   newItems: number;
   renewed: number;
   emailsSent: number;
+  rateLimited: number;
 };
 
 /** Format an ISO timestamp as Gmail's `after:` date (YYYY/MM/DD), minus one
@@ -58,9 +59,18 @@ export async function syncAllGmailConnections(): Promise<SyncResult> {
   let newItems = 0;
   let renewed = 0;
   let emailsSent = 0;
+  let skipped = 0;
+
+  // Early-signal rate limit: never scan a connection more than once an hour,
+  // even if the cron fires faster. Idempotent.
+  const oneHourAgo = Date.now() - 60 * 60 * 1000;
 
   for (const conn of conns) {
     try {
+      if (conn.last_synced_at && new Date(conn.last_synced_at).getTime() > oneHourAgo) {
+        skipped += 1;
+        continue;
+      }
       const orgId = await primaryOrgId(conn.user_id);
       const sinceQuery = conn.last_synced_at
         ? `after:${gmailAfterDate(conn.last_synced_at)}`
@@ -101,7 +111,7 @@ export async function syncAllGmailConnections(): Promise<SyncResult> {
     }
   }
 
-  return { connections: conns.length, newItems, renewed, emailsSent };
+  return { connections: conns.length, newItems, renewed, emailsSent, rateLimited: skipped };
 }
 
 /**

@@ -3,7 +3,11 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { setGmailConnectionStatus } from "./connections";
+import {
+  setGmailConnectionStatus,
+  updateConnectionFilters,
+  type ConnectionFilterConfig,
+} from "./connections";
 
 export type AutoRoutePreference = "always_review" | "auto_confident" | "auto_all";
 const VALID_PREFS: AutoRoutePreference[] = ["always_review", "auto_confident", "auto_all"];
@@ -24,6 +28,27 @@ export async function setAutoRoutePreference(
     .from("profiles")
     .update({ auto_route_preference: pref })
     .eq("id", user.id);
+  revalidatePath("/dashboard/settings");
+  return { ok: true };
+}
+
+/** Save the connection's confidentiality filters + workspace routing. */
+export async function saveConnectionFilters(
+  config: ConnectionFilterConfig,
+): Promise<{ ok: boolean }> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false };
+
+  const routing = config.workspaceRouting;
+  await updateConnectionFilters(user.id, {
+    excludeKeywords: (config.excludeKeywords ?? []).map((s) => s.trim()).filter(Boolean).slice(0, 50),
+    excludeSenders: (config.excludeSenders ?? []).map((s) => s.trim()).filter(Boolean).slice(0, 50),
+    excludeWithAttachments: !!config.excludeWithAttachments,
+    workspaceRouting: routing === "work" || routing === "auto" ? routing : "personal",
+  });
   revalidatePath("/dashboard/settings");
   return { ok: true };
 }
