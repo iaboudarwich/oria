@@ -30,6 +30,8 @@ import { Hint } from "@/components/onboarding/hint";
 import { getSeenHintKeys } from "@/lib/data/onboarding";
 import { OnboardingRepromptBanner } from "@/components/dashboard/onboarding-reprompt-banner";
 import { QuickActions } from "@/components/dashboard/quick-actions";
+import { listUpcomingEvents } from "@/lib/google/calendar";
+import { UpcomingEventsStrip } from "@/components/cloud/upcoming-events-strip";
 import type { Section } from "@/lib/supabase/types";
 
 export default async function DashboardHome() {
@@ -63,6 +65,10 @@ export default async function DashboardHome() {
   const mfaEnrolledP = ctx?.profile.id
     ? readMfaEnrolledAt(ctx.profile.id)
     : Promise.resolve(null);
+  const upcomingEventsP =
+    ctx?.profile.id
+      ? listUpcomingEvents(ctx.profile.id, ctx.organization.id, 48)
+      : Promise.resolve([]);
   const uploads = await uploadsP;
   const [sectionCounts, allSections, thumbs, rawInsights, dismissed, suggestion] =
     await Promise.all([
@@ -76,7 +82,9 @@ export default async function DashboardHome() {
       suggestionP,
     ]);
   const mfaEnrolledAt = await mfaEnrolledP;
+  const upcomingEvents = await upcomingEventsP;
   const insights = rawInsights.filter((i) => !dismissed.has(i.id));
+  const calT = await getTranslations("cloud");
 
   const isEmpty = uploads.length === 0;
 
@@ -98,6 +106,20 @@ export default async function DashboardHome() {
       {ctx ? <TwoFactorPrompt enrolled={!!mfaEnrolledAt} /> : null}
 
       <div className="space-y-7 animate-fade-up">
+        {upcomingEvents.length > 0 ? (
+          <UpcomingEventsStrip
+            events={upcomingEvents.map((e) => ({
+              id: e.id,
+              title: e.title,
+              location: e.location,
+              startsAt: e.startsAt,
+              isAllDay: e.isAllDay,
+              webViewLink: e.webViewLink,
+            }))}
+            heading={calT("upcoming_heading")}
+            dismissLabel={calT("dismiss")}
+          />
+        ) : null}
         {showReprompt && ctx && <OnboardingRepromptBanner />}
         <SearchHero />
 

@@ -1,5 +1,8 @@
 {
   "cloud": {
+    "upcoming_heading": "قادم قريباً",
+    "dismiss": "إخفاء",
+    "events_heading": "من تقويمك",
     "files_heading": "ملفات Drive المرتبطة",
     "link_files": "ربط ملفات Google",
     "connect_drive_first": "اربط Google Drive أولاً",

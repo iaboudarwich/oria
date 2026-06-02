@@ -1,5 +1,8 @@
 {
   "cloud": {
+    "upcoming_heading": "Próximamente",
+    "dismiss": "Descartar",
+    "events_heading": "Desde tu calendario",
     "files_heading": "Archivos de Drive vinculados",
     "link_files": "Vincular archivos de Google",
     "connect_drive_first": "Conecta Google Drive primero",

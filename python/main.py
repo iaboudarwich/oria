@@ -40,6 +40,7 @@ from google_clients import (
     drive_get_metadata,
     drive_fetch_text,
     drive_list_folder,
+    calendar_list_events,
     FOLDER_MIME,
 )
 
@@ -533,3 +534,73 @@ def drive_fetch_endpoint(req: DriveFetchRequest):
             client, req.access_token, req.provider_file_id, req.mime_type, ""
         )
     return DriveFetchResponse(text=text, accessible=accessible)
+
+
+# ── /cloud/calendar/sync ─────────────────────────────────────────────────────
+# Read a window of Calendar events (calendar.readonly) so the Node app can
+# categorize + route them. Recurring events are expanded into instances. The
+# access token arrives in the signed body and is NEVER logged.
+
+
+class CalendarSyncRequest(BaseModel):
+    access_token: str
+    past_days: int = 30
+    future_days: int = 90
+
+
+class CalendarAttendee(BaseModel):
+    email: str
+    name: Optional[str] = None
+
+
+class CalendarEvent(BaseModel):
+    provider_event_id: str
+    title: str
+    description: Optional[str] = None
+    location: Optional[str] = None
+    starts_at: str
+    ends_at: str
+    is_all_day: bool = False
+    organizer_email: Optional[str] = None
+    attendees: list[CalendarAttendee] = []
+    web_view_link: Optional[str] = None
+
+
+class CalendarSyncResponse(BaseModel):
+    events: list[CalendarEvent]
+
+
+def _event_from_api(item: dict) -> Optional[CalendarEvent]:
+    start = item.get("start", {}) or {}
+    end = item.get("end", {}) or {}
+    starts_at = start.get("dateTime") or start.get("date")
+    ends_at = end.get("dateTime") or end.get("date") or starts_at
+    if not starts_at:
+        return None
+    attendees = [
+        CalendarAttendee(email=a.get("email", ""), name=a.get("displayName"))
+        for a in (item.get("attendees") or [])
+        if a.get("email")
+    ]
+    return CalendarEvent(
+        provider_event_id=item.get("id", ""),
+        title=item.get("summary") or "(no title)",
+        description=item.get("description"),
+        location=item.get("location"),
+        starts_at=starts_at,
+        ends_at=ends_at,
+        is_all_day="date" in start and "dateTime" not in start,
+        organizer_email=(item.get("organizer") or {}).get("email"),
+        attendees=attendees,
+        web_view_link=item.get("htmlLink"),
+    )
+
+
+@app.post("/cloud/calendar/sync", response_model=CalendarSyncResponse, dependencies=[Depends(require_signature)])
+def calendar_sync_endpoint(req: CalendarSyncRequest):
+    """List + normalize Calendar events in the requested window."""
+    with httpx.Client(timeout=60.0) as client:
+        items = calendar_list_events(client, req.access_token, req.past_days, req.future_days)
+    events = [e for e in (_event_from_api(it) for it in items) if e is not None]
+    logger.info("Calendar sync: %d events", len(events))
+    return CalendarSyncResponse(events=events)

@@ -1,5 +1,8 @@
 {
   "cloud": {
+    "upcoming_heading": "Coming up",
+    "dismiss": "Dismiss",
+    "events_heading": "From your calendar",
     "files_heading": "Linked Drive files",
     "link_files": "Link Google files",
     "connect_drive_first": "Connect Google Drive first",

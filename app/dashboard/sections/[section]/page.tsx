@@ -32,22 +32,49 @@ import { HealthTimelineView } from "@/components/sections/health-timeline-view";
 import { recordBehaviorSignal } from "@/lib/data/behavior-signals";
 import { listCloudFilesForSection } from "@/lib/google/cloud-files";
 import { listCloudConnectionsByService } from "@/lib/google/cloud-connections";
+import { listSectionEvents, type UpcomingEvent } from "@/lib/google/calendar";
 import { LinkedFilesPanel } from "@/components/cloud/linked-files-panel";
+import { SectionEventsPanel } from "@/components/cloud/section-events-panel";
 import type { LinkedFile } from "@/components/cloud/linked-files-list";
 import type { Section } from "@/lib/supabase/types";
 
-/** Linked Drive files + whether a Drive account is connected, fetched together
- *  so the section page can run this parallel to its entry fetch. */
-async function loadLinkedFiles(
+/** Linked Drive files, calendar events, and whether a Drive account is
+ *  connected, fetched together so the section page can run this parallel to
+ *  its entry fetch. */
+async function loadSectionCloud(
   userId: string,
   orgId: string,
   sectionKey: string,
-): Promise<{ files: LinkedFile[]; driveConnected: boolean }> {
-  const [files, driveConns] = await Promise.all([
+): Promise<{ files: LinkedFile[]; driveConnected: boolean; events: UpcomingEvent[] }> {
+  const [files, driveConns, events] = await Promise.all([
     listCloudFilesForSection(userId, orgId, sectionKey),
     listCloudConnectionsByService(userId, "drive"),
+    listSectionEvents(userId, orgId, sectionKey),
   ]);
-  return { files, driveConnected: driveConns.length > 0 };
+  return { files, driveConnected: driveConns.length > 0, events };
+}
+
+/** Both cloud panels (linked Drive files + calendar events) for a section. */
+function SectionCloudPanels({
+  orgId,
+  sectionKey,
+  cloud,
+}: {
+  orgId: string;
+  sectionKey: string;
+  cloud: { files: LinkedFile[]; driveConnected: boolean; events: UpcomingEvent[] };
+}) {
+  return (
+    <div className="space-y-4">
+      <LinkedFilesPanel
+        organizationId={orgId}
+        sectionKey={sectionKey}
+        files={cloud.files}
+        driveConnected={cloud.driveConnected}
+      />
+      <SectionEventsPanel events={cloud.events} />
+    </div>
+  );
 }
 
 type MoveOption = {
@@ -123,10 +150,10 @@ export default async function SectionPage({ params, searchParams }: Props) {
     if (!custom) notFound();
     // Summary generation runs parallel to the entry fetch so it never adds
     // to TTFB (perf rule).
-    const [entries, summary, linked] = await Promise.all([
+    const [entries, summary, cloud] = await Promise.all([
       listSectionEntries({ kind: "custom", key: custom.id }, 100),
       summaryForSection({ kind: "custom", key: custom.id }, orgId),
-      loadLinkedFiles(ctx.profile.id, orgId, custom.id),
+      loadSectionCloud(ctx.profile.id, orgId, custom.id),
     ]);
     const thumbs = await thumbsForEntries(entries);
     return (
@@ -139,12 +166,7 @@ export default async function SectionPage({ params, searchParams }: Props) {
           ) : null
         }
         linkedFilesNode={
-          <LinkedFilesPanel
-            organizationId={orgId}
-            sectionKey={custom.id}
-            files={linked.files}
-            driveConnected={linked.driveConnected}
-          />
+          <SectionCloudPanels orgId={orgId} sectionKey={custom.id} cloud={cloud} />
         }
         dropzoneNode={
           <DropzoneCompact
@@ -176,10 +198,10 @@ export default async function SectionPage({ params, searchParams }: Props) {
   const sec = section as Section;
   const meta = SECTION_META[sec];
 
-  const [entries, summary, linked] = await Promise.all([
+  const [entries, summary, cloud] = await Promise.all([
     listSectionEntries({ kind: "builtin", key: sec }, 100),
     summaryForSection({ kind: "builtin", key: sec }, orgId),
-    loadLinkedFiles(ctx.profile.id, orgId, sec),
+    loadSectionCloud(ctx.profile.id, orgId, sec),
   ]);
   const thumbs = await thumbsForEntries(entries);
 
@@ -208,12 +230,7 @@ export default async function SectionPage({ params, searchParams }: Props) {
         ) : null
       }
       linkedFilesNode={
-        <LinkedFilesPanel
-          organizationId={orgId}
-          sectionKey={sec}
-          files={linked.files}
-          driveConnected={linked.driveConnected}
-        />
+        <SectionCloudPanels orgId={orgId} sectionKey={sec} cloud={cloud} />
       }
       dropzoneNode={
         <DropzoneCompact

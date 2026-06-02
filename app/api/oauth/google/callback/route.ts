@@ -1,6 +1,6 @@
 import "server-only";
 
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -9,6 +9,7 @@ import {
   isGoogleService,
 } from "@/lib/google/oauth";
 import { upsertCloudConnection } from "@/lib/google/cloud-connections";
+import { syncUserCalendars } from "@/lib/google/calendar";
 import { logAuditEvent } from "@/lib/data/audit-log";
 import { GOOGLE_STATE_COOKIE, GOOGLE_SERVICE_COOKIE } from "../connect/route";
 
@@ -74,8 +75,12 @@ export async function GET(request: Request) {
       metadata: { provider: "google", service, account_email: email },
     });
 
-    // Drive lands on connections so the user can immediately pick files;
-    // Calendar lands with a synced notice (the hourly cron picks it up).
+    // Calendar: kick off the first sync in the background so events appear
+    // without waiting for the hourly cron. Drive waits for the user to pick.
+    if (service === "calendar") {
+      after(syncUserCalendars(user.id).then(() => undefined).catch(() => undefined));
+    }
+
     const notice = service === "drive" ? "drive_connected" : "calendar_connected";
     return settingsRedirect(`notice=${notice}`);
   } catch {

@@ -1,5 +1,8 @@
 {
   "cloud": {
+    "upcoming_heading": "Bientôt",
+    "dismiss": "Masquer",
+    "events_heading": "Depuis votre agenda",
     "files_heading": "Fichiers Drive liés",
     "link_files": "Lier des fichiers Google",
     "connect_drive_first": "Connectez d'abord Google Drive",
