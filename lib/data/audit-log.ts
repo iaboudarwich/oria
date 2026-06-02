@@ -60,7 +60,14 @@ export type AuditAction =
   // Data lifecycle
   | "account.export"
   | "account.reset"
-  | "account.delete";
+  | "account.delete"
+  // Email integration (Gmail)
+  | "email.connected"
+  | "email.disconnected"
+  | "email.scan_completed"
+  | "email.item_approved"
+  | "email.item_dismissed"
+  | "email.trackable_renewed";
 
 export type AuditLogInput = {
   userId: string;
@@ -268,6 +275,12 @@ export function actionLabel(action: string): string {
     "account.export":               "Exported account data",
     "account.reset":                "Reset account",
     "account.delete":               "Deleted account",
+    "email.connected":              "Connected Gmail",
+    "email.disconnected":           "Disconnected Gmail",
+    "email.scan_completed":         "Completed an email scan",
+    "email.item_approved":          "Approved an email item",
+    "email.item_dismissed":         "Dismissed an email item",
+    "email.trackable_renewed":      "Renewed a trackable from email",
   };
   return map[action] ?? action;
 }

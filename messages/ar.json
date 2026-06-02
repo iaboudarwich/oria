@@ -120,6 +120,27 @@
     "members_headline": "أنت فقط حتى الآن.",
     "members_desc": "ادعُ أشخاصاً لمشاركة الوصول."
   },
+  "connections": {
+    "title": "الاتصالات",
+    "subtitle": "اربط حساباتك لتعثر أوريا تلقائياً على ما يهمك.",
+    "gmail": "Gmail",
+    "not_connected": "غير متصل",
+    "connect": "ربط Gmail",
+    "connected_as": "متصل باسم {email}",
+    "status_active": "نشط",
+    "status_paused": "متوقف مؤقتاً",
+    "status_revoked": "ملغى",
+    "status_error": "يحتاج إلى انتباه",
+    "last_sync": "تمت المزامنة {time}",
+    "review": "مراجعة العناصر",
+    "disconnect": "قطع الاتصال",
+    "disconnecting": "جارٍ قطع الاتصال...",
+    "not_configured": "لم يتم إعداد اتصال Gmail على هذا النظام بعد.",
+    "consent_title": "ربط Gmail",
+    "consent_body": "يتيح ربط Gmail لأوريا أن تعثر تلقائياً على اشتراكاتك وفواتيرك وحجوزاتك. نحن نقرأ بريدك فقط؛ ولا نرسل أو نحذف أو نعدّل أي شيء. يمكنك قطع الاتصال في أي وقت، ونحذف كل ما تطلب حذفه.",
+    "consent_continue": "المتابعة إلى Google",
+    "consent_cancel": "ليس الآن"
+  },
   "ask": {
     "scope": {
       "aria": "نطاق البحث",

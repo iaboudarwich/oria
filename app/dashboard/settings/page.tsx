@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/icon";
 import { DeleteAccountPanel } from "@/components/settings/delete-account-panel";
 import { ResetAccountPanel } from "@/components/settings/reset-account-panel";
+import { ConnectionsPanel } from "@/components/settings/connections-panel";
 import { SectionsEditorLazy } from "@/components/settings/sections-editor-lazy";
 import { SecurityPanel } from "@/components/settings/security-panel";
 import { SessionsPanel } from "@/components/settings/sessions-panel";
@@ -46,6 +47,7 @@ const TABS = [
   { key: "circles",    label: "Circles" },
   { key: "workspaces", label: "Workspaces" },
   { key: "storage",    label: "Storage" },
+  { key: "connections", label: "Connections" },
   { key: "security",   label: "Security" },
   { key: "privacy",    label: "Privacy" },
 ] as const;
@@ -218,6 +220,10 @@ export default async function SettingsPage({
               <p className="text-[13px] text-ink-faint px-1">Storage stats unavailable.</p>
             )}
           </>
+        )}
+
+        {tab === "connections" && ctx?.profile.id && (
+          <ConnectionsPanel userId={ctx.profile.id} />
         )}
 
         {tab === "security" && (

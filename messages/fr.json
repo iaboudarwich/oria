@@ -120,6 +120,27 @@
     "members_headline": "Juste vous pour l'instant.",
     "members_desc": "Invitez des personnes à partager l'accès."
   },
+  "connections": {
+    "title": "Connexions",
+    "subtitle": "Connectez des comptes pour qu'Oria trouve automatiquement l'essentiel.",
+    "gmail": "Gmail",
+    "not_connected": "Non connecté",
+    "connect": "Connecter Gmail",
+    "connected_as": "Connecté en tant que {email}",
+    "status_active": "Actif",
+    "status_paused": "En pause",
+    "status_revoked": "Révoqué",
+    "status_error": "Action requise",
+    "last_sync": "synchronisé {time}",
+    "review": "Examiner les éléments",
+    "disconnect": "Déconnecter",
+    "disconnecting": "Déconnexion...",
+    "not_configured": "La connexion Gmail n'est pas encore configurée sur ce déploiement.",
+    "consent_title": "Connecter Gmail",
+    "consent_body": "Connecter Gmail permet à Oria de trouver automatiquement vos abonnements, factures et réservations. Nous lisons seulement votre courrier; nous n'envoyons, ne supprimons ni ne modifions jamais rien. Vous pouvez vous déconnecter à tout moment, et nous supprimons tout ce que vous demandez.",
+    "consent_continue": "Continuer vers Google",
+    "consent_cancel": "Pas maintenant"
+  },
   "ask": {
     "scope": {
       "aria": "Portée de la recherche",

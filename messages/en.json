@@ -120,6 +120,27 @@
     "members_headline": "Just you so far.",
     "members_desc": "Invite people to share access."
   },
+  "connections": {
+    "title": "Connections",
+    "subtitle": "Connect accounts so Oria can find what matters automatically.",
+    "gmail": "Gmail",
+    "not_connected": "Not connected",
+    "connect": "Connect Gmail",
+    "connected_as": "Connected as {email}",
+    "status_active": "Active",
+    "status_paused": "Paused",
+    "status_revoked": "Revoked",
+    "status_error": "Needs attention",
+    "last_sync": "synced {time}",
+    "review": "Review items",
+    "disconnect": "Disconnect",
+    "disconnecting": "Disconnecting...",
+    "not_configured": "Gmail connection is not configured on this deployment yet.",
+    "consent_title": "Connect Gmail",
+    "consent_body": "Connecting Gmail lets Oria find your subscriptions, bills, and bookings automatically. We only read your email; we never send, delete, or modify it. You can disconnect anytime, and we delete everything you ask us to.",
+    "consent_continue": "Continue to Google",
+    "consent_cancel": "Not now"
+  },
   "ask": {
     "scope": {
       "aria": "Search scope",
