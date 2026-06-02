@@ -74,6 +74,9 @@ export type AuditAction =
   | "cloud.calendar_synced"
   | "cloud.file_linked"
   | "cloud.file_unlinked"
+  // AI provider (bring-your-own Claude / ChatGPT / Gemini)
+  | "ai_connection_added"
+  | "ai_connection_removed"
   // Sections
   | "section.suggested"
   | "section.created_from_suggestion"
@@ -306,6 +309,8 @@ export function actionLabel(action: string): string {
     "cloud.calendar_synced":        "Synced calendar events",
     "cloud.file_linked":            "Linked a Google Drive file",
     "cloud.file_unlinked":          "Removed a linked Drive file",
+    "ai_connection_added":          "Connected an AI provider",
+    "ai_connection_removed":        "Disconnected an AI provider",
     "section.suggested":            "Suggested a new section",
     "section.created_from_suggestion": "Created a section from a suggestion",
     "routing_rule_learned":         "Taught Oria a filing rule",
