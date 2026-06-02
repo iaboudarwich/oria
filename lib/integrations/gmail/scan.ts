@@ -73,45 +73,80 @@ async function fetchGmailMessages(input: {
   }
 }
 
-export type ScanJobStatus = {
-  id: string;
-  status: "running" | "completed" | "failed" | "canceled";
+export type AggregateScanStatus = {
+  status: "running" | "completed" | "failed" | "idle";
+  inboxes: number;
+  inboxesScanning: number;
   emailsTotal: number;
   emailsProcessed: number;
   itemsFound: number;
   emailsSkipped: number;
-  startedAt: string;
-  completedAt: string | null;
-  lastError: string | null;
 };
 
-/** Latest scan job for the user (for the review page's progress banner). */
-export async function getLatestScanJob(userId: string): Promise<ScanJobStatus | null> {
+/**
+ * Aggregate the most recent scan job across all of the user's connections, so
+ * the review page can show "Scanning N inboxes. X of Y checked. Z found."
+ */
+export async function getAggregateScanStatus(userId: string): Promise<AggregateScanStatus> {
   const admin = createAdminClient();
-  const { data } = await admin
-    .from("email_scan_jobs")
-    .select("id, status, emails_total, emails_processed, items_found, emails_skipped, started_at, completed_at, last_error")
+  // Active connection ids.
+  const { data: conns } = await admin
+    .from("email_connections")
+    .select("id")
     .eq("user_id", userId)
-    .order("started_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-  if (!data) return null;
-  const r = data as Record<string, unknown>;
-  return {
-    id: r.id as string,
-    status: r.status as ScanJobStatus["status"],
-    emailsSkipped: (r.emails_skipped as number) ?? 0,
-    emailsTotal: (r.emails_total as number) ?? 0,
-    emailsProcessed: (r.emails_processed as number) ?? 0,
-    itemsFound: (r.items_found as number) ?? 0,
-    startedAt: r.started_at as string,
-    completedAt: (r.completed_at as string) ?? null,
-    lastError: (r.last_error as string) ?? null,
+    .eq("provider", "gmail");
+  const connIds = ((conns as { id: string }[] | null) ?? []).map((c) => c.id);
+
+  const agg: AggregateScanStatus = {
+    status: "idle",
+    inboxes: connIds.length,
+    inboxesScanning: 0,
+    emailsTotal: 0,
+    emailsProcessed: 0,
+    itemsFound: 0,
+    emailsSkipped: 0,
   };
+  if (connIds.length === 0) return agg;
+
+  let anyRunning = false;
+  let anyFailed = false;
+  let anyJob = false;
+
+  // Latest job per connection.
+  await Promise.all(
+    connIds.map(async (cid) => {
+      const { data } = await admin
+        .from("email_scan_jobs")
+        .select("status, emails_total, emails_processed, items_found, emails_skipped")
+        .eq("connection_id", cid)
+        .order("started_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (!data) return;
+      const r = data as Record<string, unknown>;
+      anyJob = true;
+      agg.emailsTotal += (r.emails_total as number) ?? 0;
+      agg.emailsProcessed += (r.emails_processed as number) ?? 0;
+      agg.itemsFound += (r.items_found as number) ?? 0;
+      agg.emailsSkipped += (r.emails_skipped as number) ?? 0;
+      const status = r.status as string;
+      if (status === "running") {
+        anyRunning = true;
+        agg.inboxesScanning += 1;
+      } else if (status === "failed") {
+        anyFailed = true;
+      }
+    }),
+  );
+
+  agg.status = anyRunning ? "running" : anyFailed ? "failed" : anyJob ? "completed" : "idle";
+  return agg;
 }
 
 export type DetectedItem = {
   id: string;
+  connectionId: string | null;
+  sourceEmail: string | null;
   itemType: string;
   status: "pending" | "approved" | "dismissed";
   sourceSubject: string | null;
@@ -138,7 +173,11 @@ export type DetectedItem = {
   };
 };
 
-/** List the user's detected items, newest first. Optionally filter by status. */
+/**
+ * List the user's detected items, newest first, each tagged with its source
+ * connection + email (for the per-source badge and filter chips). Optionally
+ * filter by status.
+ */
 export async function listDetectedItems(
   userId: string,
   status?: "pending" | "approved" | "dismissed",
@@ -146,22 +185,62 @@ export async function listDetectedItems(
   const admin = createAdminClient();
   let query = admin
     .from("email_detected_items")
-    .select("id, item_type, status, source_subject, source_from, source_date, confidence, extracted")
+    .select(
+      "id, connection_id, item_type, status, source_subject, source_from, source_date, confidence, extracted, email_connections(email_address)",
+    )
     .eq("user_id", userId)
     .order("created_at", { ascending: false })
     .limit(500);
   if (status) query = query.eq("status", status);
   const { data } = await query;
-  return ((data as Record<string, unknown>[]) ?? []).map((r) => ({
-    id: r.id as string,
-    itemType: r.item_type as string,
-    status: r.status as DetectedItem["status"],
-    sourceSubject: (r.source_subject as string) ?? null,
-    sourceFrom: (r.source_from as string) ?? null,
-    sourceDate: (r.source_date as string) ?? null,
-    confidence: (r.confidence as number) ?? null,
-    extracted: (r.extracted as DetectedItem["extracted"]) ?? {},
-  }));
+  return ((data as Record<string, unknown>[]) ?? []).map((r) => {
+    const conn = r.email_connections as { email_address?: string } | { email_address?: string }[] | null;
+    const connObj = Array.isArray(conn) ? conn[0] : conn;
+    return {
+      id: r.id as string,
+      connectionId: (r.connection_id as string) ?? null,
+      sourceEmail: connObj?.email_address ?? null,
+      itemType: r.item_type as string,
+      status: r.status as DetectedItem["status"],
+      sourceSubject: (r.source_subject as string) ?? null,
+      sourceFrom: (r.source_from as string) ?? null,
+      sourceDate: (r.source_date as string) ?? null,
+      confidence: (r.confidence as number) ?? null,
+      extracted: (r.extracted as DetectedItem["extracted"]) ?? {},
+    };
+  });
+}
+
+/**
+ * Start scans for every active connection the user has, concurrently. Returns
+ * the started jobs (each with a `process()` runnable the caller backgrounds).
+ */
+export async function scanAllConnections(input: {
+  userId: string;
+  organizationId: string | null;
+  timeframeMonths: number;
+}): Promise<{ connectionId: string; jobId: string; process: () => Promise<void> }[]> {
+  const admin = createAdminClient();
+  const { data } = await admin
+    .from("email_connections")
+    .select("id")
+    .eq("user_id", input.userId)
+    .eq("provider", "gmail")
+    .eq("status", "active");
+  const connIds = ((data as { id: string }[] | null) ?? []).map((c) => c.id);
+
+  const started = await Promise.all(
+    connIds.map(async (connectionId) => {
+      const s = await startGmailScan({
+        userId: input.userId,
+        connectionId,
+        organizationId: input.organizationId,
+        timeframeMonths: input.timeframeMonths,
+      });
+      return s ? { connectionId, jobId: s.jobId, process: s.process } : null;
+    }),
+  );
+  return started.filter((s): s is NonNullable<typeof s> => s !== null);
 }
 
 const CLASSIFY_BATCH = 6;
@@ -182,13 +261,14 @@ const MIN_CONFIDENCE = 0.4;
  */
 export async function startGmailScan(input: {
   userId: string;
+  connectionId: string;
   organizationId: string | null;
   timeframeMonths: number;
   sinceQuery?: string | null;
 }): Promise<{ jobId: string; process: () => Promise<void> } | null> {
   const admin = createAdminClient();
 
-  const token = await getFreshGmailAccessToken(input.userId);
+  const token = await getFreshGmailAccessToken(input.connectionId);
   if (!token) return null;
 
   // Load this connection's confidentiality filters + workspace routing.
@@ -331,9 +411,10 @@ async function processScan(input: {
       metadata: { source: "gmail", emails_total: emails.length, items_found: found },
     });
 
-    // Auto-route per preference, then look for a new-section suggestion.
+    // Auto-route this connection's pending items per preference, then look for
+    // a new-section suggestion across the user's items.
+    await autoRoutePendingItems(input.userId, input.connectionId);
     if (input.organizationId) {
-      await autoRoutePendingItems(input.userId, input.organizationId);
       await computeSectionSuggestions(input.userId, input.organizationId);
     }
   } catch (err) {
@@ -345,7 +426,7 @@ async function processScan(input: {
         last_error: (err as Error).message.slice(0, 300),
       })
       .eq("id", input.jobId);
-    await markConnectionError(input.userId, "Scan failed");
+    await markConnectionError(input.connectionId, "Scan failed");
   }
 }
 

@@ -69,7 +69,13 @@ function ChipInput({
  * Confidentiality + workspace-routing controls for the Gmail connection.
  * Saving writes straight through; the next scan honours the new filters.
  */
-export function GmailFilters({ initial }: { initial: Config }) {
+export function GmailFilters({
+  connectionId,
+  initial,
+}: {
+  connectionId: string;
+  initial: Config;
+}) {
   const t = useTranslations("connections");
   const router = useRouter();
   const [keywords, setKeywords] = useState(initial.excludeKeywords);
@@ -82,7 +88,7 @@ export function GmailFilters({ initial }: { initial: Config }) {
   function save() {
     setSaved(false);
     startTransition(async () => {
-      await saveConnectionFilters({
+      await saveConnectionFilters(connectionId, {
         excludeKeywords: keywords,
         excludeSenders: senders,
         excludeWithAttachments: attachments,

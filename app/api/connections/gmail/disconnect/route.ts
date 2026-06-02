@@ -15,12 +15,13 @@ export const runtime = "nodejs";
 
 /**
  * POST /api/connections/gmail/disconnect
- * Body: { deleteData?: boolean }
+ * Body: { connectionId: string, deleteData?: boolean }
  *
- * Revokes Oria's access at Google and deletes the connection row (which
- * cascade-deletes detected items + scan jobs). When deleteData is true, the
- * trackables and reminders created from Gmail are removed first; otherwise
- * everything the user already approved is kept. Always audited.
+ * Revokes Oria's access at Google for ONE connection and deletes that row
+ * (cascade-deletes its detected items + scan jobs). When deleteData is true,
+ * the trackables and reminders created from THAT connection are removed first.
+ * Strictly scoped to the connection id (verified to belong to the user): other
+ * connected accounts are untouched. Always audited.
  */
 export async function POST(req: NextRequest) {
   const supabase = await createClient();
@@ -31,17 +32,26 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
-  const deleteData = await req
+  const body = await req
     .json()
-    .then((b: { deleteData?: boolean }) => b?.deleteData === true)
-    .catch(() => false);
+    .then((b: { connectionId?: string; deleteData?: boolean }) => ({
+      connectionId: typeof b?.connectionId === "string" ? b.connectionId : null,
+      deleteData: b?.deleteData === true,
+    }))
+    .catch(() => ({ connectionId: null, deleteData: false }));
 
-  const conn = await getGmailConnectionTokens(user.id);
-  if (!conn) return NextResponse.json({ ok: true });
+  if (!body.connectionId) {
+    return NextResponse.json({ error: "missing_connection" }, { status: 400 });
+  }
 
-  // Remove derived trackables/reminders before the cascade wipes the linkage.
-  if (deleteData) {
-    await purgeGmailDerivedData(user.id);
+  const conn = await getGmailConnectionTokens(body.connectionId);
+  // Verify ownership before touching anything.
+  if (!conn || conn.userId !== user.id) return NextResponse.json({ ok: true });
+
+  // Remove this connection's derived trackables/reminders before the cascade
+  // wipes the linkage. Scoped to the connection so others are untouched.
+  if (body.deleteData) {
+    await purgeGmailDerivedData(user.id, conn.id);
   }
 
   // Revoke at Google: the refresh token revokes the whole grant; fall back to
@@ -53,7 +63,8 @@ export async function POST(req: NextRequest) {
     userId: user.id,
     action: "email.disconnected",
     resourceType: "email_connection",
-    metadata: { source: "gmail", email: conn.email, deleted_data: deleteData },
+    resourceId: conn.id,
+    metadata: { source: "gmail", email: conn.email, deleted_data: body.deleteData },
   });
 
   return NextResponse.json({ ok: true });

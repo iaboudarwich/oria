@@ -12,6 +12,8 @@ import {
 
 export type ReviewItem = {
   id: string;
+  connectionId: string | null;
+  sourceEmail: string | null;
   itemType: string;
   sourceSubject: string | null;
   sourceFrom: string | null;
@@ -62,13 +64,20 @@ function confidenceKey(c: number | null): string {
  * suggestion, and an expandable source panel. High-confidence items are
  * pre-selected so the common case is a single bulk approve.
  */
-export function GmailReviewList({ items }: { items: ReviewItem[] }) {
+export function GmailReviewList({
+  items,
+  sources = [],
+}: {
+  items: ReviewItem[];
+  sources?: string[];
+}) {
   const t = useTranslations("gmailReview");
   const locale = useLocale();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
 
   const [activeTab, setActiveTab] = useState<string>("all");
+  const [activeSource, setActiveSource] = useState<string>("all");
   const [selected, setSelected] = useState<Set<string>>(
     () => new Set(items.filter((i) => (i.confidence ?? 0) >= HIGH_CONFIDENCE).map((i) => i.id)),
   );
@@ -81,10 +90,12 @@ export function GmailReviewList({ items }: { items: ReviewItem[] }) {
     return ["all", ...present];
   }, [items]);
 
-  const visible = useMemo(
-    () => (activeTab === "all" ? items : items.filter((i) => i.itemType === activeTab)),
-    [items, activeTab],
-  );
+  const visible = useMemo(() => {
+    let v = items;
+    if (activeSource !== "all") v = v.filter((i) => i.sourceEmail === activeSource);
+    if (activeTab !== "all") v = v.filter((i) => i.itemType === activeTab);
+    return v;
+  }, [items, activeTab, activeSource]);
 
   function toggle(id: string) {
     setSelected((prev) => {
@@ -125,6 +136,26 @@ export function GmailReviewList({ items }: { items: ReviewItem[] }) {
 
   return (
     <div className="space-y-4">
+      {/* Source filter chips (only with more than one inbox in play) */}
+      {sources.length > 1 ? (
+        <div className="flex flex-wrap gap-1.5">
+          {["all", ...sources].map((src) => (
+            <button
+              key={src}
+              type="button"
+              onClick={() => setActiveSource(src)}
+              className={`max-w-full truncate rounded-full px-3 py-1 text-[12px] transition-base ${
+                activeSource === src
+                  ? "bg-ink text-surface"
+                  : "border border-line text-ink-muted hover:text-ink"
+              }`}
+            >
+              {src === "all" ? t("all_inboxes") : src}
+            </button>
+          ))}
+        </div>
+      ) : null}
+
       {/* Type tabs */}
       <div className="flex flex-wrap gap-1.5">
         {tabs.map((tab) => {
@@ -226,6 +257,11 @@ export function GmailReviewList({ items }: { items: ReviewItem[] }) {
                   </div>
 
                   <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[12px] text-ink-muted">
+                    {sources.length > 1 && item.sourceEmail ? (
+                      <span className="rounded-md bg-surface px-1.5 py-0.5 text-[11px] text-ink-faint">
+                        {t("from_inbox", { email: item.sourceEmail })}
+                      </span>
+                    ) : null}
                     {ex.vendor ? <span>{ex.vendor}</span> : null}
                     {ex.amount != null ? (
                       <span>

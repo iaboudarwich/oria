@@ -157,7 +157,19 @@
       "Bash(find . *)",
       "Bash(npx tsc *)",
       "Bash(grep -E \"\\\\.\\(json|ts\\)$\")",
-      "Bash(awk '{print $NF}')"
+      "Bash(awk '{print $NF}')",
+      "Bash(grep -vE \"^$|eslint$|^>\")",
+      "Bash(grep -vE \"isReauthenticated|audit-storage-rls|Unused eslint-disable|^$|eslint$|^>\")",
+      "Bash(grep -E \"\\\\.\\(tsx|ts\\)$\")",
+      "Bash(sed -n '298,345p' lib/data/workspace-templates.ts)",
+      "Bash(sed -n '195,250p' lib/data/workspace-templates.ts)",
+      "Bash(npx supabase *)",
+      "Bash(grep -rn \"'s workspace\\\\|workspace\\\\`\\\\|+ \\\\\" workspace\\\\\"\\\\|name:.*workspace\\\\|Personal workspace\" lib/ app/ --include=\"*.ts\" --include=\"*.tsx\")",
+      "Bash(xargs ls -la)",
+      "Bash(grep -vE \"^$|eslint$|^>|potentially fixable|problems\")",
+      "Bash(python3 -m py_compile python/main.py)",
+      "Bash(xargs -I{} sh -c 'sed -n \"/[Cc][Rr][Ee][Aa][Tt][Ee] [Tt][Aa][Bb][Ll][Ee].*custom_sections/,/\\);/p\" {}')",
+      "Bash(sed -n '1,60p' lib/data/all-sections.ts)"
     ]
   }
 }

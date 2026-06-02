@@ -2,8 +2,8 @@ import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { Topbar } from "@/components/dashboard/topbar";
 import { getCurrentContext } from "@/lib/data/organizations";
-import { getGmailConnection, getGmailItemCounts } from "@/lib/integrations/gmail/connections";
-import { getLatestScanJob, listDetectedItems } from "@/lib/integrations/gmail/scan";
+import { listGmailConnections, getGmailItemCounts } from "@/lib/integrations/gmail/connections";
+import { getAggregateScanStatus, listDetectedItems } from "@/lib/integrations/gmail/scan";
 import { ScanProgress } from "@/components/connections/scan-progress";
 import { GmailReviewList } from "@/components/connections/gmail-review-list";
 import { ScanEmptyState } from "@/components/connections/scan-empty-state";
@@ -15,15 +15,20 @@ export default async function GmailReviewPage() {
   const ctx = await getCurrentContext();
   if (!ctx) redirect("/login");
 
-  const connection = await getGmailConnection(ctx.profile.id);
-  if (!connection) redirect("/dashboard/settings?tab=connections");
+  const connections = await listGmailConnections(ctx.profile.id);
+  if (connections.length === 0) redirect("/dashboard/settings?tab=connections");
 
-  const [job, items, counts] = await Promise.all([
-    getLatestScanJob(ctx.profile.id),
+  const [status, items, counts] = await Promise.all([
+    getAggregateScanStatus(ctx.profile.id),
     listDetectedItems(ctx.profile.id, "pending"),
     getGmailItemCounts(ctx.profile.id),
   ]);
   const t = await getTranslations("gmailReview");
+
+  // Source filter chips: only emails that actually have pending items.
+  const sources = connections
+    .map((c) => c.email)
+    .filter((email) => items.some((i) => i.sourceEmail === email));
 
   return (
     <>
@@ -34,20 +39,17 @@ export default async function GmailReviewPage() {
           {t("header_sub", { pending: counts.pending, approved: counts.approved })}
         </p>
 
-        <ScanProgress
-          initialJob={job}
-          hasItems={items.length > 0}
-        />
+        <ScanProgress initialStatus={status} hasItems={items.length > 0} />
 
         {items.length > 0 ? (
-          <GmailReviewList items={items} />
+          <GmailReviewList items={items} sources={sources} />
         ) : (
           <ScanEmptyState
-            job={
-              job
-                ? { status: job.status, emailsTotal: job.emailsTotal, itemsFound: job.itemsFound }
-                : null
-            }
+            status={{
+              status: status.status,
+              emailsTotal: status.emailsTotal,
+              itemsFound: status.itemsFound,
+            }}
           />
         )}
       </div>

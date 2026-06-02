@@ -43,30 +43,47 @@ type Row = {
   last_error: string | null;
 };
 
-/** The user's Gmail connection summary for the settings card (RLS-scoped). */
-export async function getGmailConnection(
+/**
+ * All of the user's Gmail connections, oldest first (RLS-scoped). A user may
+ * connect several Gmail accounts; each is managed independently.
+ */
+export async function listGmailConnections(
   userId: string,
-): Promise<GmailConnectionSummary | null> {
+): Promise<GmailConnectionSummary[]> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("email_connections")
     .select("id, email_address, status, connected_at, last_synced_at, last_error")
     .eq("user_id", userId)
     .eq("provider", "gmail")
-    .maybeSingle();
-  if (!data) return null;
-  const r = data as Pick<
+    .order("connected_at", { ascending: true });
+  return ((data as Pick<
     Row,
     "id" | "email_address" | "status" | "connected_at" | "last_synced_at" | "last_error"
-  >;
-  return {
+  >[]) ?? []).map((r) => ({
     id: r.id,
     email: r.email_address,
     status: r.status,
     connectedAt: r.connected_at,
     lastSyncedAt: r.last_synced_at,
     lastError: r.last_error,
-  };
+  }));
+}
+
+/** True when the user already has a connection for this exact email address. */
+export async function isGmailEmailConnected(
+  userId: string,
+  email: string,
+): Promise<boolean> {
+  const admin = createAdminClient();
+  const { data } = await admin
+    .from("email_connections")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("provider", "gmail")
+    .eq("email_address", email)
+    .maybeSingle();
+  return !!data;
 }
 
 /** Create or update the connection with freshly-issued tokens (encrypted). */
@@ -100,16 +117,15 @@ export async function upsertGmailConnection(input: {
   return (data as { id: string }).id;
 }
 
-/** Fetch the connection with decrypted tokens. Server-only. */
+/** Fetch one connection (by id) with decrypted tokens. Server-only. */
 export async function getGmailConnectionTokens(
-  userId: string,
+  connectionId: string,
 ): Promise<GmailConnectionTokens | null> {
   const admin = createAdminClient();
   const { data } = await admin
     .from("email_connections")
     .select("*")
-    .eq("user_id", userId)
-    .eq("provider", "gmail")
+    .eq("id", connectionId)
     .maybeSingle();
   if (!data) return null;
   const r = data as Row;
@@ -127,15 +143,15 @@ export async function getGmailConnectionTokens(
 }
 
 /**
- * Return a valid access token for the user's connection, refreshing it (and
+ * Return a valid access token for one connection (by id), refreshing it (and
  * re-persisting the encrypted value) when it has expired or is within 2 min of
- * expiry. Returns null when there is no connection or no refresh token.
+ * expiry. Returns null when the connection is missing or has no refresh token.
  * Server-only; the returned token is never logged or sent to the client.
  */
 export async function getFreshGmailAccessToken(
-  userId: string,
+  connectionId: string,
 ): Promise<{ connectionId: string; email: string; accessToken: string } | null> {
-  const conn = await getGmailConnectionTokens(userId);
+  const conn = await getGmailConnectionTokens(connectionId);
   if (!conn) return null;
 
   const expiresMs = conn.tokenExpiresAt
@@ -147,7 +163,7 @@ export async function getFreshGmailAccessToken(
   }
 
   if (!conn.refreshToken) {
-    await markConnectionError(userId, "Token expired and no refresh token");
+    await markConnectionError(conn.id, "Token expired and no refresh token");
     return null;
   }
 
@@ -165,22 +181,21 @@ export async function getFreshGmailAccessToken(
       .eq("id", conn.id);
     return { connectionId: conn.id, email: conn.email, accessToken: refreshed.accessToken };
   } catch {
-    await markConnectionError(userId, "Failed to refresh access token");
+    await markConnectionError(conn.id, "Failed to refresh access token");
     return null;
   }
 }
 
-/** Flag the connection as needing attention (no token material touched). */
+/** Flag one connection (by id) as needing attention. No token material touched. */
 export async function markConnectionError(
-  userId: string,
+  connectionId: string,
   message: string,
 ): Promise<void> {
   const admin = createAdminClient();
   await admin
     .from("email_connections")
     .update({ status: "error", last_error: message })
-    .eq("user_id", userId)
-    .eq("provider", "gmail");
+    .eq("id", connectionId);
 }
 
 /** Stamp last_synced_at after a successful scan/sync. */
@@ -201,14 +216,13 @@ export const DEFAULT_CONFIDENTIAL_KEYWORDS = [
   "private",
 ];
 
-/** Seed the default confidential keywords, but only if none are set yet. */
-export async function seedDefaultConfidentialKeywords(userId: string): Promise<void> {
+/** Seed the default confidential keywords on one connection, only if unset. */
+export async function seedDefaultConfidentialKeywords(connectionId: string): Promise<void> {
   const admin = createAdminClient();
   await admin
     .from("email_connections")
     .update({ exclude_keywords: DEFAULT_CONFIDENTIAL_KEYWORDS })
-    .eq("user_id", userId)
-    .eq("provider", "gmail")
+    .eq("id", connectionId)
     .eq("exclude_keywords", "{}");
 }
 
@@ -219,16 +233,15 @@ export type ConnectionFilterConfig = {
   workspaceRouting: "personal" | "work" | "auto";
 };
 
-/** Read the connection's confidentiality filters + workspace routing. */
+/** Read one connection's confidentiality filters + workspace routing (by id). */
 export async function getConnectionFilters(
-  userId: string,
+  connectionId: string,
 ): Promise<ConnectionFilterConfig | null> {
   const admin = createAdminClient();
   const { data } = await admin
     .from("email_connections")
     .select("exclude_keywords, exclude_senders, exclude_with_attachments, workspace_routing")
-    .eq("user_id", userId)
-    .eq("provider", "gmail")
+    .eq("id", connectionId)
     .maybeSingle();
   if (!data) return null;
   const r = data as {
@@ -246,9 +259,10 @@ export async function getConnectionFilters(
   };
 }
 
-/** Update the connection's filters. Used by the settings panel. */
+/** Update one connection's filters (by id, also scoped to the owner). */
 export async function updateConnectionFilters(
   userId: string,
+  connectionId: string,
   config: ConnectionFilterConfig,
 ): Promise<void> {
   const admin = createAdminClient();
@@ -260,8 +274,8 @@ export async function updateConnectionFilters(
       exclude_with_attachments: config.excludeWithAttachments,
       workspace_routing: config.workspaceRouting,
     })
-    .eq("user_id", userId)
-    .eq("provider", "gmail");
+    .eq("id", connectionId)
+    .eq("user_id", userId);
 }
 
 /** The user's auto-routing preference (defaults to auto_confident). */
@@ -279,7 +293,7 @@ export async function getAutoRoutePreference(
   return "auto_confident";
 }
 
-/** Pending + approved detected-item counts for the settings card. */
+/** Pending + approved detected-item counts aggregated across all connections. */
 export async function getGmailItemCounts(
   userId: string,
 ): Promise<{ pending: number; approved: number }> {
@@ -299,30 +313,56 @@ export async function getGmailItemCounts(
   return { pending: pendingRes.count ?? 0, approved: approvedRes.count ?? 0 };
 }
 
-/** Pause or resume sync without disconnecting. */
+/** Per-connection pending + approved counts (by connection_id). */
+export async function getConnectionItemCounts(
+  connectionId: string,
+): Promise<{ pending: number; approved: number }> {
+  const admin = createAdminClient();
+  const [pendingRes, approvedRes] = await Promise.all([
+    admin
+      .from("email_detected_items")
+      .select("id", { count: "exact", head: true })
+      .eq("connection_id", connectionId)
+      .eq("status", "pending"),
+    admin
+      .from("email_detected_items")
+      .select("id", { count: "exact", head: true })
+      .eq("connection_id", connectionId)
+      .eq("status", "approved"),
+  ]);
+  return { pending: pendingRes.count ?? 0, approved: approvedRes.count ?? 0 };
+}
+
+/** Pause or resume one connection's sync (by id, scoped to the owner). */
 export async function setGmailConnectionStatus(
   userId: string,
+  connectionId: string,
   status: ConnectionStatus,
 ): Promise<void> {
   const admin = createAdminClient();
   await admin
     .from("email_connections")
     .update({ status })
-    .eq("user_id", userId)
-    .eq("provider", "gmail");
+    .eq("id", connectionId)
+    .eq("user_id", userId);
 }
 
 /**
- * Delete the trackables and reminders that were created from this user's Gmail
- * detected items. Call this BEFORE deleting the connection, because detected
- * items cascade-delete with the connection and we need their linkage first.
+ * Delete the trackables and reminders created from ONE connection's detected
+ * items. Call this BEFORE deleting the connection, because detected items
+ * cascade-delete with the connection and we need their linkage first. Scoped to
+ * the connection so other connections' items are untouched.
  */
-export async function purgeGmailDerivedData(userId: string): Promise<void> {
+export async function purgeGmailDerivedData(
+  userId: string,
+  connectionId: string,
+): Promise<void> {
   const admin = createAdminClient();
   const { data } = await admin
     .from("email_detected_items")
     .select("resulting_trackable_id, resulting_reminder_id")
     .eq("user_id", userId)
+    .eq("connection_id", connectionId)
     .eq("status", "approved");
   const rows = (data as
     | { resulting_trackable_id: string | null; resulting_reminder_id: string | null }[]

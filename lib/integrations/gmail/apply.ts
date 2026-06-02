@@ -193,7 +193,10 @@ const AUTO_ROUTE_CONFIDENCE = 0.75;
  *  - auto_all: apply every pending item (routing where a section is known)
  * Returns the number of items auto-applied.
  */
-export async function autoRoutePendingItems(userId: string, orgId: string): Promise<number> {
+export async function autoRoutePendingItems(
+  userId: string,
+  connectionId: string,
+): Promise<number> {
   const admin = createAdminClient();
 
   const { data: profile } = await admin
@@ -204,22 +207,33 @@ export async function autoRoutePendingItems(userId: string, orgId: string): Prom
   const pref = (profile as { auto_route_preference?: string } | null)?.auto_route_preference ?? "auto_confident";
   if (pref === "always_review") return 0;
 
+  // Only this connection's pending items, so each inbox auto-routes its own.
   const { data: rows } = await admin
     .from("email_detected_items")
-    .select("id, item_type, confidence, extracted")
+    .select("id, item_type, confidence, extracted, organization_id")
     .eq("user_id", userId)
+    .eq("connection_id", connectionId)
     .eq("status", "pending");
   const items = (rows as
-    | { id: string; item_type: string; confidence: number | null; extracted: { appointment_type?: string | null } }[]
+    | {
+        id: string;
+        item_type: string;
+        confidence: number | null;
+        extracted: { appointment_type?: string | null };
+        organization_id: string | null;
+      }[]
     | null) ?? [];
 
   let applied = 0;
   for (const it of items) {
+    const orgId = it.organization_id;
     if (pref === "auto_confident") {
       if ((it.confidence ?? 0) < AUTO_ROUTE_CONFIDENCE) continue;
+      if (!orgId) continue; // can't resolve a section without an org
       const target = await findSectionForItem(it.item_type, it.extracted?.appointment_type ?? null, orgId);
       if (!target) continue; // confident but no home -> leave for review
     }
+    if (!orgId) continue;
     const r = await applyDetectedItem({ itemId: it.id, userId, orgId });
     if (r.ok) applied += 1;
   }

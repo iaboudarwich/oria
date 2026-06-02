@@ -223,7 +223,10 @@ export default async function SettingsPage({
         )}
 
         {tab === "connections" && ctx?.profile.id && (
-          <ConnectionsPanel userId={ctx.profile.id} />
+          <ConnectionsPanel
+            userId={ctx.profile.id}
+            notice={typeof sp.notice === "string" ? sp.notice : undefined}
+          />
         )}
 
         {tab === "security" && (

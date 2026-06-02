@@ -32,18 +32,19 @@ export async function setAutoRoutePreference(
   return { ok: true };
 }
 
-/** Save the connection's confidentiality filters + workspace routing. */
+/** Save one connection's confidentiality filters + workspace routing. */
 export async function saveConnectionFilters(
+  connectionId: string,
   config: ConnectionFilterConfig,
 ): Promise<{ ok: boolean }> {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { ok: false };
+  if (!user || !connectionId) return { ok: false };
 
   const routing = config.workspaceRouting;
-  await updateConnectionFilters(user.id, {
+  await updateConnectionFilters(user.id, connectionId, {
     excludeKeywords: (config.excludeKeywords ?? []).map((s) => s.trim()).filter(Boolean).slice(0, 50),
     excludeSenders: (config.excludeSenders ?? []).map((s) => s.trim()).filter(Boolean).slice(0, 50),
     excludeWithAttachments: !!config.excludeWithAttachments,
@@ -54,15 +55,19 @@ export async function saveConnectionFilters(
 }
 
 /**
- * Pause or resume the user's Gmail sync. Paused connections are skipped by the
- * sync cron until resumed. No token material is touched.
+ * Pause or resume one Gmail connection's sync (by id). Paused connections are
+ * skipped by the sync cron until resumed. No token material is touched.
  */
-export async function setGmailPaused(paused: boolean): Promise<{ ok: boolean }> {
+export async function setGmailPaused(
+  connectionId: string,
+  paused: boolean,
+): Promise<{ ok: boolean }> {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { ok: false };
-  await setGmailConnectionStatus(user.id, paused ? "paused" : "active");
+  if (!user || !connectionId) return { ok: false };
+  await setGmailConnectionStatus(user.id, connectionId, paused ? "paused" : "active");
+  revalidatePath("/dashboard/settings");
   return { ok: true };
 }

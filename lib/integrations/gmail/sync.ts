@@ -78,6 +78,7 @@ export async function syncAllGmailConnections(): Promise<SyncResult> {
 
       const started = await startGmailScan({
         userId: conn.user_id,
+        connectionId: conn.id,
         organizationId: orgId,
         timeframeMonths: 6,
         sinceQuery,

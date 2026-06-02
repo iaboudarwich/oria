@@ -4,28 +4,29 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 
-type Job = {
-  status: "running" | "completed" | "failed" | "canceled";
+type Status = {
+  status: "running" | "completed" | "failed" | "idle";
   emailsTotal: number;
   itemsFound: number;
 } | null;
 
 /**
- * Shown when there are no pending items. Distinguishes three cases:
+ * Shown when there are no pending items. Distinguishes three cases (using the
+ * aggregate scan status across all inboxes):
  *  - a scan is still running   -> stay quiet (ScanProgress shows the bar)
- *  - the last scan found items, all reviewed -> "all caught up"
+ *  - a scan found items, all reviewed -> "all caught up"
  *  - the last scan found nothing -> a diagnostic with a "scan a longer window"
  *    action, so the user does not read silence as a dead feature.
  */
-export function ScanEmptyState({ job }: { job: Job }) {
+export function ScanEmptyState({ status }: { status: Status }) {
   const t = useTranslations("gmailReview");
   const router = useRouter();
   const [scanning, setScanning] = useState(false);
 
-  if (job?.status === "running") return null;
+  if (status?.status === "running") return null;
 
   // Items were found previously and the user has cleared the queue.
-  if (job && job.itemsFound > 0) {
+  if (status && status.itemsFound > 0) {
     return (
       <div className="rounded-2xl border border-line bg-surface-raised px-5 py-10 text-center">
         <p className="text-[14px] font-medium text-ink">{t("empty_title")}</p>
@@ -43,7 +44,7 @@ export function ScanEmptyState({ job }: { job: Job }) {
     }).then(() => router.refresh());
   }
 
-  const checked = job?.emailsTotal ?? 0;
+  const checked = status?.emailsTotal ?? 0;
   return (
     <div className="rounded-2xl border border-line bg-surface-raised px-5 py-10 text-center">
       <p className="text-[14px] font-medium text-ink">{t("diagnostic_title")}</p>

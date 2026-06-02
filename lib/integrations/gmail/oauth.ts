@@ -36,7 +36,9 @@ export function buildAuthUrl(state: string): string {
     response_type: "code",
     scope: GMAIL_SCOPES.join(" "),
     access_type: "offline",
-    prompt: "consent",
+    // select_account lets the user pick a different Google account than any
+    // already connected; consent guarantees a refresh token is returned.
+    prompt: "select_account consent",
     include_granted_scopes: "true",
     state,
   });
