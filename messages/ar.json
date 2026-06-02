@@ -170,6 +170,9 @@
     "filter_saved": "تم الحفظ",
     "filter_skipped_summary": "تم تجاهل {count} رسالة بواسطة مرشّحاتك في آخر فحص."
   },
+  "status": {
+    "view_in_history": "عرض في السجل"
+  },
   "sectionSuggest": {
     "title": "تنظيم العناصر المرتبطة",
     "body": "عثرت أوريا على {count} عناصر تناسب قسماً جديداً: {name}.",
@@ -177,10 +180,12 @@
     "dismiss": "ليس الآن"
   },
   "gmailReview": {
-    "title": "عناصر البريد",
+    "title": "من بريدك",
     "subtitle": "ما عثرت عليه أوريا في بريدك الوارد. لا يُضاف أي شيء حتى توافق عليه.",
+    "header_sub": "{pending} عناصر بانتظار المراجعة. {approved} مُضافة حتى الآن.",
     "scanning_title": "جارٍ فحص بريدك الوارد",
     "scanning_progress": "تم فحص {processed} من {total} رسالة",
+    "scanning_found": "تم العثور على {count} حتى الآن",
     "scanning_starting": "جارٍ بدء الفحص...",
     "scan_failed": "تعذّر إكمال الفحص. يرجى المحاولة مرة أخرى.",
     "found_count": "تم العثور على {count} عنصراً",

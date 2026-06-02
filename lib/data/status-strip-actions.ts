@@ -12,3 +12,11 @@ export async function dismissStatusStrip(formData: FormData): Promise<void> {
   if (!id) return;
   await writeLastStatusSeenId(id);
 }
+
+/** Same as dismissStatusStrip but callable directly from a client component
+ *  (e.g. the auto-dismiss timer), without a form submission. */
+export async function ackStatusStrip(id: string): Promise<void> {
+  const trimmed = id.trim();
+  if (!trimmed) return;
+  await writeLastStatusSeenId(trimmed);
+}

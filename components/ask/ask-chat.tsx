@@ -323,37 +323,37 @@ function ScopeControl({
     <div
       role="radiogroup"
       aria-label={t("aria")}
-      className="mb-3 grid grid-cols-2 gap-2"
+      className="mb-2 inline-flex gap-1 rounded-lg border border-line bg-canvas/60 p-0.5"
     >
       <ScopeOption
         active={!everywhere}
         onClick={() => onChange(false)}
         title={t("this_label")}
-        description={t("this_desc", { name: spaceName ?? t("this_fallback") })}
-        info={t("info")}
+        info={t("this_desc", { name: spaceName ?? t("this_fallback") })}
       />
       <ScopeOption
         active={everywhere}
         onClick={() => onChange(true)}
         title={t("all_label")}
-        description={t("all_desc")}
-        info={t("info")}
+        info={t("all_desc")}
       />
     </div>
   );
 }
 
+/**
+ * Compact segmented scope control. Single line, light borders, the full
+ * description moved to a tooltip so it does not dominate the page.
+ */
 function ScopeOption({
   active,
   onClick,
   title,
-  description,
   info,
 }: {
   active: boolean;
   onClick: () => void;
   title: string;
-  description: string;
   info: string;
 }) {
   return (
@@ -361,30 +361,15 @@ function ScopeOption({
       type="button"
       role="radio"
       aria-checked={active}
+      title={info}
       onClick={onClick}
-      className={`relative rounded-xl border px-3 py-2.5 text-left transition-base focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand ${
+      className={`rounded-md px-2.5 py-1 text-[13px] transition-base focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand ${
         active
-          ? "border-brand bg-brand text-surface shadow-sm"
-          : "border-line bg-canvas text-ink-muted hover:border-line-strong hover:text-ink"
+          ? "bg-brand/12 font-medium text-ink"
+          : "text-ink-muted hover:text-ink"
       }`}
     >
-      <span className="flex items-center gap-1.5">
-        <span className="text-[12.5px] font-medium">{title}</span>
-        <span
-          title={info}
-          aria-hidden
-          className={`inline-flex h-3.5 w-3.5 items-center justify-center rounded-full border text-[9px] font-semibold leading-none ${
-            active ? "border-surface/50 text-surface/80" : "border-line-strong text-ink-faint"
-          }`}
-        >
-          i
-        </span>
-      </span>
-      <span
-        className={`mt-0.5 block text-[11px] ${active ? "text-surface/85" : "text-ink-faint"}`}
-      >
-        {description}
-      </span>
+      {title}
     </button>
   );
 }

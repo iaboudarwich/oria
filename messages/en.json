@@ -170,6 +170,9 @@
     "filter_saved": "Saved",
     "filter_skipped_summary": "{count} emails skipped by your filters in the last scan."
   },
+  "status": {
+    "view_in_history": "View in history"
+  },
   "sectionSuggest": {
     "title": "Organize related items",
     "body": "Oria found {count} items that fit a new section: {name}.",
@@ -177,10 +180,12 @@
     "dismiss": "Not now"
   },
   "gmailReview": {
-    "title": "Email items",
+    "title": "From your email",
     "subtitle": "Things Oria found in your inbox. Nothing is added until you approve it.",
+    "header_sub": "{pending} items waiting for review. {approved} added so far.",
     "scanning_title": "Scanning your inbox",
     "scanning_progress": "{processed} of {total} emails checked",
+    "scanning_found": "{count} found so far",
     "scanning_starting": "Starting scan...",
     "scan_failed": "The scan could not finish. Please try again.",
     "found_count": "{count} items found",

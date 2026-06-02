@@ -86,17 +86,30 @@ export function ScanProgress({
 
   if (isRunning) {
     const total = job?.emailsTotal ?? 0;
+    const processed = job?.emailsProcessed ?? 0;
+    const itemsFound = job?.itemsFound ?? 0;
+    const pct = total > 0 ? Math.min(100, Math.round((processed / total) * 100)) : 0;
     return (
-      <div className="flex items-center gap-3 rounded-xl border border-line bg-surface-raised px-4 py-3">
-        <span className="h-4 w-4 animate-spin rounded-full border-2 border-line-strong border-t-ink" aria-hidden />
-        <div className="min-w-0">
-          <p className="text-[13.5px] font-medium text-ink">{t("scanning_title")}</p>
-          <p className="text-[12px] text-ink-muted">
-            {total > 0
-              ? t("scanning_progress", { processed: job?.emailsProcessed ?? 0, total })
-              : t("scanning_starting")}
-          </p>
+      <div className="rounded-xl border border-line bg-surface-raised px-4 py-3">
+        <div className="flex items-center gap-3">
+          <span className="h-4 w-4 animate-spin rounded-full border-2 border-line-strong border-t-ink" aria-hidden />
+          <div className="min-w-0 flex-1">
+            <p className="text-[13.5px] font-medium text-ink">{t("scanning_title")}</p>
+            <p className="text-[12px] text-ink-muted">
+              {total > 0
+                ? `${t("scanning_progress", { processed, total })} · ${t("scanning_found", { count: itemsFound })}`
+                : t("scanning_starting")}
+            </p>
+          </div>
         </div>
+        {total > 0 ? (
+          <div className="mt-2.5 h-1.5 w-full overflow-hidden rounded-full bg-surface">
+            <div
+              className="h-full rounded-full bg-ink transition-[width] duration-500"
+              style={{ width: `${pct}%` }}
+            />
+          </div>
+        ) : null}
       </div>
     );
   }

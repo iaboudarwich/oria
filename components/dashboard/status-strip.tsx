@@ -1,14 +1,14 @@
 import {
   formatEventMessage,
   listUserVisibleEvents,
-  type SystemEvent,
 } from "@/lib/data/system-events";
 import { getCurrentContext } from "@/lib/data/organizations";
 import {
   readLastStatusSeenId,
   readStatusFlash,
 } from "@/lib/data/status-strip";
-import { dismissStatusStrip } from "@/lib/data/status-strip-actions";
+import { getTranslations } from "next-intl/server";
+import { StatusStripRow as StatusStripRowClient } from "./status-strip-row";
 
 /**
  * Small calm strip that sits inside the topbar. Shows the single most
@@ -52,7 +52,15 @@ export async function StatusStrip() {
   if (!latest) return null;
   if (latest.id === lastSeen) return null;
 
-  return <StatusStripRow event={latest} />;
+  const t = await getTranslations("status");
+  return (
+    <StatusStripRowClient
+      id={latest.id}
+      message={formatEventMessage(latest)}
+      severity={latest.severity}
+      historyLabel={t("view_in_history")}
+    />
+  );
 }
 
 function StatusStripFlashRow({ message }: { message: string }) {
@@ -67,33 +75,3 @@ function StatusStripFlashRow({ message }: { message: string }) {
   );
 }
 
-function StatusStripRow({ event }: { event: SystemEvent }) {
-  const tone =
-    event.severity === "error"
-      ? "border-claret/30 bg-claret/[0.06] text-claret"
-      : "border-line bg-canvas/70 text-ink-muted";
-  const message = formatEventMessage(event);
-  return (
-    <div
-      className={`mt-2 flex items-center gap-3 rounded-lg border px-3 py-1.5 text-[12px] ${tone}`}
-    >
-      <span
-        className={`inline-block h-1.5 w-1.5 shrink-0 rounded-full ${
-          event.severity === "error" ? "bg-claret" : "bg-sage"
-        }`}
-        aria-hidden
-      />
-      <span className="min-w-0 flex-1 truncate">{message}</span>
-      <form action={dismissStatusStrip}>
-        <input type="hidden" name="id" value={event.id} />
-        <button
-          type="submit"
-          aria-label="Dismiss"
-          className="cursor-pointer text-[12.5px] text-ink-faint hover:text-ink transition-base"
-        >
-          Dismiss
-        </button>
-      </form>
-    </div>
-  );
-}

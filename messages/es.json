@@ -170,6 +170,9 @@
     "filter_saved": "Guardado",
     "filter_skipped_summary": "{count} correos omitidos por tus filtros en el último análisis."
   },
+  "status": {
+    "view_in_history": "Ver en el historial"
+  },
   "sectionSuggest": {
     "title": "Organizar elementos relacionados",
     "body": "Oria encontró {count} elementos que encajan en una nueva sección: {name}.",
@@ -177,10 +180,12 @@
     "dismiss": "Ahora no"
   },
   "gmailReview": {
-    "title": "Elementos de correo",
+    "title": "Desde tu correo",
     "subtitle": "Lo que Oria encontró en tu bandeja de entrada. No se agrega nada hasta que lo apruebes.",
+    "header_sub": "{pending} elementos por revisar. {approved} añadidos hasta ahora.",
     "scanning_title": "Analizando tu bandeja de entrada",
     "scanning_progress": "{processed} de {total} correos revisados",
+    "scanning_found": "{count} encontrados hasta ahora",
     "scanning_starting": "Iniciando análisis...",
     "scan_failed": "El análisis no pudo completarse. Inténtalo de nuevo.",
     "found_count": "{count} elementos encontrados",
