@@ -3,7 +3,9 @@ import { redirect } from "next/navigation";
 import { SidebarShell } from "@/components/dashboard/sidebar-shell";
 import { CommandPalette } from "@/components/command/command-palette";
 import { FeatureTour } from "@/components/onboarding/feature-tour";
+import { OnboardingReveal } from "@/components/onboarding/onboarding-reveal";
 import { getSeenHintKeys } from "@/lib/data/onboarding";
+import { shouldShowReveal } from "@/lib/onboarding/reveal";
 import { listGmailConnections } from "@/lib/integrations/gmail/connections";
 import { TimezoneCookie } from "@/components/section/timezone-cookie";
 import {
@@ -52,7 +54,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
   // (or undefined when migration hasn't run). Existing users are unaffected.
   const templateKey = ctx.organization.template_key;
   if (ctx.organization.kind === "personal" && templateKey === null) {
-    redirect("/onboarding/template");
+    redirect("/onboarding/demo");
   }
 
   const [
@@ -78,6 +80,8 @@ export default async function DashboardLayout({ children }: { children: ReactNod
     getSeenHintKeys(),
     listGmailConnections(ctx.profile.id),
   ]);
+
+  const showReveal = await shouldShowReveal(ctx.profile.id);
 
   const connectionsHealth: "ok" | "error" | "none" =
     gmailConnections.length === 0
@@ -216,10 +220,17 @@ export default async function DashboardLayout({ children }: { children: ReactNod
       />
       <FeatureTour
         initialOpen={
+          !showReveal &&
           !!(ctx.profile as unknown as { has_completed_guided_onboarding?: boolean })
             .has_completed_guided_onboarding && !seenHints.has("feature_tour")
         }
       />
+      {showReveal ? (
+        <OnboardingReveal
+          name={(ctx.profile.full_name ?? ctx.profile.email ?? "").split(" ")[0].split("@")[0]}
+          gmailConnected={gmailConnections.length > 0}
+        />
+      ) : null}
       {showBetaDisclaimer ? <BetaDisclaimerModal /> : null}
       <VersionWatcher
         buildVersion={

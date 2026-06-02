@@ -53,3 +53,16 @@ export async function executeOnboardingPlan(plan: SetupPlan): Promise<{ ok: bool
   if (result.ok) revalidatePath("/dashboard", "layout");
   return { ok: result.ok };
 }
+
+/** Dismiss the one-time onboarding reveal overlay (sets onboarding_completed_at). */
+export async function dismissOnboardingReveal(): Promise<void> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return;
+  await supabase
+    .from("profiles")
+    .update({ onboarding_completed_at: new Date().toISOString() })
+    .eq("id", user.id);
+}

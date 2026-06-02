@@ -109,6 +109,15 @@ export async function executeSetupPlan(input: {
       source: input.source,
     });
 
+    // Mark the account onboarded so the legacy reprompt banner never nags a
+    // user who just built their Oria through the new flow.
+    if (input.source === "initial_setup") {
+      await admin
+        .from("profiles")
+        .update({ has_completed_guided_onboarding: true })
+        .eq("id", input.userId);
+    }
+
     await logAuditEvent({
       userId: input.userId,
       organizationId: personal?.id ?? createdOrgIds[0] ?? null,

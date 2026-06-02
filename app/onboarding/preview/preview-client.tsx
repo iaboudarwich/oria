@@ -79,7 +79,7 @@ export function PreviewClient() {
         } catch {
           // ignore
         }
-        router.push("/dashboard");
+        router.push("/onboarding/link");
       } else {
         setError(true);
         setBuilding(false);
