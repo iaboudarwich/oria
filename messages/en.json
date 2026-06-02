@@ -190,6 +190,22 @@
   "status": {
     "view_in_history": "View in history"
   },
+  "privacy": {
+    "short_eyebrow": "Privacy",
+    "short_title": "The short version",
+    "q_email_q": "Can Oria read my email?",
+    "q_email_a": "Only if you connect it, and only to read. Oria looks for subscriptions, bills, flights, and bookings. It never sends, deletes, or changes anything in your inbox.",
+    "q_sell_q": "Do you sell my data?",
+    "q_sell_a": "No. Never. We don't sell it, rent it, or hand it to advertisers.",
+    "q_who_q": "Who can see my information?",
+    "q_who_a": "You, and anyone you explicitly invite. Our operators only look when you ask for support or we are investigating abuse.",
+    "q_delete_q": "Can I delete everything?",
+    "q_delete_a": "Yes. One click in Settings and it is gone within seconds. Backups clear within seven days.",
+    "q_encrypt_q": "Is it encrypted?",
+    "q_encrypt_a": "Yes, both while it is stored and while it is moving. Email tokens get their own separate key.",
+    "details_title": "The details",
+    "details_subtitle": "For the technically curious: the full, binding policy."
+  },
   "features": {
     "title": "What can Oria do?",
     "subtitle": "Everything Oria can do, in one place.",

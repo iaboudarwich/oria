@@ -190,6 +190,22 @@
   "status": {
     "view_in_history": "Voir dans l'historique"
   },
+  "privacy": {
+    "short_eyebrow": "Confidentialité",
+    "short_title": "En bref",
+    "q_email_q": "Oria peut-elle lire mes e-mails ?",
+    "q_email_a": "Seulement si vous les connectez, et uniquement en lecture. Oria cherche abonnements, factures, vols et réservations. Elle n'envoie, ne supprime et ne modifie jamais rien dans votre boîte.",
+    "q_sell_q": "Vendez-vous mes données ?",
+    "q_sell_a": "Non. Jamais. Nous ne les vendons pas, ne les louons pas et ne les remettons pas à des annonceurs.",
+    "q_who_q": "Qui peut voir mes informations ?",
+    "q_who_a": "Vous, et les personnes que vous invitez explicitement. Nos opérateurs ne regardent que si vous demandez de l'aide ou en cas d'enquête sur un abus.",
+    "q_delete_q": "Puis-je tout supprimer ?",
+    "q_delete_a": "Oui. Un clic dans les Paramètres et tout disparaît en quelques secondes. Les sauvegardes s'effacent sous sept jours.",
+    "q_encrypt_q": "Est-ce chiffré ?",
+    "q_encrypt_a": "Oui, au repos comme en transit. Les jetons d'e-mail ont leur propre clé distincte.",
+    "details_title": "Les détails",
+    "details_subtitle": "Pour les curieux techniques : la politique complète et contraignante."
+  },
   "features": {
     "title": "Que peut faire Oria ?",
     "subtitle": "Tout ce qu'Oria sait faire, au même endroit.",

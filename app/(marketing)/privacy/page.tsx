@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 
 // Server rendered, cached for a day. Nothing user-specific renders here.
 export const revalidate = 86400;
@@ -8,7 +9,11 @@ export const metadata: Metadata = {
   description: "How Oria collects, processes, stores, and protects your data.",
 };
 
-const LAST_UPDATED = "June 1, 2026";
+const LAST_UPDATED = "June 2, 2026";
+
+// Layer 1 keys, in order. Each maps to {key}_q / {key}_a in the privacy
+// namespace. Localized: a normal person should feel informed in 30 seconds.
+const SHORT_QA = ["q_email", "q_sell", "q_who", "q_delete", "q_encrypt"] as const;
 
 type Section = { heading: string; paragraphs?: string[]; bullets?: string[] };
 
@@ -109,28 +114,47 @@ const SECTIONS: Section[] = [
   },
 ];
 
-export default function PrivacyPage() {
-  return (
-    <article className="prose prose-sm max-w-none text-ink-soft prose-headings:text-ink prose-headings:font-semibold prose-strong:text-ink prose-a:text-brand">
-      <p className="text-eyebrow">Privacy Policy</p>
-      <h1 className="text-display">Privacy Policy</h1>
-      <p className="text-body-sm text-ink-faint">Last updated: {LAST_UPDATED}</p>
+export default async function PrivacyPage() {
+  const t = await getTranslations("privacy");
 
-      {SECTIONS.map((s) => (
-        <section key={s.heading}>
-          <h2 className="text-title">{s.heading}</h2>
-          {s.paragraphs?.map((p, i) => (
-            <p key={i}>{p}</p>
-          ))}
-          {s.bullets ? (
-            <ul>
-              {s.bullets.map((b, i) => (
-                <li key={i}>{b}</li>
+  return (
+    <div className="max-w-none">
+      {/* Layer 1: the human short version. Readable in 30 seconds. */}
+      <p className="text-eyebrow">{t("short_eyebrow")}</p>
+      <h1 className="text-display">{t("short_title")}</h1>
+      <div className="mt-6 space-y-3">
+        {SHORT_QA.map((k) => (
+          <div key={k} className="rounded-2xl border border-line bg-surface-raised p-5">
+            <p className="text-[15px] font-semibold text-ink">{t(`${k}_q`)}</p>
+            <p className="mt-1.5 text-[14px] leading-[1.6] text-ink-soft">{t(`${k}_a`)}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Layer 2: the binding technical detail. English-canonical. */}
+      <div className="mt-12 border-t border-line pt-8">
+        <h2 className="text-title text-ink">{t("details_title")}</h2>
+        <p className="mt-1 text-body-sm text-ink-faint">{t("details_subtitle")}</p>
+        <p className="mt-1 text-body-sm text-ink-faint">Last updated: {LAST_UPDATED}</p>
+
+        <article className="prose prose-sm mt-6 max-w-none text-ink-soft prose-headings:text-ink prose-headings:font-semibold prose-strong:text-ink prose-a:text-brand">
+          {SECTIONS.map((s) => (
+            <section key={s.heading}>
+              <h3 className="text-[15px] font-semibold text-ink">{s.heading}</h3>
+              {s.paragraphs?.map((p, i) => (
+                <p key={i}>{p}</p>
               ))}
-            </ul>
-          ) : null}
-        </section>
-      ))}
-    </article>
+              {s.bullets ? (
+                <ul>
+                  {s.bullets.map((b, i) => (
+                    <li key={i}>{b}</li>
+                  ))}
+                </ul>
+              ) : null}
+            </section>
+          ))}
+        </article>
+      </div>
+    </div>
   );
 }

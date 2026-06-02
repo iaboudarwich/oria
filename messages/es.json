@@ -190,6 +190,22 @@
   "status": {
     "view_in_history": "Ver en el historial"
   },
+  "privacy": {
+    "short_eyebrow": "Privacidad",
+    "short_title": "La versión corta",
+    "q_email_q": "¿Puede Oria leer mi correo?",
+    "q_email_a": "Solo si lo conectas, y solo para leer. Oria busca suscripciones, facturas, vuelos y reservas. Nunca envía, elimina ni cambia nada en tu bandeja.",
+    "q_sell_q": "¿Venden mis datos?",
+    "q_sell_a": "No. Nunca. No los vendemos, ni los alquilamos, ni los entregamos a anunciantes.",
+    "q_who_q": "¿Quién puede ver mi información?",
+    "q_who_a": "Tú, y quien invites explícitamente. Nuestros operadores solo miran cuando pides soporte o investigamos un abuso.",
+    "q_delete_q": "¿Puedo eliminar todo?",
+    "q_delete_a": "Sí. Un clic en Configuración y desaparece en segundos. Las copias de seguridad se borran en siete días.",
+    "q_encrypt_q": "¿Está cifrado?",
+    "q_encrypt_a": "Sí, tanto en reposo como en tránsito. Los tokens de correo tienen su propia clave separada.",
+    "details_title": "Los detalles",
+    "details_subtitle": "Para los curiosos técnicos: la política completa y vinculante."
+  },
   "features": {
     "title": "¿Qué puede hacer Oria?",
     "subtitle": "Todo lo que Oria puede hacer, en un solo lugar.",
