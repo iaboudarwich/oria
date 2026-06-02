@@ -6,7 +6,8 @@ import { encryptToken, decryptToken } from "@/lib/security/token-crypto";
 import { revokeGoogleToken } from "./oauth";
 import type { GoogleTokenResponse } from "./oauth";
 
-export type CloudService = "calendar" | "drive";
+export type CloudService = "calendar" | "drive" | "onedrive" | "outlook_calendar";
+export type CloudProvider = "google" | "microsoft";
 export type CloudConnectionStatus = "active" | "paused" | "error" | "revoked";
 
 /** Display-safe summary. NEVER carries token material. */
@@ -82,19 +83,21 @@ export async function listCloudConnectionsByService(
 /** Create or refresh a cloud connection with freshly-issued tokens (encrypted). */
 export async function upsertCloudConnection(input: {
   userId: string;
+  provider?: CloudProvider;
   service: CloudService;
   accountEmail: string;
   tokens: GoogleTokenResponse;
   existingRefreshToken?: string | null;
 }): Promise<{ id: string; wasNew: boolean } | null> {
   const admin = createAdminClient();
+  const provider: CloudProvider = input.provider ?? "google";
 
   // A re-grant may omit the refresh token; keep the one we already stored.
   const { data: existing } = await admin
     .from("cloud_connections")
     .select("id, encrypted_refresh_token")
     .eq("user_id", input.userId)
-    .eq("provider", "google")
+    .eq("provider", provider)
     .eq("service", input.service)
     .eq("account_email", input.accountEmail)
     .maybeSingle();
@@ -111,7 +114,7 @@ export async function upsertCloudConnection(input: {
     .upsert(
       {
         user_id: input.userId,
-        provider: "google",
+        provider,
         service: input.service,
         account_email: input.accountEmail,
         encrypted_access_token: encryptToken(input.tokens.accessToken),
@@ -214,19 +217,21 @@ export async function deleteCloudConnection(
   const admin = createAdminClient();
   const { data } = await admin
     .from("cloud_connections")
-    .select("id, encrypted_refresh_token")
+    .select("id, provider, encrypted_refresh_token")
     .eq("id", connectionId)
     .eq("user_id", userId)
     .maybeSingle();
   if (!data) return false;
 
-  try {
-    const refresh = decryptToken(
-      (data as { encrypted_refresh_token: string }).encrypted_refresh_token,
-    );
-    await revokeGoogleToken(refresh);
-  } catch {
-    // Revoke is best-effort; proceed with local deletion regardless.
+  // Only Google exposes a token-revoke endpoint we can call server-side.
+  // Microsoft delegated tokens are revoked from the account, so we just delete.
+  const row = data as { provider: string; encrypted_refresh_token: string };
+  if (row.provider === "google") {
+    try {
+      await revokeGoogleToken(decryptToken(row.encrypted_refresh_token));
+    } catch {
+      // Revoke is best-effort; proceed with local deletion regardless.
+    }
   }
 
   await admin

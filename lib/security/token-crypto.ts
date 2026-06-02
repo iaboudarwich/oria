@@ -2,11 +2,12 @@ import "server-only";
 
 import { createCipheriv, createDecipheriv, randomBytes } from "node:crypto";
 
-// AES-256-GCM encryption for OAuth tokens at rest. Uses a dedicated key kept
-// separate from any other secret, so a leak of one does not compromise the
-// other. Both Gmail and the other Google services (Calendar, Drive) share this
-// key: read GOOGLE_TOKEN_ENCRYPTION_KEY first, then fall back to the original
-// GMAIL_TOKEN_ENCRYPTION_KEY so existing deployments keep working unchanged.
+// AES-256-GCM encryption for OAuth tokens at rest (Gmail, Google services, and
+// now Microsoft all share one key). A dedicated key kept separate from any
+// other secret, so a leak of one does not compromise the other. Resolution
+// order, newest name first, each falling back to the older one so existing
+// deployments keep working unchanged:
+//   TOKEN_ENCRYPTION_KEY -> GOOGLE_TOKEN_ENCRYPTION_KEY -> GMAIL_TOKEN_ENCRYPTION_KEY
 //
 // Format: "<ivHex>:<authTagHex>:<ciphertextHex>". A fresh random IV per call.
 //
@@ -16,16 +17,20 @@ import { createCipheriv, createDecipheriv, randomBytes } from "node:crypto";
 const ALGO = "aes-256-gcm";
 const IV_BYTES = 12; // standard GCM nonce length
 
-/** The configured encryption key, preferring the new generalized name. */
+/** The configured encryption key, preferring the newest generalized name. */
 function configuredKeyHex(): string | undefined {
-  return process.env.GOOGLE_TOKEN_ENCRYPTION_KEY ?? process.env.GMAIL_TOKEN_ENCRYPTION_KEY;
+  return (
+    process.env.TOKEN_ENCRYPTION_KEY ??
+    process.env.GOOGLE_TOKEN_ENCRYPTION_KEY ??
+    process.env.GMAIL_TOKEN_ENCRYPTION_KEY
+  );
 }
 
 function getKey(): Buffer {
   const hex = configuredKeyHex();
   if (!hex || !/^[0-9a-fA-F]{64}$/.test(hex)) {
     throw new Error(
-      "GOOGLE_TOKEN_ENCRYPTION_KEY (or GMAIL_TOKEN_ENCRYPTION_KEY) must be set to 64 hex characters (32 bytes).",
+      "TOKEN_ENCRYPTION_KEY (or GOOGLE_/GMAIL_TOKEN_ENCRYPTION_KEY) must be set to 64 hex characters (32 bytes).",
     );
   }
   return Buffer.from(hex, "hex");

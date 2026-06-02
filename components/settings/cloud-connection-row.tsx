@@ -5,7 +5,7 @@ import { cloudDisconnect, cloudSetStatus, cloudUpdateRouting } from "@/lib/googl
 
 export type CloudServiceView = {
   id: string;
-  service: "calendar" | "drive";
+  service: "calendar" | "drive" | "onedrive" | "outlook_calendar";
   status: "active" | "paused" | "error" | "revoked";
   routingMode: "auto" | "fixed";
   routingTargetOrgId: string | null;
@@ -53,6 +53,7 @@ export function CloudConnectionRow({
   const [routingMode, setRoutingMode] = useState(view.routingMode);
   const [target, setTarget] = useState(view.routingTargetOrgId ?? "");
 
+  const isCalendar = view.service === "calendar" || view.service === "outlook_calendar";
   const statusLabel =
     view.status === "active"
       ? labels.statusActive
@@ -72,13 +73,13 @@ export function CloudConnectionRow({
     <div className="flex flex-wrap items-center gap-2 rounded-xl border border-line bg-canvas px-3 py-2">
       <span className={`h-2 w-2 shrink-0 rounded-full ${DOT[view.status] ?? "bg-ink-faint"}`} aria-hidden />
       <span className="text-[12.5px] font-medium text-ink">
-        {view.service === "calendar" ? labels.serviceCalendar : labels.serviceDrive}
+        {isCalendar ? labels.serviceCalendar : labels.serviceDrive}
       </span>
       <span className="text-[11.5px] text-ink-faint">
         {statusLabel} · {labels.lastSync.replace("{time}", view.lastSyncLabel)}
       </span>
 
-      {view.service === "calendar" ? (
+      {isCalendar ? (
         <select
           value={routingMode === "fixed" ? target : "auto"}
           disabled={pending}
