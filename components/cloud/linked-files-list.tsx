@@ -1,0 +1,129 @@
+"use client";
+
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { GooglePicker } from "./google-picker";
+
+export type LinkedFile = {
+  id: string;
+  name: string;
+  mimeType: string;
+  webViewLink: string | null;
+  iconLink: string | null;
+  modifiedTime: string | null;
+  isFolder: boolean;
+  accessible: boolean;
+};
+
+export type LinkedFilesLabels = {
+  heading: string;
+  link: string;
+  connectDrive: string;
+  unavailable: string;
+  openInDrive: string;
+  remove: string;
+  inaccessible: string;
+  empty: string;
+};
+
+/**
+ * Linked Drive files for one section: a list with the Picker button to add
+ * more. Remove unlinks the reference (the file in Drive is untouched). The
+ * "View" affordance (fetch-on-demand) is added in F3.
+ */
+export function LinkedFilesList({
+  organizationId,
+  sectionKey,
+  files,
+  labels,
+}: {
+  organizationId: string;
+  sectionKey: string;
+  files: LinkedFile[];
+  labels: LinkedFilesLabels;
+}) {
+  const router = useRouter();
+  const [pending, startTransition] = useTransition();
+  const [removing, setRemoving] = useState<string | null>(null);
+
+  async function remove(id: string) {
+    setRemoving(id);
+    try {
+      await fetch(`/api/cloud-files/${id}`, { method: "DELETE" });
+      startTransition(() => router.refresh());
+    } finally {
+      setRemoving(null);
+    }
+  }
+
+  return (
+    <section className="rounded-2xl border border-line bg-surface-raised p-4">
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <h2 className="text-[13px] font-semibold uppercase tracking-[0.05em] text-ink-faint">
+          {labels.heading}
+        </h2>
+        <GooglePicker
+          organizationId={organizationId}
+          sectionKey={sectionKey}
+          label={labels.link}
+          connectDriveLabel={labels.connectDrive}
+          unavailableLabel={labels.unavailable}
+        />
+      </div>
+
+      {files.length === 0 ? (
+        <p className="text-[12.5px] text-ink-faint">{labels.empty}</p>
+      ) : (
+        <ul className="space-y-0.5">
+          {files.map((f) => (
+            <li
+              key={f.id}
+              className="group flex items-center gap-3 rounded-lg px-2 py-1.5 transition-base hover:bg-canvas"
+            >
+              {f.iconLink ? (
+                // Google's icon CDN URLs are tiny static badges; next/image
+                // would add no value and cannot know these remote hosts.
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={f.iconLink} alt="" width={16} height={16} className="shrink-0" />
+              ) : (
+                <span className="shrink-0 text-ink-faint">{f.isFolder ? "📁" : "📄"}</span>
+              )}
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-[13px] text-ink">{f.name}</p>
+                {!f.accessible ? (
+                  <p className="truncate text-[11px] text-danger">{labels.inaccessible}</p>
+                ) : f.modifiedTime ? (
+                  <p className="truncate text-[11px] text-ink-faint">
+                    {new Date(f.modifiedTime).toLocaleDateString(undefined, {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })}
+                  </p>
+                ) : null}
+              </div>
+              {f.webViewLink ? (
+                <a
+                  href={f.webViewLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="shrink-0 text-[11.5px] text-ink-faint opacity-0 transition-opacity group-hover:opacity-100 hover:text-ink"
+                >
+                  {labels.openInDrive}
+                </a>
+              ) : null}
+              <button
+                type="button"
+                onClick={() => remove(f.id)}
+                disabled={pending || removing === f.id}
+                className="shrink-0 text-[11.5px] text-ink-faint opacity-0 transition-opacity group-hover:opacity-100 hover:text-danger disabled:opacity-40"
+              >
+                {labels.remove}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}

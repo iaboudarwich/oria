@@ -1,4 +1,15 @@
 {
+  "cloud": {
+    "files_heading": "Fichiers Drive liés",
+    "link_files": "Lier des fichiers Google",
+    "connect_drive_first": "Connectez d'abord Google Drive",
+    "picker_unavailable": "Sélecteur indisponible",
+    "open_in_drive": "Ouvrir dans Drive",
+    "remove": "Retirer",
+    "inaccessible": "Plus accessible",
+    "no_files_yet": "Aucun fichier lié ici pour l'instant.",
+    "view": "Voir"
+  },
   "nav": {
     "ask": "Demander à Oria",
     "upload": "Importer",

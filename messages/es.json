@@ -1,4 +1,15 @@
 {
+  "cloud": {
+    "files_heading": "Archivos de Drive vinculados",
+    "link_files": "Vincular archivos de Google",
+    "connect_drive_first": "Conecta Google Drive primero",
+    "picker_unavailable": "Selector no disponible",
+    "open_in_drive": "Abrir en Drive",
+    "remove": "Quitar",
+    "inaccessible": "Ya no es accesible",
+    "no_files_yet": "Aún no hay archivos vinculados aquí.",
+    "view": "Ver"
+  },
   "nav": {
     "ask": "Preguntar a Oria",
     "upload": "Cargar",

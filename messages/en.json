@@ -1,4 +1,15 @@
 {
+  "cloud": {
+    "files_heading": "Linked Drive files",
+    "link_files": "Link Google files",
+    "connect_drive_first": "Connect Google Drive first",
+    "picker_unavailable": "Picker unavailable",
+    "open_in_drive": "Open in Drive",
+    "remove": "Remove",
+    "inaccessible": "No longer accessible",
+    "no_files_yet": "No files linked here yet.",
+    "view": "View"
+  },
   "nav": {
     "ask": "Ask Oria",
     "upload": "Upload",

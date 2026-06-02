@@ -36,6 +36,12 @@ from bs4 import BeautifulSoup
 
 from extractors.router import route
 from extractors.embed import embed_texts, embed_query
+from google_clients import (
+    drive_get_metadata,
+    drive_fetch_text,
+    drive_list_folder,
+    FOLDER_MIME,
+)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -424,3 +430,106 @@ def gmail_scan(req: GmailScanRequest):
         len(ids),
     )
     return GmailScanResponse(emails=emails, total=len(emails), skipped=skipped)
+
+
+# ── /cloud/drive/* ───────────────────────────────────────────────────────────
+# Drive uses the drive.file scope, so only files the user explicitly picked are
+# reachable. Content is fetched on demand and returned to the Node app; it is
+# never persisted here, and access tokens are NEVER logged.
+
+_EXCERPT_CHARS = 6000
+
+
+class DriveFileMeta(BaseModel):
+    provider_file_id: str
+    name: str
+    mime_type: str
+    web_view_link: Optional[str] = None
+    icon_link: Optional[str] = None
+    thumbnail_link: Optional[str] = None
+    size_bytes: Optional[int] = None
+    modified_time: Optional[str] = None
+    excerpt: str = ""
+    accessible: bool = True
+
+
+class DriveIndexRequest(BaseModel):
+    access_token: str
+    file_ids: list[str]
+
+
+class DriveListResponse(BaseModel):
+    files: list[DriveFileMeta]
+
+
+def _meta_from_api(item: dict, excerpt: str = "", accessible: bool = True) -> DriveFileMeta:
+    size = item.get("size")
+    return DriveFileMeta(
+        provider_file_id=item.get("id", ""),
+        name=item.get("name", "Untitled"),
+        mime_type=item.get("mimeType", "application/octet-stream"),
+        web_view_link=item.get("webViewLink"),
+        icon_link=item.get("iconLink"),
+        thumbnail_link=item.get("thumbnailLink"),
+        size_bytes=int(size) if size and str(size).isdigit() else None,
+        modified_time=item.get("modifiedTime"),
+        excerpt=excerpt,
+        accessible=accessible,
+    )
+
+
+@app.post("/cloud/drive/index", response_model=DriveListResponse, dependencies=[Depends(require_signature)])
+def drive_index(req: DriveIndexRequest):
+    """Fetch metadata + a short text excerpt for each picked file."""
+    out: list[DriveFileMeta] = []
+    with httpx.Client(timeout=60.0) as client:
+        for fid in req.file_ids[:50]:
+            meta = drive_get_metadata(client, req.access_token, fid)
+            if meta is None:
+                out.append(DriveFileMeta(provider_file_id=fid, name="", mime_type="", accessible=False))
+                continue
+            mime = meta.get("mimeType", "")
+            excerpt = ""
+            if mime != FOLDER_MIME:
+                text, accessible = drive_fetch_text(client, req.access_token, fid, mime, meta.get("name", ""))
+                if not accessible:
+                    out.append(_meta_from_api(meta, accessible=False))
+                    continue
+                excerpt = text[:_EXCERPT_CHARS]
+            out.append(_meta_from_api(meta, excerpt=excerpt))
+    logger.info("Drive index: %d files", len(out))
+    return DriveListResponse(files=out)
+
+
+class DriveFolderRequest(BaseModel):
+    access_token: str
+    folder_id: str
+
+
+@app.post("/cloud/drive/list-folder", response_model=DriveListResponse, dependencies=[Depends(require_signature)])
+def drive_list_folder_endpoint(req: DriveFolderRequest):
+    """List the (non-folder) files directly inside one Drive folder."""
+    with httpx.Client(timeout=60.0) as client:
+        items = drive_list_folder(client, req.access_token, req.folder_id)
+    return DriveListResponse(files=[_meta_from_api(it) for it in items])
+
+
+class DriveFetchRequest(BaseModel):
+    access_token: str
+    provider_file_id: str
+    mime_type: str
+
+
+class DriveFetchResponse(BaseModel):
+    text: str
+    accessible: bool
+
+
+@app.post("/cloud/drive/fetch", response_model=DriveFetchResponse, dependencies=[Depends(require_signature)])
+def drive_fetch_endpoint(req: DriveFetchRequest):
+    """Fetch + parse the full text of one file (fetch-on-demand, never stored)."""
+    with httpx.Client(timeout=45.0) as client:
+        text, accessible = drive_fetch_text(
+            client, req.access_token, req.provider_file_id, req.mime_type, ""
+        )
+    return DriveFetchResponse(text=text, accessible=accessible)

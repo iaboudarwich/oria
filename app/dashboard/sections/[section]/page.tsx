@@ -30,7 +30,25 @@ import { SectionViewTabs } from "@/components/sections/section-view-tabs";
 import { TripsView } from "@/components/sections/trips-view";
 import { HealthTimelineView } from "@/components/sections/health-timeline-view";
 import { recordBehaviorSignal } from "@/lib/data/behavior-signals";
+import { listCloudFilesForSection } from "@/lib/google/cloud-files";
+import { listCloudConnectionsByService } from "@/lib/google/cloud-connections";
+import { LinkedFilesPanel } from "@/components/cloud/linked-files-panel";
+import type { LinkedFile } from "@/components/cloud/linked-files-list";
 import type { Section } from "@/lib/supabase/types";
+
+/** Linked Drive files + whether a Drive account is connected, fetched together
+ *  so the section page can run this parallel to its entry fetch. */
+async function loadLinkedFiles(
+  userId: string,
+  orgId: string,
+  sectionKey: string,
+): Promise<{ files: LinkedFile[]; driveConnected: boolean }> {
+  const [files, driveConns] = await Promise.all([
+    listCloudFilesForSection(userId, orgId, sectionKey),
+    listCloudConnectionsByService(userId, "drive"),
+  ]);
+  return { files, driveConnected: driveConns.length > 0 };
+}
 
 type MoveOption = {
   ref: { kind: "builtin" | "custom" | "review"; key: string };
@@ -105,9 +123,10 @@ export default async function SectionPage({ params, searchParams }: Props) {
     if (!custom) notFound();
     // Summary generation runs parallel to the entry fetch so it never adds
     // to TTFB (perf rule).
-    const [entries, summary] = await Promise.all([
+    const [entries, summary, linked] = await Promise.all([
       listSectionEntries({ kind: "custom", key: custom.id }, 100),
       summaryForSection({ kind: "custom", key: custom.id }, orgId),
+      loadLinkedFiles(ctx.profile.id, orgId, custom.id),
     ]);
     const thumbs = await thumbsForEntries(entries);
     return (
@@ -118,6 +137,14 @@ export default async function SectionPage({ params, searchParams }: Props) {
           entries.length > 0 && summary ? (
             <SectionSummaryCard data={summary} />
           ) : null
+        }
+        linkedFilesNode={
+          <LinkedFilesPanel
+            organizationId={orgId}
+            sectionKey={custom.id}
+            files={linked.files}
+            driveConnected={linked.driveConnected}
+          />
         }
         dropzoneNode={
           <DropzoneCompact
@@ -149,9 +176,10 @@ export default async function SectionPage({ params, searchParams }: Props) {
   const sec = section as Section;
   const meta = SECTION_META[sec];
 
-  const [entries, summary] = await Promise.all([
+  const [entries, summary, linked] = await Promise.all([
     listSectionEntries({ kind: "builtin", key: sec }, 100),
     summaryForSection({ kind: "builtin", key: sec }, orgId),
+    loadLinkedFiles(ctx.profile.id, orgId, sec),
   ]);
   const thumbs = await thumbsForEntries(entries);
 
@@ -178,6 +206,14 @@ export default async function SectionPage({ params, searchParams }: Props) {
         entries.length > 0 && summary ? (
           <SectionSummaryCard data={summary} />
         ) : null
+      }
+      linkedFilesNode={
+        <LinkedFilesPanel
+          organizationId={orgId}
+          sectionKey={sec}
+          files={linked.files}
+          driveConnected={linked.driveConnected}
+        />
       }
       dropzoneNode={
         <DropzoneCompact
@@ -264,6 +300,7 @@ function Layout({
   textLogNode = null,
   summaryNode = null,
   viewTabsNode = null,
+  linkedFilesNode = null,
   children,
 }: {
   title: string;
@@ -272,6 +309,7 @@ function Layout({
   textLogNode?: React.ReactNode;
   summaryNode?: React.ReactNode;
   viewTabsNode?: React.ReactNode;
+  linkedFilesNode?: React.ReactNode;
   children: React.ReactNode;
 }) {
   return (
@@ -296,6 +334,8 @@ function Layout({
       {textLogNode ? <div className="mb-6">{textLogNode}</div> : null}
 
       {viewTabsNode ? <div className="mb-4">{viewTabsNode}</div> : null}
+
+      {linkedFilesNode ? <div className="mb-6">{linkedFilesNode}</div> : null}
 
       <div className="animate-fade-up">{children}</div>
     </>

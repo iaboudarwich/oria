@@ -1,4 +1,15 @@
 {
+  "cloud": {
+    "files_heading": "ملفات Drive المرتبطة",
+    "link_files": "ربط ملفات Google",
+    "connect_drive_first": "اربط Google Drive أولاً",
+    "picker_unavailable": "أداة الاختيار غير متاحة",
+    "open_in_drive": "فتح في Drive",
+    "remove": "إزالة",
+    "inaccessible": "لم يعد متاحاً",
+    "no_files_yet": "لا توجد ملفات مرتبطة هنا بعد.",
+    "view": "عرض"
+  },
   "nav": {
     "ask": "اسأل أوريا",
     "upload": "رفع ملف",
