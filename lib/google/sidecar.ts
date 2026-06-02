@@ -1,34 +1,12 @@
 import "server-only";
 
-import { sidecarAuthHeaders } from "./shared/sidecar-auth";
+import { postSidecar } from "@/lib/cloud/shared/sidecar-post";
 
 // Next.js -> Python sidecar client for the Google cloud services (Drive fetch +
-// indexing, Calendar sync). Uses the shared HMAC auth header builder.
+// indexing, Calendar sync). Uses the shared signed-POST helper.
 //
 // The access token travels only in the signed server-to-server request body and
 // is never logged.
-
-const SIDECAR_URL =
-  process.env.PYTHON_EXTRACTION_URL?.replace(/\/$/, "") ?? "http://localhost:8000";
-
-async function postSidecar<T>(path: string, body: unknown, timeoutMs: number): Promise<T | null> {
-  try {
-    const res = await fetch(`${SIDECAR_URL}${path}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", ...sidecarAuthHeaders("POST", path) },
-      body: JSON.stringify(body),
-      signal: AbortSignal.timeout(timeoutMs),
-    });
-    if (!res.ok) {
-      console.warn(`[google/sidecar] ${path} HTTP ${res.status}`);
-      return null;
-    }
-    return (await res.json()) as T;
-  } catch (err) {
-    console.warn(`[google/sidecar] ${path} failed:`, (err as Error).name);
-    return null;
-  }
-}
 
 export type DriveFileMeta = {
   provider_file_id: string;

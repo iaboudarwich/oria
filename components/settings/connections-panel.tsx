@@ -13,6 +13,7 @@ import { GmailConnectButton } from "./gmail-connect-button";
 import { GmailConnectionCard } from "./gmail-connection-card";
 import { GmailRoutePref } from "./gmail-route-pref";
 import { GmailScanAllButton } from "./gmail-scan-all-button";
+import { syncedLabel } from "@/lib/cloud/shared/format";
 import type { SpaceOption } from "./gmail-filters";
 
 const DEFAULT_FILTERS: ConnectionFilterConfig = {
@@ -31,15 +32,6 @@ const STATUS_DOT: Record<string, string> = {
   error: "bg-claret",
 };
 
-function syncedLabel(iso: string | null): string {
-  if (!iso) return "never";
-  const mins = Math.floor((Date.now() - new Date(iso).getTime()) / 60_000);
-  if (mins < 1) return "just now";
-  if (mins < 60) return `${mins}m ago`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  return `${Math.floor(hrs / 24)}d ago`;
-}
 
 /**
  * Settings -> Connections. A user can connect several Gmail accounts; each is
