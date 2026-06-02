@@ -1,6 +1,7 @@
 import "server-only";
 
-import { getAnthropic, getModel } from "./anthropic";
+import { getProvider } from "@/lib/ai-providers";
+import type { Message as ProviderMessage } from "@/lib/ai-providers";
 import { recordAiCall, recordAiError } from "./telemetry";
 import type { RetrievedSource } from "./retrieve";
 import type { SectionScope } from "@/lib/data/section-scope";
@@ -158,6 +159,8 @@ function formatSource(s: RetrievedSource): string {
  * isAnthropicConfigured() first to render a friendlier UX.
  */
 export async function* streamAnswer(input: {
+  /** The signed-in user, used to route to their connected AI provider. */
+  userId: string;
   query: string;
   history?: AgentMessage[];
   sources: RetrievedSource[];
@@ -173,8 +176,10 @@ export async function* streamAnswer(input: {
   /** PERSONAL CONTEXT block from the personalization layer. */
   personalContext?: string | null;
 }): AsyncGenerator<string, void, unknown> {
-  const client = getAnthropic();
-  if (!client) throw new Error("anthropic_not_configured");
+  // Conversation surface: route through the user's connected AI when present,
+  // else Oria's default (resolved by getProvider).
+  const adapter = await getProvider(input.userId, "conversation");
+  if (!adapter) throw new Error("anthropic_not_configured");
 
   const sourceBlock =
     input.sources.length === 0
@@ -205,42 +210,38 @@ export async function* streamAnswer(input: {
 
   const userMessage = `${dateHeader}\n\nSOURCES\n${sourceBlock}\n\nQUESTION\n${input.query}`;
 
-  const messages = [
-    ...(input.history ?? []).map((m) => ({
-      role: m.role,
-      content: m.content,
-    })),
-    { role: "user" as const, content: userMessage },
-  ];
-
   const system = buildAskSystemPrompt(
     input.scope ?? null,
     input.spaceContext ?? null,
     input.personalContext ?? null,
   );
 
-  const model = getModel();
+  const messages: ProviderMessage[] = [
+    { role: "system", content: system },
+    ...(input.history ?? []).map((m) => ({ role: m.role, content: m.content })),
+    { role: "user", content: userMessage },
+  ];
+
+  const surface = input.scope ? `ask:${input.scope.kind}` : "ask";
   const startedAt = Date.now();
-  const stream = await client.messages.stream({
-    model,
-    max_tokens: 800,
-    system,
-    messages,
-  });
+  let usedModel = "";
+  let usage = { input: 0, output: 0 };
 
   try {
-    for await (const chunk of stream) {
-      if (
-        chunk.type === "content_block_delta" &&
-        chunk.delta.type === "text_delta"
-      ) {
-        yield chunk.delta.text;
-      }
+    for await (const delta of adapter.streamComplete(messages, {
+      tier: "fast",
+      maxTokens: 800,
+      onUsage: (u) => {
+        usedModel = u.model;
+        usage = u.tokens;
+      },
+    })) {
+      yield delta;
     }
   } catch (e) {
     recordAiError({
-      surface: input.scope ? `ask:${input.scope.kind}` : "ask",
-      model,
+      surface,
+      model: usedModel || adapter.provider,
       latencyMs: Date.now() - startedAt,
       error: e,
       organizationId: input.telemetry?.organizationId ?? null,
@@ -249,14 +250,11 @@ export async function* streamAnswer(input: {
     throw e;
   }
 
-  // Streaming is done; finalMessage() resolves from the buffered stream
-  // and carries the usage totals we couldn't see mid-stream.
-  const final = await stream.finalMessage();
   recordAiCall({
-    surface: input.scope ? `ask:${input.scope.kind}` : "ask",
-    model: final.model,
-    inputTokens: final.usage.input_tokens,
-    outputTokens: final.usage.output_tokens,
+    surface,
+    model: usedModel,
+    inputTokens: usage.input,
+    outputTokens: usage.output,
     latencyMs: Date.now() - startedAt,
     organizationId: input.telemetry?.organizationId ?? null,
     actorId: input.telemetry?.actorId ?? null,

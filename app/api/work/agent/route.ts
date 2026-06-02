@@ -89,6 +89,7 @@ export async function POST(request: Request) {
         }
 
         for await (const text of streamWorkAgent({
+          userId: ctx.profile.id,
           query,
           history,
           sources,

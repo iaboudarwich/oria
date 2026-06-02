@@ -223,6 +223,7 @@ export async function POST(request: Request) {
         const tz = (await cookies()).get("oria_tz")?.value ?? null;
         let fullAnswer = "";
         for await (const text of streamAnswer({
+          userId: ctx.profile.id,
           query,
           history,
           sources,

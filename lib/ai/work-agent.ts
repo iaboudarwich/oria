@@ -1,6 +1,7 @@
 import "server-only";
 
-import { getAnthropic, getModel } from "./anthropic";
+import { getProvider } from "@/lib/ai-providers";
+import type { Message as ProviderMessage } from "@/lib/ai-providers";
 import { recordAiCall, recordAiError } from "./telemetry";
 import type { RetrievedSource } from "./retrieve";
 import type { WorkspaceContext } from "@/lib/data/workspace-context";
@@ -85,6 +86,8 @@ function formatSource(s: RetrievedSource): string {
  * behave like a careful in-house analyst rather than a quick retrieval bot.
  */
 export async function* streamWorkAgent(input: {
+  /** The signed-in user, used to route to their connected AI provider. */
+  userId: string;
   query: string;
   history?: AgentMessage[];
   sources: RetrievedSource[];
@@ -93,8 +96,8 @@ export async function* streamWorkAgent(input: {
   /** Optional attribution for AI telemetry (cost/latency/errors). */
   telemetry?: AgentTelemetry;
 }): AsyncGenerator<string, void, unknown> {
-  const client = getAnthropic();
-  if (!client) throw new Error("anthropic_not_configured");
+  const adapter = await getProvider(input.userId, "conversation");
+  if (!adapter) throw new Error("anthropic_not_configured");
 
   const sourceBlock =
     input.sources.length === 0
@@ -103,36 +106,31 @@ export async function* streamWorkAgent(input: {
 
   const userMessage = `SOURCES\n${sourceBlock}\n\nQUESTION\n${input.query}`;
 
-  const messages = [
-    ...(input.history ?? []).map((m) => ({
-      role: m.role,
-      content: m.content,
-    })),
-    { role: "user" as const, content: userMessage },
+  const messages: ProviderMessage[] = [
+    { role: "system", content: buildSystem(input.workspaceName, input.workspaceContext) },
+    ...(input.history ?? []).map((m) => ({ role: m.role, content: m.content })),
+    { role: "user", content: userMessage },
   ];
 
-  const model = getModel();
   const startedAt = Date.now();
-  const stream = await client.messages.stream({
-    model,
-    max_tokens: 1200,
-    system: buildSystem(input.workspaceName, input.workspaceContext),
-    messages,
-  });
+  let usedModel = "";
+  let usage = { input: 0, output: 0 };
 
   try {
-    for await (const chunk of stream) {
-      if (
-        chunk.type === "content_block_delta" &&
-        chunk.delta.type === "text_delta"
-      ) {
-        yield chunk.delta.text;
-      }
+    for await (const delta of adapter.streamComplete(messages, {
+      tier: "fast",
+      maxTokens: 1200,
+      onUsage: (u) => {
+        usedModel = u.model;
+        usage = u.tokens;
+      },
+    })) {
+      yield delta;
     }
   } catch (e) {
     recordAiError({
       surface: "work-agent",
-      model,
+      model: usedModel || adapter.provider,
       latencyMs: Date.now() - startedAt,
       error: e,
       organizationId: input.telemetry?.organizationId ?? null,
@@ -141,12 +139,11 @@ export async function* streamWorkAgent(input: {
     throw e;
   }
 
-  const final = await stream.finalMessage();
   recordAiCall({
     surface: "work-agent",
-    model: final.model,
-    inputTokens: final.usage.input_tokens,
-    outputTokens: final.usage.output_tokens,
+    model: usedModel,
+    inputTokens: usage.input,
+    outputTokens: usage.output,
     latencyMs: Date.now() - startedAt,
     organizationId: input.telemetry?.organizationId ?? null,
     actorId: input.telemetry?.actorId ?? null,
