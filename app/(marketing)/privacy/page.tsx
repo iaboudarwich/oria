@@ -28,6 +28,25 @@ const SECTIONS: Section[] = [
     ],
   },
   {
+    heading: "Gmail access",
+    paragraphs: [
+      "When you connect Gmail, Oria requests read-only access to your inbox (gmail.readonly). We use this to scan for receipts, subscriptions, bills, flights, and bookings so you can track recurring expenses automatically.",
+    ],
+    bullets: [
+      "We never send, delete, modify, or forward your email.",
+      "We never sell or share your email data with third parties.",
+      "We store encrypted OAuth tokens required to maintain your connection.",
+      "We store structured data extracted from emails (e.g. merchant name, amount, date). We do not store raw email bodies.",
+      "You can set keywords that cause matching emails to be skipped entirely during scanning.",
+    ],
+  },
+  {
+    heading: "Disconnecting Gmail",
+    paragraphs: [
+      "You can disconnect Gmail at any time from Settings. Disconnecting revokes our access at Google and permanently deletes your tokens from our system. You can also request deletion of all extracted data by emailing support@heyoria.com.",
+    ],
+  },
+  {
     heading: "How we process it",
     paragraphs: [
       "To understand your files, Oria sends their contents to a small set of AI providers:",
