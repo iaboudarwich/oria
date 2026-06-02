@@ -25,6 +25,7 @@ export default function LandingPage() {
         <UploadShowcase />
         <FeatureGrid />
         <ForEveryone />
+        <TrustSection />
         <CTA />
       </main>
       <SiteFooter />
@@ -187,6 +188,49 @@ function ForEveryone() {
             </div>
           ))}
         </div>
+      </div>
+    </section>
+  );
+}
+
+function TrustSection() {
+  const badges = [
+    "AES-256-GCM encryption",
+    "Read-only Gmail access",
+    "Row-level data isolation",
+    "One-click full delete",
+  ];
+  return (
+    <section className="border-b border-line bg-surface/50">
+      <div className="mx-auto max-w-3xl px-6 py-20 sm:px-8">
+        <h2 className="text-[28px] font-semibold tracking-tight text-ink sm:text-[32px]">
+          Built with privacy in mind.
+        </h2>
+        <p className="mt-4 text-[15px] leading-[1.6] text-ink-muted">
+          Oria reads your email and documents to find what matters: subscriptions,
+          bills, flights, appointments. Everything is encrypted at rest and in
+          transit. We never send, delete, or modify your email. We do not sell your
+          data, ever. Disconnect any time and your data is gone within seconds.
+          Built by one person who uses Oria every day.
+        </p>
+        <div className="mt-6 grid gap-2 sm:grid-cols-2">
+          {badges.map((b) => (
+            <span
+              key={b}
+              className="inline-flex items-center gap-2 rounded-lg border border-line bg-surface-raised px-3 py-2 text-[13px] text-ink"
+            >
+              <span className="inline-block h-1.5 w-1.5 rounded-full bg-sage" aria-hidden />
+              {b}
+            </span>
+          ))}
+        </div>
+        <Link
+          href="/security"
+          prefetch={false}
+          className="mt-6 inline-flex items-center gap-1.5 text-[13.5px] font-medium text-brand hover:opacity-80 transition-base"
+        >
+          Read our security and privacy approach <ArrowRightIcon size={13} />
+        </Link>
       </div>
     </section>
   );

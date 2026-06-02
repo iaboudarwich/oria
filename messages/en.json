@@ -69,6 +69,8 @@
   },
   "auth": {
     "pw_strength": ["Too weak", "Weak", "Fair", "Good", "Strong"],
+    "pw_too_short": "Use at least {min} characters.",
+    "pw_too_common": "That password is too common. Choose something harder to guess.",
     "email_label": "Email",
     "new_password_label": "New password",
     "verify_title": "Check your inbox.",
@@ -169,6 +171,12 @@
     "filter_saving": "Saving...",
     "filter_saved": "Saved",
     "filter_skipped_summary": "{count} emails skipped by your filters in the last scan."
+  },
+  "twofa": {
+    "title": "Protect your Oria account",
+    "body": "Set up two-factor authentication now? It takes about 30 seconds and makes your account much harder to compromise.",
+    "setup": "Set up 2FA",
+    "later": "Maybe later"
   },
   "status": {
     "view_in_history": "View in history"

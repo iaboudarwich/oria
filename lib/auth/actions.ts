@@ -1,7 +1,9 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
+import { isCommonPassword, MIN_PASSWORD_LENGTH } from "@/lib/auth/common-passwords";
 import { logAnonAuthFailure, logAuditEvent } from "@/lib/data/audit-log";
 import { clearReauth, markReauthenticated } from "@/lib/auth/reauth";
 import { trackEvent } from "@/lib/analytics";
@@ -89,6 +91,15 @@ export async function signUp(formData: FormData) {
 
   if (!email || !password) {
     authError("/signup", "Email and password required", email, next);
+  }
+
+  // Strong-password gate: at least 12 chars, not a known-common password.
+  const tAuth = await getTranslations("auth");
+  if (password.length < MIN_PASSWORD_LENGTH) {
+    authError("/signup", tAuth("pw_too_short", { min: MIN_PASSWORD_LENGTH }), email, next);
+  }
+  if (isCommonPassword(password)) {
+    authError("/signup", tAuth("pw_too_common"), email, next);
   }
 
   const supabase = await createClient();

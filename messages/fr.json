@@ -69,6 +69,8 @@
   },
   "auth": {
     "pw_strength": ["Trop faible", "Faible", "Moyen", "Bon", "Fort"],
+    "pw_too_short": "Utilisez au moins {min} caractères.",
+    "pw_too_common": "Ce mot de passe est trop courant. Choisissez quelque chose de plus difficile à deviner.",
     "email_label": "E-mail",
     "new_password_label": "Nouveau mot de passe",
     "verify_title": "Vérifiez votre boîte de réception.",
@@ -169,6 +171,12 @@
     "filter_saving": "Enregistrement...",
     "filter_saved": "Enregistré",
     "filter_skipped_summary": "{count} e-mails ignorés par vos filtres lors de la dernière analyse."
+  },
+  "twofa": {
+    "title": "Protégez votre compte Oria",
+    "body": "Configurer l'authentification à deux facteurs maintenant ? Cela prend environ 30 secondes et rend votre compte bien plus difficile à compromettre.",
+    "setup": "Configurer la 2FA",
+    "later": "Plus tard"
   },
   "status": {
     "view_in_history": "Voir dans l'historique"

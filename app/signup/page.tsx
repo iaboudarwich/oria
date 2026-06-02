@@ -76,10 +76,10 @@ export default async function SignupPage({ searchParams }: Props) {
             <PasswordField
               label="Password"
               name="password"
-              placeholder="At least 8 characters"
+              placeholder="At least 12 characters"
               autoComplete="new-password"
               required
-              minLength={8}
+              minLength={12}
               showStrength
               strengthLabels={strengthLabels}
             />

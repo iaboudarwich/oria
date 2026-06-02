@@ -55,6 +55,40 @@ export default function SecurityPage() {
           </p>
         </div>
 
+        <Section title="Why I built Oria">
+          <div className="flex items-start gap-4">
+            <span
+              aria-hidden
+              className="inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-line bg-surface-raised text-[18px] font-semibold text-ink-muted"
+            >
+              I
+            </span>
+            <div className="space-y-3">
+              <p>
+                I built Oria because I was tired of losing track of my own life:
+                subscriptions I forgot I had, bills that slipped, documents I
+                could never find when I needed them. I wanted one calm place that
+                quietly keeps everything and surfaces what matters, without
+                selling me out.
+              </p>
+              <p>
+                I use Oria every day, and I hold your data to the standard I want
+                for my own. It is encrypted, isolated per account, read-only where
+                it touches your email, and deletable in one click. If something
+                here worries you, write to me directly:{" "}
+                <a
+                  className="text-brand hover:opacity-80 transition-base"
+                  href="mailto:hi@heyoria.com"
+                >
+                  hi@heyoria.com
+                </a>
+                .
+              </p>
+              <p className="text-[13px] text-ink-faint">Issam, founder of Oria</p>
+            </div>
+          </div>
+        </Section>
+
         <Section title="How to report">
           <p>
             Email{" "}
