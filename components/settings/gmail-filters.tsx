@@ -10,7 +10,11 @@ type Config = {
   excludeSenders: string[];
   excludeWithAttachments: boolean;
   workspaceRouting: "personal" | "work" | "auto";
+  routingMode: "auto" | "fixed";
+  routingTargetOrgIds: string[];
 };
+
+export type SpaceOption = { id: string; name: string; kind: string };
 
 /** Chip input: a list of strings with add (Enter) and per-chip remove. */
 function ChipInput({
@@ -72,18 +76,25 @@ function ChipInput({
 export function GmailFilters({
   connectionId,
   initial,
+  spaces = [],
 }: {
   connectionId: string;
   initial: Config;
+  spaces?: SpaceOption[];
 }) {
   const t = useTranslations("connections");
   const router = useRouter();
   const [keywords, setKeywords] = useState(initial.excludeKeywords);
   const [senders, setSenders] = useState(initial.excludeSenders);
   const [attachments, setAttachments] = useState(initial.excludeWithAttachments);
-  const [routing, setRouting] = useState<Config["workspaceRouting"]>(initial.workspaceRouting);
+  const [mode, setMode] = useState<Config["routingMode"]>(initial.routingMode);
+  const [targets, setTargets] = useState<string[]>(initial.routingTargetOrgIds);
   const [pending, startTransition] = useTransition();
   const [saved, setSaved] = useState(false);
+
+  function toggleTarget(id: string) {
+    setTargets((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  }
 
   function save() {
     setSaved(false);
@@ -92,7 +103,9 @@ export function GmailFilters({
         excludeKeywords: keywords,
         excludeSenders: senders,
         excludeWithAttachments: attachments,
-        workspaceRouting: routing,
+        workspaceRouting: "auto",
+        routingMode: mode,
+        routingTargetOrgIds: mode === "fixed" ? targets : [],
       });
       setSaved(true);
       router.refresh();
@@ -124,22 +137,47 @@ export function GmailFilters({
 
       <div>
         <p className="text-[12.5px] font-medium text-ink">{t("filter_routing")}</p>
-        <div className="mt-1.5 flex gap-1.5">
-          {(["personal", "work", "auto"] as const).map((opt) => (
-            <button
-              key={opt}
-              type="button"
-              onClick={() => setRouting(opt)}
-              className={`rounded-lg px-3 py-1.5 text-[12px] transition-base ${
-                routing === opt
-                  ? "bg-ink text-surface"
-                  : "border border-line text-ink-muted hover:text-ink"
-              }`}
-            >
-              {t(`routing_${opt}`)}
-            </button>
-          ))}
+        <div className="mt-1.5 flex flex-col gap-1.5">
+          <label className="flex cursor-pointer items-start gap-2.5">
+            <input
+              type="radio"
+              name={`route-mode-${connectionId}`}
+              checked={mode === "auto"}
+              onChange={() => setMode("auto")}
+              className="mt-0.5 h-3.5 w-3.5 shrink-0 accent-ink"
+            />
+            <span className="text-[12.5px] text-ink-soft">{t("route_mode_auto")}</span>
+          </label>
+          <label className="flex cursor-pointer items-start gap-2.5">
+            <input
+              type="radio"
+              name={`route-mode-${connectionId}`}
+              checked={mode === "fixed"}
+              onChange={() => setMode("fixed")}
+              className="mt-0.5 h-3.5 w-3.5 shrink-0 accent-ink"
+            />
+            <span className="text-[12.5px] text-ink-soft">{t("route_mode_fixed")}</span>
+          </label>
         </div>
+        {mode === "fixed" ? (
+          <div className="mt-2 flex flex-col gap-1 rounded-lg border border-line bg-surface px-3 py-2">
+            {spaces.length === 0 ? (
+              <p className="text-[11.5px] text-ink-faint">{t("route_no_spaces")}</p>
+            ) : (
+              spaces.map((s) => (
+                <label key={s.id} className="flex cursor-pointer items-center gap-2.5">
+                  <input
+                    type="checkbox"
+                    checked={targets.includes(s.id)}
+                    onChange={() => toggleTarget(s.id)}
+                    className="h-3.5 w-3.5 accent-ink"
+                  />
+                  <span className="text-[12.5px] text-ink-soft">{s.name}</span>
+                </label>
+              ))
+            )}
+          </div>
+        ) : null}
       </div>
 
       <div className="flex items-center gap-3">

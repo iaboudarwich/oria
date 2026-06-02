@@ -44,11 +44,14 @@ export async function saveConnectionFilters(
   if (!user || !connectionId) return { ok: false };
 
   const routing = config.workspaceRouting;
+  const mode = config.routingMode === "fixed" ? "fixed" : "auto";
   await updateConnectionFilters(user.id, connectionId, {
     excludeKeywords: (config.excludeKeywords ?? []).map((s) => s.trim()).filter(Boolean).slice(0, 50),
     excludeSenders: (config.excludeSenders ?? []).map((s) => s.trim()).filter(Boolean).slice(0, 50),
     excludeWithAttachments: !!config.excludeWithAttachments,
     workspaceRouting: routing === "work" || routing === "auto" ? routing : "personal",
+    routingMode: mode,
+    routingTargetOrgIds: mode === "fixed" ? (config.routingTargetOrgIds ?? []).slice(0, 20) : [],
   });
   revalidatePath("/dashboard/settings");
   return { ok: true };

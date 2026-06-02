@@ -271,10 +271,12 @@ export async function startGmailScan(input: {
   const token = await getFreshGmailAccessToken(input.connectionId);
   if (!token) return null;
 
-  // Load this connection's confidentiality filters + workspace routing.
+  // Load this connection's confidentiality filters + routing config.
   const { data: connRow } = await admin
     .from("email_connections")
-    .select("exclude_keywords, exclude_senders, exclude_with_attachments, workspace_routing")
+    .select(
+      "exclude_keywords, exclude_senders, exclude_with_attachments, workspace_routing, routing_mode, routing_target_org_ids",
+    )
     .eq("id", token.connectionId)
     .maybeSingle();
   const conn = (connRow as {
@@ -282,6 +284,8 @@ export async function startGmailScan(input: {
     exclude_senders?: string[];
     exclude_with_attachments?: boolean;
     workspace_routing?: WorkspaceRouting;
+    routing_mode?: "auto" | "fixed";
+    routing_target_org_ids?: string[];
   } | null) ?? {};
   const filters: ConnectionFilters = {
     excludeKeywords: conn.exclude_keywords ?? [],
@@ -289,6 +293,8 @@ export async function startGmailScan(input: {
     excludeWithAttachments: conn.exclude_with_attachments ?? false,
   };
   const workspaceRouting: WorkspaceRouting = conn.workspace_routing ?? "personal";
+  const routingMode: "auto" | "fixed" = conn.routing_mode ?? "auto";
+  const routingTargets = conn.routing_target_org_ids ?? [];
 
   const { data: jobRow } = await admin
     .from("email_scan_jobs")
@@ -313,6 +319,8 @@ export async function startGmailScan(input: {
         accessToken: token.accessToken,
         filters,
         workspaceRouting,
+        routingMode,
+        routingTargets,
       });
     },
   };
@@ -328,6 +336,8 @@ async function processScan(input: {
   accessToken: string;
   filters: ConnectionFilters;
   workspaceRouting: WorkspaceRouting;
+  routingMode: "auto" | "fixed";
+  routingTargets: string[];
 }): Promise<void> {
   const admin = createAdminClient();
   try {
@@ -362,15 +372,21 @@ async function processScan(input: {
           classification.is_relevant &&
           classification.confidence >= MIN_CONFIDENCE
         ) {
-          const targetOrg = fallbackOrg
-            ? chooseOrgForEmail({
-                routing: input.workspaceRouting,
-                orgs,
-                sender: email.sender,
-                subject: email.subject,
-                fallbackOrgId: fallbackOrg,
-              })
-            : null;
+          // Fixed routing pins every item to the chosen target(s); the primary
+          // (first) target owns the item row, and approval files copies into the
+          // rest. Auto routing keeps the smart per-item workspace inference.
+          const targetOrg =
+            input.routingMode === "fixed" && input.routingTargets.length > 0
+              ? input.routingTargets[0]
+              : fallbackOrg
+                ? chooseOrgForEmail({
+                    routing: input.workspaceRouting,
+                    orgs,
+                    sender: email.sender,
+                    subject: email.subject,
+                    fallbackOrgId: fallbackOrg,
+                  })
+                : null;
           const inserted = await insertDetectedItem({
             userId: input.userId,
             organizationId: targetOrg,

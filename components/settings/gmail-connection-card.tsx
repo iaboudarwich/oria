@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { setGmailPaused } from "@/lib/integrations/gmail/connection-actions";
-import { GmailFilters } from "./gmail-filters";
+import { GmailFilters, type SpaceOption } from "./gmail-filters";
 
 export type ConnectionView = {
   id: string;
@@ -19,6 +19,8 @@ type FilterConfig = {
   excludeSenders: string[];
   excludeWithAttachments: boolean;
   workspaceRouting: "personal" | "work" | "auto";
+  routingMode: "auto" | "fixed";
+  routingTargetOrgIds: string[];
 };
 
 function relativeTime(iso: string | null): string {
@@ -42,10 +44,12 @@ export function GmailConnectionCard({
   connection,
   counts,
   filters,
+  spaces = [],
 }: {
   connection: ConnectionView;
   counts: { pending: number; approved: number };
   filters: FilterConfig;
+  spaces?: SpaceOption[];
 }) {
   const t = useTranslations("connections");
   const router = useRouter();
@@ -135,7 +139,7 @@ export function GmailConnectionCard({
         </div>
       </div>
 
-      <GmailFilters connectionId={connection.id} initial={filters} />
+      <GmailFilters connectionId={connection.id} initial={filters} spaces={spaces} />
 
       {disconnectOpen ? (
         <div

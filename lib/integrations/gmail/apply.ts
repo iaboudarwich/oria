@@ -14,6 +14,7 @@ type ItemRow = {
   id: string;
   user_id: string;
   organization_id: string | null;
+  connection_id: string | null;
   item_type: string;
   source_subject: string | null;
   source_from: string | null;
@@ -61,7 +62,7 @@ export async function applyDetectedItem(input: {
 
   const { data } = await admin
     .from("email_detected_items")
-    .select("id, user_id, organization_id, item_type, source_subject, source_from, source_date, extracted")
+    .select("id, user_id, organization_id, connection_id, item_type, source_subject, source_from, source_date, extracted")
     .eq("id", input.itemId)
     .eq("user_id", input.userId)
     .eq("status", "pending")
@@ -165,6 +166,44 @@ export async function applyDetectedItem(input: {
       occurredAt: ex.event_date ?? ex.renewal_date ?? item.source_date,
       summary: ex.summary ?? null,
     });
+  }
+
+  // Fixed routing with several targets: file a section copy into each of the
+  // other target orgs too, so the item shows up in every chosen space.
+  if (item.connection_id) {
+    const { data: connRow } = await admin
+      .from("email_connections")
+      .select("routing_mode, routing_target_org_ids")
+      .eq("id", item.connection_id)
+      .maybeSingle();
+    const conn = connRow as { routing_mode?: string; routing_target_org_ids?: string[] } | null;
+    if (conn?.routing_mode === "fixed") {
+      const extraOrgs = (conn.routing_target_org_ids ?? []).filter((o) => o && o !== orgId);
+      for (const extraOrg of extraOrgs) {
+        const extraTarget = await findSectionForItem({
+          itemType: item.item_type,
+          appointmentType: ex.appointment_type ?? null,
+          orgId: extraOrg,
+          userId: input.userId,
+          vendor: ex.vendor ?? null,
+          senderDomain: senderDomain(item.source_from),
+          keywordText: `${ex.title ?? ""} ${item.source_subject ?? ""}`,
+        });
+        if (extraTarget) {
+          await routeItemToSection({
+            orgId: extraOrg,
+            target: extraTarget,
+            detectedItemId: item.id,
+            title,
+            vendor: ex.vendor ?? null,
+            amount: ex.amount ?? null,
+            currency: ex.currency ?? null,
+            occurredAt: ex.event_date ?? ex.renewal_date ?? item.source_date,
+            summary: ex.summary ?? null,
+          });
+        }
+      }
+    }
   }
 
   await admin

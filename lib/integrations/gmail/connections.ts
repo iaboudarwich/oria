@@ -231,6 +231,9 @@ export type ConnectionFilterConfig = {
   excludeSenders: string[];
   excludeWithAttachments: boolean;
   workspaceRouting: "personal" | "work" | "auto";
+  // F2: 'auto' = smart per-item inference; 'fixed' = send to routingTargetOrgIds.
+  routingMode: "auto" | "fixed";
+  routingTargetOrgIds: string[];
 };
 
 /** Read one connection's confidentiality filters + workspace routing (by id). */
@@ -240,7 +243,9 @@ export async function getConnectionFilters(
   const admin = createAdminClient();
   const { data } = await admin
     .from("email_connections")
-    .select("exclude_keywords, exclude_senders, exclude_with_attachments, workspace_routing")
+    .select(
+      "exclude_keywords, exclude_senders, exclude_with_attachments, workspace_routing, routing_mode, routing_target_org_ids",
+    )
     .eq("id", connectionId)
     .maybeSingle();
   if (!data) return null;
@@ -249,6 +254,8 @@ export async function getConnectionFilters(
     exclude_senders: string[] | null;
     exclude_with_attachments: boolean | null;
     workspace_routing: string | null;
+    routing_mode: string | null;
+    routing_target_org_ids: string[] | null;
   };
   const routing = r.workspace_routing;
   return {
@@ -256,6 +263,8 @@ export async function getConnectionFilters(
     excludeSenders: r.exclude_senders ?? [],
     excludeWithAttachments: r.exclude_with_attachments ?? false,
     workspaceRouting: routing === "work" || routing === "auto" ? routing : "personal",
+    routingMode: r.routing_mode === "fixed" ? "fixed" : "auto",
+    routingTargetOrgIds: r.routing_target_org_ids ?? [],
   };
 }
 
@@ -266,13 +275,17 @@ export async function updateConnectionFilters(
   config: ConnectionFilterConfig,
 ): Promise<void> {
   const admin = createAdminClient();
+  // When the user picks smart routing, keep workspace_routing on 'auto' so the
+  // per-item inference runs; fixed mode ignores workspace_routing entirely.
   await admin
     .from("email_connections")
     .update({
       exclude_keywords: config.excludeKeywords,
       exclude_senders: config.excludeSenders,
       exclude_with_attachments: config.excludeWithAttachments,
-      workspace_routing: config.workspaceRouting,
+      workspace_routing: config.routingMode === "auto" ? "auto" : config.workspaceRouting,
+      routing_mode: config.routingMode,
+      routing_target_org_ids: config.routingMode === "fixed" ? config.routingTargetOrgIds : [],
     })
     .eq("id", connectionId)
     .eq("user_id", userId);
