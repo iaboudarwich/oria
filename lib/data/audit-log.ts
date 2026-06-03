@@ -102,7 +102,21 @@ export type AuditAction =
   | "2fa.prompt_dismissed"
   // Web push (PWA)
   | "push.subscribed"
-  | "push.unsubscribed";
+  | "push.unsubscribed"
+  // Routines (Round 16)
+  | "routine.created"
+  | "routine.updated"
+  | "routine.deleted"
+  | "routine.executed"
+  // Daily Journal (Round 16)
+  | "journal.created"
+  // Suggestions (Round 16)
+  | "suggestion.accepted"
+  | "suggestion.dismissed"
+  | "suggestion.commented"
+  // Today surface (Round 16)
+  | "today.rollover"
+  | "today.focus_blocked";
 
 export type AuditLogInput = {
   userId: string;
@@ -342,6 +356,16 @@ export function actionLabel(action: string): string {
     "email.verified":               "Verified email address",
     "2fa.prompt_shown":             "Shown the two-factor setup prompt",
     "2fa.prompt_dismissed":         "Dismissed the two-factor setup prompt",
+    "routine.created":              "Created a routine",
+    "routine.updated":              "Updated a routine",
+    "routine.deleted":              "Deleted a routine",
+    "routine.executed":             "Ran a routine",
+    "journal.created":              "Wrote a daily journal entry",
+    "suggestion.accepted":          "Accepted a suggestion",
+    "suggestion.dismissed":         "Dismissed a suggestion",
+    "suggestion.commented":         "Commented on a suggestion",
+    "today.rollover":               "Carried unfinished items to today",
+    "today.focus_blocked":          "Blocked focus time",
   };
   return map[action] ?? action;
 }
