@@ -1,5 +1,14 @@
 {
   "ai": {
+    "indicator": "Thinking deeper...",
+    "dt_title": "When to use deeper thinking",
+    "dt_body": "Reasoning models take longer (about 30 seconds) and analyze more deeply. Best for variance, comparison, and complex analysis.",
+    "rm_auto": "Suggest deeper thinking when useful",
+    "rm_manual": "I'll click the button when I want it",
+    "rm_always": "Always use deeper thinking",
+    "rm_never": "Never use deeper thinking",
+    "dt_byo_note": "Reasoning queries use your {name}'s advanced model and cost more on your account.",
+    "powered_reasoning_suffix": "(Reasoning)",
     "settings_title": "Your AI",
     "settings_subtitle": "Bring your own Claude, ChatGPT, or Gemini, and Oria builds around it.",
     "state_connected": "{name} is powering Ask Oria.",
@@ -295,6 +304,10 @@
     "details_subtitle": "For the technically curious: the full, binding policy."
   },
   "features": {
+    "reasoning": {
+      "title": "Deeper thinking when you need it",
+      "desc": "Let Oria reason through complex, analytical questions."
+    },
     "connect_ai": {
       "title": "Connect your AI",
       "desc": "Use your own Claude, ChatGPT, or Gemini to power Ask Oria."

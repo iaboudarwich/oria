@@ -17,7 +17,7 @@ import { ConnectionsPanel } from "@/components/settings/connections-panel";
 import { CloudServicesPanel } from "@/components/settings/cloud-services-panel";
 import { MicrosoftServicesPanel } from "@/components/settings/microsoft-services-panel";
 import { AiSettings } from "@/components/ai/ai-settings";
-import { getAiConnection } from "@/lib/data/ai-connections";
+import { getAiConnection, getReasoningMode } from "@/lib/data/ai-connections";
 import { SectionsEditorLazy } from "@/components/settings/sections-editor-lazy";
 import { SecurityPanel } from "@/components/settings/security-panel";
 import { SessionsPanel } from "@/components/settings/sessions-panel";
@@ -98,6 +98,8 @@ export default async function SettingsPage({
       : [];
   const aiConnection =
     tab === "ai" && ctx?.profile.id ? await getAiConnection(ctx.profile.id) : null;
+  const aiReasoningMode =
+    tab === "ai" && ctx?.profile.id ? await getReasoningMode(ctx.profile.id) : "auto";
   const profile: UserProfile | null =
     tab === "preferences" && ctx?.profile.id
       ? await getUserProfile(ctx.profile.id)
@@ -244,7 +246,7 @@ export default async function SettingsPage({
           </div>
         )}
 
-        {tab === "ai" && <AiSettings connection={aiConnection} />}
+        {tab === "ai" && <AiSettings connection={aiConnection} reasoningMode={aiReasoningMode} />}
 
         {tab === "security" && (
           <div className="space-y-9">

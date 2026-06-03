@@ -4,6 +4,8 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { ConnectionModal } from "./connection-modal";
+import { updateReasoningMode } from "@/lib/data/ai-connection-actions";
+import type { ReasoningMode } from "@/lib/data/ai-connections";
 import type { ProviderName, ConnectionStatus } from "@/lib/ai-providers";
 
 const PROVIDER_NAME: Record<string, string> = {
@@ -22,12 +24,31 @@ export type AiSettingsConnection = {
  * Settings -> AI: the build-together story, the current connection state with
  * connect/disconnect, and the privacy note. All copy localized.
  */
-export function AiSettings({ connection }: { connection: AiSettingsConnection }) {
+export function AiSettings({
+  connection,
+  reasoningMode,
+}: {
+  connection: AiSettingsConnection;
+  reasoningMode: ReasoningMode;
+}) {
   const t = useTranslations("ai");
   const router = useRouter();
   const [modalOpen, setModalOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [pending, startTransition] = useTransition();
+  const [mode, setMode] = useState<ReasoningMode>(reasoningMode);
+
+  const REASONING_OPTIONS: { value: ReasoningMode; label: string }[] = [
+    { value: "auto", label: t("rm_auto") },
+    { value: "manual", label: t("rm_manual") },
+    { value: "always", label: t("rm_always") },
+    { value: "never", label: t("rm_never") },
+  ];
+
+  function chooseMode(next: ReasoningMode) {
+    setMode(next);
+    startTransition(() => updateReasoningMode(next));
+  }
 
   const statusLabel = (s: ConnectionStatus) =>
     s === "active"
@@ -101,6 +122,34 @@ export function AiSettings({ connection }: { connection: AiSettingsConnection })
           <p className="text-[13.5px] font-semibold text-ink">{t("story_brain_title")}</p>
           <p className="mt-0.5 text-[13px] text-ink-muted">{t("story_brain_body")}</p>
         </div>
+      </div>
+
+      {/* Deeper thinking preference */}
+      <div className="space-y-3 border-t border-line pt-5">
+        <div>
+          <h3 className="text-[14px] font-semibold text-ink">{t("dt_title")}</h3>
+          <p className="mt-1 text-[13px] text-ink-muted">{t("dt_body")}</p>
+        </div>
+        <div className="space-y-1.5">
+          {REASONING_OPTIONS.map((o) => (
+            <label
+              key={o.value}
+              className="flex cursor-pointer items-center gap-2.5 rounded-lg border border-line px-3 py-2 transition-base hover:bg-canvas"
+            >
+              <input
+                type="radio"
+                name="reasoning_mode"
+                checked={mode === o.value}
+                disabled={pending}
+                onChange={() => chooseMode(o.value)}
+              />
+              <span className="text-[13px] text-ink">{o.label}</span>
+            </label>
+          ))}
+        </div>
+        {connection ? (
+          <p className="text-[12px] text-ink-faint">{t("dt_byo_note", { name })}</p>
+        ) : null}
       </div>
 
       {/* Privacy */}

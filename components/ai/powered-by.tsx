@@ -13,11 +13,18 @@ const PROVIDER_NAME: Record<string, string> = {
  * Subtle "Powered by ..." line under the Ask Oria input. Shows the user's
  * connected provider when active, else Oria's default. Links to Settings -> AI.
  */
-export function PoweredBy({ provider }: { provider: string | null }) {
+export function PoweredBy({
+  provider,
+  reasoning = false,
+}: {
+  provider: string | null;
+  reasoning?: boolean;
+}) {
   const t = useTranslations("ai");
-  const label = provider
+  const base = provider
     ? t("powered_by_user", { name: PROVIDER_NAME[provider] ?? provider })
     : t("powered_by_default");
+  const label = reasoning ? `${base} ${t("powered_reasoning_suffix")}` : base;
   return (
     <Link
       href="/dashboard/settings/ai"

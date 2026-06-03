@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Wordmark } from "@/components/brand/wordmark";
+import { ReasoningIndicator } from "@/components/ai/reasoning-indicator";
 import { generateOnboardingPlan, executeOnboardingPlan } from "../actions";
 import { EMPTY_USER_CONTEXT, type SetupPlan, type UserContext } from "@/lib/onboarding/types";
 import { CONTEXT_STORAGE_KEY } from "../conversation/conversation-client";
@@ -102,10 +103,7 @@ export function PreviewClient() {
     return (
       <Shell>
         <div className="flex flex-col items-center gap-3 text-center">
-          <span className="text-[20px]" aria-hidden>
-            ✦
-          </span>
-          <p className="text-[15px] text-ink-soft">{t("preview_designing")}</p>
+          <ReasoningIndicator label={t("preview_designing")} />
           <p className="text-[12.5px] text-ink-faint">{t("preview_designing_time")}</p>
         </div>
       </Shell>

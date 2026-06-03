@@ -28,7 +28,10 @@ const GROUPS: { group: string; items: Item[] }[] = [
   },
   {
     group: "ask",
-    items: [{ id: "ask", href: "/dashboard/ask" }],
+    items: [
+      { id: "ask", href: "/dashboard/ask" },
+      { id: "reasoning", href: "/dashboard/settings/ai" },
+    ],
   },
   {
     group: "connect",

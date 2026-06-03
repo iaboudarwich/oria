@@ -1,5 +1,14 @@
 {
   "ai": {
+    "indicator": "Réflexion approfondie...",
+    "dt_title": "Quand utiliser la réflexion approfondie",
+    "dt_body": "Les modèles de raisonnement sont plus lents (environ 30 secondes) et analysent plus en profondeur. Idéal pour la variance, la comparaison et l'analyse complexe.",
+    "rm_auto": "Proposer la réflexion approfondie quand c'est utile",
+    "rm_manual": "Je cliquerai sur le bouton quand je le voudrai",
+    "rm_always": "Toujours utiliser la réflexion approfondie",
+    "rm_never": "Ne jamais utiliser la réflexion approfondie",
+    "dt_byo_note": "Les requêtes de raisonnement utilisent le modèle avancé de votre {name} et coûtent plus sur votre compte.",
+    "powered_reasoning_suffix": "(Raisonnement)",
     "settings_title": "Votre IA",
     "settings_subtitle": "Apportez votre Claude, ChatGPT ou Gemini, et Oria se construit autour.",
     "state_connected": "{name} alimente Ask Oria.",
@@ -295,6 +304,10 @@
     "details_subtitle": "Pour les curieux techniques : la politique complète et contraignante."
   },
   "features": {
+    "reasoning": {
+      "title": "Une réflexion approfondie au besoin",
+      "desc": "Laissez Oria raisonner sur les questions complexes et analytiques."
+    },
     "connect_ai": {
       "title": "Connectez votre IA",
       "desc": "Utilisez votre Claude, ChatGPT ou Gemini pour alimenter Ask Oria."

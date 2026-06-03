@@ -1,5 +1,14 @@
 {
   "ai": {
+    "indicator": "Pensando más a fondo...",
+    "dt_title": "Cuándo usar el pensamiento más profundo",
+    "dt_body": "Los modelos de razonamiento tardan más (unos 30 segundos) y analizan con mayor profundidad. Ideal para varianza, comparación y análisis complejo.",
+    "rm_auto": "Sugerir pensamiento más profundo cuando sea útil",
+    "rm_manual": "Haré clic en el botón cuando lo quiera",
+    "rm_always": "Usar siempre el pensamiento más profundo",
+    "rm_never": "Nunca usar el pensamiento más profundo",
+    "dt_byo_note": "Las consultas de razonamiento usan el modelo avanzado de tu {name} y cuestan más en tu cuenta.",
+    "powered_reasoning_suffix": "(Razonamiento)",
     "settings_title": "Tu IA",
     "settings_subtitle": "Trae tu propio Claude, ChatGPT o Gemini y Oria se construye a su alrededor.",
     "state_connected": "{name} impulsa Ask Oria.",
@@ -295,6 +304,10 @@
     "details_subtitle": "Para los curiosos técnicos: la política completa y vinculante."
   },
   "features": {
+    "reasoning": {
+      "title": "Pensamiento más profundo cuando lo necesitas",
+      "desc": "Deja que Oria razone preguntas complejas y analíticas."
+    },
     "connect_ai": {
       "title": "Conecta tu IA",
       "desc": "Usa tu propio Claude, ChatGPT o Gemini para impulsar Ask Oria."

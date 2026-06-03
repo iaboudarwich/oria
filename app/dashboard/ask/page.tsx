@@ -83,7 +83,7 @@ export default async function AskPage() {
             spaceName={ctx?.organization.name ?? null}
             reasoningMode={reasoningMode}
           />
-          <PoweredBy provider={aiConnection?.provider ?? null} />
+          <PoweredBy provider={aiConnection?.provider ?? null} reasoning={reasoningMode === "always"} />
         </div>
       </div>
       <Hint
