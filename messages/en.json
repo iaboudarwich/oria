@@ -1,4 +1,11 @@
 {
+  "bills": {
+    "next_month": "Next month",
+    "due_this_week": "Due this week",
+    "upcoming": "Upcoming",
+    "bills_caption": "bills",
+    "forecast_empty": "Fills in once Oria sees a few recurring bills."
+  },
   "connectors": {
     "connected": "Connected",
     "available": "Available",

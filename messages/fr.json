@@ -1,4 +1,11 @@
 {
+  "bills": {
+    "next_month": "Le mois prochain",
+    "due_this_week": "À payer cette semaine",
+    "upcoming": "À venir",
+    "bills_caption": "factures",
+    "forecast_empty": "S'affiche dès qu'Oria voit quelques factures récurrentes."
+  },
   "connectors": {
     "connected": "Connectés",
     "available": "Disponibles",

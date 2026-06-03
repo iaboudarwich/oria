@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { Topbar } from "@/components/dashboard/topbar";
 import { DropzoneCompact } from "@/components/upload/dropzone-compact";
 import { TextLogForm } from "@/components/section/text-log-form";
@@ -59,6 +60,19 @@ export default async function BillsPage({
   const recurring = summarizeRecurring(bills);
   const forecast = forecastNextMonth(recurring);
 
+  const weekAhead = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+  const dueThisWeek = upcoming.filter(
+    (b) => b.occurred_at && new Date(b.occurred_at) <= weekAhead,
+  ).length;
+  const tb = await getTranslations("bills");
+  const stripLabels = {
+    nextMonth: tb("next_month"),
+    dueThisWeek: tb("due_this_week"),
+    upcoming: tb("upcoming"),
+    billsCaption: tb("bills_caption"),
+    forecastEmpty: tb("forecast_empty"),
+  };
+
   const empty = bills.length === 0;
 
   return (
@@ -80,7 +94,12 @@ export default async function BillsPage({
 
         {!empty && summary ? <SectionSummaryCard data={summary} /> : null}
 
-        <ForecastStrip forecast={forecast} />
+        <FinancialStrip
+          forecast={forecast}
+          dueThisWeek={dueThisWeek}
+          upcomingCount={upcoming.length}
+          labels={stripLabels}
+        />
 
         {empty ? (
           <p className="px-1 text-[13px] text-ink-faint">
@@ -163,37 +182,54 @@ export default async function BillsPage({
 }
 
 /**
- * Horizontal forecast strip. Replaces the old vertical aside cards
- * (Forecast + Unusual) so the page lays out as one calm column instead
- * of a hero block + sidebar.
+ * Financial strip: three calm stat cards (next-month total, due this week,
+ * upcoming). Reserves the room for the Round 18 financial visuals (a sparkline
+ * drops into the monthly card, bars below) without re-layout. Numbers are
+ * tabular so they don't jitter on update.
  */
-function ForecastStrip({
+function FinancialStrip({
   forecast,
+  dueThisWeek,
+  upcomingCount,
+  labels,
 }: {
   forecast: { total: number; currency: string | null } | null;
+  dueThisWeek: number;
+  upcomingCount: number;
+  labels: {
+    nextMonth: string;
+    dueThisWeek: string;
+    upcoming: string;
+    billsCaption: string;
+    forecastEmpty: string;
+  };
 }) {
   return (
-    <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 rounded-2xl border border-line bg-surface-raised p-4">
-      <span className="text-eyebrow">
-        Next month
-      </span>
-      {forecast ? (
-        <>
-          <span className="text-[26px] font-semibold tracking-tight text-ink">
+    <section className="grid gap-3 sm:grid-cols-3">
+      <div className="rounded-2xl border border-line bg-surface-raised p-4">
+        <span className="text-eyebrow">{labels.nextMonth}</span>
+        {forecast ? (
+          <p className="mt-1 text-[26px] font-semibold tracking-tight text-ink tabular-nums">
             {forecast.total.toLocaleString()}
-          </span>
-          {forecast.currency ? (
-            <span className="text-[12.5px] text-ink-muted">
-              {forecast.currency}
-            </span>
-          ) : null}
-        </>
-      ) : (
-        <span className="text-[12.5px] text-ink-faint">
-          Fills in once Oria sees a few recurring bills.
-        </span>
-      )}
-    </div>
+            {forecast.currency ? (
+              <span className="ml-1 text-[12.5px] font-normal text-ink-muted">{forecast.currency}</span>
+            ) : null}
+          </p>
+        ) : (
+          <p className="mt-1 text-[12.5px] text-ink-faint">{labels.forecastEmpty}</p>
+        )}
+      </div>
+      <div className="rounded-2xl border border-line bg-surface-raised p-4">
+        <span className="text-eyebrow">{labels.dueThisWeek}</span>
+        <p className="mt-1 text-[26px] font-semibold tracking-tight text-ink tabular-nums">{dueThisWeek}</p>
+        <span className="text-[12px] text-ink-muted">{labels.billsCaption}</span>
+      </div>
+      <div className="rounded-2xl border border-line bg-surface-raised p-4">
+        <span className="text-eyebrow">{labels.upcoming}</span>
+        <p className="mt-1 text-[26px] font-semibold tracking-tight text-ink tabular-nums">{upcomingCount}</p>
+        <span className="text-[12px] text-ink-muted">{labels.billsCaption}</span>
+      </div>
+    </section>
   );
 }
 
@@ -234,12 +270,9 @@ function BillRow({
             {b.merchant || b.title}
           </p>
         )}
-        <p className="truncate text-[11.5px] text-ink-faint">
-          {b.location || b.category || b.summary || "·"}
-        </p>
       </div>
       <div className="text-right">
-        {amount ? <p className="text-[13px] text-ink">{amount}</p> : null}
+        {amount ? <p className="text-[13px] text-ink tabular-nums">{amount}</p> : null}
         {dateLabel ? (
           <p className="text-[11px] text-ink-faint">{dateLabel}</p>
         ) : null}
