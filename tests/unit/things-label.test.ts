@@ -18,10 +18,10 @@ describe("resolveThingsLabel", () => {
     expect(resolveThingsLabel({ template_key: "investor" })).toBe("Assets");
   });
 
-  it("defaults to Trackables for custom/unknown/null (canonical noun, Round 14: Things -> Items -> Trackables)", () => {
-    expect(resolveThingsLabel({ template_key: "custom" })).toBe("Trackables");
-    expect(resolveThingsLabel({ template_key: "teacher" })).toBe("Trackables");
-    expect(resolveThingsLabel({})).toBe("Trackables");
-    expect(resolveThingsLabel({ template_key: null })).toBe("Trackables");
+  it("defaults to Records for custom/unknown/null (Round 14: Things -> Items -> Records; the Trackables noun belongs to the separate renewals feature)", () => {
+    expect(resolveThingsLabel({ template_key: "custom" })).toBe("Records");
+    expect(resolveThingsLabel({ template_key: "teacher" })).toBe("Records");
+    expect(resolveThingsLabel({})).toBe("Records");
+    expect(resolveThingsLabel({ template_key: null })).toBe("Records");
   });
 });

@@ -136,7 +136,8 @@ Canonical terms. Synonyms fail lint.
 |---|---|
 | Ask Oria | chat, chatbot, assistant |
 | connector | integration, plugin |
-| trackable | item, entity, thing |
+| Records (people/vehicles/properties area, /dashboard/things) | item, entity, thing |
+| Trackables (renewals/subscriptions/expiries, /dashboard/trackables) | item, entity, thing |
 | Today | dashboard, home, feed |
 | Circle | group, team, household |
 | context (Personal/Investor/Business/Family Office) | template, persona |
@@ -144,6 +145,12 @@ Canonical terms. Synonyms fail lint.
 | suggestion | recommendation, tip |
 | write-back | action, sync-out |
 | BYO | bring-your-own, custom AI |
+
+The banned-phrase lint guard (`npm run lint` -> `scripts/check-i18n-banned.mjs`)
+fails the build on any em-dash and on item/entity/thing (and the per-locale
+equivalents) in user-facing i18n copy. It does NOT ban "Records" or
+"Trackables": those are the two legitimate canonical nouns. Records = the
+people/vehicles/properties area; Trackables = the renewals feature.
 
 ---
 
