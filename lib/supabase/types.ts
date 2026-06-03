@@ -106,6 +106,8 @@ export interface Organization {
   // Added in migration 0046
   accent_color?: string | null;
   shadow_color?: string | null;
+  // Added in migration 0064 (soft-delete for the reshape DELETE patch)
+  deleted_at?: TimestampString | null;
 }
 
 export interface Invite {
@@ -233,6 +235,7 @@ export interface CustomSection {
   created_by: UUID | null;
   created_at: TimestampString;
   updated_at: TimestampString;
+  deleted_at: TimestampString | null;
 }
 
 export interface SectionProfile {
