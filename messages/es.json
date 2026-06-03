@@ -1,4 +1,12 @@
 {
+  "appearance": {
+    "theme_label": "Tema",
+    "theme_hint": "Claro u oscuro para este espacio. Por defecto sigue tu tema global.",
+    "variant_inherit": "Predeterminado",
+    "variant_light": "Claro",
+    "variant_dark": "Oscuro",
+    "variant_system": "Sistema"
+  },
   "calendar": {
     "source_events": "Eventos",
     "source_reminders": "Recordatorios",

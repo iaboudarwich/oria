@@ -1,4 +1,12 @@
 {
+  "appearance": {
+    "theme_label": "Thème",
+    "theme_hint": "Clair ou sombre pour cet espace. Par défaut suit votre thème global.",
+    "variant_inherit": "Par défaut",
+    "variant_light": "Clair",
+    "variant_dark": "Sombre",
+    "variant_system": "Système"
+  },
   "calendar": {
     "source_events": "Événements",
     "source_reminders": "Rappels",

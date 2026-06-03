@@ -12,6 +12,7 @@ import { listGmailConnections } from "@/lib/integrations/gmail/connections";
 import { listCloudConnections } from "@/lib/google/cloud-connections";
 import { listOutlookConnections } from "@/lib/microsoft/connections";
 import { TimezoneCookie } from "@/components/section/timezone-cookie";
+import { OrgThemeApplier } from "@/components/dashboard/org-theme-applier";
 import {
   getCurrentContext,
   listUserSpaces,
@@ -211,6 +212,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
       className="min-h-screen bg-canvas"
       style={themeVars as CSSProperties}
     >
+      <OrgThemeApplier variant={ctx.organization.theme_variant ?? null} />
       <TimezoneCookie />
       <SidebarShell
         initialCollapsed={sidebarMode === "collapsed"}

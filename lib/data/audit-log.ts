@@ -95,6 +95,7 @@ export type AuditAction =
   | "ask_setup_intent_with_image_rejected"
   | "setup_template_retired"
   | "calendar_sources_updated"
+  | "space_theme_variant_updated"
   // Account security
   | "email.verified"
   | "2fa.prompt_shown"
@@ -334,6 +335,7 @@ export function actionLabel(action: string): string {
     "ask_setup_intent_with_image_rejected": "Kept an image Ask as a question",
     "setup_template_retired":        "Migrated a space to a neutral setup",
     "calendar_sources_updated":      "Changed calendar source filters",
+    "space_theme_variant_updated":   "Changed a space's light or dark theme",
     "email.verified":               "Verified email address",
     "2fa.prompt_shown":             "Shown the two-factor setup prompt",
     "2fa.prompt_dismissed":         "Dismissed the two-factor setup prompt",

@@ -151,6 +151,7 @@ export default async function SettingsPage({
             initialAccent={ctx.organization.accent_color ?? null}
             initialShadow={ctx.organization.shadow_color ?? null}
             defaultAccent={defaultAccentFor(ctx.organization)}
+            initialVariant={ctx.organization.theme_variant ?? null}
           />
         )}
 

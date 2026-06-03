@@ -119,6 +119,8 @@ export interface Organization {
   // Added in migration 0046
   accent_color?: string | null;
   shadow_color?: string | null;
+  // Added in migration 0067 (per-org light/dark; null inherits the global theme)
+  theme_variant?: "light" | "dark" | "system" | null;
   // Added in migration 0064 (soft-delete for the reshape DELETE patch)
   deleted_at?: TimestampString | null;
 }

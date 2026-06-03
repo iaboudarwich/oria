@@ -1,4 +1,12 @@
 {
+  "appearance": {
+    "theme_label": "السمة",
+    "theme_hint": "فاتح أو داكن لهذه المساحة. الافتراضي يتبع سمتك العامة.",
+    "variant_inherit": "افتراضي",
+    "variant_light": "فاتح",
+    "variant_dark": "داكن",
+    "variant_system": "النظام"
+  },
   "calendar": {
     "source_events": "الأحداث",
     "source_reminders": "التذكيرات",

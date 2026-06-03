@@ -1,4 +1,12 @@
 {
+  "appearance": {
+    "theme_label": "Theme",
+    "theme_hint": "Light or dark for this space. Default follows your global theme.",
+    "variant_inherit": "Default",
+    "variant_light": "Light",
+    "variant_dark": "Dark",
+    "variant_system": "System"
+  },
   "calendar": {
     "source_events": "Events",
     "source_reminders": "Reminders",

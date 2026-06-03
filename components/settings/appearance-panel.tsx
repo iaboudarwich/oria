@@ -2,9 +2,18 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { PRESET_ACCENTS } from "@/lib/data/space-theme";
-import { setSpaceTheme } from "@/lib/data/theme-actions";
+import { setSpaceTheme, setSpaceThemeVariant } from "@/lib/data/theme-actions";
+
+type ThemeVariant = "light" | "dark" | "system" | null;
+const VARIANT_OPTIONS: Array<{ value: ThemeVariant; key: string }> = [
+  { value: null, key: "variant_inherit" },
+  { value: "light", key: "variant_light" },
+  { value: "dark", key: "variant_dark" },
+  { value: "system", key: "variant_system" },
+];
 
 const HEX = /^#[0-9a-fA-F]{6}$/;
 
@@ -17,16 +26,28 @@ export function AppearancePanel({
   initialAccent,
   initialShadow,
   defaultAccent,
+  initialVariant,
 }: {
   initialAccent: string | null;
   initialShadow: string | null;
   defaultAccent: string;
+  initialVariant: ThemeVariant;
 }) {
+  const ta = useTranslations("appearance");
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [accent, setAccent] = useState(initialAccent ?? defaultAccent);
   const [shadow, setShadow] = useState(initialShadow ?? "");
+  const [variant, setVariant] = useState<ThemeVariant>(initialVariant);
   const [saved, setSaved] = useState(false);
+
+  function selectVariant(v: ThemeVariant) {
+    setVariant(v);
+    startTransition(async () => {
+      await setSpaceThemeVariant(v);
+      router.refresh();
+    });
+  }
 
   function save() {
     if (pending) return;
@@ -97,6 +118,29 @@ export function AppearancePanel({
             maxLength={7}
             className="h-9 w-28 rounded-md border border-line-strong bg-surface px-2.5 font-mono text-[13px] text-ink outline-none focus:border-ink"
           />
+        </div>
+      </div>
+
+      <div>
+        <p className="mb-1 text-[12.5px] font-medium text-ink">{ta("theme_label")}</p>
+        <p className="mb-2 text-[11.5px] text-ink-faint">{ta("theme_hint")}</p>
+        <div className="inline-flex rounded-lg border border-line-strong bg-surface p-0.5">
+          {VARIANT_OPTIONS.map((opt) => {
+            const active = variant === opt.value;
+            return (
+              <button
+                key={opt.key}
+                type="button"
+                onClick={() => selectVariant(opt.value)}
+                disabled={pending}
+                className={`rounded-md px-3 py-1.5 text-[12.5px] transition-base disabled:opacity-60 ${
+                  active ? "bg-ink text-surface" : "text-ink-muted hover:text-ink"
+                }`}
+              >
+                {ta(opt.key)}
+              </button>
+            );
+          })}
         </div>
       </div>
 
