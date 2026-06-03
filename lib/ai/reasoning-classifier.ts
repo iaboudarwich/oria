@@ -1,6 +1,6 @@
 import "server-only";
 
-import { getProvider } from "@/lib/ai-providers";
+import { runFastJsonClassifier } from "./classifiers/base";
 
 export type ReasoningClass = { analytical: boolean; confidence: number };
 
@@ -22,23 +22,16 @@ export async function classifyReasoningIntent(
   userId: string,
   query: string,
 ): Promise<ReasoningClass> {
-  try {
-    const adapter = await getProvider(userId, "conversation");
-    if (!adapter) return { analytical: false, confidence: 0 };
-    const res = await adapter.complete(
-      [
-        { role: "system", content: SYSTEM },
-        { role: "user", content: query.slice(0, 600) },
-      ],
-      { tier: "fast", maxTokens: 40, jsonMode: true },
-    );
-    const raw = res.content.trim().replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "");
-    const parsed = JSON.parse(raw) as { analytical?: unknown; confidence?: unknown };
-    return {
-      analytical: parsed.analytical === true,
-      confidence: Math.max(0, Math.min(1, Number(parsed.confidence) || 0)),
-    };
-  } catch {
-    return { analytical: false, confidence: 0 };
-  }
+  return runFastJsonClassifier<ReasoningClass>(userId, query, {
+    system: SYSTEM,
+    maxTokens: 40,
+    fallback: { analytical: false, confidence: 0 },
+    parse: (raw) => {
+      const p = raw as { analytical?: unknown; confidence?: unknown };
+      return {
+        analytical: p.analytical === true,
+        confidence: Math.max(0, Math.min(1, Number(p.confidence) || 0)),
+      };
+    },
+  });
 }

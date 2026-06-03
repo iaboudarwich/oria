@@ -10,6 +10,7 @@ export async function listCustomSections(): Promise<CustomSection[]> {
     .from("custom_sections")
     .select("*")
     .eq("organization_id", ctx.organization.id)
+    .is("deleted_at", null)
     .order("name", { ascending: true });
   return (data ?? []) as CustomSection[];
 }
@@ -24,6 +25,7 @@ export async function getCustomSectionById(
     .select("*")
     .eq("id", id)
     .eq("organization_id", ctx.organization.id)
+    .is("deleted_at", null)
     .maybeSingle();
   return (data as CustomSection | null) ?? null;
 }

@@ -96,6 +96,7 @@ export async function listAllSections(
       .from("custom_sections")
       .select("*")
       .eq("organization_id", ctx.organization.id)
+      .is("deleted_at", null)
       .order("created_at", { ascending: true }),
     supabase
       .from("section_settings")

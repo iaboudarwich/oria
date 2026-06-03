@@ -1,6 +1,6 @@
 import "server-only";
 
-import { getProvider } from "@/lib/ai-providers";
+import { runFastJsonClassifier } from "./base";
 
 export type SetupIntent = {
   intent: "setup" | "normal";
@@ -34,36 +34,29 @@ Return ONLY JSON:
  * Conservative: callers should only act on intent==='setup' with confidence>0.75.
  */
 export async function classifySetupIntent(userId: string, query: string): Promise<SetupIntent> {
-  try {
-    const adapter = await getProvider(userId, "conversation");
-    if (!adapter) return { intent: "normal", confidence: 0 };
-    const res = await adapter.complete(
-      [
-        { role: "system", content: SYSTEM },
-        { role: "user", content: query.slice(0, 600) },
-      ],
-      { tier: "fast", maxTokens: 60, jsonMode: true },
-    );
-    const raw = res.content.trim().replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "");
-    const parsed = JSON.parse(raw) as {
-      intent?: unknown;
-      confidence?: unknown;
-      action_type?: unknown;
-      target_hint?: unknown;
-    };
-    return {
-      intent: parsed.intent === "setup" ? "setup" : "normal",
-      confidence: Math.max(0, Math.min(1, Number(parsed.confidence) || 0)),
-      actionType:
-        parsed.action_type === "create" ||
-        parsed.action_type === "delete" ||
-        parsed.action_type === "rename" ||
-        parsed.action_type === "modify"
-          ? parsed.action_type
-          : undefined,
-      targetHint: typeof parsed.target_hint === "string" ? parsed.target_hint : undefined,
-    };
-  } catch {
-    return { intent: "normal", confidence: 0 };
-  }
+  return runFastJsonClassifier<SetupIntent>(userId, query, {
+    system: SYSTEM,
+    maxTokens: 60,
+    fallback: { intent: "normal", confidence: 0 },
+    parse: (raw) => {
+      const parsed = raw as {
+        intent?: unknown;
+        confidence?: unknown;
+        action_type?: unknown;
+        target_hint?: unknown;
+      };
+      return {
+        intent: parsed.intent === "setup" ? "setup" : "normal",
+        confidence: Math.max(0, Math.min(1, Number(parsed.confidence) || 0)),
+        actionType:
+          parsed.action_type === "create" ||
+          parsed.action_type === "delete" ||
+          parsed.action_type === "rename" ||
+          parsed.action_type === "modify"
+            ? parsed.action_type
+            : undefined,
+        targetHint: typeof parsed.target_hint === "string" ? parsed.target_hint : undefined,
+      };
+    },
+  });
 }

@@ -35,6 +35,7 @@ vi.mock("@/lib/supabase/server", () => ({
   createClient: async () => ({
     from(table: string) {
       let orgFilter: string | null = null;
+      let liveOnly = false;
       const builder = {
         select: () => builder,
         order: () => builder,
@@ -42,10 +43,16 @@ vi.mock("@/lib/supabase/server", () => ({
           if (col === "organization_id") orgFilter = val;
           return builder;
         },
+        is: (col: string, val: unknown) => {
+          if (col === "deleted_at" && val === null) liveOnly = true;
+          return builder;
+        },
         // Thenable so `await query` resolves to { data }.
         then: (resolve: (v: { data: unknown[]; error: null }) => void) => {
           const data = rowsFor(table).filter(
-            (r) => orgFilter === null || r.organization_id === orgFilter,
+            (r) =>
+              (orgFilter === null || r.organization_id === orgFilter) &&
+              (!liveOnly || (r as { deleted_at?: string | null }).deleted_at == null),
           );
           resolve({ data, error: null });
         },
