@@ -467,6 +467,13 @@
     "approved_toast": "Ajouté à votre espace."
   },
   "ask": {
+    "think_harder": "Réfléchir plus",
+    "think_harder_tip": "Réflexion approfondie. Plus longue, idéale pour les questions complexes.",
+    "oria_reasoning": "Oria (Raisonnement)",
+    "thinking_deeper": "Réflexion approfondie... environ 20 à 40 secondes.",
+    "reasoning_offer": "Réfléchir davantage pour une réponse plus poussée",
+    "view_reasoning": "Voir le raisonnement",
+    "hide_reasoning": "Masquer le raisonnement",
     "scope": {
       "aria": "Portée de la recherche",
       "this_label": "Cet espace de travail",

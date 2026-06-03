@@ -15,7 +15,15 @@ type Turn = {
   state: "streaming" | "done" | "error";
   errorCode?: string;
   errorMessage?: string;
+  /** This turn was answered on the reasoning tier (deeper thinking). */
+  usedReasoning?: boolean;
+  /** The classifier offered deeper thinking for this question. */
+  reasoningOffered?: boolean;
+  /** Reasoning trace (Anthropic), for the "View reasoning" collapsible. */
+  reasoning?: string;
 };
+
+export type ReasoningMode = "auto" | "manual" | "always" | "never";
 
 /** Prior-turn shape sent back to /api/ask as conversation history.
  *  Defined locally. the server-side AgentMessage type can't be imported
@@ -55,6 +63,8 @@ type AskChatProps = {
   recentQuestions?: string[];
   /** Name of the active space, shown in the scope control's description. */
   spaceName?: string | null;
+  /** The user's reasoning preference (controls the offer + button). */
+  reasoningMode?: ReasoningMode;
 };
 
 /**
@@ -68,7 +78,9 @@ export function AskChat({
   crossSpaceAvailable = false,
   recentQuestions = [],
   spaceName = null,
+  reasoningMode = "auto",
 }: AskChatProps = {}) {
+  const tr = useTranslations("ask");
   const [input, setInput] = useState("");
   const [turns, setTurns] = useState<Turn[]>([]);
   const [busy, setBusy] = useState(false);
@@ -87,8 +99,10 @@ export function AskChat({
   // Open /api/ask and stream the NDJSON events into the turn `id`. Shared
   // by a fresh send and by Retry, so both follow the exact same protocol.
   const runStream = useCallback(
-    async (id: string, query: string, history: ChatMessage[]) => {
+    async (id: string, query: string, history: ChatMessage[], reasoning = false) => {
       setBusy(true);
+      const effectiveReasoning = reasoning || reasoningMode === "always";
+      if (effectiveReasoning) updateTurn(id, (t) => ({ ...t, usedReasoning: true }));
       // Track whether we saw a terminal frame. A stream that closes
       // without one (proxy drop, server crash mid-answer) would otherwise
       // leave the turn stuck on "Thinking…" forever. the hang we're
@@ -104,6 +118,7 @@ export function AskChat({
             scope: scope ?? null,
             crossSpace: crossSpaceAvailable && crossSpace,
             conversationId: conversationIdRef.current ?? null,
+            reasoning: effectiveReasoning,
           }),
         });
         if (!res.ok || !res.body) {
@@ -139,10 +154,16 @@ export function AskChat({
               const evt = JSON.parse(line) as
                 | { type: "sources"; sources: SourceItem[] }
                 | { type: "delta"; text: string }
+                | { type: "reasoning_offer" }
+                | { type: "reasoning"; text: string }
                 | { type: "done"; conversationId?: string | null }
                 | { type: "error"; code: string };
               if (evt.type === "sources") {
                 updateTurn(id, (t) => ({ ...t, sources: evt.sources }));
+              } else if (evt.type === "reasoning_offer") {
+                updateTurn(id, (t) => ({ ...t, reasoningOffered: true }));
+              } else if (evt.type === "reasoning") {
+                updateTurn(id, (t) => ({ ...t, reasoning: evt.text }));
               } else if (evt.type === "delta") {
                 updateTurn(id, (t) => ({ ...t, answer: t.answer + evt.text }));
               } else if (evt.type === "done") {
@@ -184,11 +205,11 @@ export function AskChat({
         setBusy(false);
       }
     },
-    [updateTurn, scope, crossSpace, crossSpaceAvailable],
+    [updateTurn, scope, crossSpace, crossSpaceAvailable, reasoningMode],
   );
 
   const send = useCallback(
-    async (question: string) => {
+    async (question: string, reasoning = false) => {
       const trimmed = question.trim();
       if (!trimmed || busy) return;
 
@@ -202,9 +223,34 @@ export function AskChat({
         { id, question: trimmed, answer: "", sources: [], state: "streaming" },
       ]);
       setInput("");
-      await runStream(id, trimmed, history);
+      await runStream(id, trimmed, history, reasoning);
     },
     [busy, turns, runStream],
+  );
+
+  // Re-run a turn with deeper thinking (the offer pill). History is the turns
+  // before it, so the reasoning answer sees the same context.
+  const reasoningRerun = useCallback(
+    async (turnId: string) => {
+      if (busy) return;
+      const idx = turns.findIndex((t) => t.id === turnId);
+      if (idx === -1) return;
+      const target = turns[idx];
+      const history: ChatMessage[] = turns.slice(0, idx).flatMap((t) => [
+        { role: "user" as const, content: t.question },
+        { role: "assistant" as const, content: t.answer },
+      ]);
+      updateTurn(turnId, (t) => ({
+        ...t,
+        answer: "",
+        sources: [],
+        reasoning: undefined,
+        reasoningOffered: false,
+        state: "streaming",
+      }));
+      await runStream(turnId, target.question, history, true);
+    },
+    [busy, turns, updateTurn, runStream],
   );
 
   // Re-run a failed turn in place. History is the turns that preceded it,
@@ -241,7 +287,11 @@ export function AskChat({
 
   // Cmd/Ctrl + Enter sends.
   function onKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
-    if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+    if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === "Enter") {
+      // Cmd/Ctrl+Shift+Enter: submit with deeper thinking.
+      e.preventDefault();
+      if (reasoningMode !== "never") void send(input, true);
+    } else if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
       e.preventDefault();
       void send(input);
     } else if (e.key === "Enter" && !e.shiftKey) {
@@ -273,7 +323,12 @@ export function AskChat({
           <ul className="space-y-8">
             {turns.map((t) => (
               <li key={t.id}>
-                <TurnView turn={t} onRetry={() => retry(t.id)} busy={busy} />
+                <TurnView
+                  turn={t}
+                  onRetry={() => retry(t.id)}
+                  onReason={() => reasoningRerun(t.id)}
+                  busy={busy}
+                />
               </li>
             ))}
           </ul>
@@ -296,6 +351,9 @@ export function AskChat({
         onChange={setInput}
         onKeyDown={onKeyDown}
         onSubmit={() => send(input)}
+        onReason={reasoningMode !== "never" ? () => send(input, true) : undefined}
+        reasonLabel={tr("think_harder")}
+        reasonTooltip={tr("think_harder_tip")}
       />
     </div>
   );
@@ -382,14 +440,18 @@ const SOURCE_INTENT = /\b(source|sources|file|files|where|which file|origin|proo
 function TurnView({
   turn,
   onRetry,
+  onReason,
   busy,
 }: {
   turn: Turn;
   onRetry: () => void;
+  onReason: () => void;
   busy: boolean;
 }) {
+  const t = useTranslations("ask");
   const wantsSources = SOURCE_INTENT.test(turn.question);
   const [sourcesOpen, setSourcesOpen] = useState(wantsSources);
+  const [reasoningOpen, setReasoningOpen] = useState(false);
   return (
     <article className="animate-fade-up">
       <p className="text-[13px] text-ink-faint">You asked</p>
@@ -405,7 +467,7 @@ function TurnView({
       >
         <div className="mb-1.5 flex items-center gap-1.5 text-[11.5px] text-ink-faint">
           <SparkIcon size={11} />
-          <span>Oria</span>
+          <span>{turn.usedReasoning ? t("oria_reasoning") : "Oria"}</span>
         </div>
         {turn.state === "error" ? (
           <ErrorMessage
@@ -415,11 +477,47 @@ function TurnView({
             busy={busy}
           />
         ) : turn.answer.length === 0 && turn.state === "streaming" ? (
-          <Thinking />
+          turn.usedReasoning ? (
+            <p className="text-[14px] text-ink-soft">{t("thinking_deeper")}</p>
+          ) : (
+            <Thinking />
+          )
         ) : (
           <AnswerText answer={turn.answer} sources={turn.sources} />
         )}
       </div>
+
+      {/* Offer pill: classifier flagged this as analytical and it was answered
+          on the fast tier. Let the user re-run with deeper thinking. */}
+      {turn.reasoningOffered && !turn.usedReasoning && turn.state === "done" ? (
+        <button
+          type="button"
+          onClick={onReason}
+          disabled={busy}
+          className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-accent/40 bg-accent-soft/20 px-3 py-1 text-[12px] text-ink transition-base hover:bg-accent-soft/40 disabled:opacity-50"
+        >
+          <SparkIcon size={11} />
+          {t("reasoning_offer")}
+        </button>
+      ) : null}
+
+      {/* View reasoning (Anthropic extended thinking), default collapsed. */}
+      {turn.reasoning && turn.state === "done" ? (
+        <div className="mt-2">
+          <button
+            type="button"
+            onClick={() => setReasoningOpen((o) => !o)}
+            className="text-[11.5px] text-ink-faint transition-base hover:text-ink"
+          >
+            {reasoningOpen ? t("hide_reasoning") : t("view_reasoning")}
+          </button>
+          {reasoningOpen ? (
+            <pre className="mt-1 max-h-64 overflow-auto whitespace-pre-wrap rounded-xl border border-line bg-canvas px-3 py-2 text-[12px] leading-relaxed text-ink-muted">
+              {turn.reasoning}
+            </pre>
+          ) : null}
+        </div>
+      ) : null}
 
       {turn.sources.length > 0 && turn.state !== "streaming" ? (
         <div className="mt-3">
@@ -644,10 +742,17 @@ type ComposerProps = {
   onChange: (v: string) => void;
   onKeyDown: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
   onSubmit: () => void;
+  /** Submit with deeper thinking (omitted when reasoning_mode is never). */
+  onReason?: () => void;
+  reasonLabel?: string;
+  reasonTooltip?: string;
 };
 
 const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
-  function Composer({ value, busy, placeholder, onChange, onKeyDown, onSubmit }, ref) {
+  function Composer(
+    { value, busy, placeholder, onChange, onKeyDown, onSubmit, onReason, reasonLabel, reasonTooltip },
+    ref,
+  ) {
     const locale = useLocale() as Locale;
     return (
       <form
@@ -674,6 +779,19 @@ const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
             size="sm"
             className="mb-0.5"
           />
+          {onReason ? (
+            <button
+              type="button"
+              onClick={onReason}
+              disabled={busy || value.trim().length === 0}
+              title={reasonTooltip}
+              aria-label={reasonLabel}
+              className="mb-0.5 inline-flex h-10 shrink-0 items-center gap-1 rounded-xl border border-line px-2.5 text-[12px] text-ink-soft transition-base hover:border-line-strong hover:text-ink disabled:opacity-40"
+            >
+              <SparkIcon size={12} />
+              <span className="hidden sm:inline">{reasonLabel}</span>
+            </button>
+          ) : null}
           <button
             type="submit"
             disabled={busy || value.trim().length === 0}

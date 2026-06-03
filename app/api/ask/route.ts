@@ -5,6 +5,7 @@ import { getCurrentContext } from "@/lib/data/organizations";
 import { isAnthropicConfigured } from "@/lib/ai/anthropic";
 import { retrieveForQuery } from "@/lib/ai/retrieve";
 import { streamAnswer, type AgentMessage } from "@/lib/ai/agent";
+import { classifyReasoningIntent } from "@/lib/ai/reasoning-classifier";
 import { recordLearningEvent } from "@/lib/data/learning";
 import { recordSystemEvent } from "@/lib/data/system-events";
 import { checkDailyAskRequests } from "@/lib/data/quotas";
@@ -58,6 +59,8 @@ export async function POST(request: Request) {
     crossSpace?: boolean;
     /** Pass an existing id to continue a conversation, omit to start a new one. */
     conversationId?: string | null;
+    /** Client requests the reasoning tier (Think harder / offer re-run). */
+    reasoning?: boolean;
   } = {};
   try {
     body = (await request.json()) as typeof body;
@@ -126,6 +129,28 @@ export async function POST(request: Request) {
   // when the user is currently in their Personal space (retrieveForQuery
   // re-checks this on the server too, so a forged request can't broaden).
   const crossSpace = body.crossSpace === true && !scope;
+
+  // Reasoning decision. reasoning_mode: auto (classify + offer), manual (button
+  // only), always (every query reasons), never (disabled). The base answer
+  // stays on the fast tier (today's behavior); reasoning is the deeper upgrade.
+  let reasoningMode: "auto" | "manual" | "always" | "never" = "auto";
+  try {
+    const supabase = await createClient();
+    const { data } = await supabase
+      .from("profiles")
+      .select("reasoning_mode")
+      .eq("id", ctx.profile.id)
+      .maybeSingle();
+    const m = (data as { reasoning_mode?: string } | null)?.reasoning_mode;
+    if (m === "manual" || m === "always" || m === "never") reasoningMode = m;
+  } catch {
+    // default to auto
+  }
+  const wantsReasoning = body.reasoning === true && reasoningMode !== "never";
+  const useReasoning = reasoningMode === "always" || wantsReasoning;
+  const runClassifier = reasoningMode === "auto" && !useReasoning;
+  const reasoningTrigger =
+    reasoningMode === "always" ? "always_mode" : wantsReasoning ? "user_button" : "not_used";
 
   // Resolve (or create) a conversation for persistence. Best-effort:
   // if the DB call fails we still serve the answer. conversationId
@@ -207,8 +232,19 @@ export async function POST(request: Request) {
     async start(controller) {
       try {
         // 1. Retrieval (works without an API key. useful for the empty case).
-        const sources = await retrieveForQuery(query, { scope, crossSpace });
+        //    The reasoning classifier runs in parallel so it never blocks.
+        const [sources, intent] = await Promise.all([
+          retrieveForQuery(query, { scope, crossSpace }),
+          runClassifier
+            ? classifyReasoningIntent(ctx.profile.id, query)
+            : Promise.resolve({ analytical: false, confidence: 0 }),
+        ]);
         writeEvent(controller, { type: "sources", sources });
+
+        // Offer deeper thinking when the question reads as analytical (auto mode).
+        if (runClassifier && intent.analytical && intent.confidence > 0.7) {
+          writeEvent(controller, { type: "reasoning_offer" });
+        }
 
         // 2. If Claude isn't configured, surface a calm error and stop.
         if (!isAnthropicConfigured()) {
@@ -222,6 +258,7 @@ export async function POST(request: Request) {
         //    record occurred_at dates.
         const tz = (await cookies()).get("oria_tz")?.value ?? null;
         let fullAnswer = "";
+        let thinking = "";
         for await (const text of streamAnswer({
           userId: ctx.profile.id,
           query,
@@ -232,6 +269,11 @@ export async function POST(request: Request) {
           nowISO: new Date().toISOString(),
           spaceContext,
           personalContext,
+          tier: useReasoning ? "reasoning" : "fast",
+          reasoningTrigger,
+          onThinking: (t) => {
+            thinking = t;
+          },
           telemetry: {
             organizationId: ctx.organization.id,
             actorId: ctx.profile.id,
@@ -239,6 +281,12 @@ export async function POST(request: Request) {
         })) {
           fullAnswer += text;
           writeEvent(controller, { type: "delta", text });
+        }
+
+        // Surface the reasoning trace (Anthropic extended thinking) for the
+        // optional "View reasoning" collapsible.
+        if (useReasoning && thinking) {
+          writeEvent(controller, { type: "reasoning", text: thinking });
         }
 
         // Include conversation_id in done frame so the client can

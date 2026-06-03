@@ -467,6 +467,13 @@
     "approved_toast": "Añadido a tu espacio."
   },
   "ask": {
+    "think_harder": "Pensar más",
+    "think_harder_tip": "Pensamiento más profundo. Tarda más, mejor para preguntas complejas.",
+    "oria_reasoning": "Oria (Razonamiento)",
+    "thinking_deeper": "Pensando más a fondo... unos 20 a 40 segundos.",
+    "reasoning_offer": "Pensar más a fondo para una respuesta más profunda",
+    "view_reasoning": "Ver el razonamiento",
+    "hide_reasoning": "Ocultar el razonamiento",
     "scope": {
       "aria": "Alcance de la búsqueda",
       "this_label": "Este espacio de trabajo",

@@ -175,6 +175,12 @@ export async function* streamAnswer(input: {
   spaceContext?: SpaceContext | null;
   /** PERSONAL CONTEXT block from the personalization layer. */
   personalContext?: string | null;
+  /** "fast" (default) for the normal answer, "reasoning" for deeper thinking. */
+  tier?: "fast" | "reasoning";
+  /** Reason the tier was chosen, for telemetry (classifier/button/always). */
+  reasoningTrigger?: string;
+  /** Receives the reasoning trace at stream end (Anthropic extended thinking). */
+  onThinking?: (text: string) => void;
 }): AsyncGenerator<string, void, unknown> {
   // Conversation surface: routed through the user's connected AI when active,
   // else Oria's default, with silent fallback (streamConversation).
@@ -219,7 +225,12 @@ export async function* streamAnswer(input: {
     { role: "user", content: userMessage },
   ];
 
-  const surface = input.scope ? `ask:${input.scope.kind}` : "ask";
+  const tier = input.tier ?? "fast";
+  // Tag the surface with the tier + what triggered it (tier_used /
+  // reasoning_triggered_by) so telemetry can show reasoning adoption.
+  const base = input.scope ? `ask:${input.scope.kind}` : "ask";
+  const surface =
+    tier === "reasoning" ? `${base}:reasoning:${input.reasoningTrigger ?? "unknown"}` : base;
   const startedAt = Date.now();
   let usedModel = "";
   let usage = { input: 0, output: 0 };
@@ -229,12 +240,14 @@ export async function* streamAnswer(input: {
       userId: input.userId,
       messages,
       options: {
-        tier: "fast",
-        maxTokens: 800,
+        tier,
+        // Reasoning answers can run longer; give the final text more room.
+        maxTokens: tier === "reasoning" ? 1500 : 800,
         onUsage: (u) => {
           usedModel = u.model;
           usage = u.tokens;
         },
+        ...(input.onThinking ? { onThinking: input.onThinking } : {}),
       },
     })) {
       yield delta;

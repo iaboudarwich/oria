@@ -467,6 +467,13 @@
     "approved_toast": "تمت الإضافة إلى مساحتك."
   },
   "ask": {
+    "think_harder": "تفكير أعمق",
+    "think_harder_tip": "تفكير أعمق. يستغرق وقتاً أطول، أفضل للأسئلة المعقدة.",
+    "oria_reasoning": "Oria (تفكير)",
+    "thinking_deeper": "نفكّر بعمق أكبر... عادة من 20 إلى 40 ثانية.",
+    "reasoning_offer": "فكّر بعمق أكبر للحصول على إجابة أعمق",
+    "view_reasoning": "عرض التفكير",
+    "hide_reasoning": "إخفاء التفكير",
     "scope": {
       "aria": "نطاق البحث",
       "this_label": "مساحة العمل هذه",

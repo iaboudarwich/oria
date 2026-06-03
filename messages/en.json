@@ -467,6 +467,13 @@
     "approved_toast": "Added to your space."
   },
   "ask": {
+    "think_harder": "Think harder",
+    "think_harder_tip": "Use deeper thinking. Takes longer, better for complex questions.",
+    "oria_reasoning": "Oria (Reasoning)",
+    "thinking_deeper": "Thinking deeper... usually takes 20 to 40 seconds.",
+    "reasoning_offer": "Think harder about this for a deeper answer",
+    "view_reasoning": "View reasoning",
+    "hide_reasoning": "Hide reasoning",
     "scope": {
       "aria": "Search scope",
       "this_label": "This workspace",

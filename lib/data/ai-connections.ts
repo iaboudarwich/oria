@@ -6,6 +6,26 @@ import { encryptToken, decryptToken } from "@/lib/security/token-crypto";
 import { buildAdapter } from "@/lib/ai-providers";
 import type { ProviderName, ConnectionStatus } from "@/lib/ai-providers";
 
+export type ReasoningMode = "auto" | "manual" | "always" | "never";
+
+/** The user's Ask Oria reasoning preference (defaults to auto). */
+export async function getReasoningMode(userId: string): Promise<ReasoningMode> {
+  const admin = createAdminClient();
+  const { data } = await admin
+    .from("profiles")
+    .select("reasoning_mode")
+    .eq("id", userId)
+    .maybeSingle();
+  const m = (data as { reasoning_mode?: string } | null)?.reasoning_mode;
+  return m === "manual" || m === "always" || m === "never" ? m : "auto";
+}
+
+/** Persist the user's reasoning preference. */
+export async function setReasoningMode(userId: string, mode: ReasoningMode): Promise<void> {
+  const admin = createAdminClient();
+  await admin.from("profiles").update({ reasoning_mode: mode }).eq("id", userId);
+}
+
 /** Display-safe connection summary. NEVER carries the key. */
 export type AiConnectionSummary = {
   provider: ProviderName;
