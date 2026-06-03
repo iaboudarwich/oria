@@ -63,6 +63,7 @@ export const getCurrentContext = cache(async (): Promise<CurrentContext | null> 
         .from("organizations")
         .select("*")
         .eq("id", active.organization_id)
+        .is("deleted_at", null)
         .maybeSingle(),
       supabase.from("profiles").select("*").eq("id", user.id).maybeSingle(),
     ]);
@@ -103,7 +104,8 @@ export async function listUserSpaces(): Promise<UserSpace[]> {
   const orgRes = await supabase
     .from("organizations")
     .select("*")
-    .in("id", ids);
+    .in("id", ids)
+    .is("deleted_at", null);
   const orgs = (orgRes.data ?? []) as Organization[];
   const orgMap = new Map(orgs.map((o) => [o.id, o]));
 

@@ -3,7 +3,7 @@ import "server-only";
 import { randomUUID } from "node:crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { logAuditEvent } from "@/lib/data/audit-log";
-import type { SetupPlan, WorkspacePlan } from "./types";
+import type { PlanPatch, SetupPlan, WorkspacePlan } from "./types";
 
 export type ExecuteResult = { ok: boolean; error?: string; primaryOrgId?: string };
 
@@ -143,6 +143,119 @@ export async function executeSetupPlan(input: {
         .update({ accent_color: personal.accent_color, template_key: personal.template_key })
         .eq("id", personal.id);
     }
+    return { ok: false, error: (e as Error).message };
+  }
+}
+
+/**
+ * Apply a reshape PlanPatch: create new work orgs, add sections, rename, and
+ * soft-delete (deleted_at) orgs/sections. Soft-delete makes undo trivial (clear
+ * deleted_at). Refuses to delete a user's only/last personal space. Stores the
+ * patch (with created_org_ids) in onboarding_setup_plans for the 24h undo, and
+ * audits setup_change_executed with the patch types.
+ */
+export async function executePlanPatch(input: {
+  userId: string;
+  patch: PlanPatch;
+  source: "reconfigure";
+}): Promise<ExecuteResult> {
+  const admin = createAdminClient();
+  const { patch } = input;
+  const createdOrgIds: string[] = [];
+  const now = new Date().toISOString();
+
+  try {
+    // Guard: never soft-delete the user's last active personal space.
+    const orgDeletes = patch.deletes.filter((d) => d.kind === "org");
+    if (orgDeletes.length > 0) {
+      const { data: personalRows } = await admin
+        .from("organizations")
+        .select("id")
+        .eq("created_by", input.userId)
+        .eq("parent_kind", "personal")
+        .is("deleted_at", null);
+      const personalIds = new Set(((personalRows as { id: string }[]) ?? []).map((r) => r.id));
+      const deletingPersonal = orgDeletes.filter((d) => personalIds.has(d.id));
+      if (deletingPersonal.length > 0 && deletingPersonal.length >= personalIds.size) {
+        return { ok: false, error: "cannot_delete_last_space" };
+      }
+    }
+
+    // 1. Creates: each WorkspacePlan becomes a new office org + membership + sections.
+    let firstWorkOrg = true;
+    for (const ws of patch.creates) {
+      const { data: org, error } = await admin
+        .from("organizations")
+        .insert({
+          slug: slugify(ws.name),
+          name: ws.name.slice(0, 60),
+          kind: ws.kind === "circle" ? "circle" : "office",
+          parent_kind: ws.kind === "circle" ? "personal" : "work",
+          is_default_for_kind: ws.kind === "office" ? firstWorkOrg : false,
+          accent_color: ws.accent_color,
+          template_key: "custom",
+          created_by: input.userId,
+        })
+        .select("id")
+        .single();
+      if (error || !org) throw new Error("org_create_failed");
+      const orgId = (org as { id: string }).id;
+      createdOrgIds.push(orgId);
+      await admin.from("memberships").insert({ organization_id: orgId, user_id: input.userId, role: "owner" });
+      const sorted = [...ws.sections].sort((a, b) => a.priority - b.priority);
+      for (const s of sorted) {
+        await admin.from("custom_sections").upsert(
+          { organization_id: orgId, name: s.title.slice(0, 60), icon: s.icon, created_by: input.userId },
+          { onConflict: "organization_id,name", ignoreDuplicates: true },
+        );
+      }
+      if (ws.kind === "office") firstWorkOrg = false;
+    }
+
+    // 2. Section adds into existing orgs.
+    for (const add of patch.section_adds) {
+      await admin.from("custom_sections").upsert(
+        { organization_id: add.orgId, name: add.section.title.slice(0, 60), icon: add.section.icon, created_by: input.userId },
+        { onConflict: "organization_id,name", ignoreDuplicates: true },
+      );
+    }
+
+    // 3. Renames (owner-scoped). The old name is preserved in the stored patch.
+    for (const r of patch.renames) {
+      if (r.kind === "org") {
+        await admin.from("organizations").update({ name: r.to.slice(0, 60) }).eq("id", r.id).eq("created_by", input.userId);
+      } else {
+        await admin.from("custom_sections").update({ name: r.to.slice(0, 60) }).eq("id", r.id).eq("created_by", input.userId);
+      }
+    }
+
+    // 4. Soft-deletes (owner-scoped). Items stay intact for the 24h undo.
+    for (const d of patch.deletes) {
+      const table = d.kind === "org" ? "organizations" : "custom_sections";
+      await admin.from(table).update({ deleted_at: now }).eq("id", d.id).eq("created_by", input.userId);
+    }
+
+    await admin.from("onboarding_setup_plans").insert({
+      user_id: input.userId,
+      plan: { patch, created_org_ids: createdOrgIds },
+      source: input.source,
+    });
+
+    await logAuditEvent({
+      userId: input.userId,
+      action: "setup_change_executed",
+      resourceType: "setup_plan",
+      metadata: {
+        creates: patch.creates.length,
+        section_adds: patch.section_adds.length,
+        renames: patch.renames.length,
+        deletes: patch.deletes.length,
+      },
+    });
+
+    return { ok: true, primaryOrgId: createdOrgIds[0] };
+  } catch (e) {
+    for (const id of createdOrgIds) await admin.from("organizations").delete().eq("id", id);
     return { ok: false, error: (e as Error).message };
   }
 }

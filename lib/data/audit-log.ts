@@ -86,7 +86,11 @@ export type AuditAction =
   // Onboarding + reshape
   | "onboarding_executed"
   | "setup_reconfigured"
+  | "setup_change_executed"
   | "setup_change_reverted"
+  | "setup_change_purged"
+  | "ask_setup_intent_detected"
+  | "ask_setup_intent_rejected"
   // Account security
   | "email.verified"
   | "2fa.prompt_shown"
@@ -317,7 +321,11 @@ export function actionLabel(action: string): string {
     "routing_rule_removed":         "Removed a learned filing rule",
     "onboarding_executed":          "Built the initial workspace setup",
     "setup_reconfigured":           "Reshaped the workspace setup",
+    "setup_change_executed":        "Applied a setup change",
     "setup_change_reverted":        "Undid a setup change",
+    "setup_change_purged":          "Permanently removed an archived item",
+    "ask_setup_intent_detected":    "Routed an Ask to reshape",
+    "ask_setup_intent_rejected":    "Kept an Ask as a question",
     "email.verified":               "Verified email address",
     "2fa.prompt_shown":             "Shown the two-factor setup prompt",
     "2fa.prompt_dismissed":         "Dismissed the two-factor setup prompt",

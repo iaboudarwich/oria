@@ -83,9 +83,29 @@ export type SetupPlan = {
 
 // ── Reshape patch (F5): a diff against the user's existing structure ──
 
+export type PatchRename = { kind: "org" | "section"; id: string; from: string; to: string };
+export type PatchDelete = {
+  kind: "org" | "section";
+  id: string;
+  name: string;
+  /** Items archived alongside this target, computed at preview time. */
+  itemCount?: number;
+};
+
 export type PlanPatch = {
   creates: WorkspacePlan[];
   section_adds: Array<{ orgId: string; section: PlanSection }>;
-  renames: Array<{ kind: "org" | "section"; id: string; from: string; to: string }>;
-  deletes: Array<{ kind: "org" | "section"; id: string; name: string }>;
+  renames: PatchRename[];
+  deletes: PatchDelete[];
 };
+
+export const EMPTY_PATCH: PlanPatch = { creates: [], section_adds: [], renames: [], deletes: [] };
+
+export function patchIsEmpty(p: PlanPatch): boolean {
+  return (
+    p.creates.length === 0 &&
+    p.section_adds.length === 0 &&
+    p.renames.length === 0 &&
+    p.deletes.length === 0
+  );
+}
