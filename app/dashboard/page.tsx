@@ -32,6 +32,12 @@ import { OnboardingRepromptBanner } from "@/components/dashboard/onboarding-repr
 import { QuickActions } from "@/components/dashboard/quick-actions";
 import { listUpcomingEvents } from "@/lib/google/calendar";
 import { UpcomingEventsStrip } from "@/components/cloud/upcoming-events-strip";
+import { cookies } from "next/headers";
+import { getOriaTzCookieName } from "@/lib/utils/tz";
+import { loadDailyLoop } from "@/lib/daily/today-data";
+import { DailyLoop } from "@/components/dashboard/daily/daily-loop";
+import { loadContextSurface } from "@/lib/daily/context-surface";
+import { ContextSurface } from "@/components/dashboard/context/context-surface";
 import type { Section } from "@/lib/supabase/types";
 
 export default async function DashboardHome() {
@@ -86,6 +92,22 @@ export default async function DashboardHome() {
   const insights = rawInsights.filter((i) => !dismissed.has(i.id));
   const calT = await getTranslations("cloud");
 
+  // Round 16: per-context surface + the intelligent daily loop. Timezone comes
+  // from the client-set oria_tz cookie (fresh on every visit), falling back to
+  // the stored profile timezone.
+  const now = new Date();
+  const cookieStore = await cookies();
+  const tz =
+    cookieStore.get(getOriaTzCookieName())?.value ||
+    ((ctx?.profile as Record<string, unknown> | undefined)?.timezone as string | undefined) ||
+    null;
+  const [contextSurface, dailyLoop] = ctx
+    ? await Promise.all([
+        loadContextSurface(ctx.organization.id, ctx.organization, now),
+        loadDailyLoop(ctx.profile.id, ctx.organization.id, tz, now),
+      ])
+    : [null, null];
+
   const isEmpty = uploads.length === 0;
 
   // Reprompt banner: show if not completed onboarding AND not dismissed
@@ -123,7 +145,13 @@ export default async function DashboardHome() {
         {showReprompt && ctx && <OnboardingRepromptBanner />}
         <SearchHero />
 
+        {contextSurface ? <ContextSurface surface={contextSurface} /> : null}
+
         <QuickActions />
+
+        {dailyLoop && ctx ? (
+          <DailyLoop data={dailyLoop} organizationId={ctx.organization.id} />
+        ) : null}
 
         <AddRow />
 

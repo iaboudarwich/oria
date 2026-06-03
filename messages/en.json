@@ -214,7 +214,13 @@
     "consent": "I have read and agree to the <terms>Terms of Service</terms> and <privacy>Privacy Policy</privacy>."
   },
   "auth": {
-    "pw_strength": ["Too weak", "Weak", "Fair", "Good", "Strong"],
+    "pw_strength": [
+      "Too weak",
+      "Weak",
+      "Fair",
+      "Good",
+      "Strong"
+    ],
     "pw_too_short": "Use at least {min} characters.",
     "pw_too_common": "That password is too common. Choose something harder to guess.",
     "email_label": "Email",
@@ -397,22 +403,70 @@
     "group_connect": "Connect",
     "group_track": "Track",
     "group_secure": "Secure",
-    "upload": { "title": "Upload anything", "desc": "PDFs, receipts, screenshots, voice notes." },
-    "inbox": { "title": "Unsorted inbox", "desc": "Review and file what Oria couldn't place." },
-    "sections": { "title": "Manage sections", "desc": "Create, rename, and organize your sections." },
-    "things": { "title": "Records", "desc": "People, vehicles, and properties Oria tracks." },
-    "reshape": { "title": "Reshape Oria", "desc": "Add or change spaces and sections by talking." },
-    "learned_rules": { "title": "Learned filing rules", "desc": "See and remove what Oria learned from you." },
-    "ask": { "title": "Ask Oria", "desc": "Ask anything across your stuff." },
-    "connect_email": { "title": "Connect email", "desc": "Scan Gmail for bills, bookings, and receipts." },
-    "routing": { "title": "Email routing & filters", "desc": "Decide where trackables go and what to skip." },
-    "reminders": { "title": "Reminders", "desc": "Dates and follow-ups, surfaced on time." },
-    "calendar": { "title": "Calendar", "desc": "Everything with a date, in one view." },
-    "trackables": { "title": "Trackables", "desc": "Subscriptions, renewals, and expiries." },
-    "security": { "title": "Security", "desc": "Password, two-factor, sessions, activity log." },
-    "privacy": { "title": "Privacy", "desc": "What we can see and how it's protected." },
-    "data": { "title": "Export or delete data", "desc": "Download everything, or delete it in one click." },
-    "private": { "title": "Private Oria", "desc": "Self-hosted, local-only mode (preview)." }
+    "upload": {
+      "title": "Upload anything",
+      "desc": "PDFs, receipts, screenshots, voice notes."
+    },
+    "inbox": {
+      "title": "Unsorted inbox",
+      "desc": "Review and file what Oria couldn't place."
+    },
+    "sections": {
+      "title": "Manage sections",
+      "desc": "Create, rename, and organize your sections."
+    },
+    "things": {
+      "title": "Records",
+      "desc": "People, vehicles, and properties Oria tracks."
+    },
+    "reshape": {
+      "title": "Reshape Oria",
+      "desc": "Add or change spaces and sections by talking."
+    },
+    "learned_rules": {
+      "title": "Learned filing rules",
+      "desc": "See and remove what Oria learned from you."
+    },
+    "ask": {
+      "title": "Ask Oria",
+      "desc": "Ask anything across your stuff."
+    },
+    "connect_email": {
+      "title": "Connect email",
+      "desc": "Scan Gmail for bills, bookings, and receipts."
+    },
+    "routing": {
+      "title": "Email routing & filters",
+      "desc": "Decide where trackables go and what to skip."
+    },
+    "reminders": {
+      "title": "Reminders",
+      "desc": "Dates and follow-ups, surfaced on time."
+    },
+    "calendar": {
+      "title": "Calendar",
+      "desc": "Everything with a date, in one view."
+    },
+    "trackables": {
+      "title": "Trackables",
+      "desc": "Subscriptions, renewals, and expiries."
+    },
+    "security": {
+      "title": "Security",
+      "desc": "Password, two-factor, sessions, activity log."
+    },
+    "privacy": {
+      "title": "Privacy",
+      "desc": "What we can see and how it's protected."
+    },
+    "data": {
+      "title": "Export or delete data",
+      "desc": "Download everything, or delete it in one click."
+    },
+    "private": {
+      "title": "Private Oria",
+      "desc": "Self-hosted, local-only mode (preview)."
+    }
   },
   "tour": {
     "step_of": "Step {current} of {total}",
@@ -420,11 +474,26 @@
     "back": "Back",
     "next": "Next",
     "done": "Done",
-    "upload": { "title": "Upload anything", "body": "Drop in PDFs, receipts, screenshots, or voice notes. Oria reads and files them." },
-    "connect": { "title": "Connect your email", "body": "Let Oria scan Gmail for subscriptions, bills, flights, and bookings, read-only." },
-    "ask": { "title": "Ask Oria", "body": "Ask a question about your stuff and get one clear answer with its sources." },
-    "browse": { "title": "Browse sections", "body": "Everything lands in a section: Finance, Travel, Health, and more." },
-    "manage": { "title": "Find anything fast", "body": "Press Cmd+K anywhere to search and jump to any feature, space, or trackable." }
+    "upload": {
+      "title": "Upload anything",
+      "body": "Drop in PDFs, receipts, screenshots, or voice notes. Oria reads and files them."
+    },
+    "connect": {
+      "title": "Connect your email",
+      "body": "Let Oria scan Gmail for subscriptions, bills, flights, and bookings, read-only."
+    },
+    "ask": {
+      "title": "Ask Oria",
+      "body": "Ask a question about your stuff and get one clear answer with its sources."
+    },
+    "browse": {
+      "title": "Browse sections",
+      "body": "Everything lands in a section: Finance, Travel, Health, and more."
+    },
+    "manage": {
+      "title": "Find anything fast",
+      "body": "Press Cmd+K anywhere to search and jump to any feature, space, or trackable."
+    }
   },
   "command": {
     "title": "Search and commands",
@@ -437,19 +506,58 @@
     "group_things": "Records",
     "group_uploads": "Uploads",
     "group_reminders": "Reminders",
-    "ask": { "label": "Ask Oria", "desc": "Ask a question about your stuff" },
-    "upload": { "label": "Upload", "desc": "Add files, receipts, screenshots" },
-    "connect_email": { "label": "Connect email", "desc": "Scan Gmail for bills and bookings" },
-    "create_reminder": { "label": "Reminders", "desc": "See and add reminders" },
-    "manage_sections": { "label": "Manage sections", "desc": "Organize your sections" },
-    "email_routing": { "label": "Email routing & filters", "desc": "Where email trackables go, what to skip" },
-    "reshape": { "label": "Reshape Oria", "desc": "Set up or change spaces by talking" },
-    "features": { "label": "What can Oria do?", "desc": "Browse every feature" },
-    "settings": { "label": "Settings", "desc": "Account and preferences" },
-    "security": { "label": "Security", "desc": "Password, 2FA, sessions, activity" },
-    "export_data": { "label": "Export data", "desc": "Download your data" },
-    "trash": { "label": "Deleted", "desc": "Restore or purge deleted trackables" },
-    "timeline": { "label": "Timeline", "desc": "Recent activity" }
+    "ask": {
+      "label": "Ask Oria",
+      "desc": "Ask a question about your stuff"
+    },
+    "upload": {
+      "label": "Upload",
+      "desc": "Add files, receipts, screenshots"
+    },
+    "connect_email": {
+      "label": "Connect email",
+      "desc": "Scan Gmail for bills and bookings"
+    },
+    "create_reminder": {
+      "label": "Reminders",
+      "desc": "See and add reminders"
+    },
+    "manage_sections": {
+      "label": "Manage sections",
+      "desc": "Organize your sections"
+    },
+    "email_routing": {
+      "label": "Email routing & filters",
+      "desc": "Where email trackables go, what to skip"
+    },
+    "reshape": {
+      "label": "Reshape Oria",
+      "desc": "Set up or change spaces by talking"
+    },
+    "features": {
+      "label": "What can Oria do?",
+      "desc": "Browse every feature"
+    },
+    "settings": {
+      "label": "Settings",
+      "desc": "Account and preferences"
+    },
+    "security": {
+      "label": "Security",
+      "desc": "Password, 2FA, sessions, activity"
+    },
+    "export_data": {
+      "label": "Export data",
+      "desc": "Download your data"
+    },
+    "trash": {
+      "label": "Deleted",
+      "desc": "Restore or purge deleted trackables"
+    },
+    "timeline": {
+      "label": "Timeline",
+      "desc": "Recent activity"
+    }
   },
   "reshape": {
     "changes_generic": "Setup change",
@@ -693,8 +801,15 @@
     "admin_health": "Admin · System Health",
     "sign_out": "Sign out"
   },
-  "records": { "types": "Types", "add": "Add", "no_types": "No types yet." },
-  "uploads": { "review": "Review what we found", "details": "Full extraction details" },
+  "records": {
+    "types": "Types",
+    "add": "Add",
+    "no_types": "No types yet."
+  },
+  "uploads": {
+    "review": "Review what we found",
+    "details": "Full extraction details"
+  },
   "pwa": {
     "app_description": "Your second brain and right arm.",
     "install_title": "Install Oria",
@@ -703,8 +818,8 @@
     "install_dismiss": "Not now",
     "ios_title": "Add Oria to your Home Screen",
     "ios_intro": "Install Oria in two steps:",
-    "ios_step_share": "Tap the Share button in Safari.",
-    "ios_step_add": "Choose \"Add to Home Screen\".",
+    "ios_step_share": "Tap the Share button in the toolbar (the square with an arrow).",
+    "ios_step_add": "Scroll down, tap Add to Home Screen, then tap Add.",
     "ios_done": "Got it",
     "offline_title": "You are offline",
     "offline_body": "Oria needs a connection to show your latest. Reconnect and we will pick up where you left off.",
@@ -719,6 +834,68 @@
     "push_unavailable": "Push is not configured on this server yet.",
     "push_test": "Send test notification",
     "push_test_sent": "Test notification sent.",
-    "push_error": "Something went wrong. Try again."
+    "push_error": "Something went wrong. Try again.",
+    "push_ios_install": "On iPhone and iPad, add Oria to your Home Screen first. Then turn on notifications from the installed app.",
+    "install_title_ios": "Add Oria to your Home Screen",
+    "install_body_ios": "Oria runs like an app once it is on your Home Screen. Add it in two quick steps.",
+    "ios_show_how": "Show me how"
+  },
+  "dailyLoop": {
+    "kind_morning_briefing": "Morning briefing",
+    "kind_weekly_review": "Weekly review",
+    "kind_yesterday_recap": "Yesterday",
+    "kind_pre_meeting_prep": "Coming up",
+    "kind_custom": "Routine",
+    "journal_label": "Tonight's journal",
+    "carried_label": "Carried from yesterday",
+    "carried_dismiss": "Dismiss",
+    "overcommit_title": "Busy day ahead",
+    "overcommit_body": "{count} meetings, about {hours} hours booked. Protect some focus time?",
+    "overcommit_action": "Block focus time",
+    "overcommit_blocked": "Focus time blocked"
+  },
+  "suggestions": {
+    "section_title": "Suggestions",
+    "yes": "Yes",
+    "no": "No",
+    "comment": "Comment",
+    "comment_placeholder": "Tell Oria how to handle this",
+    "comment_send": "Send",
+    "done": "Done",
+    "expiring_trackable_title": "{name} renews soon",
+    "expiring_trackable_detail": "Renews in {days} days. Set a reminder?",
+    "untracked_recurring_title": "Track {merchant}?",
+    "untracked_recurring_detail": "You pay {merchant} regularly. Add it to Trackables.",
+    "unfiled_upload_title": "File {name}?",
+    "unfiled_upload_detail": "Oria worked out where this belongs.",
+    "stuck_upload_title": "Retry {name}?",
+    "stuck_upload_detail": "This document did not finish processing.",
+    "calendar_conflict_title": "Two events overlap",
+    "calendar_conflict_detail": "{a} and {b} clash today. Set a reminder to sort it out?",
+    "document_action_title": "{name} needs attention",
+    "document_action_detail": "It has a {label} on {date}. Set a reminder?"
+  },
+  "contextSurface": {
+    "title_personal": "Your week",
+    "title_investor": "Portfolio",
+    "title_business": "Operations",
+    "title_family_office": "The estate",
+    "filed_this_week": "filed this week",
+    "six_month_spend": "spent, six months",
+    "six_month_outflow": "outflow, six months",
+    "tracked_total": "tracked",
+    "activity_caption": "Documents filed, last 7 days",
+    "spend_caption": "Monthly spend, last 6 months",
+    "categories_caption": "Tracked by category",
+    "empty": "Connect an account to bring this to life.",
+    "category_insurance": "Insurance",
+    "category_subscription": "Subscriptions",
+    "category_lease": "Leases",
+    "category_membership": "Memberships",
+    "category_certification": "Certifications",
+    "category_id_document": "IDs",
+    "category_contract": "Contracts",
+    "category_warranty": "Warranties",
+    "category_other": "Other"
   }
 }

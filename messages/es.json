@@ -214,7 +214,13 @@
     "consent": "He leído y acepto los <terms>Términos del servicio</terms> y la <privacy>Política de privacidad</privacy>."
   },
   "auth": {
-    "pw_strength": ["Muy débil", "Débil", "Aceptable", "Buena", "Fuerte"],
+    "pw_strength": [
+      "Muy débil",
+      "Débil",
+      "Aceptable",
+      "Buena",
+      "Fuerte"
+    ],
     "pw_too_short": "Usa al menos {min} caracteres.",
     "pw_too_common": "Esa contraseña es demasiado común. Elige algo más difícil de adivinar.",
     "email_label": "Correo electrónico",
@@ -397,22 +403,70 @@
     "group_connect": "Conectar",
     "group_track": "Seguir",
     "group_secure": "Proteger",
-    "upload": { "title": "Cargar cualquier cosa", "desc": "PDF, recibos, capturas, notas de voz." },
-    "inbox": { "title": "Bandeja sin ordenar", "desc": "Revisa y archiva lo que Oria no pudo ubicar." },
-    "sections": { "title": "Gestionar secciones", "desc": "Crea, renombra y organiza tus secciones." },
-    "things": { "title": "Registros", "desc": "Personas, vehículos y propiedades que Oria sigue." },
-    "reshape": { "title": "Reconfigurar Oria", "desc": "Añade o cambia espacios y secciones hablando." },
-    "learned_rules": { "title": "Reglas de archivado aprendidas", "desc": "Ver y quitar lo que Oria aprendió de ti." },
-    "ask": { "title": "Preguntar a Oria", "desc": "Pregunta lo que sea sobre tus datos." },
-    "connect_email": { "title": "Conectar correo", "desc": "Analizar Gmail por facturas, reservas y recibos." },
-    "routing": { "title": "Enrutamiento y filtros de correo", "desc": "Decide a dónde van los seguimientos y qué omitir." },
-    "reminders": { "title": "Recordatorios", "desc": "Fechas y seguimientos, a tiempo." },
-    "calendar": { "title": "Calendario", "desc": "Todo lo que tiene fecha, en una vista." },
-    "trackables": { "title": "Seguimientos", "desc": "Suscripciones, renovaciones y vencimientos." },
-    "security": { "title": "Seguridad", "desc": "Contraseña, dos factores, sesiones, registro." },
-    "privacy": { "title": "Privacidad", "desc": "Qué podemos ver y cómo se protege." },
-    "data": { "title": "Exportar o eliminar datos", "desc": "Descarga todo, o elimínalo en un clic." },
-    "private": { "title": "Oria privada", "desc": "Modo autoalojado, solo local (vista previa)." }
+    "upload": {
+      "title": "Cargar cualquier cosa",
+      "desc": "PDF, recibos, capturas, notas de voz."
+    },
+    "inbox": {
+      "title": "Bandeja sin ordenar",
+      "desc": "Revisa y archiva lo que Oria no pudo ubicar."
+    },
+    "sections": {
+      "title": "Gestionar secciones",
+      "desc": "Crea, renombra y organiza tus secciones."
+    },
+    "things": {
+      "title": "Registros",
+      "desc": "Personas, vehículos y propiedades que Oria sigue."
+    },
+    "reshape": {
+      "title": "Reconfigurar Oria",
+      "desc": "Añade o cambia espacios y secciones hablando."
+    },
+    "learned_rules": {
+      "title": "Reglas de archivado aprendidas",
+      "desc": "Ver y quitar lo que Oria aprendió de ti."
+    },
+    "ask": {
+      "title": "Preguntar a Oria",
+      "desc": "Pregunta lo que sea sobre tus datos."
+    },
+    "connect_email": {
+      "title": "Conectar correo",
+      "desc": "Analizar Gmail por facturas, reservas y recibos."
+    },
+    "routing": {
+      "title": "Enrutamiento y filtros de correo",
+      "desc": "Decide a dónde van los seguimientos y qué omitir."
+    },
+    "reminders": {
+      "title": "Recordatorios",
+      "desc": "Fechas y seguimientos, a tiempo."
+    },
+    "calendar": {
+      "title": "Calendario",
+      "desc": "Todo lo que tiene fecha, en una vista."
+    },
+    "trackables": {
+      "title": "Seguimientos",
+      "desc": "Suscripciones, renovaciones y vencimientos."
+    },
+    "security": {
+      "title": "Seguridad",
+      "desc": "Contraseña, dos factores, sesiones, registro."
+    },
+    "privacy": {
+      "title": "Privacidad",
+      "desc": "Qué podemos ver y cómo se protege."
+    },
+    "data": {
+      "title": "Exportar o eliminar datos",
+      "desc": "Descarga todo, o elimínalo en un clic."
+    },
+    "private": {
+      "title": "Oria privada",
+      "desc": "Modo autoalojado, solo local (vista previa)."
+    }
   },
   "tour": {
     "step_of": "Paso {current} de {total}",
@@ -420,11 +474,26 @@
     "back": "Atrás",
     "next": "Siguiente",
     "done": "Listo",
-    "upload": { "title": "Carga cualquier cosa", "body": "Suelta PDF, recibos, capturas o notas de voz. Oria los lee y los archiva." },
-    "connect": { "title": "Conecta tu correo", "body": "Deja que Oria analice Gmail por suscripciones, facturas, vuelos y reservas, solo lectura." },
-    "ask": { "title": "Pregunta a Oria", "body": "Haz una pregunta sobre tus datos y obtén una respuesta clara con sus fuentes." },
-    "browse": { "title": "Explora las secciones", "body": "Todo llega a una sección: Finanzas, Viajes, Salud y más." },
-    "manage": { "title": "Encuentra todo rápido", "body": "Pulsa Cmd+K en cualquier lugar para buscar y saltar a cualquier función, espacio o seguimiento." }
+    "upload": {
+      "title": "Carga cualquier cosa",
+      "body": "Suelta PDF, recibos, capturas o notas de voz. Oria los lee y los archiva."
+    },
+    "connect": {
+      "title": "Conecta tu correo",
+      "body": "Deja que Oria analice Gmail por suscripciones, facturas, vuelos y reservas, solo lectura."
+    },
+    "ask": {
+      "title": "Pregunta a Oria",
+      "body": "Haz una pregunta sobre tus datos y obtén una respuesta clara con sus fuentes."
+    },
+    "browse": {
+      "title": "Explora las secciones",
+      "body": "Todo llega a una sección: Finanzas, Viajes, Salud y más."
+    },
+    "manage": {
+      "title": "Encuentra todo rápido",
+      "body": "Pulsa Cmd+K en cualquier lugar para buscar y saltar a cualquier función, espacio o seguimiento."
+    }
   },
   "command": {
     "title": "Búsqueda y comandos",
@@ -437,19 +506,58 @@
     "group_things": "Registros",
     "group_uploads": "Archivos",
     "group_reminders": "Recordatorios",
-    "ask": { "label": "Preguntar a Oria", "desc": "Haz una pregunta sobre tus datos" },
-    "upload": { "label": "Cargar", "desc": "Añadir archivos, recibos, capturas" },
-    "connect_email": { "label": "Conectar correo", "desc": "Analizar Gmail por facturas y reservas" },
-    "create_reminder": { "label": "Recordatorios", "desc": "Ver y añadir recordatorios" },
-    "manage_sections": { "label": "Gestionar secciones", "desc": "Organiza tus secciones" },
-    "email_routing": { "label": "Enrutamiento y filtros de correo", "desc": "A dónde van los seguimientos, qué omitir" },
-    "reshape": { "label": "Reconfigurar Oria", "desc": "Configura o cambia espacios hablando" },
-    "features": { "label": "¿Qué puede hacer Oria?", "desc": "Explora todas las funciones" },
-    "settings": { "label": "Configuración", "desc": "Cuenta y preferencias" },
-    "security": { "label": "Seguridad", "desc": "Contraseña, 2FA, sesiones, actividad" },
-    "export_data": { "label": "Exportar datos", "desc": "Descarga tus datos" },
-    "trash": { "label": "Eliminados", "desc": "Restaurar o purgar seguimientos eliminados" },
-    "timeline": { "label": "Historial", "desc": "Actividad reciente" }
+    "ask": {
+      "label": "Preguntar a Oria",
+      "desc": "Haz una pregunta sobre tus datos"
+    },
+    "upload": {
+      "label": "Cargar",
+      "desc": "Añadir archivos, recibos, capturas"
+    },
+    "connect_email": {
+      "label": "Conectar correo",
+      "desc": "Analizar Gmail por facturas y reservas"
+    },
+    "create_reminder": {
+      "label": "Recordatorios",
+      "desc": "Ver y añadir recordatorios"
+    },
+    "manage_sections": {
+      "label": "Gestionar secciones",
+      "desc": "Organiza tus secciones"
+    },
+    "email_routing": {
+      "label": "Enrutamiento y filtros de correo",
+      "desc": "A dónde van los seguimientos, qué omitir"
+    },
+    "reshape": {
+      "label": "Reconfigurar Oria",
+      "desc": "Configura o cambia espacios hablando"
+    },
+    "features": {
+      "label": "¿Qué puede hacer Oria?",
+      "desc": "Explora todas las funciones"
+    },
+    "settings": {
+      "label": "Configuración",
+      "desc": "Cuenta y preferencias"
+    },
+    "security": {
+      "label": "Seguridad",
+      "desc": "Contraseña, 2FA, sesiones, actividad"
+    },
+    "export_data": {
+      "label": "Exportar datos",
+      "desc": "Descarga tus datos"
+    },
+    "trash": {
+      "label": "Eliminados",
+      "desc": "Restaurar o purgar seguimientos eliminados"
+    },
+    "timeline": {
+      "label": "Historial",
+      "desc": "Actividad reciente"
+    }
   },
   "reshape": {
     "changes_generic": "Cambio de configuración",
@@ -693,8 +801,15 @@
     "admin_health": "Admin · Estado del sistema",
     "sign_out": "Cerrar sesión"
   },
-  "records": { "types": "Tipos", "add": "Añadir", "no_types": "Aún no hay tipos." },
-  "uploads": { "review": "Revisar lo que encontramos", "details": "Detalles completos de la extracción" },
+  "records": {
+    "types": "Tipos",
+    "add": "Añadir",
+    "no_types": "Aún no hay tipos."
+  },
+  "uploads": {
+    "review": "Revisar lo que encontramos",
+    "details": "Detalles completos de la extracción"
+  },
   "pwa": {
     "app_description": "Tu segundo cerebro y mano derecha.",
     "install_title": "Instalar Oria",
@@ -703,8 +818,8 @@
     "install_dismiss": "Ahora no",
     "ios_title": "Añadir Oria a la pantalla de inicio",
     "ios_intro": "Instala Oria en dos pasos:",
-    "ios_step_share": "Toca el botón Compartir en Safari.",
-    "ios_step_add": "Elige «Añadir a pantalla de inicio».",
+    "ios_step_share": "Toca el botón Compartir en la barra de herramientas (el cuadrado con una flecha).",
+    "ios_step_add": "Desplázate, toca Añadir a pantalla de inicio y luego Añadir.",
     "ios_done": "Entendido",
     "offline_title": "Estás sin conexión",
     "offline_body": "Oria necesita conexión para mostrar lo último. Reconéctate y seguiremos donde lo dejaste.",
@@ -719,6 +834,68 @@
     "push_unavailable": "Las notificaciones push aún no están configuradas en este servidor.",
     "push_test": "Enviar notificación de prueba",
     "push_test_sent": "Notificación de prueba enviada.",
-    "push_error": "Algo salió mal. Inténtalo de nuevo."
+    "push_error": "Algo salió mal. Inténtalo de nuevo.",
+    "push_ios_install": "En iPhone y iPad, primero añade Oria a tu pantalla de inicio. Luego activa las notificaciones desde la app instalada.",
+    "install_title_ios": "Añadir Oria a la pantalla de inicio",
+    "install_body_ios": "Oria funciona como una app una vez en tu pantalla de inicio. Añádela en dos pasos.",
+    "ios_show_how": "Muéstrame cómo"
+  },
+  "dailyLoop": {
+    "kind_morning_briefing": "Resumen de la mañana",
+    "kind_weekly_review": "Revisión semanal",
+    "kind_yesterday_recap": "Ayer",
+    "kind_pre_meeting_prep": "Próximamente",
+    "kind_custom": "Rutina",
+    "journal_label": "Diario de la noche",
+    "carried_label": "Pasado de ayer",
+    "carried_dismiss": "Descartar",
+    "overcommit_title": "Día cargado",
+    "overcommit_body": "{count} reuniones, unas {hours} horas reservadas. ¿Proteger algo de tiempo de concentración?",
+    "overcommit_action": "Bloquear tiempo",
+    "overcommit_blocked": "Tiempo de concentración bloqueado"
+  },
+  "suggestions": {
+    "section_title": "Sugerencias",
+    "yes": "Sí",
+    "no": "No",
+    "comment": "Comentar",
+    "comment_placeholder": "Dile a Oria cómo manejar esto",
+    "comment_send": "Enviar",
+    "done": "Hecho",
+    "expiring_trackable_title": "{name} se renueva pronto",
+    "expiring_trackable_detail": "Se renueva en {days} días. ¿Crear un recordatorio?",
+    "untracked_recurring_title": "¿Seguir {merchant}?",
+    "untracked_recurring_detail": "Pagas {merchant} con regularidad. Añádelo a Trackables.",
+    "unfiled_upload_title": "¿Archivar {name}?",
+    "unfiled_upload_detail": "Oria averiguó dónde va.",
+    "stuck_upload_title": "¿Reintentar {name}?",
+    "stuck_upload_detail": "Este documento no terminó de procesarse.",
+    "calendar_conflict_title": "Dos eventos se solapan",
+    "calendar_conflict_detail": "{a} y {b} coinciden hoy. ¿Crear un recordatorio para resolverlo?",
+    "document_action_title": "{name} necesita atención",
+    "document_action_detail": "Tiene un {label} el {date}. ¿Crear un recordatorio?"
+  },
+  "contextSurface": {
+    "title_personal": "Tu semana",
+    "title_investor": "Cartera",
+    "title_business": "Actividad",
+    "title_family_office": "El patrimonio",
+    "filed_this_week": "archivados esta semana",
+    "six_month_spend": "gastado, seis meses",
+    "six_month_outflow": "salidas, seis meses",
+    "tracked_total": "en seguimiento",
+    "activity_caption": "Documentos archivados, últimos 7 días",
+    "spend_caption": "Gasto mensual, últimos 6 meses",
+    "categories_caption": "En seguimiento por categoría",
+    "empty": "Conecta una cuenta para dar vida a esto.",
+    "category_insurance": "Seguros",
+    "category_subscription": "Suscripciones",
+    "category_lease": "Arrendamientos",
+    "category_membership": "Membresías",
+    "category_certification": "Certificaciones",
+    "category_id_document": "Identificaciones",
+    "category_contract": "Contratos",
+    "category_warranty": "Garantías",
+    "category_other": "Otros"
   }
 }

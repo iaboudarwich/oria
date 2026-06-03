@@ -214,7 +214,13 @@
     "consent": "J'ai lu et j'accepte les <terms>Conditions d'utilisation</terms> et la <privacy>Politique de confidentialité</privacy>."
   },
   "auth": {
-    "pw_strength": ["Trop faible", "Faible", "Moyen", "Bon", "Fort"],
+    "pw_strength": [
+      "Trop faible",
+      "Faible",
+      "Moyen",
+      "Bon",
+      "Fort"
+    ],
     "pw_too_short": "Utilisez au moins {min} caractères.",
     "pw_too_common": "Ce mot de passe est trop courant. Choisissez quelque chose de plus difficile à deviner.",
     "email_label": "E-mail",
@@ -397,22 +403,70 @@
     "group_connect": "Connecter",
     "group_track": "Suivre",
     "group_secure": "Sécuriser",
-    "upload": { "title": "Tout charger", "desc": "PDF, reçus, captures, notes vocales." },
-    "inbox": { "title": "Boîte non triée", "desc": "Examinez et classez ce qu'Oria n'a pas pu placer." },
-    "sections": { "title": "Gérer les sections", "desc": "Créez, renommez et organisez vos sections." },
-    "things": { "title": "Fiches", "desc": "Personnes, véhicules et biens suivis par Oria." },
-    "reshape": { "title": "Remodeler Oria", "desc": "Ajoutez ou modifiez espaces et sections en parlant." },
-    "learned_rules": { "title": "Règles de classement apprises", "desc": "Voir et retirer ce qu'Oria a appris de vous." },
-    "ask": { "title": "Demander à Oria", "desc": "Posez n'importe quelle question sur vos données." },
-    "connect_email": { "title": "Connecter un e-mail", "desc": "Analyser Gmail pour factures, réservations et reçus." },
-    "routing": { "title": "Routage et filtres d'e-mail", "desc": "Décidez où vont les suivis et quoi ignorer." },
-    "reminders": { "title": "Rappels", "desc": "Dates et relances, au bon moment." },
-    "calendar": { "title": "Calendrier", "desc": "Tout ce qui a une date, en une vue." },
-    "trackables": { "title": "Suivis", "desc": "Abonnements, renouvellements et échéances." },
-    "security": { "title": "Sécurité", "desc": "Mot de passe, double authentification, sessions, journal." },
-    "privacy": { "title": "Confidentialité", "desc": "Ce que nous voyons et comment c'est protégé." },
-    "data": { "title": "Exporter ou supprimer les données", "desc": "Tout télécharger, ou tout supprimer en un clic." },
-    "private": { "title": "Oria privée", "desc": "Mode auto-hébergé, local uniquement (aperçu)." }
+    "upload": {
+      "title": "Tout charger",
+      "desc": "PDF, reçus, captures, notes vocales."
+    },
+    "inbox": {
+      "title": "Boîte non triée",
+      "desc": "Examinez et classez ce qu'Oria n'a pas pu placer."
+    },
+    "sections": {
+      "title": "Gérer les sections",
+      "desc": "Créez, renommez et organisez vos sections."
+    },
+    "things": {
+      "title": "Fiches",
+      "desc": "Personnes, véhicules et biens suivis par Oria."
+    },
+    "reshape": {
+      "title": "Remodeler Oria",
+      "desc": "Ajoutez ou modifiez espaces et sections en parlant."
+    },
+    "learned_rules": {
+      "title": "Règles de classement apprises",
+      "desc": "Voir et retirer ce qu'Oria a appris de vous."
+    },
+    "ask": {
+      "title": "Demander à Oria",
+      "desc": "Posez n'importe quelle question sur vos données."
+    },
+    "connect_email": {
+      "title": "Connecter un e-mail",
+      "desc": "Analyser Gmail pour factures, réservations et reçus."
+    },
+    "routing": {
+      "title": "Routage et filtres d'e-mail",
+      "desc": "Décidez où vont les suivis et quoi ignorer."
+    },
+    "reminders": {
+      "title": "Rappels",
+      "desc": "Dates et relances, au bon moment."
+    },
+    "calendar": {
+      "title": "Calendrier",
+      "desc": "Tout ce qui a une date, en une vue."
+    },
+    "trackables": {
+      "title": "Suivis",
+      "desc": "Abonnements, renouvellements et échéances."
+    },
+    "security": {
+      "title": "Sécurité",
+      "desc": "Mot de passe, double authentification, sessions, journal."
+    },
+    "privacy": {
+      "title": "Confidentialité",
+      "desc": "Ce que nous voyons et comment c'est protégé."
+    },
+    "data": {
+      "title": "Exporter ou supprimer les données",
+      "desc": "Tout télécharger, ou tout supprimer en un clic."
+    },
+    "private": {
+      "title": "Oria privée",
+      "desc": "Mode auto-hébergé, local uniquement (aperçu)."
+    }
   },
   "tour": {
     "step_of": "Étape {current} sur {total}",
@@ -420,11 +474,26 @@
     "back": "Retour",
     "next": "Suivant",
     "done": "Terminé",
-    "upload": { "title": "Tout charger", "body": "Déposez PDF, reçus, captures ou notes vocales. Oria les lit et les classe." },
-    "connect": { "title": "Connectez votre e-mail", "body": "Laissez Oria analyser Gmail pour abonnements, factures, vols et réservations, en lecture seule." },
-    "ask": { "title": "Demandez à Oria", "body": "Posez une question sur vos données et obtenez une réponse claire avec ses sources." },
-    "browse": { "title": "Parcourez les sections", "body": "Tout arrive dans une section : Finances, Voyage, Santé, et plus." },
-    "manage": { "title": "Trouvez vite", "body": "Appuyez sur Cmd+K partout pour rechercher et accéder à toute fonctionnalité, espace ou suivi." }
+    "upload": {
+      "title": "Tout charger",
+      "body": "Déposez PDF, reçus, captures ou notes vocales. Oria les lit et les classe."
+    },
+    "connect": {
+      "title": "Connectez votre e-mail",
+      "body": "Laissez Oria analyser Gmail pour abonnements, factures, vols et réservations, en lecture seule."
+    },
+    "ask": {
+      "title": "Demandez à Oria",
+      "body": "Posez une question sur vos données et obtenez une réponse claire avec ses sources."
+    },
+    "browse": {
+      "title": "Parcourez les sections",
+      "body": "Tout arrive dans une section : Finances, Voyage, Santé, et plus."
+    },
+    "manage": {
+      "title": "Trouvez vite",
+      "body": "Appuyez sur Cmd+K partout pour rechercher et accéder à toute fonctionnalité, espace ou suivi."
+    }
   },
   "command": {
     "title": "Recherche et commandes",
@@ -437,19 +506,58 @@
     "group_things": "Fiches",
     "group_uploads": "Fichiers",
     "group_reminders": "Rappels",
-    "ask": { "label": "Demander à Oria", "desc": "Poser une question sur vos données" },
-    "upload": { "label": "Charger", "desc": "Ajouter fichiers, reçus, captures" },
-    "connect_email": { "label": "Connecter un e-mail", "desc": "Analyser Gmail pour factures et réservations" },
-    "create_reminder": { "label": "Rappels", "desc": "Voir et ajouter des rappels" },
-    "manage_sections": { "label": "Gérer les sections", "desc": "Organiser vos sections" },
-    "email_routing": { "label": "Routage et filtres d'e-mail", "desc": "Où vont les suivis, quoi ignorer" },
-    "reshape": { "label": "Remodeler Oria", "desc": "Configurer ou modifier des espaces en parlant" },
-    "features": { "label": "Que peut faire Oria ?", "desc": "Parcourir toutes les fonctionnalités" },
-    "settings": { "label": "Paramètres", "desc": "Compte et préférences" },
-    "security": { "label": "Sécurité", "desc": "Mot de passe, 2FA, sessions, activité" },
-    "export_data": { "label": "Exporter les données", "desc": "Télécharger vos données" },
-    "trash": { "label": "Supprimés", "desc": "Restaurer ou purger les suivis supprimés" },
-    "timeline": { "label": "Historique", "desc": "Activité récente" }
+    "ask": {
+      "label": "Demander à Oria",
+      "desc": "Poser une question sur vos données"
+    },
+    "upload": {
+      "label": "Charger",
+      "desc": "Ajouter fichiers, reçus, captures"
+    },
+    "connect_email": {
+      "label": "Connecter un e-mail",
+      "desc": "Analyser Gmail pour factures et réservations"
+    },
+    "create_reminder": {
+      "label": "Rappels",
+      "desc": "Voir et ajouter des rappels"
+    },
+    "manage_sections": {
+      "label": "Gérer les sections",
+      "desc": "Organiser vos sections"
+    },
+    "email_routing": {
+      "label": "Routage et filtres d'e-mail",
+      "desc": "Où vont les suivis, quoi ignorer"
+    },
+    "reshape": {
+      "label": "Remodeler Oria",
+      "desc": "Configurer ou modifier des espaces en parlant"
+    },
+    "features": {
+      "label": "Que peut faire Oria ?",
+      "desc": "Parcourir toutes les fonctionnalités"
+    },
+    "settings": {
+      "label": "Paramètres",
+      "desc": "Compte et préférences"
+    },
+    "security": {
+      "label": "Sécurité",
+      "desc": "Mot de passe, 2FA, sessions, activité"
+    },
+    "export_data": {
+      "label": "Exporter les données",
+      "desc": "Télécharger vos données"
+    },
+    "trash": {
+      "label": "Supprimés",
+      "desc": "Restaurer ou purger les suivis supprimés"
+    },
+    "timeline": {
+      "label": "Historique",
+      "desc": "Activité récente"
+    }
   },
   "reshape": {
     "changes_generic": "Changement de configuration",
@@ -693,8 +801,15 @@
     "admin_health": "Admin · État du système",
     "sign_out": "Se déconnecter"
   },
-  "records": { "types": "Types", "add": "Ajouter", "no_types": "Aucun type pour l’instant." },
-  "uploads": { "review": "Vérifier ce que nous avons trouvé", "details": "Détails complets de l’extraction" },
+  "records": {
+    "types": "Types",
+    "add": "Ajouter",
+    "no_types": "Aucun type pour l’instant."
+  },
+  "uploads": {
+    "review": "Vérifier ce que nous avons trouvé",
+    "details": "Détails complets de l’extraction"
+  },
   "pwa": {
     "app_description": "Votre second cerveau et bras droit.",
     "install_title": "Installer Oria",
@@ -703,8 +818,8 @@
     "install_dismiss": "Plus tard",
     "ios_title": "Ajouter Oria à l’écran d’accueil",
     "ios_intro": "Installez Oria en deux étapes :",
-    "ios_step_share": "Touchez le bouton Partager dans Safari.",
-    "ios_step_add": "Choisissez « Sur l’écran d’accueil ».",
+    "ios_step_share": "Touchez le bouton Partager dans la barre d'outils (le carré avec une flèche).",
+    "ios_step_add": "Faites défiler, touchez Sur l'écran d'accueil, puis Ajouter.",
     "ios_done": "Compris",
     "offline_title": "Vous êtes hors ligne",
     "offline_body": "Oria a besoin d’une connexion pour afficher vos données. Reconnectez-vous et nous reprendrons où vous en étiez.",
@@ -719,6 +834,68 @@
     "push_unavailable": "Les notifications push ne sont pas encore configurées sur ce serveur.",
     "push_test": "Envoyer une notification de test",
     "push_test_sent": "Notification de test envoyée.",
-    "push_error": "Une erreur s’est produite. Réessayez."
+    "push_error": "Une erreur s’est produite. Réessayez.",
+    "push_ios_install": "Sur iPhone et iPad, ajoutez d'abord Oria à votre écran d'accueil. Activez ensuite les notifications depuis l'app installée.",
+    "install_title_ios": "Ajouter Oria à l'écran d'accueil",
+    "install_body_ios": "Oria fonctionne comme une app une fois sur votre écran d'accueil. Ajoutez-la en deux étapes.",
+    "ios_show_how": "Montrez-moi comment"
+  },
+  "dailyLoop": {
+    "kind_morning_briefing": "Briefing du matin",
+    "kind_weekly_review": "Revue de la semaine",
+    "kind_yesterday_recap": "Hier",
+    "kind_pre_meeting_prep": "À venir",
+    "kind_custom": "Routine",
+    "journal_label": "Journal du soir",
+    "carried_label": "Reporté d'hier",
+    "carried_dismiss": "Ignorer",
+    "overcommit_title": "Journée chargée",
+    "overcommit_body": "{count} réunions, environ {hours} heures réservées. Protéger du temps de concentration ?",
+    "overcommit_action": "Bloquer du temps",
+    "overcommit_blocked": "Temps de concentration bloqué"
+  },
+  "suggestions": {
+    "section_title": "Suggestions",
+    "yes": "Oui",
+    "no": "Non",
+    "comment": "Commenter",
+    "comment_placeholder": "Dites à Oria comment gérer ceci",
+    "comment_send": "Envoyer",
+    "done": "Fait",
+    "expiring_trackable_title": "{name} se renouvelle bientôt",
+    "expiring_trackable_detail": "Renouvellement dans {days} jours. Créer un rappel ?",
+    "untracked_recurring_title": "Suivre {merchant} ?",
+    "untracked_recurring_detail": "Vous payez {merchant} régulièrement. Ajoutez-le à Trackables.",
+    "unfiled_upload_title": "Classer {name} ?",
+    "unfiled_upload_detail": "Oria a trouvé où le ranger.",
+    "stuck_upload_title": "Réessayer {name} ?",
+    "stuck_upload_detail": "Ce document n'a pas fini d'être traité.",
+    "calendar_conflict_title": "Deux évènements se chevauchent",
+    "calendar_conflict_detail": "{a} et {b} se chevauchent aujourd'hui. Créer un rappel pour régler ça ?",
+    "document_action_title": "{name} demande votre attention",
+    "document_action_detail": "Échéance ({label}) le {date}. Créer un rappel ?"
+  },
+  "contextSurface": {
+    "title_personal": "Votre semaine",
+    "title_investor": "Portefeuille",
+    "title_business": "Activité",
+    "title_family_office": "Le patrimoine",
+    "filed_this_week": "classés cette semaine",
+    "six_month_spend": "dépensé, six mois",
+    "six_month_outflow": "sorties, six mois",
+    "tracked_total": "suivis",
+    "activity_caption": "Documents classés, 7 derniers jours",
+    "spend_caption": "Dépenses mensuelles, 6 derniers mois",
+    "categories_caption": "Suivis par catégorie",
+    "empty": "Connectez un compte pour donner vie à cette vue.",
+    "category_insurance": "Assurances",
+    "category_subscription": "Abonnements",
+    "category_lease": "Baux",
+    "category_membership": "Adhésions",
+    "category_certification": "Certifications",
+    "category_id_document": "Pièces d'identité",
+    "category_contract": "Contrats",
+    "category_warranty": "Garanties",
+    "category_other": "Autre"
   }
 }
