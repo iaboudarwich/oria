@@ -25,7 +25,6 @@ const ACTIONS: { id: string; href: string; keywords: string }[] = [
   { id: "create_reminder", href: "/dashboard/reminders", keywords: "reminder due date follow up todo" },
   { id: "manage_sections", href: "/dashboard/settings?tab=sections", keywords: "sections organize manage categories" },
   { id: "email_routing", href: "/dashboard/settings?tab=connections", keywords: "email routing filters confidentiality workspace" },
-  { id: "reshape", href: "/dashboard/reshape", keywords: "reshape make set up create add delete remove rename workspace space section change configure tell oria" },
   { id: "features", href: "/dashboard/features", keywords: "features what can oria do help index" },
   { id: "settings", href: "/dashboard/settings", keywords: "settings account preferences" },
   { id: "security", href: "/dashboard/settings?tab=security", keywords: "security two factor 2fa password sessions audit" },

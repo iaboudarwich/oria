@@ -95,7 +95,9 @@ function sanitizeSection(s: unknown): PlanSection | null {
   };
 }
 
-function sanitizePatch(p: Partial<PlanPatch>, orgIds: Set<string>, sectionIds: Set<string>): PlanPatch {
+// Exported for unit tests: this is the safety gate for delete/rename paths,
+// dropping any patch op whose target id is not a known org/section.
+export function sanitizePatch(p: Partial<PlanPatch>, orgIds: Set<string>, sectionIds: Set<string>): PlanPatch {
   const creates: WorkspacePlan[] = Array.isArray(p.creates)
     ? p.creates
         .map((c) => {

@@ -221,9 +221,16 @@ export async function executePlanPatch(input: {
     }
 
     // 3. Renames (owner-scoped). The old name is preserved in the stored patch.
+    // Org renames also regenerate the slug (slugify appends a unique suffix) so
+    // the URL slug tracks the display name; sections have no slug.
     for (const r of patch.renames) {
       if (r.kind === "org") {
-        await admin.from("organizations").update({ name: r.to.slice(0, 60) }).eq("id", r.id).eq("created_by", input.userId);
+        const name = r.to.slice(0, 60);
+        await admin
+          .from("organizations")
+          .update({ name, slug: slugify(name) })
+          .eq("id", r.id)
+          .eq("created_by", input.userId);
       } else {
         await admin.from("custom_sections").update({ name: r.to.slice(0, 60) }).eq("id", r.id).eq("created_by", input.userId);
       }

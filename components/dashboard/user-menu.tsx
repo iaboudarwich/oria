@@ -99,7 +99,7 @@ export function UserMenu({
             <MenuLink
               href="/dashboard/reshape"
               icon={SparkIcon}
-              label="Reshape my Oria"
+              label="Tell Oria to change something"
               onSelect={() => setOpen(false)}
             />
             <MenuLink
