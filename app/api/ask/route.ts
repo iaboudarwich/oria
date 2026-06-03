@@ -7,6 +7,7 @@ import { retrieveForQuery } from "@/lib/ai/retrieve";
 import { streamAnswer, type AgentMessage } from "@/lib/ai/agent";
 import { classifyReasoningIntent } from "@/lib/ai/reasoning-classifier";
 import { classifySetupIntent } from "@/lib/ai/classifiers/setup-intent";
+import { prepareAskImages } from "@/lib/ai/ask-images";
 import { logAuditEvent } from "@/lib/data/audit-log";
 import { recordLearningEvent } from "@/lib/data/learning";
 import { recordSystemEvent } from "@/lib/data/system-events";
@@ -65,6 +66,8 @@ export async function POST(request: Request) {
     reasoning?: boolean;
     /** Client forces a normal answer (dismissed the setup-intent offer). */
     forceNormal?: boolean;
+    /** Inline images (base64) attached to a multimodal question. */
+    images?: unknown;
   } = {};
   try {
     body = (await request.json()) as typeof body;
@@ -76,6 +79,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "empty_query" }, { status: 400 });
   }
   const history = Array.isArray(body.history) ? body.history.slice(-6) : [];
+
+  // Validate + normalise attached images (allowlist, size cap, HEIC -> JPEG).
+  // Done up front so the multimodal payload is ready before streaming starts.
+  const images = await prepareAskImages(body.images);
 
   // Burst limit: stop someone holding Enter or a script firing dozens
   // of questions per second. Cheaper to bounce here than to spin up
@@ -156,8 +163,10 @@ export async function POST(request: Request) {
   const reasoningTrigger =
     reasoningMode === "always" ? "always_mode" : wantsReasoning ? "user_button" : "not_used";
   // Setup-intent detection runs unless the user already dismissed it (forceNormal)
-  // or is explicitly invoking reasoning on this turn.
-  const runSetupIntent = body.forceNormal !== true && !wantsReasoning;
+  // or is explicitly invoking reasoning on this turn. An image query is a vision
+  // question, never a structural change, so we skip the reroute when images are
+  // attached (rerouting would silently drop the images).
+  const runSetupIntent = body.forceNormal !== true && !wantsReasoning && images.length === 0;
 
   // Resolve (or create) a conversation for persistence. Best-effort:
   // if the DB call fails we still serve the answer. conversationId
@@ -303,6 +312,7 @@ export async function POST(request: Request) {
           nowISO: new Date().toISOString(),
           spaceContext,
           personalContext,
+          images,
           tier: useReasoning ? "reasoning" : "fast",
           reasoningTrigger,
           onThinking: (t) => {

@@ -494,6 +494,11 @@
     "approved_toast": "Ajouté à votre espace."
   },
   "ask": {
+    "attach_images": "Joindre des images",
+    "image_too_large": "Chaque image doit faire moins de 10 Mo.",
+    "image_too_many": "Vous pouvez joindre jusqu'à {max} images.",
+    "image_unsupported": "Ce type de fichier n'est pas pris en charge. Utilisez PNG, JPG, WEBP, GIF ou HEIC.",
+    "image_default_query": "Qu'y a-t-il sur cette image ?",
     "you_asked": "Vous avez demandé",
     "setup_transition": "On dirait que vous voulez faire un changement. Voici ce que je ferais :",
     "setup_dismiss": "En fait, répondez juste à ma question",

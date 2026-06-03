@@ -1,7 +1,7 @@
 "use client";
 
 import { forwardRef, useCallback, useEffect, useRef, useState } from "react";
-import { ArrowRightIcon, SparkIcon } from "@/components/ui/icon";
+import { ArrowRightIcon, SparkIcon, PaperclipIcon, CloseIcon } from "@/components/ui/icon";
 import { SourceCard, type SourceItem } from "./source-card";
 import { MicButton } from "@/components/ui/mic-button";
 import { useLocale, useTranslations } from "next-intl";
@@ -10,11 +10,23 @@ import { reshapeGeneratePatch, reshapeExecutePatch } from "@/app/dashboard/resha
 import { EMPTY_USER_CONTEXT, type PlanPatch } from "@/lib/onboarding/types";
 import type { Locale } from "@/i18n/config";
 
+/** One attached image, carried both for display (dataUrl) and for the request
+ *  payload (mimeType + dataBase64). Kept on the turn so a retry/rerun resends. */
+type Attachment = {
+  id: string;
+  name: string;
+  dataUrl: string;
+  mimeType: string;
+  dataBase64: string;
+};
+
 type Turn = {
   id: string;
   question: string;
   answer: string;
   sources: SourceItem[];
+  /** Images attached to this question, shown as thumbnails on the turn. */
+  images?: Attachment[];
   state: "streaming" | "done" | "error";
   errorCode?: string;
   errorMessage?: string;
@@ -45,6 +57,50 @@ const SUGGESTIONS = [
   "Show me the last receipt from the grocery store.",
   "What is due this week?",
 ];
+
+// Image attachment limits. Mirrored on the server (lib/ai/ask-images.ts), which
+// is the real gate. these client checks just give instant, friendly feedback.
+const MAX_IMAGES = 5;
+const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
+const ACCEPT_ATTR = ".png,.jpg,.jpeg,.webp,.gif,.heic,.heif,image/*";
+const IMAGE_EXT = /\.(png|jpe?g|webp|gif|heic|heif)$/i;
+const ALLOWED_MIME = new Set([
+  "image/png",
+  "image/jpeg",
+  "image/webp",
+  "image/gif",
+  "image/heic",
+  "image/heif",
+]);
+
+function looksLikeImage(file: File): boolean {
+  return file.type.startsWith("image/") || IMAGE_EXT.test(file.name);
+}
+
+function isAcceptedImage(file: File): boolean {
+  if (ALLOWED_MIME.has(file.type.toLowerCase())) return true;
+  // iOS sometimes hands over HEIC with an empty or octet-stream type.
+  return file.type === "" || file.type === "application/octet-stream"
+    ? IMAGE_EXT.test(file.name)
+    : false;
+}
+
+/** Read a File into an Attachment (dataUrl for preview, base64 for the payload). */
+function readAttachment(file: File): Promise<Attachment> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = String(reader.result);
+      const comma = dataUrl.indexOf(",");
+      const dataBase64 = comma >= 0 ? dataUrl.slice(comma + 1) : "";
+      const mimeType =
+        file.type || (IMAGE_EXT.test(file.name) ? "image/heic" : "application/octet-stream");
+      resolve({ id: crypto.randomUUID(), name: file.name, dataUrl, mimeType, dataBase64 });
+    };
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(file);
+  });
+}
 
 /**
  * Optional section scope. When set, the chat is restricted to one section:
@@ -101,14 +157,69 @@ export function AskChat({
   // completes. Sent in all subsequent requests so messages are grouped.
   const conversationIdRef = useRef<string | null>(null);
 
+  // Pending image attachments for the next question, plus a transient notice
+  // (over-limit / wrong format) and a full-size lightbox target.
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const attachmentsRef = useRef<Attachment[]>([]);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [lightbox, setLightbox] = useState<Attachment | null>(null);
+  useEffect(() => {
+    attachmentsRef.current = attachments;
+  }, [attachments]);
+  useEffect(() => {
+    if (!notice) return;
+    const id = setTimeout(() => setNotice(null), 4000);
+    return () => clearTimeout(id);
+  }, [notice]);
+
   const updateTurn = useCallback((id: string, fn: (t: Turn) => Turn) => {
     setTurns((prev) => prev.map((t) => (t.id === id ? fn(t) : t)));
+  }, []);
+
+  // Validate, cap, and read dropped/pasted/picked image files into attachments.
+  const addFiles = useCallback(
+    async (files: File[]) => {
+      const candidates = files.filter(looksLikeImage);
+      if (candidates.length === 0) return;
+      let nextNotice: string | null = null;
+      const valid: File[] = [];
+      for (const f of candidates) {
+        if (!isAcceptedImage(f)) {
+          nextNotice = tr("image_unsupported");
+          continue;
+        }
+        if (f.size > MAX_IMAGE_BYTES) {
+          nextNotice = tr("image_too_large");
+          continue;
+        }
+        valid.push(f);
+      }
+      const room = Math.max(0, MAX_IMAGES - attachmentsRef.current.length);
+      if (valid.length > room) nextNotice = tr("image_too_many", { max: MAX_IMAGES });
+      const read = await Promise.all(valid.slice(0, room).map(readAttachment));
+      if (read.length > 0) {
+        setAttachments((prev) => [...prev, ...read].slice(0, MAX_IMAGES));
+      }
+      setNotice(nextNotice);
+    },
+    [tr],
+  );
+
+  const removeAttachment = useCallback((id: string) => {
+    setAttachments((prev) => prev.filter((a) => a.id !== id));
   }, []);
 
   // Open /api/ask and stream the NDJSON events into the turn `id`. Shared
   // by a fresh send and by Retry, so both follow the exact same protocol.
   const runStream = useCallback(
-    async (id: string, query: string, history: ChatMessage[], reasoning = false, forceNormal = false) => {
+    async (
+      id: string,
+      query: string,
+      history: ChatMessage[],
+      reasoning = false,
+      forceNormal = false,
+      images: Attachment[] = [],
+    ) => {
       setBusy(true);
       const effectiveReasoning = reasoning || reasoningMode === "always";
       if (effectiveReasoning) updateTurn(id, (t) => ({ ...t, usedReasoning: true }));
@@ -129,6 +240,7 @@ export function AskChat({
             conversationId: conversationIdRef.current ?? null,
             reasoning: effectiveReasoning,
             forceNormal,
+            images: images.map((a) => ({ mimeType: a.mimeType, dataBase64: a.dataBase64 })),
           }),
         });
         if (!res.ok || !res.body) {
@@ -228,7 +340,10 @@ export function AskChat({
   const send = useCallback(
     async (question: string, reasoning = false) => {
       const trimmed = question.trim();
-      if (!trimmed || busy) return;
+      const imgs = attachmentsRef.current;
+      if ((!trimmed && imgs.length === 0) || busy) return;
+      // An image with no typed question still gets a sensible default ask.
+      const effectiveQuery = trimmed || tr("image_default_query");
 
       const id = crypto.randomUUID();
       const history: ChatMessage[] = turns.flatMap((t) => [
@@ -237,12 +352,20 @@ export function AskChat({
       ]);
       setTurns((prev) => [
         ...prev,
-        { id, question: trimmed, answer: "", sources: [], state: "streaming" },
+        {
+          id,
+          question: effectiveQuery,
+          answer: "",
+          sources: [],
+          state: "streaming",
+          images: imgs.length > 0 ? imgs : undefined,
+        },
       ]);
       setInput("");
-      await runStream(id, trimmed, history, reasoning);
+      setAttachments([]);
+      await runStream(id, effectiveQuery, history, reasoning, false, imgs);
     },
-    [busy, turns, runStream],
+    [busy, turns, runStream, tr],
   );
 
   // Re-run a turn with deeper thinking (the offer pill). History is the turns
@@ -265,7 +388,7 @@ export function AskChat({
         reasoningOffered: false,
         state: "streaming",
       }));
-      await runStream(turnId, target.question, history, true);
+      await runStream(turnId, target.question, history, true, false, target.images ?? []);
     },
     [busy, turns, updateTurn, runStream],
   );
@@ -323,7 +446,7 @@ export function AskChat({
         errorCode: undefined,
         errorMessage: undefined,
       }));
-      await runStream(turnId, target.question, history);
+      await runStream(turnId, target.question, history, false, false, target.images ?? []);
     },
     [busy, turns, updateTurn, runStream],
   );
@@ -379,6 +502,7 @@ export function AskChat({
                   onReason={() => reasoningRerun(t.id)}
                   onSetupConfirm={(p) => confirmSetup(t.id, p)}
                   onSetupDismiss={() => dismissSetup(t.id)}
+                  onImageClick={setLightbox}
                   busy={busy}
                 />
               </li>
@@ -400,13 +524,55 @@ export function AskChat({
         value={input}
         busy={busy}
         placeholder={scope ? `Ask about ${scope.label}…` : undefined}
+        attachments={attachments}
+        notice={notice}
         onChange={setInput}
         onKeyDown={onKeyDown}
         onSubmit={() => send(input)}
+        onAddFiles={addFiles}
+        onRemoveAttachment={removeAttachment}
         onReason={reasoningMode !== "never" ? () => send(input, true) : undefined}
         reasonLabel={tr("think_harder")}
         reasonTooltip={tr("think_harder_tip")}
+        attachLabel={tr("attach_images")}
       />
+
+      {lightbox ? <Lightbox attachment={lightbox} onClose={() => setLightbox(null)} /> : null}
+    </div>
+  );
+}
+
+/** Full-size image overlay, opened by clicking a thumbnail on a turn. */
+function Lightbox({ attachment, onClose }: { attachment: Attachment; onClose: () => void }) {
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") onClose();
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      onClick={onClose}
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-ink/70 p-6 animate-fade-up"
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={attachment.dataUrl}
+        alt={attachment.name}
+        onClick={(e) => e.stopPropagation()}
+        className="max-h-[90vh] max-w-[90vw] rounded-xl object-contain shadow-2xl"
+      />
+      <button
+        type="button"
+        onClick={onClose}
+        aria-label="Close"
+        className="absolute end-5 top-5 inline-flex h-9 w-9 items-center justify-center rounded-full bg-surface/90 text-ink shadow-lg transition-base hover:bg-surface"
+      >
+        <CloseIcon size={18} />
+      </button>
     </div>
   );
 }
@@ -495,6 +661,7 @@ function TurnView({
   onReason,
   onSetupConfirm,
   onSetupDismiss,
+  onImageClick,
   busy,
 }: {
   turn: Turn;
@@ -502,6 +669,7 @@ function TurnView({
   onReason: () => void;
   onSetupConfirm: (patch: PlanPatch) => void;
   onSetupDismiss: () => void;
+  onImageClick: (a: Attachment) => void;
   busy: boolean;
 }) {
   const t = useTranslations("ask");
@@ -543,6 +711,9 @@ function TurnView({
     <article className="animate-fade-up">
       <p className="text-[13px] text-ink-faint">{t("you_asked")}</p>
       <p className="mt-1 text-[15px] text-ink">{turn.question}</p>
+      {turn.images && turn.images.length > 0 ? (
+        <TurnImages images={turn.images} onImageClick={onImageClick} />
+      ) : null}
 
       {/* aria-live lets screen readers announce the answer as it streams
           in; aria-busy flags that more text is still arriving. */}
@@ -679,6 +850,45 @@ function AnswerText({
         );
       })}
     </p>
+  );
+}
+
+/** Browsers can't paint HEIC/HEIF, so those show a labelled chip instead. */
+function isPaintable(mimeType: string): boolean {
+  const m = mimeType.toLowerCase();
+  return m !== "image/heic" && m !== "image/heif";
+}
+
+/** Image thumbnails shown on a sent turn; click opens the full-size lightbox. */
+function TurnImages({
+  images,
+  onImageClick,
+}: {
+  images: Attachment[];
+  onImageClick: (a: Attachment) => void;
+}) {
+  return (
+    <ul className="mt-2 flex flex-wrap gap-2">
+      {images.map((img) => (
+        <li key={img.id}>
+          <button
+            type="button"
+            onClick={() => onImageClick(img)}
+            className="block h-16 w-16 overflow-hidden rounded-lg border border-line bg-canvas transition-base hover:border-line-strong focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+            aria-label={img.name}
+          >
+            {isPaintable(img.mimeType) ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={img.dataUrl} alt={img.name} className="h-full w-full object-cover" />
+            ) : (
+              <span className="flex h-full w-full items-center justify-center px-1 text-[9px] text-ink-faint">
+                HEIC
+              </span>
+            )}
+          </button>
+        </li>
+      ))}
+    </ul>
   );
 }
 
@@ -826,21 +1036,53 @@ type ComposerProps = {
   value: string;
   busy: boolean;
   placeholder?: string;
+  attachments: Attachment[];
+  notice: string | null;
   onChange: (v: string) => void;
   onKeyDown: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
   onSubmit: () => void;
+  onAddFiles: (files: File[]) => void;
+  onRemoveAttachment: (id: string) => void;
   /** Submit with deeper thinking (omitted when reasoning_mode is never). */
   onReason?: () => void;
   reasonLabel?: string;
   reasonTooltip?: string;
+  attachLabel?: string;
 };
 
 const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
   function Composer(
-    { value, busy, placeholder, onChange, onKeyDown, onSubmit, onReason, reasonLabel, reasonTooltip },
+    {
+      value,
+      busy,
+      placeholder,
+      attachments,
+      notice,
+      onChange,
+      onKeyDown,
+      onSubmit,
+      onAddFiles,
+      onRemoveAttachment,
+      onReason,
+      reasonLabel,
+      reasonTooltip,
+      attachLabel,
+    },
     ref,
   ) {
     const locale = useLocale() as Locale;
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [dragOver, setDragOver] = useState(false);
+    const canSend = value.trim().length > 0 || attachments.length > 0;
+
+    function onPaste(e: React.ClipboardEvent<HTMLTextAreaElement>) {
+      const files = Array.from(e.clipboardData.files);
+      if (files.length > 0) {
+        e.preventDefault();
+        onAddFiles(files);
+      }
+    }
+
     return (
       <form
         onSubmit={(e) => {
@@ -848,49 +1090,122 @@ const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
           onSubmit();
         }}
         className="sticky bottom-0 pt-3"
+        onDragOver={(e) => {
+          if (e.dataTransfer.types.includes("Files")) {
+            e.preventDefault();
+            setDragOver(true);
+          }
+        }}
+        onDragLeave={() => setDragOver(false)}
+        onDrop={(e) => {
+          if (e.dataTransfer.files.length > 0) {
+            e.preventDefault();
+            setDragOver(false);
+            onAddFiles(Array.from(e.dataTransfer.files));
+          }
+        }}
       >
-        <div className="flex items-end gap-2 rounded-2xl border border-line bg-surface-raised p-2 shadow-[0_1px_2px_rgba(28,26,23,0.04),0_2px_8px_-6px_rgba(28,26,23,0.10)] focus-within:border-line-strong focus-within:shadow-[0_2px_4px_rgba(28,26,23,0.05),0_8px_24px_-14px_rgba(28,26,23,0.30)]">
-          <textarea
-            ref={ref}
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            onKeyDown={onKeyDown}
-            rows={1}
-            autoFocus
-            placeholder={placeholder ?? "Ask Oria anything…"}
-            className="block min-h-[40px] flex-1 resize-none bg-transparent px-2 py-2 text-[14.5px] text-ink placeholder:text-ink-faint outline-none"
-          />
-          <MicButton
-            onTranscribed={(text) => onChange(value ? `${value} ${text}` : text)}
-            targetLanguage={locale}
-            size="sm"
-            className="mb-0.5"
-          />
-          {onReason ? (
+        <div
+          className={`rounded-2xl border bg-surface-raised p-2 shadow-[0_1px_2px_rgba(28,26,23,0.04),0_2px_8px_-6px_rgba(28,26,23,0.10)] transition-base focus-within:border-line-strong focus-within:shadow-[0_2px_4px_rgba(28,26,23,0.05),0_8px_24px_-14px_rgba(28,26,23,0.30)] ${
+            dragOver ? "border-brand border-dashed" : "border-line"
+          }`}
+        >
+          {attachments.length > 0 ? (
+            <ul className="mb-2 flex flex-wrap gap-2 px-1 pt-1">
+              {attachments.map((a) => (
+                <li key={a.id} className="relative">
+                  <div className="h-14 w-14 overflow-hidden rounded-lg border border-line bg-canvas">
+                    {isPaintable(a.mimeType) ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={a.dataUrl} alt={a.name} className="h-full w-full object-cover" />
+                    ) : (
+                      <span className="flex h-full w-full items-center justify-center text-[9px] text-ink-faint">
+                        HEIC
+                      </span>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => onRemoveAttachment(a.id)}
+                    aria-label={`Remove ${a.name}`}
+                    className="absolute -end-1.5 -top-1.5 inline-flex h-5 w-5 items-center justify-center rounded-full border border-line bg-surface text-ink-soft shadow-sm transition-base hover:text-ink"
+                  >
+                    <CloseIcon size={11} />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+
+          <div className="flex items-end gap-2">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept={ACCEPT_ATTR}
+              multiple
+              hidden
+              onChange={(e) => {
+                if (e.target.files) onAddFiles(Array.from(e.target.files));
+                e.target.value = "";
+              }}
+            />
             <button
               type="button"
-              onClick={onReason}
-              disabled={busy || value.trim().length === 0}
-              title={reasonTooltip}
-              aria-label={reasonLabel}
-              className="mb-0.5 inline-flex h-10 shrink-0 items-center gap-1 rounded-xl border border-line px-2.5 text-[12px] text-ink-soft transition-base hover:border-line-strong hover:text-ink disabled:opacity-40"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={busy || attachments.length >= MAX_IMAGES}
+              title={attachLabel}
+              aria-label={attachLabel}
+              className="mb-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-line text-ink-soft transition-base hover:border-line-strong hover:text-ink disabled:opacity-40"
             >
-              <SparkIcon size={12} />
-              <span className="hidden sm:inline">{reasonLabel}</span>
+              <PaperclipIcon size={16} />
             </button>
-          ) : null}
-          <button
-            type="submit"
-            disabled={busy || value.trim().length === 0}
-            className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-ink text-surface transition-base hover:bg-ink-soft disabled:opacity-40"
-            aria-label="Send question"
-          >
-            <ArrowRightIcon size={14} />
-          </button>
+            <textarea
+              ref={ref}
+              value={value}
+              onChange={(e) => onChange(e.target.value)}
+              onKeyDown={onKeyDown}
+              onPaste={onPaste}
+              rows={1}
+              autoFocus
+              placeholder={placeholder ?? "Ask Oria anything…"}
+              className="block min-h-[40px] flex-1 resize-none bg-transparent px-2 py-2 text-[14.5px] text-ink placeholder:text-ink-faint outline-none"
+            />
+            <MicButton
+              onTranscribed={(text) => onChange(value ? `${value} ${text}` : text)}
+              targetLanguage={locale}
+              size="sm"
+              className="mb-0.5"
+            />
+            {onReason ? (
+              <button
+                type="button"
+                onClick={onReason}
+                disabled={busy || !canSend}
+                title={reasonTooltip}
+                aria-label={reasonLabel}
+                className="mb-0.5 inline-flex h-10 shrink-0 items-center gap-1 rounded-xl border border-line px-2.5 text-[12px] text-ink-soft transition-base hover:border-line-strong hover:text-ink disabled:opacity-40"
+              >
+                <SparkIcon size={12} />
+                <span className="hidden sm:inline">{reasonLabel}</span>
+              </button>
+            ) : null}
+            <button
+              type="submit"
+              disabled={busy || !canSend}
+              className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-ink text-surface transition-base hover:bg-ink-soft disabled:opacity-40"
+              aria-label="Send question"
+            >
+              <ArrowRightIcon size={14} />
+            </button>
+          </div>
         </div>
-        <p className="mt-1.5 px-1 text-[11px] text-ink-faint">
-          Enter to send, Shift + Enter for newline.
-        </p>
+        {notice ? (
+          <p className="mt-1.5 px-1 text-[11px] text-warning">{notice}</p>
+        ) : (
+          <p className="mt-1.5 px-1 text-[11px] text-ink-faint">
+            Enter to send, Shift + Enter for newline.
+          </p>
+        )}
       </form>
     );
   },

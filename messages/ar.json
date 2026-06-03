@@ -494,6 +494,11 @@
     "approved_toast": "تمت الإضافة إلى مساحتك."
   },
   "ask": {
+    "attach_images": "إرفاق صور",
+    "image_too_large": "يجب أن يكون حجم كل صورة أقل من 10 ميغابايت.",
+    "image_too_many": "يمكنك إرفاق ما يصل إلى {max} صور.",
+    "image_unsupported": "نوع الملف هذا غير مدعوم. استخدم PNG أو JPG أو WEBP أو GIF أو HEIC.",
+    "image_default_query": "ما الموجود في هذه الصورة؟",
     "you_asked": "سألت",
     "setup_transition": "يبدو أنك تريد إجراء تغيير. إليك ما سأفعله:",
     "setup_dismiss": "في الواقع، فقط أجب على سؤالي",

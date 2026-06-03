@@ -494,6 +494,11 @@
     "approved_toast": "Añadido a tu espacio."
   },
   "ask": {
+    "attach_images": "Adjuntar imágenes",
+    "image_too_large": "Cada imagen debe pesar menos de 10 MB.",
+    "image_too_many": "Puedes adjuntar hasta {max} imágenes.",
+    "image_unsupported": "Ese tipo de archivo no es compatible. Usa PNG, JPG, WEBP, GIF o HEIC.",
+    "image_default_query": "¿Qué hay en esta imagen?",
     "you_asked": "Preguntaste",
     "setup_transition": "Parece que quieres hacer un cambio. Esto es lo que haría:",
     "setup_dismiss": "En realidad, solo responde mi pregunta",

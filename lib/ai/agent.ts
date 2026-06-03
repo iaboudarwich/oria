@@ -181,6 +181,8 @@ export async function* streamAnswer(input: {
   reasoningTrigger?: string;
   /** Receives the reasoning trace at stream end (Anthropic extended thinking). */
   onThinking?: (text: string) => void;
+  /** Inline images (base64) attached to this question, for a multimodal ask. */
+  images?: { mimeType: string; dataBase64: string }[];
 }): AsyncGenerator<string, void, unknown> {
   // Conversation surface: routed through the user's connected AI when active,
   // else Oria's default, with silent fallback (streamConversation).
@@ -219,10 +221,25 @@ export async function* streamAnswer(input: {
     input.personalContext ?? null,
   );
 
+  // When images are attached, the final user turn becomes a multimodal content
+  // array: the text block first, then each inline image. Text-only questions
+  // keep the plain-string content (cheaper, unchanged path).
+  const userContent: ProviderMessage["content"] =
+    input.images && input.images.length > 0
+      ? [
+          { type: "text", text: userMessage },
+          ...input.images.map((img) => ({
+            type: "image" as const,
+            mimeType: img.mimeType,
+            dataBase64: img.dataBase64,
+          })),
+        ]
+      : userMessage;
+
   const messages: ProviderMessage[] = [
     { role: "system", content: system },
     ...(input.history ?? []).map((m) => ({ role: m.role, content: m.content })),
-    { role: "user", content: userMessage },
+    { role: "user", content: userContent },
   ];
 
   const tier = input.tier ?? "fast";
