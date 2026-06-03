@@ -16,6 +16,7 @@ import {
 import { DeleteAccountPanel } from "@/components/settings/delete-account-panel";
 import { ResetAccountPanel } from "@/components/settings/reset-account-panel";
 import { ConnectionsPanel } from "@/components/settings/connections-panel";
+import { ConnectorsOverview } from "@/components/settings/connectors-overview";
 import { CloudServicesPanel } from "@/components/settings/cloud-services-panel";
 import { MicrosoftServicesPanel } from "@/components/settings/microsoft-services-panel";
 import { AiSettings } from "@/components/ai/ai-settings";
@@ -260,6 +261,8 @@ export default async function SettingsPage({
 
         {tab === "connections" && ctx?.profile.id && (
           <div className="space-y-9">
+            {/* At-a-glance grid: every connector visible without scrolling (F2). */}
+            <ConnectorsOverview userId={ctx.profile.id} />
             <ConnectionsPanel
               userId={ctx.profile.id}
               notice={typeof sp.notice === "string" ? sp.notice : undefined}

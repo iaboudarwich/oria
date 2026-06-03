@@ -1,4 +1,18 @@
 {
+  "connectors": {
+    "overview_title": "Todos los conectores",
+    "overview_desc": "Conecta correo, calendario y almacenamiento en la nube. Los servicios conectados se gestionan abajo.",
+    "status_connected": "Conectado",
+    "status_connect": "Conectar",
+    "status_soon": "Pronto",
+    "gmail_desc": "Analiza Gmail en busca de facturas, reservas y recibos.",
+    "gcal_desc": "Sincroniza eventos de Google Calendar.",
+    "gdrive_desc": "Indexa documentos de Google Drive.",
+    "outlook_desc": "Analiza Outlook en busca de elementos importantes.",
+    "ocal_desc": "Sincroniza eventos de Outlook Calendar.",
+    "onedrive_desc": "Indexa documentos de OneDrive.",
+    "banking_desc": "Sigue cuentas y transacciones."
+  },
   "settings_help": {
     "response_length": "La longitud predeterminada de las respuestas de Oria. Corta para datos rápidos, larga para detalle.",
     "tone": "Si Oria escribe de forma casual o más formal.",

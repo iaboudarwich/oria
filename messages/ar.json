@@ -1,4 +1,18 @@
 {
+  "connectors": {
+    "overview_title": "كل أدوات الربط",
+    "overview_desc": "اربط البريد والتقويم والتخزين السحابي. تُدار الخدمات المتصلة في الأسفل.",
+    "status_connected": "متصل",
+    "status_connect": "اتصال",
+    "status_soon": "قريباً",
+    "gmail_desc": "فحص Gmail بحثاً عن الفواتير والحجوزات والإيصالات.",
+    "gcal_desc": "مزامنة الأحداث من تقويم Google.",
+    "gdrive_desc": "فهرسة المستندات من Google Drive.",
+    "outlook_desc": "فحص بريد Outlook بحثاً عن العناصر المهمة.",
+    "ocal_desc": "مزامنة الأحداث من تقويم Outlook.",
+    "onedrive_desc": "فهرسة المستندات من OneDrive.",
+    "banking_desc": "تتبع الحسابات والمعاملات."
+  },
   "settings_help": {
     "response_length": "الطول الافتراضي لإجابات Oria. قصيرة للمعلومات السريعة، طويلة للتفاصيل.",
     "tone": "ما إذا كانت Oria تكتب بأسلوب عفوي أو أكثر رسمية.",
