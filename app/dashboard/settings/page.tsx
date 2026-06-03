@@ -32,6 +32,7 @@ import { getUserStorageStats, type StorageStats } from "@/lib/data/quotas";
 import { formatBytes } from "@/lib/utils";
 import { LanguageSwitcher } from "@/components/settings/language-switcher";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { PushToggle } from "@/components/pwa/push-toggle";
 import { AppearancePanel } from "@/components/settings/appearance-panel";
 import { defaultAccentFor } from "@/lib/data/space-theme";
 import { PreferencesPanel } from "@/components/settings/preferences-panel";
@@ -186,6 +187,10 @@ export default async function SettingsPage({
                 />
               </div>
             </section>
+
+            {/* Push notifications (PWA) */}
+            <PushToggle isAdmin={admin} />
+
             {admin ? <AdminPanel /> : null}
           </>
         )}

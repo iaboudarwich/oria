@@ -99,7 +99,10 @@ export type AuditAction =
   // Account security
   | "email.verified"
   | "2fa.prompt_shown"
-  | "2fa.prompt_dismissed";
+  | "2fa.prompt_dismissed"
+  // Web push (PWA)
+  | "push.subscribed"
+  | "push.unsubscribed";
 
 export type AuditLogInput = {
   userId: string;
