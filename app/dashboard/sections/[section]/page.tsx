@@ -117,7 +117,7 @@ export default async function SectionPage({ params, searchParams }: Props) {
   const sp: Record<string, string | string[] | undefined> = await (
     searchParams ?? Promise.resolve({})
   );
-  const view = typeof sp.view === "string" ? sp.view : "files";
+  const viewParam = typeof sp.view === "string" ? sp.view : null;
   const htype = typeof sp.htype === "string" ? sp.htype : undefined;
   const t = await getTranslations("empty");
 
@@ -223,18 +223,20 @@ export default async function SectionPage({ params, searchParams }: Props) {
   ]);
   const thumbs = await thumbsForEntries(entries);
 
-  // Intelligence view: Travel gets a Trips tab, Health a Timeline tab.
+  // Intelligence view: Travel defaults to Trips, Health to Timeline. The
+  // primary content tab is the default (the bare URL); Files is the secondary
+  // tab. (Round 14 F4: most-used tab first, file/document tabs are secondary.)
   const intel =
     sec === "travel" ? "trips" : sec === "health" ? "timeline" : null;
-  const activeView = intel && view === intel ? intel : "files";
+  const activeView = !intel ? "files" : viewParam === "files" ? "files" : intel;
   const viewTabs = intel
     ? [
-        { key: "files", label: "Files", href: `/dashboard/sections/${sec}` },
         {
           key: intel,
           label: intel === "trips" ? "Trips" : "Timeline",
-          href: `/dashboard/sections/${sec}?view=${intel}`,
+          href: `/dashboard/sections/${sec}`,
         },
+        { key: "files", label: "Files", href: `/dashboard/sections/${sec}?view=files` },
       ]
     : null;
 
