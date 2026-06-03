@@ -392,6 +392,7 @@
     "timeline": { "label": "Historique", "desc": "Activité récente" }
   },
   "reshape": {
+    "changes_generic": "Changement de configuration",
     "will_change": "Voici ce que je modifierais :",
     "row_create": "Créer",
     "row_rename": "Renommer",

@@ -42,8 +42,25 @@ export function RecentSetupChanges({ changes }: { changes: SetupChange[] }) {
             key={c.id}
             className="flex items-center justify-between gap-3 rounded-lg border border-line bg-surface px-3 py-2"
           >
-            <span className="min-w-0 truncate text-[12.5px] text-ink-soft">
-              {c.summary}
+            <span className="min-w-0 flex-1 truncate text-[12.5px] text-ink-soft">
+              {c.items.length === 0 ? (
+                <span>{t("changes_generic")}</span>
+              ) : (
+                c.items.map((it, i) => (
+                  <span key={i}>
+                    {i > 0 ? <span className="text-ink-faint">, </span> : null}
+                    {it.type === "delete" ? (
+                      <span className="text-claret line-through">{it.label}</span>
+                    ) : it.type === "rename" ? (
+                      <span>
+                        {it.label} {"->"} <span className="text-ink">{it.to}</span>
+                      </span>
+                    ) : (
+                      <span>{it.label}</span>
+                    )}
+                  </span>
+                ))
+              )}
               {reverted ? <span className="ml-2 text-ink-faint">{t("changes_reverted")}</span> : null}
             </span>
             {!reverted && c.undoable ? (

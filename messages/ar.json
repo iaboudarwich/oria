@@ -392,6 +392,7 @@
     "timeline": { "label": "الجدول الزمني", "desc": "النشاط الأخير" }
   },
   "reshape": {
+    "changes_generic": "تغيير في الإعداد",
     "will_change": "إليك ما سأغيّره:",
     "row_create": "إنشاء",
     "row_rename": "إعادة تسمية",

@@ -392,6 +392,7 @@
     "timeline": { "label": "Timeline", "desc": "Recent activity" }
   },
   "reshape": {
+    "changes_generic": "Setup change",
     "will_change": "Here is what I would change:",
     "row_create": "Create",
     "row_rename": "Rename",
