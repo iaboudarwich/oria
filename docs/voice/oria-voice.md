@@ -1,6 +1,6 @@
 # Oria Voice
 
-The voice layer wraps every LLM call. Read this before editing `lib/voice/oria-voice.ts` or any user-facing string.
+The voice rules wrap every LLM call, applied through the AI seam (`app/api/ask/route.ts` + `lib/ai-providers/`). Read this before editing any user-facing string or the voice config.
 
 ---
 

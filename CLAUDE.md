@@ -44,16 +44,16 @@ These hold across every round, every commit, every file. No exceptions unless th
 2. **All user-facing copy lives in en/ar/fr/es with full parity.** Arabic gets RTL. New strings ship in all four or the round is not done.
 3. **Audit-log every action that touches user data.** Read, write, share, delete, export. Table: \`audit_log\`. The user can see their own log.
 4. **Soft-delete is the default.** Hard delete only on explicit "delete forever" + 30-day grace.
-5. **Provider abstraction is the seam.** Conversation AI calls go through \`lib/ai/router.ts\`. Never call Anthropic/OpenAI/Gemini SDKs directly from a page or route.
+5. **Provider abstraction is the seam.** Conversation AI calls go through the provider seam (\`lib/ai-providers/\`, with classifiers in \`lib/ai/classifiers/\` and the Ask endpoint at \`app/api/ask/route.ts\`). Never call Anthropic/OpenAI/Gemini SDKs directly from a page or route.
 6. **Infrastructure AI is always Oria's Anthropic key.** Classification, extraction, embeddings, suggestion generation. User-connected providers never run infrastructure work.
-7. **Voice layer wraps every LLM call.** \`lib/voice/oria-voice.ts\` injects tone, banned-phrase guards, length rules. No raw model output ships to the user.
+7. **Voice rules wrap every LLM call.** The voice rules in \`docs/voice/oria-voice.md\` (tone, banned-phrase guards, length budgets) are applied through the AI seam (\`app/api/ask/route.ts\` + \`lib/ai-providers/\`). No raw model output ships to the user.
 8. **Schema-first migrations, numbers assigned at build time.** Never hand-number a migration file. Run a schema-reality check before every migration, what's in the DB vs what the migration assumes.
 9. **Gates must be green at every commit:** \`npm run build\`, \`npm test\`, \`npm run lint\`, em-dash sweep, i18n parity check.
-10. **Bespoke design system.** Components live in \`components/\`. No new framework chrome (no shadcn drops, no Material). Tokens in \`lib/design/tokens.ts\` are the only source for color, spacing, radius, type.
+10. **Bespoke design system.** Components live in \`components/\`. No new framework chrome (no shadcn drops, no Material). Tokens in the \`@theme\` block of \`app/globals.css\` are the only source for color, spacing, radius, type.
 11. **Single responsibility per file.** A page is a page. A route is a route. A helper is a helper. Co-located file under 400 lines or split.
 12. **No new on old.** When refactoring, replace cleanly. Don't leave both the new and the old wired. Dead code is a bug.
 13. **Templates are internal.** The user sees their context (Personal, Investor, Business, Family Office). They never see the word "template."
-14. **Terminology lock (see §6).** Use canonical names. Banned synonyms fail lint.
+14. **Terminology lock (see §5).** Use canonical names. Banned synonyms fail lint (em-dash + domain-noun synonyms in i18n, via \`scripts/check-i18n-banned.mjs\`).
 15. **Trust copy is non-negotiable** (see §7). Privacy step appears before Connect. Honest-limit line stays on the homepage.
 16. **Rate limits exist and are graceful.** Oria-default users hit per-user Ask caps. BYO users are exempt. Messaging is human, never technical.
 17. **No drive-bys.** A round changes what its scope says it changes. Found dead code in a file you weren't touching? Note it in the report, don't fix it this round.
@@ -156,7 +156,7 @@ people/vehicles/properties area; Trackables = the renewals feature.
 
 ## 6. Voice layer
 
-All LLM output flows through \`lib/voice/oria-voice.ts\`. Banned phrases live in \`docs/voice/oria-voice.md\`. Read that doc before editing voice config.
+All LLM output is shaped by the voice rules in \`docs/voice/oria-voice.md\`, applied through the AI seam (\`app/api/ask/route.ts\` + \`lib/ai-providers/\`). Read that doc before editing voice config.
 
 Hard bans (these never appear in user-facing copy from any model):
 - em-dashes
@@ -192,7 +192,7 @@ Non-negotiables:
 
 When a round prompt names a skill, read the SKILL.md at that path before writing code. Common ones for Oria:
 
-- \`frontend-design\` — every UI round
+- design contract for every UI round: \`docs/design/heuristics.md\` plus the \`@theme\` tokens in \`app/globals.css\` (there is no frontend-design skill; do not add shadcn/Radix/ui-ux-pro-max)
 - \`pdf\` / \`pdf-reading\` — statement extraction, document handling
 - \`docx\` / \`xlsx\` / \`pptx\` — native document types (Round 17.5), export suite (post-launch)
 - \`mcp-builder\` — Oria MCP server (post-launch A)

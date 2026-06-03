@@ -1,6 +1,6 @@
 # Oria Trust Messaging
 
-The canonical source for every piece of trust copy in the product. Read this before editing any privacy, onboarding, settings, or marketing string related to data, security, or AI. Translations live in /locales/{en,ar,fr,es}/trust.json and must preserve meaning, not literal phrasing.
+The canonical source for every piece of trust copy in the product. Read this before editing any privacy, onboarding, settings, or marketing string related to data, security, or AI. Translations live in messages/{en,ar,fr,es}.json (one file per locale, namespaced; e.g. the privacy and trust namespaces) and must preserve meaning, not literal phrasing.
 
 ---
 

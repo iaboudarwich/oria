@@ -1,6 +1,6 @@
 # Oria Design Heuristics
 
-The aesthetic floor for every interface decision. Read before opening any UI round. The frontend-design skill plus this doc are the contract.
+The aesthetic floor for every interface decision. Read before opening any UI round. This doc plus the `@theme` tokens in `app/globals.css` are the design contract (there is no frontend-design skill; do not add shadcn/Radix/ui-ux-pro-max).
 
 ---
 
@@ -34,7 +34,7 @@ These hold across every screen, every component, every state.
 
 8. **44px minimum touch target.** Apple HIG floor. Applies to every clickable element on touch surfaces. Use padding to reach it, not visible button size.
 
-9. **Tokens are the only source of truth.** Colors, spacing, radius, type sizes live in lib/design/tokens.ts. No hex codes, no magic numbers in components. Period.
+9. **Tokens are the only source of truth.** Colors, spacing, radius, type sizes live in the `@theme` block of `app/globals.css`. No hex codes, no magic numbers in components. Period.
 
 10. **Motion explains, never decorates.** Animation tells the user what just changed or what's about to. Layout shifts get crossfade. Insertions get height-grow. Removals get fade-out. Nothing else.
 
@@ -226,6 +226,8 @@ Build these from the start, not as afterthoughts.
 - Stroke width: 1.5px on small (16-20px), 2px on medium (24px), 2.5px on large (32px+)
 - Always paired with a text label unless space-critical AND has aria-label
 - Never use icons to replace verbs (no pencil icon for "Edit" without the word, except in dense table rows)
+
+Note: the mandate stands, but `lucide-react` is not installed yet; the app currently uses the custom icon set in `components/ui/icon`. The migration to Lucide is tracked as round 14.5c.
 
 ---
 
