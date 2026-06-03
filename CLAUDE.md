@@ -1,56 +1,206 @@
-@AGENTS.md
+# CLAUDE.md — Oria Standing Brief
 
-# Standing rules for every round
+Read this file at the start of every round. It contains thesis, stack, rules, and the protocol every change must follow.
 
-Follow these at the start of and throughout every round. They are not
-optional.
+---
 
-## Before starting
+## 1. What Oria is
 
-- Confirm location and a clean tree: `pwd` is `~/Projects/oria`, on `main`,
-  in sync with origin, working tree clean (a modified `.claude/settings.local.json`
-  is local-only and is kept out of commits).
-- Read `docs/perf/2026-06-baseline.md` before any work that could affect page
-  performance; you will compare against it.
+**Oria is the personal operating system that builds itself around each user.**
 
-## While working
+**Tagline:** Your second brain and right arm. Find. Ask. Act.
 
-- No performance regressions. Before committing a feature, check the pages it
-  touches against the perf baseline. If a number moved the wrong way, fix it
-  before committing. Keep expensive work (summaries, profile reads, AI calls)
-  parallel to the main data fetch, never sequential on the render path.
-- Stay scoped to the feature. No drive-by edits to unrelated code. The one
-  sanctioned cross-feature cleanup is the end-of-round audit pass.
-- All new user-facing copy goes in all four language files (en, ar, fr, es).
-  Arabic may be machine-translated; preserve placeholders and structure.
-- No em-dashes (U+2014) anywhere in code or copy. The lib/ai regression test
-  enforces it for prompts; hold the same bar everywhere.
+Oria connects to a user's accounts (Gmail, Calendar, Drive, WHOOP, banks, more), extracts what matters, surfaces it on a self-organizing Today page, and acts on it through write-back. The dashboard, the connectors offered, the suggestions, the prep cards, all shape themselves to who the user is via an onboarding interview and continuous learning.
 
-## Quality gates (green at every commit)
+**Launch archetypes (locked):** Renter, Parent, Freelancer, Frequent Traveler, Teacher, Caregiver, Investor, Family Office Principal, Custom. Every template, every connector recommendation, every Ask answer flexes around these.
 
-- `npm run build`, `npm test`, and `npm run lint` must all pass. Lint has two
-  known pre-existing warnings (`mfa-actions.ts`, `audit-storage-rls.ts`); zero
-  errors and no new warnings.
-- Migrations are sequential and applied to production via
-  `npx supabase db push` after the code is ready, before the deploy lands.
+**Beta is free. Launch is invite-only (5 users to start). No Stripe at launch. Billing comes in Round 31 after a legal entity (Round 35).**
 
-## Audit your own diff before committing
+---
 
-At the end of each feature, scan the diff you wrote and clean up what you
-introduced:
+## 2. Stack
 
-- Unused imports / dead variables: remove.
-- A helper defined once and called once: leave it (do not refactor for its own
-  sake).
-- A helper duplicated across files: consolidate.
-- `console.log` left behind: remove.
-- Dead branches (a switch case never hit): remove if safe, comment if unsure.
-- Slow paths added (N+1 queries, sequential awaits where parallel works): fix.
+- **Frontend:** Next.js (App Router) on Vercel. PWA from Round 15 onward. Capacitor wrap post-launch.
+- **Database:** Supabase Postgres. Migrations sequential, applied via \`supabase db push\` after commit.
+- **Python sidecar:** Railway. Handles 384-dim MiniLM embeddings and heavy extraction.
+- **Infrastructure AI (always Oria's Anthropic key):** classification, extraction, sidecar reasoning, behind-the-scenes work. Costs eaten by Oria.
+- **Conversation AI (user's connected provider, else Oria's default):** Ask Oria, suggestions, Daily Journal, surfaces the user sees. BYO Claude/ChatGPT/Gemini supported; their memory uses the provider's native memory system.
+- **Voice:** Oria's OpenAI/Whisper, always.
+- **Analytics:** PostHog from Round 20. Token counts, latencies, tiers only. Never raw content.
+- **Errors:** Sentry. PII-scrubbed.
+- **Email:** Resend (heyoria.com domain verified).
+- **Cache/queues:** Upstash Redis.
+- **Storage:** Cloudflare R2.
 
-## Finishing
+**Working directory:** \`~/Projects/oria\`. Main branch. Never work in detached HEAD.
 
-- Push to `origin/main`; Vercel auto-deploys. Verify the deploy reaches READY.
-- Commit with the author email `issamlife21@gmail.com`.
-- Deliver the standard final report: each feature with files touched,
-  translations confirmed, migrations applied, anything skipped/deferred with a
-  reason, and a smoke-test checklist.
+---
+
+## 3. Operating principles (the 18)
+
+These hold across every round, every commit, every file. No exceptions unless this file is updated first.
+
+1. **No em-dashes anywhere.** Use commas, periods, parentheses, or a colon. Sweep before commit. A planted em-dash must fail lint.
+2. **All user-facing copy lives in en/ar/fr/es with full parity.** Arabic gets RTL. New strings ship in all four or the round is not done.
+3. **Audit-log every action that touches user data.** Read, write, share, delete, export. Table: \`audit_log\`. The user can see their own log.
+4. **Soft-delete is the default.** Hard delete only on explicit "delete forever" + 30-day grace.
+5. **Provider abstraction is the seam.** Conversation AI calls go through \`lib/ai/router.ts\`. Never call Anthropic/OpenAI/Gemini SDKs directly from a page or route.
+6. **Infrastructure AI is always Oria's Anthropic key.** Classification, extraction, embeddings, suggestion generation. User-connected providers never run infrastructure work.
+7. **Voice layer wraps every LLM call.** \`lib/voice/oria-voice.ts\` injects tone, banned-phrase guards, length rules. No raw model output ships to the user.
+8. **Schema-first migrations, numbers assigned at build time.** Never hand-number a migration file. Run a schema-reality check before every migration, what's in the DB vs what the migration assumes.
+9. **Gates must be green at every commit:** \`npm run build\`, \`npm test\`, \`npm run lint\`, em-dash sweep, i18n parity check.
+10. **Bespoke design system.** Components live in \`components/\`. No new framework chrome (no shadcn drops, no Material). Tokens in \`lib/design/tokens.ts\` are the only source for color, spacing, radius, type.
+11. **Single responsibility per file.** A page is a page. A route is a route. A helper is a helper. Co-located file under 400 lines or split.
+12. **No new on old.** When refactoring, replace cleanly. Don't leave both the new and the old wired. Dead code is a bug.
+13. **Templates are internal.** The user sees their context (Personal, Investor, Business, Family Office). They never see the word "template."
+14. **Terminology lock (see §6).** Use canonical names. Banned synonyms fail lint.
+15. **Trust copy is non-negotiable** (see §7). Privacy step appears before Connect. Honest-limit line stays on the homepage.
+16. **Rate limits exist and are graceful.** Oria-default users hit per-user Ask caps. BYO users are exempt. Messaging is human, never technical.
+17. **No drive-bys.** A round changes what its scope says it changes. Found dead code in a file you weren't touching? Note it in the report, don't fix it this round.
+18. **Standard final report** at the end of every round (see §5).
+
+---
+
+## 4. Standing protocol — every round, every time
+
+### Pre-flight (before writing any code)
+1. \`pwd\` — must be \`~/Projects/oria\`.
+2. \`git status\` — must be clean, on \`main\`, up to date.
+3. Kill stray shells, dev servers, watchers from prior rounds. One terminal, one focus.
+4. Read this file. Read the round prompt. Read every skill the round prompt names.
+5. If the round modifies the DB: pull the current schema (\`supabase db pull\` or inspect via dashboard) and confirm assumptions match reality before writing any migration.
+
+### During the round
+- Stay scoped. The round prompt is the contract.
+- Run the dev server. Visually verify what you build as you build it, do not assume.
+- Run \`npm test\` after every significant change, not just at the end.
+- If you discover something the round prompt didn't anticipate (broken assumption, missing migration, hostile interaction with another feature), stop and surface it. Don't silently rewrite scope.
+
+### Pre-commit
+1. \`npm run build\` — must pass.
+2. \`npm test\` — must pass.
+3. \`npm run lint\` — must pass (this includes the em-dash rule and the banned-phrase rule).
+4. i18n parity check: every new key exists in en, ar, fr, es.
+5. Diff audit: walk your own diff. Dead imports, dead vars, \`console.log\`, stale comments, duplicate helpers. Clean before commit.
+6. Migration safety: number assigned, schema-reality check passed, rollback noted in commit message if destructive.
+
+### Commit
+- Format: \`type(scope): one sentence summary\`. Types: \`feat\`, \`fix\`, \`chore\`, \`refactor\`, \`docs\`, \`test\`, \`perf\`, \`i18n\`.
+- Body explains the *why* if non-obvious. Diff explains the *what*.
+
+### Final report (standard format)
+At the end of every round, output a report with these exact sections:
+
+\`\`\`
+ROUND X — [name]
+
+WHAT SHIPPED
+- bullet
+- bullet
+
+FILES TOUCHED
+- path/to/file.ts (created | modified | deleted)
+- ...
+
+MIGRATIONS
+- 00XX_name.sql — applied via supabase db push, [what it does]
+- (or "none this round")
+
+TESTS
+- before: 197 passing
+- after: 203 passing (6 new)
+- coverage: [if changed]
+
+GATES
+- build: pass
+- test: pass
+- lint: pass
+- em-dash sweep: pass
+- i18n parity: pass
+
+DEFERRED / FLAGGED
+- anything intentionally not done, with reason
+- anything I noticed but stayed out of scope on
+
+NEXT STEP
+- what should happen next, in one line
+\`\`\`
+
+---
+
+## 5. Terminology lock
+
+Canonical terms. Synonyms fail lint.
+
+| Use | Don't use |
+|---|---|
+| Ask Oria | chat, chatbot, assistant |
+| connector | integration, plugin |
+| trackable | item, entity, thing |
+| Today | dashboard, home, feed |
+| Circle | group, team, household |
+| context (Personal/Investor/Business/Family Office) | template, persona |
+| routine | automation, workflow |
+| suggestion | recommendation, tip |
+| write-back | action, sync-out |
+| BYO | bring-your-own, custom AI |
+
+---
+
+## 6. Voice layer
+
+All LLM output flows through \`lib/voice/oria-voice.ts\`. Banned phrases live in \`docs/voice/oria-voice.md\`. Read that doc before editing voice config.
+
+Hard bans (these never appear in user-facing copy from any model):
+- em-dashes
+- "I'm here to help"
+- "As an AI"
+- "Feel free to"
+- "Let me know if"
+- "It's important to note"
+- "Don't hesitate"
+- "I'd be happy to"
+- "Let's dive in"
+- "Game-changer"
+- "Unleash"
+- "Empower"
+
+Tone: direct, warm, unsentimental. Never performative. Reads like a calm friend who happens to know everything.
+
+---
+
+## 7. Trust messaging
+
+Read \`docs/trust/messaging.md\` before editing any privacy, onboarding, or settings copy.
+
+Non-negotiables:
+- Privacy step appears **before** the first Connect prompt.
+- The onboarding privacy slide is two columns: what we do / what we don't do. Plain English, four languages.
+- \`/trust\` page lives at heyoria.com/trust. \`/trust/subprocessors\` lists every third party.
+- The honest-limit line on the homepage stays.
+
+---
+
+## 8. Skills
+
+When a round prompt names a skill, read the SKILL.md at that path before writing code. Common ones for Oria:
+
+- \`frontend-design\` — every UI round
+- \`pdf\` / \`pdf-reading\` — statement extraction, document handling
+- \`docx\` / \`xlsx\` / \`pptx\` — native document types (Round 17.5), export suite (post-launch)
+- \`mcp-builder\` — Oria MCP server (post-launch A)
+- \`product-self-knowledge\` — anything touching Anthropic SDK/Memory tool/Batch API
+
+---
+
+## 9. What never gets built
+
+- Apple IAP (web Stripe only)
+- Bill negotiation (legal/regulatory exposure)
+- Screen capture / always-on listening
+- Cinematic marketing video before users
+- Everything at once (one round at a time)
+
+---
+
+End of brief. Update this file when a principle changes, not when code changes.
