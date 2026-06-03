@@ -11,8 +11,15 @@ import {
   unsubscribeFromPush,
   notificationPermission,
 } from "@/lib/pwa/push-client";
+import { isIos, isStandalone } from "@/lib/pwa/standalone";
 
-type Status = "loading" | "unsupported" | "unavailable" | "blocked" | "ready";
+type Status =
+  | "loading"
+  | "unsupported"
+  | "ios_install"
+  | "unavailable"
+  | "blocked"
+  | "ready";
 
 /**
  * Settings toggle for Web Push. Permission is requested only when the user
@@ -31,7 +38,14 @@ export function PushToggle({ isAdmin }: { isAdmin: boolean }) {
     (async () => {
       await Promise.resolve(); // avoid setting state synchronously in-effect
       if (!active) return;
-      if (!isPushSupported()) return setStatus("unsupported");
+      if (!isPushSupported()) {
+        // On iPhone/iPad, Web Push only works once Oria is installed to the
+        // Home Screen (iOS 16.4+). In a browser tab the real fix is "install
+        // first", not "your browser can't do this". Reserve the genuine
+        // unsupported message for browsers that truly cannot.
+        if (isIos() && !isStandalone()) return setStatus("ios_install");
+        return setStatus("unsupported");
+      }
       if (!hasPublicKey()) return setStatus("unavailable");
       if (notificationPermission() === "denied") return setStatus("blocked");
       const sub = await getExistingSubscription();
@@ -93,6 +107,9 @@ export function PushToggle({ isAdmin }: { isAdmin: boolean }) {
               <p className="text-[13px] text-ink">{t("push_body")}</p>
               {status === "unsupported" && (
                 <p className="mt-0.5 text-[11.5px] text-ink-faint">{t("push_unsupported")}</p>
+              )}
+              {status === "ios_install" && (
+                <p className="mt-0.5 text-[11.5px] text-ink-faint">{t("push_ios_install")}</p>
               )}
               {status === "unavailable" && (
                 <p className="mt-0.5 text-[11.5px] text-ink-faint">{t("push_unavailable")}</p>

@@ -107,15 +107,19 @@ export function InstallPrompt() {
             className="mt-0.5 h-10 w-10 shrink-0 rounded-xl"
           />
           <div className="min-w-0 flex-1">
-            <p className="text-[13.5px] font-semibold text-ink">{t("install_title")}</p>
-            <p className="mt-0.5 text-[12.5px] text-ink-muted">{t("install_body")}</p>
+            <p className="text-[13.5px] font-semibold text-ink">
+              {ios ? t("install_title_ios") : t("install_title")}
+            </p>
+            <p className="mt-0.5 text-[12.5px] text-ink-muted">
+              {ios ? t("install_body_ios") : t("install_body")}
+            </p>
             <div className="mt-2 flex items-center gap-2">
               <button
                 type="button"
                 onClick={handleAction}
                 className="inline-flex h-8 items-center rounded-lg bg-ink px-3 text-[12.5px] font-medium text-surface transition-base hover:bg-ink-soft"
               >
-                {t("install_action")}
+                {ios ? t("ios_show_how") : t("install_action")}
               </button>
               <button
                 type="button"
