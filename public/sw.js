@@ -119,7 +119,18 @@ self.addEventListener("push", (event) => {
     tag: data.tag || "oria",
     data: { url: data.url || "/" },
   };
-  event.waitUntil(self.registration.showNotification(title, options));
+  event.waitUntil(
+    (async () => {
+      // Let any open tabs know a push arrived so they can refresh in the
+      // foreground; then show the notification.
+      const windows = await self.clients.matchAll({
+        type: "window",
+        includeUncontrolled: true,
+      });
+      for (const client of windows) client.postMessage({ type: "push", tag: options.tag });
+      await self.registration.showNotification(title, options);
+    })(),
+  );
 });
 
 self.addEventListener("notificationclick", (event) => {
