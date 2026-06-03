@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { rateLimit, RATE_PRESETS } from "@/lib/rate-limit";
 import { logAuditEvent } from "@/lib/data/audit-log";
-import { isReauthenticated, markReauthenticated } from "@/lib/auth/reauth";
+import { markReauthenticated } from "@/lib/auth/reauth";
 import { trackEvent } from "@/lib/analytics";
 import {
   clearBackupCodes,

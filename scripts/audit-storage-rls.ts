@@ -65,7 +65,6 @@ const cleanups: Array<() => Promise<void>> = [];
 
 function record(check: string, pass: boolean, detail?: string) {
   findings.push({ check, pass, detail });
-  // eslint-disable-next-line no-console
   console.log(`  ${pass ? "✓" : "✗"} ${check}${detail ? `   (${detail})` : ""}`);
 }
 
