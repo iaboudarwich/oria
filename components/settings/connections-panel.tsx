@@ -46,6 +46,9 @@ export async function ConnectionsPanel({
   notice?: string;
 }) {
   const connections = await listGmailConnections(userId);
+  // Two-zone hub (F1): this panel is the connected-Gmail detail (Zone 1). When
+  // nothing is connected, the Available zone owns the connect affordance.
+  if (connections.length === 0) return null;
   const configured = isGmailOAuthConfigured() && isTokenCryptoConfigured();
   const t = await getTranslations("connections");
 
@@ -85,21 +88,7 @@ export async function ConnectionsPanel({
         </p>
       ) : null}
 
-      {connections.length === 0 ? (
-        <div className="rounded-2xl border border-line bg-surface-raised p-5">
-          <div className="flex items-start justify-between gap-4">
-            <div className="min-w-0">
-              <p className="text-[15px] font-semibold text-ink">{t("gmail")}</p>
-              <p className="mt-0.5 text-[13px] text-ink-muted">{t("not_connected")}</p>
-            </div>
-            <GmailConnectButton configured={configured} label={t("connect")} />
-          </div>
-          {!configured ? (
-            <p className="mt-3 text-[12px] text-ink-faint">{t("not_configured")}</p>
-          ) : null}
-        </div>
-      ) : (
-        <>
+      <>
           {/* Status strip: an at-a-glance health row per connected inbox. */}
           <div className="overflow-hidden rounded-2xl border border-line bg-surface-raised">
             {perConnection.map(({ connection, counts }, i) => (
@@ -149,7 +138,6 @@ export async function ConnectionsPanel({
             />
           </div>
         </>
-      )}
     </section>
   );
 }

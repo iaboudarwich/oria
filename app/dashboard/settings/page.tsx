@@ -15,10 +15,7 @@ import {
 } from "@/components/ui/icon";
 import { DeleteAccountPanel } from "@/components/settings/delete-account-panel";
 import { ResetAccountPanel } from "@/components/settings/reset-account-panel";
-import { ConnectionsPanel } from "@/components/settings/connections-panel";
-import { ConnectorsOverview } from "@/components/settings/connectors-overview";
-import { CloudServicesPanel } from "@/components/settings/cloud-services-panel";
-import { MicrosoftServicesPanel } from "@/components/settings/microsoft-services-panel";
+import { ConnectionsZones } from "@/components/settings/connections-zones";
 import { AiSettings } from "@/components/ai/ai-settings";
 import { getAiConnection, getReasoningMode } from "@/lib/data/ai-connections";
 import { SectionsEditorLazy } from "@/components/settings/sections-editor-lazy";
@@ -260,16 +257,10 @@ export default async function SettingsPage({
         )}
 
         {tab === "connections" && ctx?.profile.id && (
-          <div className="space-y-9">
-            {/* At-a-glance grid: every connector visible without scrolling (F2). */}
-            <ConnectorsOverview userId={ctx.profile.id} />
-            <ConnectionsPanel
-              userId={ctx.profile.id}
-              notice={typeof sp.notice === "string" ? sp.notice : undefined}
-            />
-            <CloudServicesPanel userId={ctx.profile.id} />
-            <MicrosoftServicesPanel userId={ctx.profile.id} />
-          </div>
+          <ConnectionsZones
+            userId={ctx.profile.id}
+            notice={typeof sp.notice === "string" ? sp.notice : undefined}
+          />
         )}
 
         {tab === "ai" && <AiSettings connection={aiConnection} reasoningMode={aiReasoningMode} />}

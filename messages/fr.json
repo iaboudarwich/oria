@@ -1,17 +1,18 @@
 {
   "connectors": {
-    "overview_title": "Tous les connecteurs",
-    "overview_desc": "Connectez e-mail, agenda et stockage cloud. Les services connectés se gèrent ci-dessous.",
-    "status_connected": "Connecté",
-    "status_connect": "Connecter",
-    "status_soon": "Bientôt",
+    "connected": "Connectés",
+    "available": "Disponibles",
+    "none_connected": "Aucun compte connecté pour l'instant. Choisissez un connecteur ci-dessous.",
+    "connect": "Connecter",
+    "soon": "Bientôt",
     "gmail_desc": "Analyse Gmail pour factures, réservations et reçus.",
     "gcal_desc": "Synchronise les événements de Google Agenda.",
     "gdrive_desc": "Indexe les documents de Google Drive.",
     "outlook_desc": "Analyse Outlook pour les éléments importants.",
     "ocal_desc": "Synchronise les événements d'Outlook Calendar.",
     "onedrive_desc": "Indexe les documents de OneDrive.",
-    "banking_desc": "Suivez comptes et transactions."
+    "banking_desc": "Suivez comptes et transactions.",
+    "whoop_desc": "Sommeil, récupération et effort."
   },
   "settings_help": {
     "response_length": "La longueur par défaut des réponses d'Oria. Courte pour l'essentiel, longue pour le détail.",

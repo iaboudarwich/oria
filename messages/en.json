@@ -1,17 +1,18 @@
 {
   "connectors": {
-    "overview_title": "All connectors",
-    "overview_desc": "Connect email, calendar, and cloud storage. Connected services are managed below.",
-    "status_connected": "Connected",
-    "status_connect": "Connect",
-    "status_soon": "Soon",
+    "connected": "Connected",
+    "available": "Available",
+    "none_connected": "No accounts connected yet. Pick a connector below.",
+    "connect": "Connect",
+    "soon": "Soon",
     "gmail_desc": "Scan Gmail for bills, bookings, and receipts.",
     "gcal_desc": "Sync events from Google Calendar.",
     "gdrive_desc": "Index documents from Google Drive.",
     "outlook_desc": "Scan Outlook mail for important items.",
     "ocal_desc": "Sync events from Outlook Calendar.",
     "onedrive_desc": "Index documents from OneDrive.",
-    "banking_desc": "Track accounts and transactions."
+    "banking_desc": "Track accounts and transactions.",
+    "whoop_desc": "Sleep, recovery, and strain."
   },
   "settings_help": {
     "response_length": "How long Oria's answers run by default. Short for quick facts, long for detail.",

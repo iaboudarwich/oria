@@ -44,6 +44,10 @@ export async function CloudServicesPanel({ userId }: { userId: string }) {
   for (const c of calendar) emails.add(c.accountEmail);
   for (const d of drive) emails.add(d.accountEmail);
 
+  // Two-zone hub (F1): show only when a Google account is connected (Zone 1).
+  // Connecting a new Google service is handled by the Available zone.
+  if (emails.size === 0) return null;
+
   const calByEmail = new Map(calendar.map((c) => [c.accountEmail, c]));
   const driveByEmail = new Map(drive.map((d) => [d.accountEmail, d]));
   const mailEmails = new Set(gmail.map((g) => g.email));
@@ -119,22 +123,6 @@ export async function CloudServicesPanel({ userId }: { userId: string }) {
           </div>
         );
       })}
-
-      {/* Connect services on a new account. */}
-      <div className="flex flex-wrap gap-2">
-        <a
-          href="/api/oauth/google/connect?service=calendar"
-          className="inline-flex h-9 items-center rounded-lg bg-ink px-4 text-[12.5px] font-medium text-surface transition-base hover:bg-ink-soft"
-        >
-          {t("add_calendar")}
-        </a>
-        <a
-          href="/api/oauth/google/connect?service=drive"
-          className="inline-flex h-9 items-center rounded-lg bg-ink px-4 text-[12.5px] font-medium text-surface transition-base hover:bg-ink-soft"
-        >
-          {t("add_drive")}
-        </a>
-      </div>
     </section>
   );
 }
