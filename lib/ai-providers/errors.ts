@@ -44,18 +44,6 @@ export function mapErrorKind(status: number | undefined, message: string | undef
   return "unknown";
 }
 
-/** Parse a Retry-After header value (seconds) off an error, if present. */
-export function retryAfterSeconds(err: unknown): number | null {
-  if (err && typeof err === "object") {
-    const e = err as { headers?: Record<string, string> | Headers };
-    const h = e.headers;
-    const raw =
-      h instanceof Headers ? h.get("retry-after") : (h as Record<string, string> | undefined)?.["retry-after"];
-    const n = raw ? Number(raw) : NaN;
-    return Number.isFinite(n) ? n : null;
-  }
-  return null;
-}
 
 /** Pull a numeric HTTP status off an unknown thrown error, if present. */
 export function errorStatus(err: unknown): number | undefined {

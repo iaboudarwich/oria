@@ -82,7 +82,7 @@ export default async function SettingsPage({
   const storageStats = ctx?.profile.id
     ? await getUserStorageStats(ctx.profile.id)
     : null;
-  // MFA status for the Security tab — reads profiles.mfa_enrolled_at +
+  // MFA status for the Security tab, reads profiles.mfa_enrolled_at +
   // counts unused backup codes. Both are cheap admin-client reads.
   const mfa = ctx?.profile.id
     ? {
