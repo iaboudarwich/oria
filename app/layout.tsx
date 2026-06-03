@@ -5,6 +5,7 @@ import { getLocale, getMessages } from "next-intl/server";
 import { isRtl, type Locale } from "@/i18n/config";
 import { ThemeProvider } from "@/components/ui/theme-provider";
 import { NavigationBreadcrumbs } from "@/components/feedback/navigation-breadcrumbs";
+import { ServiceWorkerRegister } from "@/components/pwa/sw-register";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
@@ -51,6 +52,7 @@ export default async function RootLayout({
             {children}
           </NextIntlClientProvider>
         </ThemeProvider>
+        <ServiceWorkerRegister />
         <Analytics />
       </body>
     </html>
