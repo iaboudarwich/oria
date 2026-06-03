@@ -7,7 +7,7 @@ const SEC = "22222222-2222-2222-2222-222222222222";
 const orgIds = new Set([ORG]);
 const sectionIds = new Set([SEC]);
 
-describe("sanitizePatch — reshape delete/rename safety", () => {
+describe("sanitizePatch: reshape delete/rename safety", () => {
   it("keeps a delete that targets a known org", () => {
     const out = sanitizePatch(
       { deletes: [{ kind: "org", id: ORG, name: "Old Space" }] },
