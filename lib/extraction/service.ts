@@ -14,6 +14,7 @@
 
 import * as Sentry from "@sentry/nextjs";
 import { sidecarAuthHeaders } from "@/lib/google/shared/sidecar-auth";
+import { redactFilename } from "@/lib/log/redact";
 import type { ExtractionServiceResult } from "./types";
 
 const BASE_URL =
@@ -72,7 +73,7 @@ export async function extractViaService(
 
     if (!res.ok) {
       console.warn(
-        `[extraction/service] HTTP ${res.status} from /extract for ${filename}`
+        `[extraction/service] HTTP ${res.status} from /extract for ${redactFilename(filename)}`
       );
       return null;
     }
