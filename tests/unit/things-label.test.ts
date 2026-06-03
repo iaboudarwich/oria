@@ -18,10 +18,10 @@ describe("resolveThingsLabel", () => {
     expect(resolveThingsLabel({ template_key: "investor" })).toBe("Assets");
   });
 
-  it("defaults to Items for custom/unknown/null (renamed from Things in Round 14)", () => {
-    expect(resolveThingsLabel({ template_key: "custom" })).toBe("Items");
-    expect(resolveThingsLabel({ template_key: "teacher" })).toBe("Items");
-    expect(resolveThingsLabel({})).toBe("Items");
-    expect(resolveThingsLabel({ template_key: null })).toBe("Items");
+  it("defaults to Trackables for custom/unknown/null (canonical noun, Round 14: Things -> Items -> Trackables)", () => {
+    expect(resolveThingsLabel({ template_key: "custom" })).toBe("Trackables");
+    expect(resolveThingsLabel({ template_key: "teacher" })).toBe("Trackables");
+    expect(resolveThingsLabel({})).toBe("Trackables");
+    expect(resolveThingsLabel({ template_key: null })).toBe("Trackables");
   });
 });

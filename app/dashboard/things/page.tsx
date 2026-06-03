@@ -12,7 +12,7 @@ import {
 } from "@/lib/data/entities";
 import { requireContext } from "@/lib/data/organizations";
 
-export const metadata = { title: "Items" };
+export const metadata = { title: "Trackables" };
 
 export default async function ThingsPage({
   searchParams,
