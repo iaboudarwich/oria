@@ -187,7 +187,11 @@ export async function loadCalendar(
     .limit(500);
   const reminders = (remindersRes.data ?? []) as Reminder[];
 
-  // Memory items with a real event date.
+  // Memory items with a real event date. Diet meals (smart_section='diet') are
+  // log entries that happen to carry a timestamp, not intentional calendar
+  // events, so they are excluded here (Round 14 F5: e.g. a pasta entry must not
+  // clutter the calendar). The OR keeps every non-diet item, including the
+  // common rows where smart_section is null.
   const itemsRes = await supabase
     .from("memory_items")
     .select(
@@ -196,6 +200,7 @@ export async function loadCalendar(
     .in("organization_id", orgIds)
     .not("occurred_at", "is", null)
     .is("deleted_at", null)
+    .or("smart_section.is.null,smart_section.neq.diet")
     .order("occurred_at", { ascending: true })
     .limit(500);
   type ItemRow = Pick<
