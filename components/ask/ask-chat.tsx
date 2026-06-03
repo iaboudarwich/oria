@@ -38,6 +38,8 @@ type Turn = {
   reasoning?: string;
   /** The query was detected as a setup request and rerouted to reshape. */
   setupIntent?: boolean;
+  /** The rerouted query had an image attached (drives the handoff copy). */
+  setupHadImage?: boolean;
   /** The generated reshape patch (null while generating). */
   patch?: PlanPatch | null;
   /** The reshape patch was applied. */
@@ -278,14 +280,15 @@ export function AskChat({
                 | { type: "delta"; text: string }
                 | { type: "reasoning_offer" }
                 | { type: "reasoning"; text: string }
-                | { type: "setup_intent"; query: string }
+                | { type: "setup_intent"; query: string; hasImage?: boolean }
                 | { type: "done"; conversationId?: string | null }
                 | { type: "error"; code: string };
               if (evt.type === "sources") {
                 updateTurn(id, (t) => ({ ...t, sources: evt.sources }));
               } else if (evt.type === "setup_intent") {
                 // Reroute to the reshape engine: generate the patch inline.
-                updateTurn(id, (t) => ({ ...t, setupIntent: true, patch: null, state: "done" }));
+                const hadImage = evt.hasImage === true;
+                updateTurn(id, (t) => ({ ...t, setupIntent: true, setupHadImage: hadImage, patch: null, state: "done" }));
                 void reshapeGeneratePatch(EMPTY_USER_CONTEXT, evt.query).then((p) =>
                   updateTurn(id, (t) => ({ ...t, patch: p })),
                 );
@@ -416,12 +419,15 @@ export function AskChat({
       updateTurn(turnId, (t) => ({
         ...t,
         setupIntent: false,
+        setupHadImage: false,
         patch: undefined,
         answer: "",
         sources: [],
         state: "streaming",
       }));
-      await runStream(turnId, target.question, history, false, true);
+      // Preserve any attached images so "just answer my question with the
+      // image" re-runs the Ask with the image intact (forceNormal).
+      await runStream(turnId, target.question, history, false, true, target.images ?? []);
     },
     [busy, turns, updateTurn, runStream],
   );
@@ -683,6 +689,9 @@ function TurnView({
       <article className="animate-fade-up">
         <p className="text-[13px] text-ink-faint">{t("you_asked")}</p>
         <p className="mt-1 text-[15px] text-ink">{turn.question}</p>
+        {turn.images && turn.images.length > 0 ? (
+          <TurnImages images={turn.images} onImageClick={onImageClick} />
+        ) : null}
         <div className="mt-4 rounded-2xl border border-line bg-surface-raised px-4 py-3.5">
           {turn.setupApplied ? (
             <p className="text-[14px] text-ink">{t("setup_done")}</p>
@@ -690,7 +699,9 @@ function TurnView({
             <Thinking />
           ) : (
             <>
-              <p className="mb-3 text-[13px] text-ink-soft">{t("setup_transition")}</p>
+              <p className="mb-3 text-[13px] text-ink-soft">
+                {turn.setupHadImage ? t("setup_transition_image") : t("setup_transition")}
+              </p>
               <PatchPreview patch={turn.patch} onConfirm={() => onSetupConfirm(turn.patch as PlanPatch)} />
               <button
                 type="button"
@@ -698,7 +709,7 @@ function TurnView({
                 disabled={busy}
                 className="mt-3 text-[12px] text-ink-faint transition-base hover:text-ink disabled:opacity-50"
               >
-                {t("setup_dismiss")}
+                {turn.setupHadImage ? t("setup_dismiss_image") : t("setup_dismiss")}
               </button>
             </>
           )}

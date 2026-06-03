@@ -91,6 +91,8 @@ export type AuditAction =
   | "setup_change_purged"
   | "ask_setup_intent_detected"
   | "ask_setup_intent_rejected"
+  | "ask_setup_intent_with_image_detected"
+  | "ask_setup_intent_with_image_rejected"
   // Account security
   | "email.verified"
   | "2fa.prompt_shown"
@@ -326,6 +328,8 @@ export function actionLabel(action: string): string {
     "setup_change_purged":          "Permanently removed an archived item",
     "ask_setup_intent_detected":    "Routed an Ask to reshape",
     "ask_setup_intent_rejected":    "Kept an Ask as a question",
+    "ask_setup_intent_with_image_detected": "Routed an image Ask to reshape",
+    "ask_setup_intent_with_image_rejected": "Kept an image Ask as a question",
     "email.verified":               "Verified email address",
     "2fa.prompt_shown":             "Shown the two-factor setup prompt",
     "2fa.prompt_dismissed":         "Dismissed the two-factor setup prompt",

@@ -163,10 +163,12 @@ export async function POST(request: Request) {
   const reasoningTrigger =
     reasoningMode === "always" ? "always_mode" : wantsReasoning ? "user_button" : "not_used";
   // Setup-intent detection runs unless the user already dismissed it (forceNormal)
-  // or is explicitly invoking reasoning on this turn. An image query is a vision
-  // question, never a structural change, so we skip the reroute when images are
-  // attached (rerouting would silently drop the images).
-  const runSetupIntent = body.forceNormal !== true && !wantsReasoning && images.length === 0;
+  // or is explicitly invoking reasoning on this turn. It runs even when images
+  // are attached: the classifier reads the text, and if a setup change is
+  // detected we reroute gracefully while preserving the image so the user can
+  // reconsider (see the hasImage handoff below).
+  const runSetupIntent = body.forceNormal !== true && !wantsReasoning;
+  const hasImage = images.length > 0;
 
   // Resolve (or create) a conversation for persistence. Best-effort:
   // if the DB call fails we still serve the answer. conversationId
@@ -260,24 +262,28 @@ export async function POST(request: Request) {
         ]);
 
         // Setup intent wins: reroute to the reshape engine instead of answering.
+        // When an image was attached we still reroute, but flag it so the client
+        // shows the image-handoff acknowledgment (the image is preserved).
         if (setup.intent === "setup" && setup.confidence > 0.75) {
           void logAuditEvent({
             userId: ctx.profile.id,
-            action: "ask_setup_intent_detected",
+            action: hasImage ? "ask_setup_intent_with_image_detected" : "ask_setup_intent_detected",
             resourceType: "ask",
             metadata: { action_type: setup.actionType ?? null },
           });
-          writeEvent(controller, { type: "setup_intent", query });
+          writeEvent(controller, { type: "setup_intent", query, hasImage });
           writeEvent(controller, { type: "done", conversationId });
           controller.close();
           return;
         }
 
-        // The user dismissed a setup-intent offer to get a normal answer.
+        // The user dismissed a setup-intent offer to get a normal answer. When
+        // the dismissed turn carried an image, the dismissal comes back with the
+        // image still attached, so we record the image-specific rejection.
         if (body.forceNormal === true) {
           void logAuditEvent({
             userId: ctx.profile.id,
-            action: "ask_setup_intent_rejected",
+            action: hasImage ? "ask_setup_intent_with_image_rejected" : "ask_setup_intent_rejected",
             resourceType: "ask",
           });
         }

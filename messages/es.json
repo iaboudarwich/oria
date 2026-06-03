@@ -516,6 +516,8 @@
     "you_asked": "Preguntaste",
     "setup_transition": "Parece que quieres hacer un cambio. Esto es lo que haría:",
     "setup_dismiss": "En realidad, solo responde mi pregunta",
+    "setup_transition_image": "Vi una imagen adjunta, pero esto parece un cambio de configuración. Esto es lo que haría. Tu imagen sigue aquí por si prefieres preguntar sobre ella.",
+    "setup_dismiss_image": "En realidad, responde a mi pregunta con la imagen",
     "setup_done": "Listo. Tu Oria está actualizado.",
     "think_harder": "Pensar más",
     "think_harder_tip": "Pensamiento más profundo. Tarda más, mejor para preguntas complejas.",
