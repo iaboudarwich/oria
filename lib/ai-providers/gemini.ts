@@ -6,10 +6,21 @@ import { mapErrorToStatus, errorStatus, errorMessage } from "./errors";
 import type {
   CompletionOptions,
   CompletionResult,
+  ContentPart,
   Message,
   ProviderAdapter,
   ValidationResult,
 } from "./types";
+
+/** Flatten message content to text. Gemini is adapter-thin this round: text
+ *  parts are joined; images are not handled (no Gemini-vision consumer). */
+function asText(content: string | ContentPart[]): string {
+  if (typeof content === "string") return content;
+  return content
+    .map((p) => (p.type === "text" ? p.text : ""))
+    .filter(Boolean)
+    .join("\n");
+}
 
 /**
  * Map Oria's flat messages to Gemini's contents/parts. Gemini has no system
@@ -17,13 +28,13 @@ import type {
  * the "model" role.
  */
 function toGeminiContents(messages: Message[]): { role: "user" | "model"; parts: { text: string }[] }[] {
-  const system = messages.filter((m) => m.role === "system").map((m) => m.content).join("\n\n");
+  const system = messages.filter((m) => m.role === "system").map((m) => asText(m.content)).join("\n\n");
   const turns = messages.filter((m) => m.role !== "system");
   const out: { role: "user" | "model"; parts: { text: string }[] }[] = [];
   let systemInjected = false;
   for (const m of turns) {
     const role = m.role === "assistant" ? "model" : "user";
-    let text = m.content;
+    let text = asText(m.content);
     if (!systemInjected && role === "user" && system) {
       text = `${system}\n\n${text}`;
       systemInjected = true;

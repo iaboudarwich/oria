@@ -15,7 +15,20 @@ import type {
 } from "./types";
 
 export type { ProviderAdapter, ProviderName, QueryType, Message, CompletionOptions, CompletionResult } from "./types";
-export type { ValidationResult, ConnectionStatus } from "./types";
+export type { ValidationResult, ConnectionStatus, ContentPart, ToolDef, ToolCall, ErrorKind } from "./types";
+
+import type { Message as Msg, CompletionOptions as Opts, CompletionResult as Res } from "./types";
+
+/**
+ * Run a non-streaming completion on Oria's default (Anthropic) backend. For
+ * infrastructure call sites that route through the abstraction but always stay
+ * on Oria's key (no per-user routing). Returns null when no key is configured.
+ */
+export async function infraComplete(messages: Msg[], options: Opts): Promise<Res | null> {
+  const adapter = oriaDefaultAdapter();
+  if (!adapter) return null;
+  return adapter.complete(messages, options);
+}
 
 /** Construct an adapter for a provider with a concrete key. */
 export function buildAdapter(provider: ProviderName, apiKey: string): ProviderAdapter {

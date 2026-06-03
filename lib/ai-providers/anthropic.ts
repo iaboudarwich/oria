@@ -7,23 +7,43 @@ import { mapErrorToStatus, errorStatus, errorMessage } from "./errors";
 import type {
   CompletionOptions,
   CompletionResult,
+  ContentPart,
   Message,
   ProviderAdapter,
+  ToolCall,
   ValidationResult,
 } from "./types";
+
+type AnthropicBlock =
+  | { type: "text"; text: string }
+  | { type: "image"; source: { type: "base64"; media_type: string; data: string } };
+
+/** Convert one message's content to Anthropic blocks (string passes through). */
+function toBlocks(content: string | ContentPart[]): string | AnthropicBlock[] {
+  if (typeof content === "string") return content;
+  return content.map((p) =>
+    p.type === "text"
+      ? { type: "text" as const, text: p.text }
+      : {
+          type: "image" as const,
+          source: { type: "base64" as const, media_type: p.mimeType, data: p.dataBase64 },
+        },
+  );
+}
 
 /** Split Oria's flat messages into Anthropic's (system, messages) shape. */
 function splitMessages(messages: Message[]): {
   system: string;
-  msgs: { role: "user" | "assistant"; content: string }[];
+  msgs: { role: "user" | "assistant"; content: string | AnthropicBlock[] }[];
 } {
   const system = messages
     .filter((m) => m.role === "system")
-    .map((m) => m.content)
+    .map((m) => (typeof m.content === "string" ? m.content : ""))
+    .filter(Boolean)
     .join("\n\n");
   const msgs = messages
     .filter((m) => m.role !== "system")
-    .map((m) => ({ role: m.role as "user" | "assistant", content: m.content }));
+    .map((m) => ({ role: m.role as "user" | "assistant", content: toBlocks(m.content) }));
   return { system, msgs };
 }
 
@@ -38,18 +58,46 @@ export class AnthropicAdapter implements ProviderAdapter {
   async complete(messages: Message[], options: CompletionOptions): Promise<CompletionResult> {
     const model = modelFor("anthropic", options.tier);
     const { system, msgs } = splitMessages(messages);
+    const tools = options.tools?.map((t) => ({
+      name: t.name,
+      description: t.description,
+      input_schema: t.inputSchema as Anthropic.Messages.Tool["input_schema"],
+    }));
+    const toolChoice =
+      options.toolChoice === "auto"
+        ? ({ type: "auto" } as const)
+        : options.toolChoice
+          ? ({ type: "tool", name: options.toolChoice.name } as const)
+          : undefined;
+
     const res = await this.client.messages.create({
       model,
       max_tokens: options.maxTokens ?? 1024,
       ...(options.temperature != null ? { temperature: options.temperature } : {}),
       ...(options.stopSequences ? { stop_sequences: options.stopSequences } : {}),
       ...(system ? { system } : {}),
-      messages: msgs,
+      ...(tools ? { tools } : {}),
+      ...(toolChoice ? { tool_choice: toolChoice } : {}),
+      messages: msgs as Anthropic.Messages.MessageParam[],
     });
-    const content = res.content[0]?.type === "text" ? res.content[0].text : "";
+
+    const content = res.content
+      .filter((b): b is Anthropic.Messages.TextBlock => b.type === "text")
+      .map((b) => b.text)
+      .join("");
+    const toolCalls: ToolCall[] = res.content
+      .filter((b): b is Anthropic.Messages.ToolUseBlock => b.type === "tool_use")
+      .map((b) => ({ id: b.id, name: b.name, input: b.input as Record<string, unknown> }));
+
     const tokensUsed = { input: res.usage.input_tokens, output: res.usage.output_tokens };
     options.onUsage?.({ tokens: tokensUsed, model, provider: "anthropic" });
-    return { content, tokensUsed, model, provider: "anthropic" };
+    return {
+      content,
+      ...(toolCalls.length ? { toolCalls } : {}),
+      tokensUsed,
+      model,
+      provider: "anthropic",
+    };
   }
 
   async *streamComplete(messages: Message[], options: CompletionOptions): AsyncGenerator<string> {
@@ -60,7 +108,7 @@ export class AnthropicAdapter implements ProviderAdapter {
       max_tokens: options.maxTokens ?? 1024,
       ...(options.temperature != null ? { temperature: options.temperature } : {}),
       ...(system ? { system } : {}),
-      messages: msgs,
+      messages: msgs as Anthropic.Messages.MessageParam[],
     });
     for await (const event of stream) {
       if (event.type === "content_block_delta" && event.delta.type === "text_delta") {

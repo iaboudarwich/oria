@@ -1,7 +1,7 @@
 import "server-only";
 
 import sharp from "sharp";
-import { getAnthropic, getModel } from "@/lib/ai/anthropic";
+import { infraComplete } from "@/lib/ai-providers";
 import { SCHEMAS, type DocType } from "@/lib/ai/extraction-schemas";
 import { recordSystemEvent } from "@/lib/data/system-events";
 
@@ -104,9 +104,6 @@ export async function analyzeImage(params: {
     imageBytes = await maybeDownscale(imageBytes, mimeType);
   }
 
-  const anthropic = getAnthropic();
-  if (!anthropic) return null;
-
   const typeList = IMAGE_DOC_TYPES.join(", ");
   const productDesc = `product (a packaged consumer item, food, beverage, supplement, cosmetics, electronics, household goods)`;
   const sceneDesc = `scene (a photo of a place, meal, event, person, or object)`;
@@ -147,37 +144,22 @@ Rules:
 - confidence: 0.9 = very clear image with all fields readable; 0.5 = partial; 0.3 = unclear.`;
 
   try {
-    const msg = await anthropic.messages.create({
-      model: getModel(),
-      max_tokens: 1000,
-      system: systemPrompt,
-      messages: [
+    const msg = await infraComplete(
+      [
+        { role: "system", content: systemPrompt },
         {
           role: "user",
           content: [
-            {
-              type: "image",
-              source: {
-                type: "base64",
-                media_type: mimeType as
-                  | "image/jpeg"
-                  | "image/png"
-                  | "image/gif"
-                  | "image/webp",
-                data: imageBytes.toString("base64"),
-              },
-            },
-            {
-              type: "text",
-              text: `Filename: ${filename}`,
-            },
+            { type: "image", mimeType, dataBase64: imageBytes.toString("base64") },
+            { type: "text", text: `Filename: ${filename}` },
           ],
         },
       ],
-    });
+      { tier: "fast", maxTokens: 1000 },
+    );
+    if (!msg) return null;
 
-    const raw =
-      msg.content[0]?.type === "text" ? msg.content[0].text.trim() : "";
+    const raw = msg.content.trim();
     const cleaned = raw
       .replace(/^```(?:json)?\s*/i, "")
       .replace(/\s*```$/, "")

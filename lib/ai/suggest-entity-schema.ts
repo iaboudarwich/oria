@@ -1,5 +1,5 @@
 import "server-only";
-import { getAnthropic, getModel } from "@/lib/ai/anthropic";
+import { infraComplete } from "@/lib/ai-providers";
 import type { FieldDef } from "@/lib/data/entities";
 
 /**
@@ -12,9 +12,6 @@ export async function suggestEntityTypeSchema(
   name: string,
   description: string,
 ): Promise<FieldDef[]> {
-  const anthropic = getAnthropic();
-  if (!anthropic) return defaultSchema();
-
   const prompt = `You are helping a user create a custom data type called "${name}".
 ${description ? `Description: ${description}` : ""}
 
@@ -34,13 +31,11 @@ Examples for "Insurance Policy": provider(text), policy_number(text), premium(cu
 Respond with ONLY the JSON array, nothing else.`;
 
   try {
-    const msg = await anthropic.messages.create({
-      model: getModel(),
-      max_tokens: 600,
-      messages: [{ role: "user", content: prompt }],
+    const msg = await infraComplete([{ role: "user", content: prompt }], {
+      tier: "fast",
+      maxTokens: 600,
     });
-    const raw =
-      msg.content[0]?.type === "text" ? msg.content[0].text.trim() : "[]";
+    const raw = msg?.content.trim() || "[]";
     const cleaned = raw
       .replace(/^```(?:json)?\s*/i, "")
       .replace(/\s*```$/, "")

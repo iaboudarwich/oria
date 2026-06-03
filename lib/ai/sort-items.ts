@@ -1,7 +1,6 @@
 import "server-only";
 
-import type Anthropic from "@anthropic-ai/sdk";
-import { getAnthropic, getModel } from "./anthropic";
+import { infraComplete, type ToolDef } from "@/lib/ai-providers";
 import { recordAiCall, recordAiError } from "./telemetry";
 
 type Section =
@@ -53,10 +52,10 @@ Rules:
 - If you're not confident about an item, do not include it.
 - Output via the apply_sort tool only. No prose.`;
 
-const SORT_TOOL: Anthropic.Messages.Tool = {
+const SORT_TOOL: ToolDef = {
   name: "apply_sort",
   description: "Apply a mapping of items to target sections.",
-  input_schema: {
+  inputSchema: {
     type: "object",
     properties: {
       decisions: {
@@ -76,7 +75,7 @@ const SORT_TOOL: Anthropic.Messages.Tool = {
       },
     },
     required: ["decisions"],
-  } as Anthropic.Messages.Tool["input_schema"],
+  },
 };
 
 export async function sortItemsWithInstruction(input: {
@@ -89,9 +88,6 @@ export async function sortItemsWithInstruction(input: {
   }>;
   customSections: Array<{ id: string; name: string }>;
 }): Promise<SortDecision[] | null> {
-  const client = getAnthropic();
-  if (!client) return null;
-
   const message = [
     `ITEMS (id · title · merchant · category):`,
     ...input.items.map(
@@ -110,41 +106,36 @@ export async function sortItemsWithInstruction(input: {
     input.instruction,
   ].join("\n");
 
-  const model = getModel();
-  let response: Anthropic.Messages.Message;
   const startedAt = Date.now();
+  let result;
   try {
-    response = await client.messages.create({
-      model,
-      max_tokens: 1024,
-      system: SYSTEM_PROMPT,
-      tools: [SORT_TOOL],
-      tool_choice: { type: "tool", name: "apply_sort" },
-      messages: [{ role: "user", content: message }],
-    });
+    result = await infraComplete(
+      [
+        { role: "system", content: SYSTEM_PROMPT },
+        { role: "user", content: message },
+      ],
+      {
+        tier: "fast",
+        maxTokens: 1024,
+        tools: [SORT_TOOL],
+        toolChoice: { type: "tool", name: "apply_sort" },
+        onUsage: (u) =>
+          recordAiCall({
+            surface: "sort-items",
+            model: u.model,
+            inputTokens: u.tokens.input,
+            outputTokens: u.tokens.output,
+            latencyMs: Date.now() - startedAt,
+          }),
+      },
+    );
   } catch (e) {
-    recordAiError({
-      surface: "sort-items",
-      model,
-      latencyMs: Date.now() - startedAt,
-      error: e,
-    });
+    recordAiError({ surface: "sort-items", model: "fast", latencyMs: Date.now() - startedAt, error: e });
     return null;
   }
+  if (!result) return null;
 
-  if (response.usage) {
-    recordAiCall({
-      surface: "sort-items",
-      model: response.model,
-      inputTokens: response.usage.input_tokens,
-      outputTokens: response.usage.output_tokens,
-      latencyMs: Date.now() - startedAt,
-    });
-  }
-
-  const toolUse = response.content.find(
-    (b): b is Anthropic.Messages.ToolUseBlock => b.type === "tool_use",
-  );
+  const toolUse = result.toolCalls?.[0];
   if (!toolUse) return null;
 
   const input_ = toolUse.input as { decisions?: unknown };

@@ -193,10 +193,7 @@ export async function translateUploadFieldsAction(
     .maybeSingle();
   if (!entity) return null;
 
-  // Import dynamically to avoid server-only in non-server context
-  const { getAnthropic, getModel } = await import("@/lib/ai/anthropic");
-  const anthropic = getAnthropic();
-  if (!anthropic) return null;
+  const { infraComplete } = await import("@/lib/ai-providers");
 
   const langNames: Record<string, string> = {
     en: "English", ar: "Arabic", fr: "French", es: "Spanish",
@@ -205,15 +202,16 @@ export async function translateUploadFieldsAction(
 
   const fieldsStr = JSON.stringify(entity.fields, null, 2);
   try {
-    const msg = await anthropic.messages.create({
-      model: getModel(),
-      max_tokens: 1000,
-      messages: [{
-        role: "user",
-        content: `Translate the string values in this JSON object to ${targetName}. Keep all keys in English. Return ONLY the translated JSON, no explanation.\n\n${fieldsStr}`,
-      }],
-    });
-    const raw = msg.content[0]?.type === "text" ? msg.content[0].text.trim() : "";
+    const msg = await infraComplete(
+      [
+        {
+          role: "user",
+          content: `Translate the string values in this JSON object to ${targetName}. Keep all keys in English. Return ONLY the translated JSON, no explanation.\n\n${fieldsStr}`,
+        },
+      ],
+      { tier: "fast", maxTokens: 1000 },
+    );
+    const raw = msg?.content.trim() || "";
     const cleaned = raw.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim();
     return JSON.parse(cleaned) as Record<string, unknown>;
   } catch {

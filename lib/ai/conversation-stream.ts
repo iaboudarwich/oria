@@ -2,7 +2,7 @@ import "server-only";
 
 import { buildAdapter, oriaDefaultAdapter } from "@/lib/ai-providers";
 import type { Message, CompletionOptions } from "@/lib/ai-providers";
-import { mapErrorToStatus, errorStatus, errorMessage } from "@/lib/ai-providers/errors";
+import { mapErrorToStatus, mapErrorKind, errorStatus, errorMessage } from "@/lib/ai-providers/errors";
 import {
   getActiveAiConnectionKey,
   setAiConnectionStatus,
@@ -34,6 +34,9 @@ export async function* streamConversation(input: {
       return;
     } catch (e) {
       if (emitted) throw e;
+      // A too-long context is the prompt's problem, not the provider's, so
+      // surface it instead of silently retrying on Oria with the same input.
+      if (mapErrorKind(errorStatus(e), errorMessage(e)) === "context_too_long") throw e;
       const status = mapErrorToStatus(errorStatus(e), errorMessage(e));
       await setAiConnectionStatus(input.userId, status, errorMessage(e).slice(0, 200));
       await setPendingAiNotice(input.userId, {
