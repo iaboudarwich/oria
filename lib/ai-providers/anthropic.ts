@@ -2,7 +2,7 @@ import "server-only";
 
 import Anthropic from "@anthropic-ai/sdk";
 import { embedQueryViaService } from "@/lib/extraction/service";
-import { modelFor } from "./model-map";
+import { modelFor, ANTHROPIC_THINKING_BUDGET } from "./model-map";
 import { mapErrorToStatus, errorStatus, errorMessage } from "./errors";
 import type {
   CompletionOptions,
@@ -57,6 +57,7 @@ export class AnthropicAdapter implements ProviderAdapter {
 
   async complete(messages: Message[], options: CompletionOptions): Promise<CompletionResult> {
     const model = modelFor("anthropic", options.tier);
+    const reasoning = options.tier === "reasoning";
     const { system, msgs } = splitMessages(messages);
     const tools = options.tools?.map((t) => ({
       name: t.name,
@@ -70,11 +71,21 @@ export class AnthropicAdapter implements ProviderAdapter {
           ? ({ type: "tool", name: options.toolChoice.name } as const)
           : undefined;
 
+    // Extended thinking needs headroom: max_tokens must exceed the thinking
+    // budget, and temperature is fixed to 1 (omit any override).
+    const maxTokens = reasoning
+      ? ANTHROPIC_THINKING_BUDGET + (options.maxTokens ?? 1024)
+      : options.maxTokens ?? 1024;
+
     const res = await this.client.messages.create({
       model,
-      max_tokens: options.maxTokens ?? 1024,
-      ...(options.temperature != null ? { temperature: options.temperature } : {}),
-      ...(options.stopSequences ? { stop_sequences: options.stopSequences } : {}),
+      max_tokens: maxTokens,
+      ...(reasoning
+        ? { thinking: { type: "enabled" as const, budget_tokens: ANTHROPIC_THINKING_BUDGET } }
+        : options.temperature != null
+          ? { temperature: options.temperature }
+          : {}),
+      ...(options.stopSequences && !reasoning ? { stop_sequences: options.stopSequences } : {}),
       ...(system ? { system } : {}),
       ...(tools ? { tools } : {}),
       ...(toolChoice ? { tool_choice: toolChoice } : {}),
@@ -85,15 +96,21 @@ export class AnthropicAdapter implements ProviderAdapter {
       .filter((b): b is Anthropic.Messages.TextBlock => b.type === "text")
       .map((b) => b.text)
       .join("");
+    const thinkingContent = res.content
+      .filter((b): b is Anthropic.Messages.ThinkingBlock => b.type === "thinking")
+      .map((b) => b.thinking)
+      .join("\n");
     const toolCalls: ToolCall[] = res.content
       .filter((b): b is Anthropic.Messages.ToolUseBlock => b.type === "tool_use")
       .map((b) => ({ id: b.id, name: b.name, input: b.input as Record<string, unknown> }));
 
     const tokensUsed = { input: res.usage.input_tokens, output: res.usage.output_tokens };
     options.onUsage?.({ tokens: tokensUsed, model, provider: "anthropic" });
+    if (thinkingContent) options.onThinking?.(thinkingContent);
     return {
       content,
       ...(toolCalls.length ? { toolCalls } : {}),
+      ...(thinkingContent ? { thinkingContent } : {}),
       tokensUsed,
       model,
       provider: "anthropic",
@@ -102,11 +119,19 @@ export class AnthropicAdapter implements ProviderAdapter {
 
   async *streamComplete(messages: Message[], options: CompletionOptions): AsyncGenerator<string> {
     const model = modelFor("anthropic", options.tier);
+    const reasoning = options.tier === "reasoning";
     const { system, msgs } = splitMessages(messages);
+    const maxTokens = reasoning
+      ? ANTHROPIC_THINKING_BUDGET + (options.maxTokens ?? 1024)
+      : options.maxTokens ?? 1024;
     const stream = this.client.messages.stream({
       model,
-      max_tokens: options.maxTokens ?? 1024,
-      ...(options.temperature != null ? { temperature: options.temperature } : {}),
+      max_tokens: maxTokens,
+      ...(reasoning
+        ? { thinking: { type: "enabled" as const, budget_tokens: ANTHROPIC_THINKING_BUDGET } }
+        : options.temperature != null
+          ? { temperature: options.temperature }
+          : {}),
       ...(system ? { system } : {}),
       messages: msgs as Anthropic.Messages.MessageParam[],
     });
@@ -116,6 +141,11 @@ export class AnthropicAdapter implements ProviderAdapter {
       }
     }
     const final = await stream.finalMessage();
+    const thinking = final.content
+      .filter((b): b is Anthropic.Messages.ThinkingBlock => b.type === "thinking")
+      .map((b) => b.thinking)
+      .join("\n");
+    if (thinking) options.onThinking?.(thinking);
     options.onUsage?.({
       tokens: { input: final.usage.input_tokens, output: final.usage.output_tokens },
       model,

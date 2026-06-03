@@ -49,6 +49,8 @@ export type CompletionOptions = {
   reasoningEffort?: "low" | "medium" | "high";
   /** Optional usage callback, used by the per-query audit. */
   onUsage?: (usage: { tokens: TokenUsage; model: string; provider: ProviderName }) => void;
+  /** Optional reasoning-trace callback (Anthropic extended thinking). */
+  onThinking?: (text: string) => void;
 };
 
 export type CompletionResult = {
