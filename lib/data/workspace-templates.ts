@@ -34,11 +34,12 @@ export const WORKSPACE_TEMPLATES: WorkspaceTemplate[] = [
     icon: "home",
     delegation_prominent: false,
     section_seeds: [
+      // Diet folded into Health (Round 14 F3): no standalone Diet seed; the
+      // Diet meal tracker is a sub-area of Health.
       { name: "Bills",    icon: "wallet",  sort_order: 0 },
       { name: "Health",   icon: "health",  sort_order: 10 },
       { name: "Travel",   icon: "travel",  sort_order: 20 },
       { name: "Personal", icon: "person",  sort_order: 30 },
-      { name: "Diet",     icon: "heart",   sort_order: 40 },
     ],
   },
   {

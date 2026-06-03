@@ -63,9 +63,9 @@ const primaryAction: NavItem = {
 // extra (Settings → Sidebar), and Members moved into the account menu
 // since it's a per-space management thing, not a place you visit often.
 const personalSecondaryNav: NavItem[] = [
-  { label: "Inbox", href: "/dashboard/inbox", icon: InboxIcon },
+  { label: "Uploads", href: "/dashboard/inbox", icon: InboxIcon },
   { label: "Calendar", href: "/dashboard/calendar", icon: CalendarIcon },
-  { label: "Things", href: "/dashboard/things", icon: BoxIcon },
+  { label: "Items", href: "/dashboard/things", icon: BoxIcon },
   { label: "Trackables", href: "/dashboard/trackables", icon: CheckIcon },
 ];
 
@@ -75,13 +75,13 @@ const personalSecondaryNav: NavItem[] = [
 const workSecondaryNav: NavItem[] = [
   { label: "AI Agent", href: "/dashboard/work/agent", icon: SparkIcon },
   { label: "Analysis", href: "/dashboard/work/analysis", icon: ChartIcon },
-  { label: "Inbox", href: "/dashboard/inbox", icon: InboxIcon },
+  { label: "Uploads", href: "/dashboard/inbox", icon: InboxIcon },
   { label: "Finance", href: "/dashboard/work/finance", icon: WalletIcon },
   { label: "Contracts", href: "/dashboard/work/contracts", icon: ScalesIcon },
   { label: "Invoices", href: "/dashboard/work/invoices", icon: DocumentIcon },
   { label: "Calendar", href: "/dashboard/calendar", icon: CalendarIcon },
   { label: "Reports", href: "/dashboard/work/reports", icon: PulseIcon },
-  { label: "Things", href: "/dashboard/things", icon: BoxIcon },
+  { label: "Items", href: "/dashboard/things", icon: BoxIcon },
   { label: "Trackables", href: "/dashboard/trackables", icon: CheckIcon },
 ];
 

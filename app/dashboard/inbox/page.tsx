@@ -22,7 +22,7 @@ import {
   type SuggestionItem,
 } from "@/components/upload/section-suggestions-banner";
 
-export const metadata = { title: "Upload" };
+export const metadata = { title: "Uploads" };
 
 export default async function UploadPage() {
   const t = await getTranslations("empty");
@@ -64,7 +64,7 @@ export default async function UploadPage() {
 
   return (
     <>
-      <Topbar title="Upload" />
+      <Topbar title="Uploads" />
       <UploadsPoller pending={anyProcessing} />
 
       <div className="space-y-7 animate-fade-up">

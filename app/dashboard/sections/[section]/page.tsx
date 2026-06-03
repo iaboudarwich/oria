@@ -236,6 +236,11 @@ export default async function SectionPage({ params, searchParams }: Props) {
           label: intel === "trips" ? "Trips" : "Timeline",
           href: `/dashboard/sections/${sec}`,
         },
+        // Diet folded into Health as a sub-area (Round 14 F3). The Diet meal
+        // tracker lives at /dashboard/diet and is reached as a Health tab.
+        ...(sec === "health"
+          ? [{ key: "diet", label: "Diet", href: "/dashboard/diet" }]
+          : []),
         { key: "files", label: "Files", href: `/dashboard/sections/${sec}?view=files` },
       ]
     : null;

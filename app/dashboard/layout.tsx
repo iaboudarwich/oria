@@ -130,12 +130,8 @@ export default async function DashboardLayout({ children }: { children: ReactNod
     // Smart Sections live at the top of the Sections group. they're
     // AI-driven aggregation pages, not browsing folders. Marked as
     // kind:"smart" so the sidebar can render a subtle sparkle next to them.
-    {
-      label: "Diet",
-      href: "/dashboard/diet",
-      kind: "smart" as const,
-      key: "diet",
-    },
+    // Diet folded into Health as a sub-area (Round 14 F3): it is reached as a
+    // tab on the Health section, not as its own top-level entry.
     {
       label: "Bills",
       href: "/dashboard/bills",

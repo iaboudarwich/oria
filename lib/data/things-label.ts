@@ -16,5 +16,7 @@ export function resolveThingsLabel(org: {
   const custom = org.things_label?.trim();
   if (custom) return custom;
 
-  return org.template_key === "investor" ? "Assets" : "Things";
+  // Default label renamed "Things" -> "Items" in Round 14 (clearer, standard
+  // UX vocabulary). The asset-heavy investor template keeps "Assets".
+  return org.template_key === "investor" ? "Assets" : "Items";
 }
