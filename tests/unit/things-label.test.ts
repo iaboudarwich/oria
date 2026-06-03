@@ -10,19 +10,17 @@ describe("resolveThingsLabel", () => {
 
   it("trims and ignores blank custom labels", () => {
     expect(
-      resolveThingsLabel({ things_label: "  ", template_key: "business" }),
+      resolveThingsLabel({ things_label: "  ", template_key: "investor" }),
     ).toBe("Assets");
   });
 
-  it("defaults to Assets for asset-heavy templates", () => {
+  it("defaults to Assets for the asset-heavy investor template", () => {
     expect(resolveThingsLabel({ template_key: "investor" })).toBe("Assets");
-    expect(resolveThingsLabel({ template_key: "business" })).toBe("Assets");
-    expect(resolveThingsLabel({ template_key: "family_office" })).toBe("Assets");
   });
 
-  it("defaults to Things for personal/custom/unknown", () => {
-    expect(resolveThingsLabel({ template_key: "personal" })).toBe("Things");
+  it("defaults to Things for custom/unknown/null (retired abstract keys included)", () => {
     expect(resolveThingsLabel({ template_key: "custom" })).toBe("Things");
+    expect(resolveThingsLabel({ template_key: "teacher" })).toBe("Things");
     expect(resolveThingsLabel({})).toBe("Things");
     expect(resolveThingsLabel({ template_key: null })).toBe("Things");
   });

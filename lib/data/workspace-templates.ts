@@ -158,19 +158,34 @@ export function mergeTemplatesForApply(
   return { sections, entityTypes, delegationProminent };
 }
 
+// The abstract category keys retired in Round 13 (migration 0065). They remain
+// valid INTERNAL seed-set identifiers here, but must never be stamped onto
+// organizations.template_key, whose constraint no longer allows them. Selecting
+// one still seeds its sections/entity types; the stored key collapses to custom.
+const RETIRED_STORED_KEYS: ReadonlySet<TemplateKey> = new Set([
+  "personal",
+  "business",
+  "family_office",
+]);
+
+/** A value allowed in organizations.template_key for an in-app work space. */
+type StoredTemplateKey = "investor" | "custom";
+
 /**
- * Decide which template key to stamp on the org row. Single selection
- * stamps that key; multi-selection collapses to `custom` (no column to
- * persist the full list. see ApplyTemplatesResult.delegationProminent
- * for the merged flag callers can still act on).
- *
- * Skip (empty array, or only `custom`) also stamps `custom`.
+ * Decide which template key to stamp on the org row. Single selection of a
+ * still-stored template ('investor') stamps that key; everything else (a
+ * retired abstract seed, multi-selection, skip, or custom) collapses to
+ * `custom`. Seeding is unaffected. only the persisted vocabulary is narrowed.
  */
 export function resolveStoredTemplateKey(
   templateKeys: TemplateKey[],
-): TemplateKey {
+): StoredTemplateKey {
   const real = templateKeys.filter((k) => k !== "custom");
-  if (real.length === 1) return real[0];
+  // A single non-retired pick ('investor') is stamped; anything else (a lone
+  // retired seed, multiple picks, or skip) collapses to custom.
+  if (real.length === 1 && !RETIRED_STORED_KEYS.has(real[0])) {
+    return real[0] as StoredTemplateKey;
+  }
   return "custom";
 }
 
@@ -236,8 +251,9 @@ export async function applyTemplates(
   // Personal spaces should not surface the estate-oriented builtin
   // "Properties" section by default. Hide it at apply time (recoverable any
   // time from Settings -> Sections). Existing Personal spaces are handled by
-  // the one-time backfill in migration 0044.
-  if (storedKey === "personal") {
+  // the one-time backfill in migration 0044. Keyed on the selection (the stored
+  // key now collapses retired abstract keys to custom).
+  if (templateKeys.includes("personal")) {
     // Fresh org (applyTemplate runs once, before any section_settings exist),
     // so a plain insert is safe. The unique index here is partial, so we avoid
     // ON CONFLICT and just guard against a pre-existing row.

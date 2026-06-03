@@ -107,14 +107,21 @@ describe("mergeTemplatesForApply — delegation_prominent OR-merge", () => {
 });
 
 describe("resolveStoredTemplateKey", () => {
-  it("stamps the chosen key when exactly one real template is picked", () => {
-    expect(resolveStoredTemplateKey(["personal"])).toBe("personal");
+  // Round 13: only 'investor' survives as a stored key; the retired abstract
+  // seed keys (personal/business/family_office) still seed sections but stamp
+  // 'custom' so organizations.template_key stays within its new constraint.
+  it("stamps 'investor' when it is the single real pick", () => {
     expect(resolveStoredTemplateKey(["investor"])).toBe("investor");
-    expect(resolveStoredTemplateKey(["family_office"])).toBe("family_office");
+  });
+
+  it("collapses retired abstract keys to 'custom'", () => {
+    expect(resolveStoredTemplateKey(["personal"])).toBe("custom");
+    expect(resolveStoredTemplateKey(["business"])).toBe("custom");
+    expect(resolveStoredTemplateKey(["family_office"])).toBe("custom");
   });
 
   it("collapses to 'custom' when multiple real templates are picked", () => {
-    expect(resolveStoredTemplateKey(["personal", "investor"])).toBe("custom");
+    expect(resolveStoredTemplateKey(["investor", "business"])).toBe("custom");
     expect(
       resolveStoredTemplateKey(["personal", "investor", "family_office"]),
     ).toBe("custom");
@@ -125,7 +132,7 @@ describe("resolveStoredTemplateKey", () => {
     expect(resolveStoredTemplateKey(["custom"])).toBe("custom");
   });
 
-  it("treats a 'custom' value mixed with one real key as that one key", () => {
-    expect(resolveStoredTemplateKey(["personal", "custom"])).toBe("personal");
+  it("treats a 'custom' value mixed with the single stored key as that key", () => {
+    expect(resolveStoredTemplateKey(["investor", "custom"])).toBe("investor");
   });
 });

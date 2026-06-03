@@ -22,14 +22,9 @@ export const PRESET_ACCENTS: Array<{ key: string; label: string; hex: string }> 
   { key: "slate", label: "Slate", hex: "#6B6F86" },
 ];
 
-// Per-template defaults. Subtle but distinguishable.
-const TEMPLATE_DEFAULT: Record<string, string> = {
-  personal: "#5B7CDD", // soft blue
-  business: "#2E3A6E", // navy
-  investor: "#2F9E6B", // deep green
-  family_office: "#8E3B4E", // bordeaux
-  custom: "#6B6F86", // warm slate
-};
+// Defaults by area only. Theming is template-agnostic since Round 13: a space's
+// accent (org.accent_color, set at creation) drives the theme, and this is just
+// the fallback when no accent has been chosen.
 const WORK_DEFAULT = "#6B6F86"; // warm slate (the default "My Work" workspace)
 const PERSONAL_DEFAULT = "#5B7CDD"; // soft blue
 
@@ -50,11 +45,7 @@ function hexToRgb(hex: string): { r: number; g: number; b: number } {
 export function defaultAccentFor(org: {
   parent_kind?: "personal" | "work";
   kind?: string;
-  template_key?: string | null;
 }): string {
-  if (org.template_key && TEMPLATE_DEFAULT[org.template_key]) {
-    return TEMPLATE_DEFAULT[org.template_key];
-  }
   const isWork = org.parent_kind === "work" || org.kind === "office";
   return isWork ? WORK_DEFAULT : PERSONAL_DEFAULT;
 }

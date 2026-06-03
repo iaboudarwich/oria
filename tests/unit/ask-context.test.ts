@@ -27,32 +27,29 @@ describe("buildAskSystemPrompt — space + user context", () => {
 });
 
 describe("suggestedQuestions — space-aware + localized", () => {
-  it("Personal and Work get different questions", () => {
-    const personal = suggestedQuestions({ template: "personal" }, "en");
-    const work = suggestedQuestions({ template: "business" }, "en");
+  it("Personal and Work get different questions (driven by area)", () => {
+    const personal = suggestedQuestions({ parentKind: "personal" }, "en");
+    const work = suggestedQuestions({ parentKind: "work" }, "en");
     expect(personal).not.toEqual(work);
     expect(personal[0].toLowerCase()).toContain("inbox");
     expect(work.join(" ").toLowerCase()).toContain("expenses");
   });
 
-  it("Investor and Family Office have their own buckets", () => {
+  it("the investor template keeps its own bucket", () => {
     expect(suggestedQuestions({ template: "investor" }, "en").join(" ")).toContain(
       "portfolio",
     );
-    expect(
-      suggestedQuestions({ template: "family_office" }, "en").join(" "),
-    ).toContain("renewals");
   });
 
-  it("falls back to Work for office spaces without a template", () => {
+  it("falls back to Work for office spaces without a recognized template", () => {
     const work = suggestedQuestions({ parentKind: "work" }, "en");
-    expect(work).toEqual(suggestedQuestions({ template: "business" }, "en"));
+    expect(work).toEqual(suggestedQuestions({ kind: "office" }, "en"));
   });
 
   it("localizes into all four languages", () => {
-    const en = suggestedQuestions({ template: "personal" }, "en")[0];
+    const en = suggestedQuestions({ parentKind: "personal" }, "en")[0];
     for (const loc of ["ar", "fr", "es"] as const) {
-      const t = suggestedQuestions({ template: "personal" }, loc)[0];
+      const t = suggestedQuestions({ parentKind: "personal" }, loc)[0];
       expect(t).toBeTruthy();
       expect(t).not.toEqual(en);
     }

@@ -96,7 +96,20 @@ export interface Organization {
   // Added in migration 0037
   content_language?: "en" | "ar" | "fr" | "es";
   // Added in migration 0033
-  template_key?: "personal" | "investor" | "business" | "family_office" | "custom" | null;
+  // Round 13 (migration 0065): abstract category values retired. The stored set
+  // is the real-life onboarding template ids plus 'custom' (and null for spaces
+  // created before the column existed).
+  template_key?:
+    | "renter"
+    | "homeowner"
+    | "parent"
+    | "freelancer"
+    | "traveler"
+    | "teacher"
+    | "caregiver"
+    | "investor"
+    | "custom"
+    | null;
   // Added in migration 0044
   things_label?: string | null;
   legacy_sections_hidden_at?: TimestampString | null;
