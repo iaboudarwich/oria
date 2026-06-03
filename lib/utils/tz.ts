@@ -114,6 +114,46 @@ export function sameDayInTz(
   }
 }
 
+/**
+ * Wall-clock parts of an instant in a timezone: hour (0-23), day-of-week
+ * (0=Sunday), and the local calendar date (yyyy-mm-dd). Used by the daily-loop
+ * cron to decide which per-user-local schedules are due this hour. Falls back
+ * to UTC parts on a bad zone.
+ */
+export function getLocalParts(
+  d: Date,
+  tz: string | null | undefined,
+): { hour: number; dayOfWeek: number; ymd: string } {
+  const zone = tz && isValidTz(tz) ? tz : "UTC";
+  try {
+    const fmt = new Intl.DateTimeFormat("en-CA", {
+      timeZone: zone,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+      weekday: "short",
+    });
+    const parts: Record<string, string> = {};
+    for (const p of fmt.formatToParts(d)) parts[p.type] = p.value;
+    const hour = parts.hour === "24" ? 0 : Number(parts.hour ?? "0");
+    const ymd = `${parts.year}-${parts.month}-${parts.day}`;
+    const dows: Record<string, number> = {
+      Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6,
+    };
+    const dayOfWeek = dows[parts.weekday ?? "Sun"] ?? 0;
+    return { hour, dayOfWeek, ymd };
+  } catch {
+    return {
+      hour: d.getUTCHours(),
+      dayOfWeek: d.getUTCDay(),
+      ymd: d.toISOString().slice(0, 10),
+    };
+  }
+}
+
 function isValidTz(tz: string): boolean {
   try {
     new Intl.DateTimeFormat("en-US", { timeZone: tz });

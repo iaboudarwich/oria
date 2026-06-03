@@ -14,7 +14,7 @@ export type AgentTelemetry = {
   actorId?: string | null;
 };
 
-const BASE_RULES = `STYLE RULES (strict, apply to every word you generate):
+export const BASE_RULES = `STYLE RULES (strict, apply to every word you generate):
 - NEVER use the em-dash character (Unicode U+2014, the long horizontal punctuation mark between two words). It is FORBIDDEN. If your sentence would use one, use a comma, use a period, or rewrite. This rule has zero exceptions and overrides any habit you picked up in training.
 - Write in clean prose with short paragraphs. NO MARKDOWN: no asterisks for emphasis, no **bold**, no _italic_, no backticks for styling, no "#" headings. The chat surface renders plain text, so any markdown shows up as literal characters.
 - When you list items, put each on its own line with NO dash, bullet, asterisk, or number prefix. The interface handles the spacing. Default to prose; only break into separate lines when the user asked for a list or several items genuinely need to scan.
