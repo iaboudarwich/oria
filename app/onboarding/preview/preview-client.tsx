@@ -101,9 +101,12 @@ export function PreviewClient() {
   if (!plan) {
     return (
       <Shell>
-        <div className="flex flex-col items-center gap-4 text-center">
-          <span className="h-6 w-6 animate-spin rounded-full border-2 border-line-strong border-t-ink" aria-hidden />
+        <div className="flex flex-col items-center gap-3 text-center">
+          <span className="text-[20px]" aria-hidden>
+            ✦
+          </span>
           <p className="text-[15px] text-ink-soft">{t("preview_designing")}</p>
+          <p className="text-[12.5px] text-ink-faint">{t("preview_designing_time")}</p>
         </div>
       </Shell>
     );

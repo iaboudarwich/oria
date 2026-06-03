@@ -1,8 +1,66 @@
 import "server-only";
 
-import { getAnthropic, getModel } from "@/lib/ai/anthropic";
+import { infraComplete } from "@/lib/ai-providers";
+import { recordAiCall } from "@/lib/ai/telemetry";
 import { TEMPLATES, templateCatalogForPrompt } from "./templates";
 import type { SetupPlan, SpacePlan, UserContext, WorkspacePlan } from "./types";
+
+/** Reject after `ms` so a slow reasoning call cannot blow the onboarding budget. */
+function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
+  return Promise.race([
+    p,
+    new Promise<T>((_, reject) => setTimeout(() => reject(new Error("reasoning_timeout")), ms)),
+  ]);
+}
+
+const TAILOR_TIMEOUT_MS = 90_000;
+
+/**
+ * Run the tailoring prompt on the reasoning tier for a deeper, more nuanced
+ * plan. If reasoning exceeds the timeout (or errors), fall back to the premium
+ * tier with a single retry so onboarding never hangs. Returns the raw text.
+ */
+async function tailorWithReasoning(system: string, user: string): Promise<string | null> {
+  const messages = [
+    { role: "system" as const, content: system },
+    { role: "user" as const, content: user },
+  ];
+  const startedAt = Date.now();
+  try {
+    const res = await withTimeout(
+      infraComplete(messages, {
+        tier: "reasoning",
+        maxTokens: 2600,
+        onUsage: (u) =>
+          recordAiCall({
+            surface: "onboarding-tailor:reasoning",
+            model: u.model,
+            inputTokens: u.tokens.input,
+            outputTokens: u.tokens.output,
+            latencyMs: Date.now() - startedAt,
+          }),
+      }),
+      TAILOR_TIMEOUT_MS,
+    );
+    if (res?.content) return res.content;
+  } catch {
+    // timeout or reasoning error; fall through to premium
+  }
+  const fallbackAt = Date.now();
+  const res2 = await infraComplete(messages, {
+    tier: "premium",
+    maxTokens: 2600,
+    onUsage: (u) =>
+      recordAiCall({
+        surface: "onboarding-tailor:premium-fallback",
+        model: u.model,
+        inputTokens: u.tokens.input,
+        outputTokens: u.tokens.output,
+        latencyMs: Date.now() - fallbackAt,
+      }),
+  });
+  return res2?.content ?? null;
+}
 
 const LANG: Record<string, string> = { en: "English", ar: "Arabic", fr: "French", es: "Spanish" };
 
@@ -21,9 +79,6 @@ const ALLOWED_ICONS = new Set([
  * is unavailable or returns nothing usable.
  */
 export async function generateSetupPlan(ctx: UserContext, locale = "en"): Promise<SetupPlan> {
-  const anthropic = getAnthropic();
-  if (!anthropic) return fallbackPlan(ctx);
-
   const language = LANG[locale] ?? "English";
   const system = `You build a personal-organization setup from what a user told us about their life. You are given a catalog of real-life templates and a structured profile. Choose ONE OR MORE base templates that fit, then tailor hard.
 
@@ -61,14 +116,7 @@ Return JSON ONLY:
   const user = `Template catalog:\n${templateCatalogForPrompt()}\n\nUser profile:\n${JSON.stringify(ctx, null, 2)}\n\nBuild the tailored setup as JSON.`;
 
   try {
-    const model = process.env.ANTHROPIC_SYNTHESIS_MODEL ?? getModel();
-    const msg = await anthropic.messages.create({
-      model,
-      max_tokens: 2600,
-      system,
-      messages: [{ role: "user", content: user }],
-    });
-    const raw = msg.content[0]?.type === "text" ? msg.content[0].text.trim() : "{}";
+    const raw = (await tailorWithReasoning(system, user))?.trim() || "{}";
     const cleaned = raw.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim();
     const parsed = JSON.parse(cleaned) as { spaces?: unknown };
     const plan = sanitizePlan(parsed.spaces);
@@ -90,8 +138,6 @@ export async function generateReshapePlan(
   existing: string[],
   locale = "en",
 ): Promise<SetupPlan> {
-  const anthropic = getAnthropic();
-  if (!anthropic) return { spaces: [] };
   const language = LANG[locale] ?? "English";
 
   const system = `The user already has Oria set up and wants to add something. From their request, output ONLY the new spaces/workspaces/sections to CREATE. Do not recreate anything that already exists. If they only want a few sections in an existing area, return one workspace in the matching area with just those sections.
@@ -107,14 +153,14 @@ Return JSON ONLY in the setup-plan shape:
   const user = `The user said: "${intent}"\nClarifying answers: ${answers || "(none)"}\nThey already have: ${existing.join(", ") || "(nothing yet)"}\n\nReturn the additions as JSON.`;
 
   try {
-    const model = process.env.ANTHROPIC_SYNTHESIS_MODEL ?? getModel();
-    const msg = await anthropic.messages.create({
-      model,
-      max_tokens: 1500,
-      system,
-      messages: [{ role: "user", content: user }],
-    });
-    const raw = msg.content[0]?.type === "text" ? msg.content[0].text.trim() : "{}";
+    const msg = await infraComplete(
+      [
+        { role: "system", content: system },
+        { role: "user", content: user },
+      ],
+      { tier: "premium", maxTokens: 1500 },
+    );
+    const raw = msg?.content.trim() || "{}";
     const cleaned = raw.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim();
     const parsed = JSON.parse(cleaned) as { spaces?: unknown };
     return sanitizePlan(parsed.spaces);
