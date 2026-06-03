@@ -692,5 +692,7 @@
     "settings": "Settings",
     "admin_health": "Admin · System Health",
     "sign_out": "Sign out"
-  }
+  },
+  "records": { "types": "Types", "add": "Add", "no_types": "No types yet." },
+  "uploads": { "review": "Review what we found", "details": "Full extraction details" }
 }

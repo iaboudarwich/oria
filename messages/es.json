@@ -692,5 +692,7 @@
     "settings": "Configuración",
     "admin_health": "Admin · Estado del sistema",
     "sign_out": "Cerrar sesión"
-  }
+  },
+  "records": { "types": "Tipos", "add": "Añadir", "no_types": "Aún no hay tipos." },
+  "uploads": { "review": "Revisar lo que encontramos", "details": "Detalles completos de la extracción" }
 }

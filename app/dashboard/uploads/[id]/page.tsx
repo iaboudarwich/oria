@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { Topbar } from "@/components/dashboard/topbar";
 import { Preview } from "@/components/upload/preview";
 import { Thumbnail } from "@/components/upload/thumbnail";
@@ -56,6 +57,7 @@ const SECTION_LABEL: Record<Section, string> = {
 
 export default async function UploadDetailPage({ params }: Props) {
   const { id } = await params;
+  const tu = await getTranslations("uploads");
   const detail = await getUploadDetail(id);
   if (!detail) notFound();
 
@@ -215,7 +217,7 @@ export default async function UploadDetailPage({ params }: Props) {
 
           {/* Secondary panels: collapsed by default */}
           {items.length > 1 ? (
-            <Accordion label="Item review" defaultOpen={false} badge={items.length}>
+            <Accordion label={tu("review")} defaultOpen={false} badge={items.length}>
               <ItemReviewPanel
                 uploadId={upload.id}
                 items={items}
@@ -226,7 +228,7 @@ export default async function UploadDetailPage({ params }: Props) {
             </Accordion>
           ) : null}
 
-          <Accordion label="Full extraction details" defaultOpen={false}>
+          <Accordion label={tu("details")} defaultOpen={false}>
             <UnderstoodPanel
               uploadId={upload.id}
               extraction={extraction}

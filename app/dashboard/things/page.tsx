@@ -21,6 +21,7 @@ export default async function ThingsPage({
 }) {
   const sp: Record<string, string | string[] | undefined> = await (searchParams ?? Promise.resolve({}));
   const t = await getTranslations("empty");
+  const tr = await getTranslations("records");
   const ctx = await requireContext();
   const thingsLabel = resolveThingsLabel(ctx.organization);
   const [types, counts] = await Promise.all([
@@ -44,12 +45,12 @@ export default async function ThingsPage({
         {/* Sidebar */}
         <aside className="hidden w-48 shrink-0 lg:block">
           <div className="mb-2 flex items-center justify-between px-1">
-            <p className="text-eyebrow">Types</p>
+            <p className="text-eyebrow">{tr("types")}</p>
             <Link
               href="/dashboard/things/new-type"
               className="text-[11px] text-ink-faint hover:text-ink transition-base"
             >
-              + Add
+              + {tr("add")}
             </Link>
           </div>
           <div className="mb-3 px-1">
@@ -77,7 +78,7 @@ export default async function ThingsPage({
             ))}
             {types.length === 0 && (
               <li className="px-2 text-[12px] text-ink-faint">
-                No types yet.
+                {tr("no_types")}
               </li>
             )}
           </ul>

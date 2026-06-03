@@ -692,5 +692,7 @@
     "settings": "Paramètres",
     "admin_health": "Admin · État du système",
     "sign_out": "Se déconnecter"
-  }
+  },
+  "records": { "types": "Types", "add": "Ajouter", "no_types": "Aucun type pour l’instant." },
+  "uploads": { "review": "Vérifier ce que nous avons trouvé", "details": "Détails complets de l’extraction" }
 }
