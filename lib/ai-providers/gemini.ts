@@ -12,8 +12,10 @@ import type {
   ValidationResult,
 } from "./types";
 
-/** Flatten message content to text. Gemini is adapter-thin this round: text
- *  parts are joined; images are not handled (no Gemini-vision consumer). */
+/** One Gemini content part: text, or an inline (base64) image. */
+type GeminiPart = { text: string } | { inlineData: { mimeType: string; data: string } };
+
+/** Flatten message content to text only (used for the system turn). */
 function asText(content: string | ContentPart[]): string {
   if (typeof content === "string") return content;
   return content
@@ -23,23 +25,44 @@ function asText(content: string | ContentPart[]): string {
 }
 
 /**
+ * Map Oria's message content to Gemini parts. Text becomes a text part; an
+ * image block becomes an inlineData part (base64 + mimeType), so Gemini reads
+ * attached images as a true multimodal provider. Gemini accepts png, jpeg,
+ * webp, heic, and heif, which matches Oria's upload allowlist (HEIC is already
+ * converted to JPEG upstream in lib/ai/ask-images.ts).
+ */
+function partsFor(content: string | ContentPart[]): GeminiPart[] {
+  if (typeof content === "string") return [{ text: content }];
+  const parts: GeminiPart[] = [];
+  for (const p of content) {
+    if (p.type === "text") {
+      if (p.text) parts.push({ text: p.text });
+    } else {
+      parts.push({ inlineData: { mimeType: p.mimeType, data: p.dataBase64 } });
+    }
+  }
+  return parts.length > 0 ? parts : [{ text: "" }];
+}
+
+/**
  * Map Oria's flat messages to Gemini's contents/parts. Gemini has no system
  * role, so system text is prepended to the first user turn; assistant maps to
- * the "model" role.
+ * the "model" role. Image parts are preserved per turn.
  */
-function toGeminiContents(messages: Message[]): { role: "user" | "model"; parts: { text: string }[] }[] {
+function toGeminiContents(messages: Message[]): { role: "user" | "model"; parts: GeminiPart[] }[] {
   const system = messages.filter((m) => m.role === "system").map((m) => asText(m.content)).join("\n\n");
   const turns = messages.filter((m) => m.role !== "system");
-  const out: { role: "user" | "model"; parts: { text: string }[] }[] = [];
+  const out: { role: "user" | "model"; parts: GeminiPart[] }[] = [];
   let systemInjected = false;
   for (const m of turns) {
     const role = m.role === "assistant" ? "model" : "user";
-    let text = asText(m.content);
+    const parts = partsFor(m.content);
     if (!systemInjected && role === "user" && system) {
-      text = `${system}\n\n${text}`;
+      // Prepend the system context as a leading text part on the first user turn.
+      parts.unshift({ text: `${system}\n\n` });
       systemInjected = true;
     }
-    out.push({ role, parts: [{ text }] });
+    out.push({ role, parts });
   }
   if (!systemInjected && system) {
     out.unshift({ role: "user", parts: [{ text: system }] });
