@@ -493,6 +493,10 @@
     "approved_toast": "Añadido a tu espacio."
   },
   "ask": {
+    "you_asked": "Preguntaste",
+    "setup_transition": "Parece que quieres hacer un cambio. Esto es lo que haría:",
+    "setup_dismiss": "En realidad, solo responde mi pregunta",
+    "setup_done": "Listo. Tu Oria está actualizado.",
     "think_harder": "Pensar más",
     "think_harder_tip": "Pensamiento más profundo. Tarda más, mejor para preguntas complejas.",
     "oria_reasoning": "Oria (Razonamiento)",

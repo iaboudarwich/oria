@@ -6,6 +6,8 @@ import { isAnthropicConfigured } from "@/lib/ai/anthropic";
 import { retrieveForQuery } from "@/lib/ai/retrieve";
 import { streamAnswer, type AgentMessage } from "@/lib/ai/agent";
 import { classifyReasoningIntent } from "@/lib/ai/reasoning-classifier";
+import { classifySetupIntent } from "@/lib/ai/classifiers/setup-intent";
+import { logAuditEvent } from "@/lib/data/audit-log";
 import { recordLearningEvent } from "@/lib/data/learning";
 import { recordSystemEvent } from "@/lib/data/system-events";
 import { checkDailyAskRequests } from "@/lib/data/quotas";
@@ -61,6 +63,8 @@ export async function POST(request: Request) {
     conversationId?: string | null;
     /** Client requests the reasoning tier (Think harder / offer re-run). */
     reasoning?: boolean;
+    /** Client forces a normal answer (dismissed the setup-intent offer). */
+    forceNormal?: boolean;
   } = {};
   try {
     body = (await request.json()) as typeof body;
@@ -151,6 +155,9 @@ export async function POST(request: Request) {
   const runClassifier = reasoningMode === "auto" && !useReasoning;
   const reasoningTrigger =
     reasoningMode === "always" ? "always_mode" : wantsReasoning ? "user_button" : "not_used";
+  // Setup-intent detection runs unless the user already dismissed it (forceNormal)
+  // or is explicitly invoking reasoning on this turn.
+  const runSetupIntent = body.forceNormal !== true && !wantsReasoning;
 
   // Resolve (or create) a conversation for persistence. Best-effort:
   // if the DB call fails we still serve the answer. conversationId
@@ -231,14 +238,41 @@ export async function POST(request: Request) {
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
       try {
-        // 1. Retrieval (works without an API key. useful for the empty case).
-        //    The reasoning classifier runs in parallel so it never blocks.
-        const [sources, intent] = await Promise.all([
+        // 1. Retrieval + both cheap classifiers (setup-intent, reasoning) run in
+        //    parallel so neither blocks the answer.
+        const [sources, intent, setup] = await Promise.all([
           retrieveForQuery(query, { scope, crossSpace }),
           runClassifier
             ? classifyReasoningIntent(ctx.profile.id, query)
             : Promise.resolve({ analytical: false, confidence: 0 }),
+          runSetupIntent
+            ? classifySetupIntent(ctx.profile.id, query)
+            : Promise.resolve({ intent: "normal" as const, confidence: 0 }),
         ]);
+
+        // Setup intent wins: reroute to the reshape engine instead of answering.
+        if (setup.intent === "setup" && setup.confidence > 0.75) {
+          void logAuditEvent({
+            userId: ctx.profile.id,
+            action: "ask_setup_intent_detected",
+            resourceType: "ask",
+            metadata: { action_type: setup.actionType ?? null },
+          });
+          writeEvent(controller, { type: "setup_intent", query });
+          writeEvent(controller, { type: "done", conversationId });
+          controller.close();
+          return;
+        }
+
+        // The user dismissed a setup-intent offer to get a normal answer.
+        if (body.forceNormal === true) {
+          void logAuditEvent({
+            userId: ctx.profile.id,
+            action: "ask_setup_intent_rejected",
+            resourceType: "ask",
+          });
+        }
+
         writeEvent(controller, { type: "sources", sources });
 
         // Offer deeper thinking when the question reads as analytical (auto mode).

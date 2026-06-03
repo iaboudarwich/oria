@@ -493,6 +493,10 @@
     "approved_toast": "تمت الإضافة إلى مساحتك."
   },
   "ask": {
+    "you_asked": "سألت",
+    "setup_transition": "يبدو أنك تريد إجراء تغيير. إليك ما سأفعله:",
+    "setup_dismiss": "في الواقع، فقط أجب على سؤالي",
+    "setup_done": "تم. تم تحديث Oria الخاص بك.",
     "think_harder": "تفكير أعمق",
     "think_harder_tip": "تفكير أعمق. يستغرق وقتاً أطول، أفضل للأسئلة المعقدة.",
     "oria_reasoning": "Oria (تفكير)",

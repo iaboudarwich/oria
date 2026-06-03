@@ -5,6 +5,9 @@ import { ArrowRightIcon, SparkIcon } from "@/components/ui/icon";
 import { SourceCard, type SourceItem } from "./source-card";
 import { MicButton } from "@/components/ui/mic-button";
 import { useLocale, useTranslations } from "next-intl";
+import { PatchPreview } from "@/components/onboarding/patch-preview";
+import { reshapeGeneratePatch, reshapeExecutePatch } from "@/app/dashboard/reshape/actions";
+import { EMPTY_USER_CONTEXT, type PlanPatch } from "@/lib/onboarding/types";
 import type { Locale } from "@/i18n/config";
 
 type Turn = {
@@ -21,6 +24,12 @@ type Turn = {
   reasoningOffered?: boolean;
   /** Reasoning trace (Anthropic), for the "View reasoning" collapsible. */
   reasoning?: string;
+  /** The query was detected as a setup request and rerouted to reshape. */
+  setupIntent?: boolean;
+  /** The generated reshape patch (null while generating). */
+  patch?: PlanPatch | null;
+  /** The reshape patch was applied. */
+  setupApplied?: boolean;
 };
 
 export type ReasoningMode = "auto" | "manual" | "always" | "never";
@@ -99,7 +108,7 @@ export function AskChat({
   // Open /api/ask and stream the NDJSON events into the turn `id`. Shared
   // by a fresh send and by Retry, so both follow the exact same protocol.
   const runStream = useCallback(
-    async (id: string, query: string, history: ChatMessage[], reasoning = false) => {
+    async (id: string, query: string, history: ChatMessage[], reasoning = false, forceNormal = false) => {
       setBusy(true);
       const effectiveReasoning = reasoning || reasoningMode === "always";
       if (effectiveReasoning) updateTurn(id, (t) => ({ ...t, usedReasoning: true }));
@@ -119,6 +128,7 @@ export function AskChat({
             crossSpace: crossSpaceAvailable && crossSpace,
             conversationId: conversationIdRef.current ?? null,
             reasoning: effectiveReasoning,
+            forceNormal,
           }),
         });
         if (!res.ok || !res.body) {
@@ -156,10 +166,17 @@ export function AskChat({
                 | { type: "delta"; text: string }
                 | { type: "reasoning_offer" }
                 | { type: "reasoning"; text: string }
+                | { type: "setup_intent"; query: string }
                 | { type: "done"; conversationId?: string | null }
                 | { type: "error"; code: string };
               if (evt.type === "sources") {
                 updateTurn(id, (t) => ({ ...t, sources: evt.sources }));
+              } else if (evt.type === "setup_intent") {
+                // Reroute to the reshape engine: generate the patch inline.
+                updateTurn(id, (t) => ({ ...t, setupIntent: true, patch: null, state: "done" }));
+                void reshapeGeneratePatch(EMPTY_USER_CONTEXT, evt.query).then((p) =>
+                  updateTurn(id, (t) => ({ ...t, patch: p })),
+                );
               } else if (evt.type === "reasoning_offer") {
                 updateTurn(id, (t) => ({ ...t, reasoningOffered: true }));
               } else if (evt.type === "reasoning") {
@@ -253,6 +270,39 @@ export function AskChat({
     [busy, turns, updateTurn, runStream],
   );
 
+  // Apply the reshape patch generated from a setup-intent turn.
+  const confirmSetup = useCallback(
+    async (turnId: string, patch: PlanPatch) => {
+      const res = await reshapeExecutePatch(patch);
+      if (res.ok) updateTurn(turnId, (t) => ({ ...t, setupApplied: true }));
+    },
+    [updateTurn],
+  );
+
+  // "Just answer my question": re-run the turn as a normal Ask (forceNormal).
+  const dismissSetup = useCallback(
+    async (turnId: string) => {
+      if (busy) return;
+      const idx = turns.findIndex((t) => t.id === turnId);
+      if (idx === -1) return;
+      const target = turns[idx];
+      const history: ChatMessage[] = turns.slice(0, idx).flatMap((t) => [
+        { role: "user" as const, content: t.question },
+        { role: "assistant" as const, content: t.answer },
+      ]);
+      updateTurn(turnId, (t) => ({
+        ...t,
+        setupIntent: false,
+        patch: undefined,
+        answer: "",
+        sources: [],
+        state: "streaming",
+      }));
+      await runStream(turnId, target.question, history, false, true);
+    },
+    [busy, turns, updateTurn, runStream],
+  );
+
   // Re-run a failed turn in place. History is the turns that preceded it,
   // so the retry sees the same context the original attempt did.
   const retry = useCallback(
@@ -327,6 +377,8 @@ export function AskChat({
                   turn={t}
                   onRetry={() => retry(t.id)}
                   onReason={() => reasoningRerun(t.id)}
+                  onSetupConfirm={(p) => confirmSetup(t.id, p)}
+                  onSetupDismiss={() => dismissSetup(t.id)}
                   busy={busy}
                 />
               </li>
@@ -441,20 +493,55 @@ function TurnView({
   turn,
   onRetry,
   onReason,
+  onSetupConfirm,
+  onSetupDismiss,
   busy,
 }: {
   turn: Turn;
   onRetry: () => void;
   onReason: () => void;
+  onSetupConfirm: (patch: PlanPatch) => void;
+  onSetupDismiss: () => void;
   busy: boolean;
 }) {
   const t = useTranslations("ask");
   const wantsSources = SOURCE_INTENT.test(turn.question);
   const [sourcesOpen, setSourcesOpen] = useState(wantsSources);
   const [reasoningOpen, setReasoningOpen] = useState(false);
+
+  // Setup-intent turn: show the reshape preview inline instead of an answer.
+  if (turn.setupIntent) {
+    return (
+      <article className="animate-fade-up">
+        <p className="text-[13px] text-ink-faint">{t("you_asked")}</p>
+        <p className="mt-1 text-[15px] text-ink">{turn.question}</p>
+        <div className="mt-4 rounded-2xl border border-line bg-surface-raised px-4 py-3.5">
+          {turn.setupApplied ? (
+            <p className="text-[14px] text-ink">{t("setup_done")}</p>
+          ) : turn.patch === null || turn.patch === undefined ? (
+            <Thinking />
+          ) : (
+            <>
+              <p className="mb-3 text-[13px] text-ink-soft">{t("setup_transition")}</p>
+              <PatchPreview patch={turn.patch} onConfirm={() => onSetupConfirm(turn.patch as PlanPatch)} />
+              <button
+                type="button"
+                onClick={onSetupDismiss}
+                disabled={busy}
+                className="mt-3 text-[12px] text-ink-faint transition-base hover:text-ink disabled:opacity-50"
+              >
+                {t("setup_dismiss")}
+              </button>
+            </>
+          )}
+        </div>
+      </article>
+    );
+  }
+
   return (
     <article className="animate-fade-up">
-      <p className="text-[13px] text-ink-faint">You asked</p>
+      <p className="text-[13px] text-ink-faint">{t("you_asked")}</p>
       <p className="mt-1 text-[15px] text-ink">{turn.question}</p>
 
       {/* aria-live lets screen readers announce the answer as it streams
