@@ -6,6 +6,7 @@ import { isRtl, type Locale } from "@/i18n/config";
 import { ThemeProvider } from "@/components/ui/theme-provider";
 import { NavigationBreadcrumbs } from "@/components/feedback/navigation-breadcrumbs";
 import { ServiceWorkerRegister } from "@/components/pwa/sw-register";
+import { InstallPrompt } from "@/components/pwa/install-prompt";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
@@ -76,6 +77,7 @@ export default async function RootLayout({
           <NextIntlClientProvider messages={messages}>
             <NavigationBreadcrumbs />
             {children}
+            <InstallPrompt />
           </NextIntlClientProvider>
         </ThemeProvider>
         <ServiceWorkerRegister />
