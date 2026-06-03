@@ -135,8 +135,6 @@ export async function CloudServicesPanel({ userId }: { userId: string }) {
           {t("add_drive")}
         </a>
       </div>
-
-      <p className="text-[12px] text-ink-faint">{t("microsoft_soon")}</p>
     </section>
   );
 }
