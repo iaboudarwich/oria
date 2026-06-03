@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Wordmark } from "@/components/brand/wordmark";
 import { ReasoningIndicator } from "@/components/ai/reasoning-indicator";
-import { BuildAnimation } from "@/components/onboarding/build-animation";
+import { BuildAnimation, useBuildGate } from "@/components/onboarding/build-animation";
 import { generateOnboardingPlan, executeOnboardingPlan } from "../actions";
 import { EMPTY_USER_CONTEXT, type SetupPlan, type UserContext } from "@/lib/onboarding/types";
 import { CONTEXT_STORAGE_KEY } from "../conversation/conversation-client";
@@ -23,10 +23,8 @@ export function PreviewClient() {
   const [error, setError] = useState(false);
   const started = useRef(false);
   // Build choreography + real execution run in parallel; we leave only when
-  // both have finished. animDone flips at the end of the animation; execOk
-  // holds the execution result (null while pending).
-  const animDone = useRef(false);
-  const execOk = useRef<boolean | null>(null);
+  // both have finished (see useBuildGate).
+  const gate = useBuildGate();
 
   useEffect(() => {
     if (started.current) return;
@@ -79,8 +77,9 @@ export function PreviewClient() {
   // execution have both settled, so the crafted moment is never cut short and
   // a slow build never lands the user on the dashboard early.
   function maybeFinish() {
-    if (!animDone.current || execOk.current === null) return;
-    if (execOk.current) {
+    const state = gate.ready();
+    if (state === null) return;
+    if (state === "success") {
       try {
         sessionStorage.removeItem(CONTEXT_STORAGE_KEY);
       } catch {
@@ -95,12 +94,11 @@ export function PreviewClient() {
 
   function build() {
     if (!plan) return;
-    animDone.current = false;
-    execOk.current = null;
+    gate.reset();
     setBuilding(true);
     setError(false);
     void executeOnboardingPlan(plan).then((r) => {
-      execOk.current = r.ok;
+      gate.signalExec(r.ok);
       maybeFinish();
     });
   }
@@ -117,7 +115,7 @@ export function PreviewClient() {
           accent={accent}
           durationMs={7000}
           onComplete={() => {
-            animDone.current = true;
+            gate.signalAnim();
             maybeFinish();
           }}
         />

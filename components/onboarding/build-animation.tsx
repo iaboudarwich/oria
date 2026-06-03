@@ -19,6 +19,36 @@ function isHex(v: string | null | undefined): v is string {
 }
 
 /**
+ * Coordinates the build animation with the real async work. Both run in
+ * parallel; the caller leaves only once both have settled. Used by the
+ * onboarding preview and the reshape engine so the gating logic lives once.
+ */
+export function useBuildGate() {
+  const animDone = useRef(false);
+  const execOk = useRef<boolean | null>(null);
+  return {
+    /** Call before kicking off a new build. */
+    reset() {
+      animDone.current = false;
+      execOk.current = null;
+    },
+    /** The animation choreography finished. */
+    signalAnim() {
+      animDone.current = true;
+    },
+    /** The real execution resolved (ok or failed). */
+    signalExec(ok: boolean) {
+      execOk.current = ok;
+    },
+    /** "success" / "error" once both have settled, else null. */
+    ready(): "success" | "error" | null {
+      if (!animDone.current || execOk.current === null) return null;
+      return execOk.current ? "success" : "error";
+    },
+  };
+}
+
+/**
  * The premium build moment. A ghost dashboard skeleton fades in, the tailored
  * section names appear one by one, an accent wash sweeps across, and a quiet
  * narrative progresses through four phases. The motion is restrained (opacity

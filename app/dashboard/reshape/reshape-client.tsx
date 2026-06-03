@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 import { onboardingNextStep } from "@/app/onboarding/actions";
 import { reshapeGeneratePatch, reshapeExecutePatch } from "./actions";
 import { PatchPreview } from "@/components/onboarding/patch-preview";
-import { BuildAnimation } from "@/components/onboarding/build-animation";
+import { BuildAnimation, useBuildGate } from "@/components/onboarding/build-animation";
 import type { Answer, EngineStep, PlanPatch } from "@/lib/onboarding/types";
 
 type Phase = "intent" | "asking" | "preview" | "building" | "error";
@@ -28,9 +28,8 @@ export function ReshapeClient({ initialIntent }: { initialIntent?: string }) {
   const [question, setQuestion] = useState<Question | null>(null);
   const [patch, setPatch] = useState<PlanPatch | null>(null);
   const startedFor = useRef<string | null>(null);
-  // Reshape build choreography + execution run in parallel (see preview-client).
-  const animDone = useRef(false);
-  const execOk = useRef<boolean | null>(null);
+  // Reshape build choreography + execution run in parallel (see useBuildGate).
+  const gate = useBuildGate();
 
   function handleStep(step: EngineStep, theIntent: string, soFar: Answer[]) {
     if (step.done) {
@@ -62,8 +61,9 @@ export function ReshapeClient({ initialIntent }: { initialIntent?: string }) {
   }
 
   function maybeFinish() {
-    if (!animDone.current || execOk.current === null) return;
-    if (execOk.current) {
+    const state = gate.ready();
+    if (state === null) return;
+    if (state === "success") {
       router.push("/dashboard");
       router.refresh();
     } else {
@@ -73,11 +73,10 @@ export function ReshapeClient({ initialIntent }: { initialIntent?: string }) {
 
   function build() {
     if (!patch) return;
-    animDone.current = false;
-    execOk.current = null;
+    gate.reset();
     setPhase("building");
     void reshapeExecutePatch(patch).then((r) => {
-      execOk.current = r.ok;
+      gate.signalExec(r.ok);
       maybeFinish();
     });
   }
@@ -183,7 +182,7 @@ export function ReshapeClient({ initialIntent }: { initialIntent?: string }) {
             accent={patch?.creates[0]?.accent_color ?? null}
             durationMs={4500}
             onComplete={() => {
-              animDone.current = true;
+              gate.signalAnim();
               maybeFinish();
             }}
           />
