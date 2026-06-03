@@ -2,6 +2,8 @@ import { Topbar } from "@/components/dashboard/topbar";
 import { CalendarView } from "@/components/calendar/calendar-view";
 import { AddReminderForm } from "@/components/calendar/add-reminder-form";
 import { groupComingUp, loadCalendar } from "@/lib/data/calendar";
+import { getCalendarSources } from "@/lib/data/calendar-prefs";
+import { DEFAULT_CALENDAR_SOURCES } from "@/lib/data/calendar-types";
 import {
   getCurrentContext,
   isAccountOwnerInPersonal,
@@ -17,6 +19,9 @@ export default async function CalendarPage() {
   const ctx = await getCurrentContext();
   const allowCross = !!ctx && isAccountOwnerInPersonal(ctx);
   const { entries, spaces } = await loadCalendar({ crossSpace: allowCross });
+  const sources = ctx
+    ? await getCalendarSources(ctx.profile.id)
+    : DEFAULT_CALENDAR_SOURCES;
 
   const activeSpace = ctx
     ? spaces.find((s) => s.id === ctx.organization.id) ?? null
@@ -47,6 +52,7 @@ export default async function CalendarPage() {
           activeSpaceId={activeSpaceId}
           crossSpaceAvailable={crossSpaceAvailable}
           initialComingUp={initialComingUp}
+          initialSources={sources}
         />
 
         <AddReminder activeSpaceName={activeSpace?.name ?? null} />

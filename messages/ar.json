@@ -1,4 +1,9 @@
 {
+  "calendar": {
+    "source_events": "الأحداث",
+    "source_reminders": "التذكيرات",
+    "source_bills": "الفواتير"
+  },
   "bills": {
     "next_month": "الشهر القادم",
     "due_this_week": "مستحقة هذا الأسبوع",

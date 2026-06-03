@@ -63,15 +63,39 @@ export type CalendarSpace = {
   kind: OrgKind;
 };
 
+/**
+ * The three toggleable calendar sources (Round 14.5 F3). "events" covers
+ * connector calendar events plus extracted item events; "reminders" are user
+ * reminders; "bills" are bill due dates. Persisted per user.
+ */
+export type CalendarSource = "events" | "reminders" | "bills";
+export type CalendarSourcePrefs = Record<CalendarSource, boolean>;
+export const DEFAULT_CALENDAR_SOURCES: CalendarSourcePrefs = {
+  events: true,
+  reminders: true,
+  bills: true,
+};
+
+/** Keep only entries whose source group is toggled on. A missing key is on. */
+export function filterBySources(
+  entries: CalendarEntry[],
+  sources: CalendarSourcePrefs,
+): CalendarEntry[] {
+  return entries.filter((e) => sources[e.sourceGroup] !== false);
+}
+
 export type CalendarEntry = {
   id: string;
   /**
    * "reminder" entries come from the reminders table. they're tasks the user
    * can mark done. "item" entries come from memory_items. passive events
    * Oria extracted from uploads (flights, hotel check-ins, payments due).
-   * Items are display-only; they don't have a checkbox.
+   * "event" entries come from connected Calendar accounts (Google/Outlook).
+   * Items and events are display-only; they don't have a checkbox.
    */
-  kind: "reminder" | "item";
+  kind: "reminder" | "item" | "event";
+  /** Which toggleable source group this entry belongs to (F3 filter). */
+  sourceGroup: CalendarSource;
   title: string;
   /** Always non-null: the calendar excludes anything without a real date. */
   due_at: string;

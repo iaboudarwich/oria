@@ -13,9 +13,12 @@ import {
   CALENDAR_TOPIC_LABEL,
   type CalendarCategory,
   type CalendarEntry,
+  type CalendarSource,
+  type CalendarSourcePrefs,
   type CalendarSpace,
   type CalendarTopic,
 } from "@/lib/data/calendar-types";
+import { setCalendarSources } from "@/lib/data/calendar-prefs-actions";
 import type { ComingUpBucket } from "@/lib/data/calendar";
 import { ComingUpRollup } from "./coming-up";
 import {
@@ -41,13 +44,16 @@ type Props = {
    * one as-is (no cross-space leak); the cross-space rollup is computed
    * client-side from cross-space entries when the user toggles. */
   initialComingUp: ComingUpBucket[];
+  /** Persisted source-filter state (events/reminders/bills), F3. */
+  initialSources: CalendarSourcePrefs;
 };
 
 type SpaceScope = "active" | "all";
 type SpaceFilter = "all" | string;
 type CategoryFilter = "all" | CalendarCategory;
-type KindFilter = "all" | "event" | "reminder";
 type TopicFilter = "all" | CalendarTopic;
+
+const SOURCE_ORDER: CalendarSource[] = ["events", "reminders", "bills"];
 
 type Mode = "list" | "year" | "month" | "week" | "day";
 
@@ -81,15 +87,27 @@ export function CalendarView({
   activeSpaceId,
   crossSpaceAvailable,
   initialComingUp,
+  initialSources,
 }: Props) {
+  const tc = useTranslations("calendar");
   // Default scope is "active" so the calendar is isolated to the
   // current space. same rule as every other Oria surface. Owner of
   // Personal can flip to "all" to explore across their own spaces.
   const [scope, setScope] = useState<SpaceScope>("active");
   const [spaceFilter, setSpaceFilter] = useState<SpaceFilter>("all");
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>("all");
-  const [kindFilter, setKindFilter] = useState<KindFilter>("all");
+  const [sources, setSources] = useState<CalendarSourcePrefs>(initialSources);
   const [topicFilter, setTopicFilter] = useState<TopicFilter>("all");
+
+  // Toggle a source on/off and persist it (fire-and-forget; the UI updates
+  // immediately and the write is best-effort).
+  function toggleSource(key: CalendarSource) {
+    setSources((prev) => {
+      const next = { ...prev, [key]: !prev[key] };
+      void setCalendarSources(next);
+      return next;
+    });
+  }
   const [mode, setMode] = useState<Mode>("list");
   const [cursor, setCursor] = useState<Date>(() => {
     const d = new Date();
@@ -124,12 +142,11 @@ export function CalendarView({
       if (categoryFilter !== "all" && e.category !== categoryFilter) {
         return false;
       }
-      if (kindFilter === "event" && e.kind !== "item") return false;
-      if (kindFilter === "reminder" && e.kind !== "reminder") return false;
+      if (!sources[e.sourceGroup]) return false;
       if (topicFilter !== "all" && e.topic !== topicFilter) return false;
       return true;
     });
-  }, [scoped, spaceFilter, categoryFilter, kindFilter, topicFilter]);
+  }, [scoped, spaceFilter, categoryFilter, sources, topicFilter]);
 
   // Show source-space pill on each row when the user could be looking
   // at items from more than one space. When scope is "active" all rows
@@ -193,21 +210,14 @@ export function CalendarView({
             </PillRow>
           ) : null}
           <PillRow muted>
-            <Pill
-              label="Everything"
-              active={kindFilter === "all"}
-              onClick={() => setKindFilter("all")}
-            />
-            <Pill
-              label="Events"
-              active={kindFilter === "event"}
-              onClick={() => setKindFilter("event")}
-            />
-            <Pill
-              label="Reminders"
-              active={kindFilter === "reminder"}
-              onClick={() => setKindFilter("reminder")}
-            />
+            {SOURCE_ORDER.map((key) => (
+              <Pill
+                key={key}
+                label={tc(`source_${key}`)}
+                active={sources[key]}
+                onClick={() => toggleSource(key)}
+              />
+            ))}
           </PillRow>
           <PillRow muted>
             <Pill

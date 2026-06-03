@@ -1,4 +1,9 @@
 {
+  "calendar": {
+    "source_events": "Events",
+    "source_reminders": "Reminders",
+    "source_bills": "Bills"
+  },
   "bills": {
     "next_month": "Next month",
     "due_this_week": "Due this week",

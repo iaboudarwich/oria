@@ -195,7 +195,7 @@ export async function loadCalendar(
   const itemsRes = await supabase
     .from("memory_items")
     .select(
-      "id, organization_id, upload_id, title, occurred_at, section, merchant, amount_value, amount_currency, location, summary, document_type, is_recurring",
+      "id, organization_id, upload_id, title, occurred_at, section, smart_section, merchant, amount_value, amount_currency, location, summary, document_type, is_recurring",
     )
     .in("organization_id", orgIds)
     .not("occurred_at", "is", null)
@@ -211,6 +211,7 @@ export async function loadCalendar(
     | "title"
     | "occurred_at"
     | "section"
+    | "smart_section"
     | "merchant"
     | "amount_value"
     | "amount_currency"
@@ -220,6 +221,26 @@ export async function loadCalendar(
     | "is_recurring"
   >;
   const items = (itemsRes.data ?? []) as ItemRow[];
+
+  // Connector calendar events (Google/Outlook), synced into calendar_events
+  // (Round 14.5 F3). Same org scoping as everything else, so RLS holds.
+  const eventsRes = await supabase
+    .from("calendar_events")
+    .select("id, organization_id, title, starts_at, location, web_view_link, category")
+    .in("organization_id", orgIds)
+    .not("starts_at", "is", null)
+    .order("starts_at", { ascending: true })
+    .limit(500);
+  type EventRow = {
+    id: string;
+    organization_id: string;
+    title: string | null;
+    starts_at: string;
+    location: string | null;
+    web_view_link: string | null;
+    category: string | null;
+  };
+  const calendarEvents = (eventsRes.data ?? []) as EventRow[];
 
   // For upload-linked reminders we want both the parent's section
   // (for category colouring) and document_type (for topic precision.
@@ -268,6 +289,7 @@ export async function loadCalendar(
     reminderEntries.push({
       id: `reminder:${r.id}`,
       kind: "reminder",
+      sourceGroup: "reminders",
       title: r.title,
       due_at: r.due_at,
       done: r.done,
@@ -306,6 +328,7 @@ export async function loadCalendar(
     itemEntries.push({
       id: `item:${it.id}`,
       kind: "item",
+      sourceGroup: it.smart_section === "bills" ? "bills" : "events",
       title: it.title,
       due_at: it.occurred_at,
       done: null,
@@ -335,7 +358,34 @@ export async function loadCalendar(
     });
   }
 
-  const entries = [...reminderEntries, ...itemEntries].sort(
+  const CATEGORIES = new Set(["finance", "travel", "health", "events", "personal", "reminders"]);
+  const eventEntries: CalendarEntry[] = [];
+  for (const ev of calendarEvents) {
+    const space = spaceById.get(ev.organization_id);
+    if (!space || !ev.starts_at) continue;
+    const category = (ev.category && CATEGORIES.has(ev.category)
+      ? ev.category
+      : "events") as CalendarEntry["category"];
+    eventEntries.push({
+      id: `event:${ev.id}`,
+      kind: "event",
+      sourceGroup: "events",
+      title: ev.title || "Event",
+      due_at: ev.starts_at,
+      done: null,
+      source: null,
+      confirmed_at: null,
+      upload_id: null,
+      space_id: space.id,
+      space_name: space.name,
+      space_kind: space.kind,
+      category,
+      topic: "event",
+      meta: { merchant: null, amount_display: null, location: ev.location },
+    });
+  }
+
+  const entries = [...reminderEntries, ...itemEntries, ...eventEntries].sort(
     (a, b) => new Date(a.due_at).getTime() - new Date(b.due_at).getTime(),
   );
 
