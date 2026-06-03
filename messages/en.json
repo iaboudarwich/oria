@@ -36,10 +36,7 @@
   },
   "settings_help": {
     "response_length": "How long Oria's answers run by default. Short for quick facts, long for detail.",
-    "tone": "Whether Oria writes casually or more formally in its answers.",
-    "reshape_title": "Reshape your Oria",
-    "reshape_body": "Add, rename, or remove spaces and sections by talking to Oria.",
-    "reshape_cta": "Reshape"
+    "tone": "Whether Oria writes casually or more formally in its answers."
   },
   "build_anim": {
     "phase1": "Setting up your spaces...",
@@ -662,5 +659,38 @@
     "reveal_sections": "Sections are where trackables land. Rename, hide, or add anything anytime.",
     "reveal_scan": "Your first email scan is running, trackables will appear soon.",
     "reveal_dismiss": "Got it, let me explore"
+  },
+  "sidebar": {
+    "ask": "Ask Oria",
+    "uploads": "Uploads",
+    "calendar": "Calendar",
+    "trackables": "Trackables",
+    "agent": "AI Agent",
+    "analysis": "Analysis",
+    "finance": "Finance",
+    "contracts": "Contracts",
+    "invoices": "Invoices",
+    "reports": "Reports",
+    "timeline": "Timeline",
+    "features": "What can Oria do?",
+    "deleted": "Deleted",
+    "connections": "Connections",
+    "sections": "Sections",
+    "manage_sections": "Manage sections",
+    "security": "Security",
+    "open_nav": "Open navigation",
+    "close_nav": "Close navigation",
+    "expand": "Expand sidebar",
+    "collapse": "Collapse sidebar",
+    "smart_section": "Smart Section"
+  },
+  "user_menu": {
+    "account": "Account",
+    "members": "Members",
+    "team": "Team",
+    "reshape": "Tell Oria to change something",
+    "settings": "Settings",
+    "admin_health": "Admin · System Health",
+    "sign_out": "Sign out"
   }
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { signOut } from "@/lib/auth/actions";
 import {
   LockIcon,
@@ -34,6 +35,7 @@ export function UserMenu({
   orgKind: "personal" | "circle" | "office";
   collapsed?: boolean;
 }) {
+  const t = useTranslations("user_menu");
   const { ref, open, toggle, setOpen } = useDismissable<HTMLDivElement>();
   const initials =
     user.name
@@ -64,7 +66,7 @@ export function UserMenu({
               {user.name}
             </span>
             <span className="block truncate text-[10.5px] text-ink-faint">
-              Account
+              {t("account")}
             </span>
           </span>
         ) : null}
@@ -92,27 +94,27 @@ export function UserMenu({
               <MenuLink
                 href="/dashboard/circle"
                 icon={PersonIcon}
-                label={orgKind === "office" ? "Team" : "Members"}
+                label={orgKind === "office" ? t("team") : t("members")}
                 onSelect={() => setOpen(false)}
               />
             ) : null}
             <MenuLink
               href="/dashboard/reshape"
               icon={SparkIcon}
-              label="Tell Oria to change something"
+              label={t("reshape")}
               onSelect={() => setOpen(false)}
             />
             <MenuLink
               href="/dashboard/settings"
               icon={SettingsIcon}
-              label="Settings"
+              label={t("settings")}
               onSelect={() => setOpen(false)}
             />
             {isAdmin ? (
               <MenuLink
                 href="/dashboard/admin/health"
                 icon={SparkIcon}
-                label="Admin · System Health"
+                label={t("admin_health")}
                 onSelect={() => setOpen(false)}
               />
             ) : null}
@@ -127,7 +129,7 @@ export function UserMenu({
                 <span className="inline-flex h-4 w-4 items-center justify-center text-ink-faint">
                   <LockIcon size={13} />
                 </span>
-                <span className="flex-1">Sign out</span>
+                <span className="flex-1">{t("sign_out")}</span>
               </button>
             </form>
           </div>

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Wordmark } from "@/components/brand/wordmark";
 import {
   BoxIcon,
@@ -41,6 +42,16 @@ import { ModeToggle } from "@/components/dashboard/mode-toggle";
 import { UserMenu } from "@/components/dashboard/user-menu";
 import { ReportProblemButton } from "@/components/feedback/report-problem-button";
 
+// A nav spec carries an i18n key (resolved against the "sidebar" namespace at
+// render); a NavItem is the resolved, display-ready row.
+type NavSpec = {
+  key: string;
+  href: string;
+  icon: React.ComponentType<{ size?: number }>;
+  badge?: string;
+  shortcut?: string;
+};
+
 type NavItem = {
   label: string;
   href: string;
@@ -51,8 +62,8 @@ type NavItem = {
 
 // The emotional centerpiece: a single primary action at the top of the
 // sidebar. Everything else is supporting cast.
-const primaryAction: NavItem = {
-  label: "Ask Oria",
+const primaryAction: NavSpec = {
+  key: "ask",
   href: "/dashboard/ask",
   icon: SearchIcon,
   shortcut: "⌘K",
@@ -62,35 +73,36 @@ const primaryAction: NavItem = {
 // Timeline + Members used to live here too. Timeline is now an opt-in
 // extra (Settings → Sidebar), and Members moved into the account menu
 // since it's a per-space management thing, not a place you visit often.
-const personalSecondaryNav: NavItem[] = [
-  { label: "Uploads", href: "/dashboard/inbox", icon: InboxIcon },
-  { label: "Calendar", href: "/dashboard/calendar", icon: CalendarIcon },
-  { label: "Items", href: "/dashboard/things", icon: BoxIcon },
-  { label: "Trackables", href: "/dashboard/trackables", icon: CheckIcon },
+// The "things" row resolves to the per-space Records label (thingsLabel).
+const personalSecondaryNav: NavSpec[] = [
+  { key: "uploads", href: "/dashboard/inbox", icon: InboxIcon },
+  { key: "calendar", href: "/dashboard/calendar", icon: CalendarIcon },
+  { key: "things", href: "/dashboard/things", icon: BoxIcon },
+  { key: "trackables", href: "/dashboard/trackables", icon: CheckIcon },
 ];
 
 // Work mode: business-focused nav. AI Agent sits right under Ask Oria as
 // the persistent operational brain for the Workspace. Team has moved
 // to the account menu, same logic as Personal/Members.
-const workSecondaryNav: NavItem[] = [
-  { label: "AI Agent", href: "/dashboard/work/agent", icon: SparkIcon },
-  { label: "Analysis", href: "/dashboard/work/analysis", icon: ChartIcon },
-  { label: "Uploads", href: "/dashboard/inbox", icon: InboxIcon },
-  { label: "Finance", href: "/dashboard/work/finance", icon: WalletIcon },
-  { label: "Contracts", href: "/dashboard/work/contracts", icon: ScalesIcon },
-  { label: "Invoices", href: "/dashboard/work/invoices", icon: DocumentIcon },
-  { label: "Calendar", href: "/dashboard/calendar", icon: CalendarIcon },
-  { label: "Reports", href: "/dashboard/work/reports", icon: PulseIcon },
-  { label: "Items", href: "/dashboard/things", icon: BoxIcon },
-  { label: "Trackables", href: "/dashboard/trackables", icon: CheckIcon },
+const workSecondaryNav: NavSpec[] = [
+  { key: "agent", href: "/dashboard/work/agent", icon: SparkIcon },
+  { key: "analysis", href: "/dashboard/work/analysis", icon: ChartIcon },
+  { key: "uploads", href: "/dashboard/inbox", icon: InboxIcon },
+  { key: "finance", href: "/dashboard/work/finance", icon: WalletIcon },
+  { key: "contracts", href: "/dashboard/work/contracts", icon: ScalesIcon },
+  { key: "invoices", href: "/dashboard/work/invoices", icon: DocumentIcon },
+  { key: "calendar", href: "/dashboard/calendar", icon: CalendarIcon },
+  { key: "reports", href: "/dashboard/work/reports", icon: PulseIcon },
+  { key: "things", href: "/dashboard/things", icon: BoxIcon },
+  { key: "trackables", href: "/dashboard/trackables", icon: CheckIcon },
 ];
 
 // Optional rows the user can opt into from Settings → Sidebar. Layout
 // resolves which ones are enabled and concatenates them onto whichever
 // secondary nav matches the active mode.
-export const SIDEBAR_EXTRA_ITEMS: Record<string, NavItem> = {
+export const SIDEBAR_EXTRA_ITEMS: Record<string, NavSpec> = {
   timeline: {
-    label: "Timeline",
+    key: "timeline",
     href: "/dashboard/timeline",
     icon: PulseIcon,
   },
@@ -102,9 +114,9 @@ export const SIDEBAR_EXTRA_ITEMS: Record<string, NavItem> = {
 // System tier. "Private Oria" moved into the feature index (rare/long-tail);
 // "What can Oria do?" surfaces the full feature list. Connections gets its own
 // status row below (rendered separately so it can show a health dot).
-const systemNav: NavItem[] = [
-  { label: "What can Oria do?", href: "/dashboard/features", icon: SparkIcon },
-  { label: "Deleted", href: "/dashboard/trash", icon: CloseIcon },
+const systemNav: NavSpec[] = [
+  { key: "features", href: "/dashboard/features", icon: SparkIcon },
+  { key: "deleted", href: "/dashboard/trash", icon: CloseIcon },
 ];
 
 type SidebarSection = {
@@ -119,7 +131,7 @@ export type SidebarProps = {
   user: { name: string; email: string };
   /** Profile id, threaded through for the Report-a-problem context. */
   userId: string;
-  /** Resolved label for the "Things" area (custom, or per-template default). */
+  /** Resolved label for the Records area (custom, or per-template default). */
   thingsLabel: string;
   org: { name: string; role: string };
   /** Current top-level mode. Drives which nav cluster appears below the
@@ -191,7 +203,19 @@ export function Sidebar({
 }: SidebarProps) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
+  const t = useTranslations("sidebar");
   const close = () => setOpen(false);
+
+  // Resolve a spec to a display row. The Records area (/dashboard/things) uses
+  // the per-space label (custom, or the resolved default); everything else
+  // reads from the "sidebar" namespace.
+  const toItem = (s: NavSpec): NavItem => ({
+    label: s.href === "/dashboard/things" ? thingsLabel : t(s.key),
+    href: s.href,
+    icon: s.icon,
+    badge: s.badge,
+    shortcut: s.shortcut,
+  });
 
   useEffect(() => {
     if (!open) return;
@@ -210,7 +234,7 @@ export function Sidebar({
         type="button"
         onClick={() => setOpen(true)}
         className="fixed left-4 top-3 z-40 inline-flex h-9 w-9 items-center justify-center rounded-xl border border-line bg-surface-raised text-ink-muted lg:hidden"
-        aria-label="Open navigation"
+        aria-label={t("open_nav")}
       >
         <MenuIcon />
       </button>
@@ -249,7 +273,7 @@ export function Sidebar({
               type="button"
               onClick={onToggle}
               className="hidden h-8 w-8 items-center justify-center rounded-lg text-ink-faint transition-base hover:bg-canvas/60 hover:text-ink lg:inline-flex"
-              aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+              aria-label={collapsed ? t("expand") : t("collapse")}
             >
               {collapsed ? (
                 <ChevronRightIcon size={13} />
@@ -262,7 +286,7 @@ export function Sidebar({
             type="button"
             onClick={close}
             className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-ink-muted hover:text-ink lg:hidden"
-            aria-label="Close navigation"
+            aria-label={t("close_nav")}
           >
             <CloseIcon />
           </button>
@@ -290,7 +314,7 @@ export function Sidebar({
         >
           {/* TIER 1. Ask Oria, the primary action. Alone, with a ⌘K hint. */}
           <PrimaryRow
-            item={primaryAction}
+            item={toItem(primaryAction)}
             pathname={pathname}
             onNavigate={close}
             collapsed={collapsed}
@@ -319,27 +343,20 @@ export function Sidebar({
               ...(mode === "work" ? workSecondaryNav : personalSecondaryNav),
               ...extras
                 .map((k) => SIDEBAR_EXTRA_ITEMS[k])
-                .filter((it): it is NavItem => !!it),
-            ].map(
-              (raw) => {
-                // The "Things" area is renamable per space (and defaults to
-                // "Assets" for asset-heavy templates).
-                const item =
-                  raw.href === "/dashboard/things"
-                    ? { ...raw, label: thingsLabel }
-                    : raw;
-                return (
-                  <li key={item.href}>
-                    <NavLink
-                      item={item}
-                      pathname={pathname}
-                      onNavigate={close}
-                      collapsed={collapsed}
-                    />
-                  </li>
-                );
-              },
-            )}
+                .filter((s): s is NavSpec => !!s),
+            ].map((spec) => {
+              const item = toItem(spec);
+              return (
+                <li key={item.href}>
+                  <NavLink
+                    item={item}
+                    pathname={pathname}
+                    onNavigate={close}
+                    collapsed={collapsed}
+                  />
+                </li>
+              );
+            })}
           </ul>
 
           {/* Manage sections: a real, visible button (not a faint gear) so
@@ -354,7 +371,7 @@ export function Sidebar({
                 className="w-full"
               >
                 <SettingsIcon size={13} />
-                Manage sections
+                {t("manage_sections")}
               </Button>
             </div>
           ) : null}
@@ -363,10 +380,10 @@ export function Sidebar({
           <div className="mt-auto pt-4">
             <Divider collapsed={collapsed} />
             <ul className="flex flex-col gap-0.5">
-              {systemNav.map((item) => (
-                <li key={item.href}>
+              {systemNav.map((spec) => (
+                <li key={spec.href}>
                   <NavLink
-                    item={item}
+                    item={toItem(spec)}
                     pathname={pathname}
                     onNavigate={close}
                     quiet
@@ -378,7 +395,7 @@ export function Sidebar({
                   an at-a-glance dot (green active, red needs attention). */}
               <li>
                 <NavLink
-                  item={{ label: "Connections", href: "/dashboard/settings?tab=connections", icon: LinkIcon }}
+                  item={{ label: t("connections"), href: "/dashboard/settings?tab=connections", icon: LinkIcon }}
                   pathname={pathname}
                   onNavigate={close}
                   quiet
@@ -406,7 +423,7 @@ export function Sidebar({
                 prefetch={false}
                 className="mt-3 block px-3 py-1 text-[10.5px] uppercase tracking-[0.10em] text-ink-faint transition-base hover:text-ink-muted"
               >
-                Security
+                {t("security")}
               </Link>
             ) : null}
           </div>
@@ -492,6 +509,7 @@ function SectionsGroup({
   pathname: string;
   onNavigate?: () => void;
 }) {
+  const t = useTranslations("sidebar");
   return (
     <div>
       <button
@@ -500,7 +518,7 @@ function SectionsGroup({
         aria-expanded={open}
         className="flex w-full items-center gap-1.5 rounded-md px-3 py-1 text-eyebrow transition-base hover:text-ink-muted"
       >
-        <span className="flex-1 text-left">Sections</span>
+        <span className="flex-1 text-left">{t("sections")}</span>
         <ChevronDownIcon
           size={11}
           className={`transition-transform duration-200 ${
@@ -520,7 +538,7 @@ function SectionsGroup({
                 <Link
                   href={s.href}
                   onClick={onNavigate}
-                  title={isSmart ? `${s.label} · Smart Section` : undefined}
+                  title={isSmart ? `${s.label} · ${t("smart_section")}` : undefined}
                   className={`group relative brand-indicator flex min-h-[36px] items-center gap-2.5 rounded-lg px-3 py-2 text-[12.5px] transition-base ${
                     active
                       ? "active bg-brand-muted text-brand font-medium"

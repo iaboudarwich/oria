@@ -36,10 +36,7 @@
   },
   "settings_help": {
     "response_length": "La longitud predeterminada de las respuestas de Oria. Corta para datos rápidos, larga para detalle.",
-    "tone": "Si Oria escribe de forma casual o más formal.",
-    "reshape_title": "Remodela tu Oria",
-    "reshape_body": "Añade, renombra o elimina espacios y secciones hablando con Oria.",
-    "reshape_cta": "Remodelar"
+    "tone": "Si Oria escribe de forma casual o más formal."
   },
   "build_anim": {
     "phase1": "Preparando tus espacios...",
@@ -662,5 +659,38 @@
     "reveal_sections": "Las secciones son donde aterrizan los seguimientos. Renombra, oculta o añade cuando quieras.",
     "reveal_scan": "Tu primer análisis de correo está en marcha, los seguimientos aparecerán pronto.",
     "reveal_dismiss": "Entendido, déjame explorar"
+  },
+  "sidebar": {
+    "ask": "Preguntar a Oria",
+    "uploads": "Cargas",
+    "calendar": "Calendario",
+    "trackables": "Seguimientos",
+    "agent": "Agente IA",
+    "analysis": "Análisis",
+    "finance": "Finanzas",
+    "contracts": "Contratos",
+    "invoices": "Facturas",
+    "reports": "Informes",
+    "timeline": "Historial",
+    "features": "¿Qué puede hacer Oria?",
+    "deleted": "Eliminados",
+    "connections": "Conexiones",
+    "sections": "Secciones",
+    "manage_sections": "Gestionar secciones",
+    "security": "Seguridad",
+    "open_nav": "Abrir navegación",
+    "close_nav": "Cerrar navegación",
+    "expand": "Expandir barra lateral",
+    "collapse": "Contraer barra lateral",
+    "smart_section": "Sección inteligente"
+  },
+  "user_menu": {
+    "account": "Cuenta",
+    "members": "Miembros",
+    "team": "Equipo",
+    "reshape": "Pide a Oria que cambie algo",
+    "settings": "Configuración",
+    "admin_health": "Admin · Estado del sistema",
+    "sign_out": "Cerrar sesión"
   }
 }
