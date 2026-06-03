@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
   setUserPreferences,
@@ -18,6 +19,7 @@ const FORMALITIES: Array<UserPreferences["formality"]> = ["casual", "professiona
  * action (which audits the change).
  */
 export function PreferencesPanel({ initial }: { initial: UserPreferences }) {
+  const th = useTranslations("settings_help");
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [responseLength, setResponseLength] = useState(initial.responseLength);
@@ -52,12 +54,14 @@ export function PreferencesPanel({ initial }: { initial: UserPreferences }) {
 
       <Choice
         label="Response length"
+        hint={th("response_length")}
         options={LENGTHS}
         value={responseLength}
         onChange={setResponseLength}
       />
       <Choice
         label="Tone"
+        hint={th("tone")}
         options={FORMALITIES}
         value={formality}
         onChange={setFormality}
@@ -134,11 +138,13 @@ function ResetButton() {
 
 function Choice<T extends string>({
   label,
+  hint,
   options,
   value,
   onChange,
 }: {
   label: string;
+  hint?: string;
   options: T[];
   value: T;
   onChange: (v: T) => void;
@@ -160,6 +166,7 @@ function Choice<T extends string>({
           </button>
         ))}
       </div>
+      {hint ? <p className="mt-1.5 text-[11.5px] text-ink-faint">{hint}</p> : null}
     </div>
   );
 }

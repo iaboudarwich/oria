@@ -374,6 +374,17 @@ export function Sidebar({
                   />
                 </li>
               ))}
+              {/* Reshape: a top-level affordance to restructure Oria by talking
+                  to it, not buried in a menu (Round 14 F1). */}
+              <li>
+                <NavLink
+                  item={{ label: "Reshape", href: "/dashboard/reshape", icon: SparkIcon }}
+                  pathname={pathname}
+                  onNavigate={close}
+                  quiet
+                  collapsed={collapsed}
+                />
+              </li>
               {/* Connections status: persistent path to email sync health with
                   an at-a-glance dot (green active, red needs attention). */}
               <li>

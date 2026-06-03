@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { Topbar } from "@/components/dashboard/topbar";
 import { listAllSections } from "@/lib/data/all-sections";
 import {
@@ -10,6 +11,7 @@ import {
   HeartIcon,
   LockIcon,
   PersonIcon,
+  SparkIcon,
 } from "@/components/ui/icon";
 import { DeleteAccountPanel } from "@/components/settings/delete-account-panel";
 import { ResetAccountPanel } from "@/components/settings/reset-account-panel";
@@ -45,16 +47,18 @@ import type { Locale } from "@/i18n/config";
 
 export const metadata = { title: "Settings" };
 
+// Order reflects frequency of use: Connections is high-traffic and sits near
+// the top; Storage is occasional and sits lower. (Round 14 F1.)
 const TABS = [
   { key: "general",    label: "General" },
-  { key: "preferences", label: "Preferences" },
+  { key: "connections", label: "Connections" },
+  { key: "ai",         label: "AI" },
   { key: "appearance", label: "Appearance" },
+  { key: "preferences", label: "Preferences" },
   { key: "sections",   label: "Sections" },
   { key: "circles",    label: "Circles" },
   { key: "workspaces", label: "Workspaces" },
   { key: "storage",    label: "Storage" },
-  { key: "connections", label: "Connections" },
-  { key: "ai",         label: "AI" },
   { key: "security",   label: "Security" },
   { key: "privacy",    label: "Privacy" },
 ] as const;
@@ -105,6 +109,7 @@ export default async function SettingsPage({
       ? await getUserProfile(ctx.profile.id)
       : null;
   const timelineEnabled = extras.has("timeline");
+  const th = await getTranslations("settings_help");
 
   const visible = sections.filter((s) => !s.hidden);
   const total = sections.length;
@@ -153,6 +158,24 @@ export default async function SettingsPage({
 
         {tab === "general" && (
           <>
+            {/* Reshape is a primary affordance, not a buried menu item (F1). */}
+            <Link
+              href="/dashboard/reshape"
+              className="flex items-center justify-between gap-4 rounded-2xl border border-line bg-surface-raised px-4 py-3.5 shadow-[0_1px_2px_rgba(28,26,23,0.04)] transition-base hover:border-line-strong"
+            >
+              <span className="flex items-center gap-3">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-muted text-brand">
+                  <SparkIcon size={16} />
+                </span>
+                <span className="min-w-0">
+                  <span className="block text-[13.5px] font-medium text-ink">{th("reshape_title")}</span>
+                  <span className="block text-[11.5px] text-ink-faint">{th("reshape_body")}</span>
+                </span>
+              </span>
+              <span className="shrink-0 rounded-lg bg-ink px-3 py-1.5 text-[12.5px] font-medium text-surface">
+                {th("reshape_cta")}
+              </span>
+            </Link>
             <ModesPanel orgKind={orgKind} />
             <SidebarPrefsPanel timelineEnabled={timelineEnabled} />
             {/* Appearance */}

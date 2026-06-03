@@ -1,4 +1,11 @@
 {
+  "settings_help": {
+    "response_length": "La longitud predeterminada de las respuestas de Oria. Corta para datos rápidos, larga para detalle.",
+    "tone": "Si Oria escribe de forma casual o más formal.",
+    "reshape_title": "Remodela tu Oria",
+    "reshape_body": "Añade, renombra o elimina espacios y secciones hablando con Oria.",
+    "reshape_cta": "Remodelar"
+  },
   "build_anim": {
     "phase1": "Preparando tus espacios...",
     "phase2": "Adaptando las secciones a tu forma de trabajar...",

@@ -1,4 +1,11 @@
 {
+  "settings_help": {
+    "response_length": "How long Oria's answers run by default. Short for quick facts, long for detail.",
+    "tone": "Whether Oria writes casually or more formally in its answers.",
+    "reshape_title": "Reshape your Oria",
+    "reshape_body": "Add, rename, or remove spaces and sections by talking to Oria.",
+    "reshape_cta": "Reshape"
+  },
   "build_anim": {
     "phase1": "Setting up your spaces...",
     "phase2": "Tailoring sections to how you work...",
