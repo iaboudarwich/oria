@@ -222,12 +222,20 @@ Build these from the start, not as afterthoughts.
 
 ## 9. Iconography
 
-- Lucide icons only (single source, consistent stroke)
-- Stroke width: 1.5px on small (16-20px), 2px on medium (24px), 2.5px on large (32px+)
+- Lucide icons only (single source, consistent stroke). Lucide is wired in
+  `components/ui/icon`: every icon is a named export (`HomeIcon`, `SparkIcon`, ...)
+  wrapping one Lucide glyph. Never import from `lucide-react` directly in a page,
+  route, or component; go through `components/ui/icon` so sizing, stroke, and RTL
+  stay centralized.
+- Stroke width: 1.5px on small (16-20px), 2px on medium (24px), 2.5px on large (32px+). Applied automatically by the Icon wrapper from the rendered size.
+- RTL: directional glyphs (arrows, horizontal chevrons, send, sidebar toggle) carry `.oria-icon-dir` and mirror under `[dir="rtl"]` (rule in `app/globals.css`). Non-directional glyphs do not flip.
 - Always paired with a text label unless space-critical AND has aria-label
 - Never use icons to replace verbs (no pencil icon for "Edit" without the word, except in dense table rows)
 
-Note: the mandate stands, but `lucide-react` is not installed yet; the app currently uses the custom icon set in `components/ui/icon`. The migration to Lucide is tracked as round 14.5c.
+The full old custom-SVG -> Lucide inventory, the directional set, and the handful
+of judgment-call mappings are documented in
+`docs/audits/round-14_5c-icon-migration.md`. The dev-only gallery at `app/dev/icons`
+(404s in production) renders the whole set for visual QA.
 
 ---
 

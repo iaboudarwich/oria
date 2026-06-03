@@ -434,3 +434,12 @@
   .btn-lift:hover:not(:disabled) { transform: none; }
   .drag-hint-wiggle { animation: none; }
 }
+
+/* ── RTL directional icons ───────────────────────────────────────
+ * Icons that point somewhere (arrows, chevrons, send, sidebar toggle)
+ * carry .oria-icon-dir from the Icon component and mirror under Arabic
+ * so direction reads correctly. Non-directional glyphs never get the
+ * class, so they stay upright. See components/ui/icon.tsx. */
+[dir="rtl"] .oria-icon-dir {
+  transform: scaleX(-1);
+}
