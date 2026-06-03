@@ -694,5 +694,31 @@
     "sign_out": "Sign out"
   },
   "records": { "types": "Types", "add": "Add", "no_types": "No types yet." },
-  "uploads": { "review": "Review what we found", "details": "Full extraction details" }
+  "uploads": { "review": "Review what we found", "details": "Full extraction details" },
+  "pwa": {
+    "app_description": "Your second brain and right arm.",
+    "install_title": "Install Oria",
+    "install_body": "Add Oria to your home screen for quick access.",
+    "install_action": "Install",
+    "install_dismiss": "Not now",
+    "ios_title": "Add Oria to your Home Screen",
+    "ios_intro": "Install Oria in two steps:",
+    "ios_step_share": "Tap the Share button in Safari.",
+    "ios_step_add": "Choose \"Add to Home Screen\".",
+    "ios_done": "Got it",
+    "offline_title": "You are offline",
+    "offline_body": "Oria needs a connection to show your latest. Reconnect and we will pick up where you left off.",
+    "offline_retry": "Try again",
+    "push_title": "Push notifications",
+    "push_body": "Get a heads-up when something needs you.",
+    "push_enable": "Enable",
+    "push_disable": "Disable",
+    "push_enabled": "On",
+    "push_blocked": "Notifications are blocked in your browser settings.",
+    "push_unsupported": "This browser does not support notifications.",
+    "push_unavailable": "Push is not configured on this server yet.",
+    "push_test": "Send test notification",
+    "push_test_sent": "Test notification sent.",
+    "push_error": "Something went wrong. Try again."
+  }
 }

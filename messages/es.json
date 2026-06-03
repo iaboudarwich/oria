@@ -694,5 +694,31 @@
     "sign_out": "Cerrar sesión"
   },
   "records": { "types": "Tipos", "add": "Añadir", "no_types": "Aún no hay tipos." },
-  "uploads": { "review": "Revisar lo que encontramos", "details": "Detalles completos de la extracción" }
+  "uploads": { "review": "Revisar lo que encontramos", "details": "Detalles completos de la extracción" },
+  "pwa": {
+    "app_description": "Tu segundo cerebro y mano derecha.",
+    "install_title": "Instalar Oria",
+    "install_body": "Añade Oria a tu pantalla de inicio para un acceso rápido.",
+    "install_action": "Instalar",
+    "install_dismiss": "Ahora no",
+    "ios_title": "Añadir Oria a la pantalla de inicio",
+    "ios_intro": "Instala Oria en dos pasos:",
+    "ios_step_share": "Toca el botón Compartir en Safari.",
+    "ios_step_add": "Elige «Añadir a pantalla de inicio».",
+    "ios_done": "Entendido",
+    "offline_title": "Estás sin conexión",
+    "offline_body": "Oria necesita conexión para mostrar lo último. Reconéctate y seguiremos donde lo dejaste.",
+    "offline_retry": "Reintentar",
+    "push_title": "Notificaciones push",
+    "push_body": "Recibe un aviso cuando algo te necesite.",
+    "push_enable": "Activar",
+    "push_disable": "Desactivar",
+    "push_enabled": "Activadas",
+    "push_blocked": "Las notificaciones están bloqueadas en los ajustes de tu navegador.",
+    "push_unsupported": "Este navegador no admite notificaciones.",
+    "push_unavailable": "Las notificaciones push aún no están configuradas en este servidor.",
+    "push_test": "Enviar notificación de prueba",
+    "push_test_sent": "Notificación de prueba enviada.",
+    "push_error": "Algo salió mal. Inténtalo de nuevo."
+  }
 }

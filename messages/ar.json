@@ -694,5 +694,31 @@
     "sign_out": "تسجيل الخروج"
   },
   "records": { "types": "الأنواع", "add": "إضافة", "no_types": "لا توجد أنواع بعد." },
-  "uploads": { "review": "مراجعة ما وجدناه", "details": "تفاصيل الاستخراج الكاملة" }
+  "uploads": { "review": "مراجعة ما وجدناه", "details": "تفاصيل الاستخراج الكاملة" },
+  "pwa": {
+    "app_description": "عقلك الثاني ويدك اليمنى.",
+    "install_title": "تثبيت Oria",
+    "install_body": "أضف Oria إلى شاشتك الرئيسية للوصول السريع.",
+    "install_action": "تثبيت",
+    "install_dismiss": "ليس الآن",
+    "ios_title": "أضف Oria إلى الشاشة الرئيسية",
+    "ios_intro": "ثبّت Oria في خطوتين:",
+    "ios_step_share": "اضغط على زر المشاركة في Safari.",
+    "ios_step_add": "اختر «أضف إلى الشاشة الرئيسية».",
+    "ios_done": "حسناً",
+    "offline_title": "أنت غير متصل",
+    "offline_body": "تحتاج Oria إلى اتصال لعرض أحدث بياناتك. أعد الاتصال وسنكمل من حيث توقفت.",
+    "offline_retry": "حاول مرة أخرى",
+    "push_title": "إشعارات الدفع",
+    "push_body": "احصل على تنبيه عندما يحتاجك شيء ما.",
+    "push_enable": "تفعيل",
+    "push_disable": "إيقاف",
+    "push_enabled": "مفعّلة",
+    "push_blocked": "الإشعارات محظورة في إعدادات متصفحك.",
+    "push_unsupported": "هذا المتصفح لا يدعم الإشعارات.",
+    "push_unavailable": "لم يتم إعداد إشعارات الدفع على هذا الخادم بعد.",
+    "push_test": "إرسال إشعار تجريبي",
+    "push_test_sent": "تم إرسال الإشعار التجريبي.",
+    "push_error": "حدث خطأ ما. حاول مرة أخرى."
+  }
 }
