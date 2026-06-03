@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { onboardingNextStep } from "@/app/onboarding/actions";
 import { reshapeGeneratePatch, reshapeExecutePatch } from "./actions";
 import { PatchPreview } from "@/components/onboarding/patch-preview";
+import { BuildAnimation } from "@/components/onboarding/build-animation";
 import type { Answer, EngineStep, PlanPatch } from "@/lib/onboarding/types";
 
 type Phase = "intent" | "asking" | "preview" | "building" | "error";
@@ -27,6 +28,9 @@ export function ReshapeClient({ initialIntent }: { initialIntent?: string }) {
   const [question, setQuestion] = useState<Question | null>(null);
   const [patch, setPatch] = useState<PlanPatch | null>(null);
   const startedFor = useRef<string | null>(null);
+  // Reshape build choreography + execution run in parallel (see preview-client).
+  const animDone = useRef(false);
+  const execOk = useRef<boolean | null>(null);
 
   function handleStep(step: EngineStep, theIntent: string, soFar: Answer[]) {
     if (step.done) {
@@ -57,16 +61,24 @@ export function ReshapeClient({ initialIntent }: { initialIntent?: string }) {
     );
   }
 
+  function maybeFinish() {
+    if (!animDone.current || execOk.current === null) return;
+    if (execOk.current) {
+      router.push("/dashboard");
+      router.refresh();
+    } else {
+      setPhase("error");
+    }
+  }
+
   function build() {
     if (!patch) return;
+    animDone.current = false;
+    execOk.current = null;
     setPhase("building");
     void reshapeExecutePatch(patch).then((r) => {
-      if (r.ok) {
-        router.push("/dashboard");
-        router.refresh();
-      } else {
-        setPhase("error");
-      }
+      execOk.current = r.ok;
+      maybeFinish();
     });
   }
 
@@ -163,7 +175,18 @@ export function ReshapeClient({ initialIntent }: { initialIntent?: string }) {
             <Spinner label={t("designing")} />
           )
         ) : phase === "building" ? (
-          <Spinner label={t("building")} />
+          <BuildAnimation
+            items={[
+              ...(patch?.creates.map((c) => c.name) ?? []),
+              ...(patch?.section_adds.map((a) => a.section.title) ?? []),
+            ]}
+            accent={patch?.creates[0]?.accent_color ?? null}
+            durationMs={4500}
+            onComplete={() => {
+              animDone.current = true;
+              maybeFinish();
+            }}
+          />
         ) : (
           <p className="rounded-lg border border-claret/30 bg-claret/5 px-3 py-2 text-[12.5px] text-claret">
             {t("error")}

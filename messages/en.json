@@ -1,4 +1,10 @@
 {
+  "build_anim": {
+    "phase1": "Setting up your spaces...",
+    "phase2": "Tailoring sections to how you work...",
+    "phase3": "Choosing your colors and starter questions...",
+    "phase4": "Almost there..."
+  },
   "new_workspace": {
     "intro": "A workspace is its own operational context. Choose a starting point, then name it.",
     "pick": "Choose a starting point",

@@ -1,4 +1,10 @@
 {
+  "build_anim": {
+    "phase1": "Preparando tus espacios...",
+    "phase2": "Adaptando las secciones a tu forma de trabajar...",
+    "phase3": "Eligiendo tus colores y preguntas iniciales...",
+    "phase4": "Casi listo..."
+  },
   "new_workspace": {
     "intro": "Un espacio de trabajo es su propio contexto operativo. Elige un punto de partida y ponle nombre.",
     "pick": "Elige un punto de partida",

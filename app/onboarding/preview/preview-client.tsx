@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Wordmark } from "@/components/brand/wordmark";
 import { ReasoningIndicator } from "@/components/ai/reasoning-indicator";
+import { BuildAnimation } from "@/components/onboarding/build-animation";
 import { generateOnboardingPlan, executeOnboardingPlan } from "../actions";
 import { EMPTY_USER_CONTEXT, type SetupPlan, type UserContext } from "@/lib/onboarding/types";
 import { CONTEXT_STORAGE_KEY } from "../conversation/conversation-client";
@@ -21,6 +22,11 @@ export function PreviewClient() {
   const [building, setBuilding] = useState(false);
   const [error, setError] = useState(false);
   const started = useRef(false);
+  // Build choreography + real execution run in parallel; we leave only when
+  // both have finished. animDone flips at the end of the animation; execOk
+  // holds the execution result (null while pending).
+  const animDone = useRef(false);
+  const execOk = useRef<boolean | null>(null);
 
   useEffect(() => {
     if (started.current) return;
@@ -69,32 +75,52 @@ export function PreviewClient() {
     });
   }
 
+  // Navigate (or surface an error) only when the animation and the real
+  // execution have both settled, so the crafted moment is never cut short and
+  // a slow build never lands the user on the dashboard early.
+  function maybeFinish() {
+    if (!animDone.current || execOk.current === null) return;
+    if (execOk.current) {
+      try {
+        sessionStorage.removeItem(CONTEXT_STORAGE_KEY);
+      } catch {
+        // ignore
+      }
+      router.push("/onboarding/link");
+    } else {
+      setError(true);
+      setBuilding(false);
+    }
+  }
+
   function build() {
     if (!plan) return;
+    animDone.current = false;
+    execOk.current = null;
     setBuilding(true);
     setError(false);
     void executeOnboardingPlan(plan).then((r) => {
-      if (r.ok) {
-        try {
-          sessionStorage.removeItem(CONTEXT_STORAGE_KEY);
-        } catch {
-          // ignore
-        }
-        router.push("/onboarding/link");
-      } else {
-        setError(true);
-        setBuilding(false);
-      }
+      execOk.current = r.ok;
+      maybeFinish();
     });
   }
 
-  if (building) {
+  if (building && plan) {
+    const sectionNames = plan.spaces.flatMap((s) =>
+      s.workspaces.flatMap((w) => w.sections.map((sec) => sec.title)),
+    );
+    const accent = plan.spaces[0]?.workspaces[0]?.accent_color ?? null;
     return (
       <Shell>
-        <div className="flex flex-col items-center gap-4 text-center">
-          <span className="h-6 w-6 animate-spin rounded-full border-2 border-line-strong border-t-ink" aria-hidden />
-          <p className="text-[15px] text-ink-soft">{t("preview_building")}</p>
-        </div>
+        <BuildAnimation
+          items={sectionNames}
+          accent={accent}
+          durationMs={7000}
+          onComplete={() => {
+            animDone.current = true;
+            maybeFinish();
+          }}
+        />
       </Shell>
     );
   }
