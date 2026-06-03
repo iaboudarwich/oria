@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
@@ -27,6 +27,32 @@ export const metadata: Metadata = {
   description:
     "Drop anything into Oria. We organize it. A calm memory for households, families, assistants, and teams.",
   metadataBase: new URL("https://oria.app"),
+  applicationName: "Oria",
+  appleWebApp: {
+    capable: true,
+    title: "Oria",
+    statusBarStyle: "default",
+  },
+  icons: {
+    apple: "/icons/apple-touch-icon.png",
+  },
+  other: {
+    // Next emits the modern `mobile-web-app-capable`; older iOS still honors
+    // the apple-prefixed name, so emit it explicitly too.
+    "apple-mobile-web-app-capable": "yes",
+  },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  // Let the app draw under the iOS notch/home indicator in standalone mode.
+  viewportFit: "cover",
+  // Status bar / toolbar color tracks the canvas token in each scheme.
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f7f5f0" },
+    { media: "(prefers-color-scheme: dark)", color: "#0f0e0d" },
+  ],
 };
 
 export default async function RootLayout({
