@@ -123,7 +123,7 @@ export function ContextEditor({
               defaultValue={style}
               maxLength={40}
               placeholder="executive · monthly brief · detailed"
-              className="block h-9 w-full rounded-md border border-line bg-canvas/40 px-2.5 text-[13px] text-ink placeholder:text-ink-faint outline-none focus:bg-canvas"
+              className="block h-9 w-full max-w-xs rounded-md border border-line bg-canvas/40 px-2.5 text-[13px] text-ink placeholder:text-ink-faint outline-none focus:bg-canvas"
             />
           </Field>
 

@@ -192,7 +192,7 @@ function Field({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="block h-10 w-full rounded-lg border border-line-strong bg-surface px-3 text-[13px] text-ink placeholder:text-ink-faint outline-none focus:border-ink"
+        className="block h-10 w-full max-w-lg rounded-lg border border-line-strong bg-surface px-3 text-[13px] text-ink placeholder:text-ink-faint outline-none focus:border-ink"
       />
       <span className="mt-1 block text-[11.5px] text-ink-faint">{hint}</span>
     </label>
