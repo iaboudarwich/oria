@@ -18,6 +18,30 @@ Oria connects to a user's accounts (Gmail, Calendar, Drive, WHOOP, banks, more),
 
 ---
 
+## Product north star
+
+The principles every product decision answers to. Read before deciding what to build.
+
+- **Merge and centralize, do not replace.** The goal is to pull everything into
+  one private view. Oria will absorb some small apps, functions, or habits as a
+  side effect, but replacement is never the mission. When a capability already
+  exists as a good third-party tool, prefer connecting to it over rebuilding it.
+- **"Whose brain" is not "whose data."** A user's bring-your-own
+  Claude / OpenAI / Gemini key only selects the model and quota; it never grants
+  data access. Data reaches Oria only through its own connectors or the user
+  forwarding it in. The provider seam carries prompts, not a data grant.
+- **Private by default, shared by scope.** Items are private. Sharing is scoped
+  to a circle, and a circle member sees only that circle's slice, never the
+  owner's wider world. Enforce this in RLS, not just in the UI.
+- **Correct at write time.** Creation is deduped on a stable key (one ingested
+  thing is one event/record), and every extracted entity files to its section.
+  The background self-audit round is the safety net, not the only defense.
+- **Plain language always** (principle 19): every user-facing string reads as
+  plain language a non-technical person understands, no jargon, no raw provider
+  errors.
+
+---
+
 ## 2. Stack
 
 - **Frontend:** Next.js (App Router) on Vercel. PWA from Round 15 onward. Capacitor wrap post-launch.
