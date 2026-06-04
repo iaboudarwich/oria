@@ -9,6 +9,8 @@ import { isTokenCryptoConfigured } from "@/lib/security/token-crypto";
 import { ConnectionsPanel } from "./connections-panel";
 import { CloudServicesPanel } from "./cloud-services-panel";
 import { MicrosoftServicesPanel } from "./microsoft-services-panel";
+import { ConnectButton } from "./connect-privacy-gate";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 /**
  * Settings -> Connections, the two-zone hub (Round 14.5 F1).
@@ -37,14 +39,16 @@ export async function ConnectionsZones({ userId, notice }: { userId: string; not
   const googleOk = isGoogleOAuthConfigured() && crypto;
   const msOk = isMicrosoftOAuthConfigured() && crypto;
 
-  const [gmail, outlook, cal, drive, ocal, onedrive] = await Promise.all([
+  const [gmail, outlook, cal, drive, ocal, onedrive, ackAt] = await Promise.all([
     listGmailConnections(userId),
     listOutlookConnections(userId),
     listCloudConnectionsByService(userId, "calendar"),
     listCloudConnectionsByService(userId, "drive"),
     listCloudConnectionsByService(userId, "outlook_calendar"),
     listCloudConnectionsByService(userId, "onedrive"),
+    readConnectPrivacyAck(userId),
   ]);
+  const privacyAcknowledged = ackAt !== null;
   const has = (a: { length: number }) => a.length > 0;
   const anyConnected =
     has(gmail) || has(outlook) || has(cal) || has(drive) || has(ocal) || has(onedrive);
@@ -102,12 +106,11 @@ export async function ConnectionsZones({ userId, notice }: { userId: string; not
               </div>
               <div className="mt-3">
                 {item.available && item.href ? (
-                  <a
+                  <ConnectButton
                     href={item.href}
-                    className="inline-flex h-9 items-center rounded-[10px] bg-ink px-3 text-[12.5px] font-medium text-surface transition-base hover:bg-ink-soft"
-                  >
-                    {t("connect")}
-                  </a>
+                    acknowledged={privacyAcknowledged}
+                    label={t("connect")}
+                  />
                 ) : (
                   <span className="inline-flex items-center rounded-md bg-canvas px-2 py-1 text-[11px] text-ink-faint">
                     {t("soon")}
@@ -120,4 +123,19 @@ export async function ConnectionsZones({ userId, notice }: { userId: string; not
       </section>
     </div>
   );
+}
+
+/** Whether the user has acknowledged the privacy step before connecting. */
+async function readConnectPrivacyAck(userId: string): Promise<string | null> {
+  try {
+    const admin = createAdminClient();
+    const { data } = await admin
+      .from("profiles")
+      .select("connect_privacy_ack_at")
+      .eq("id", userId)
+      .maybeSingle();
+    return (data?.connect_privacy_ack_at as string | null) ?? null;
+  } catch {
+    return null;
+  }
 }
