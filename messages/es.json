@@ -820,7 +820,9 @@
     "expand": "Expandir barra lateral",
     "collapse": "Contraer barra lateral",
     "smart_section": "Sección inteligente",
-    "today": "Hoy"
+    "today": "Hoy",
+    "more": "Más",
+    "primary_nav": "Navegación principal"
   },
   "user_menu": {
     "account": "Cuenta",

@@ -820,7 +820,9 @@
     "expand": "توسيع الشريط الجانبي",
     "collapse": "طي الشريط الجانبي",
     "smart_section": "قسم ذكي",
-    "today": "اليوم"
+    "today": "اليوم",
+    "more": "المزيد",
+    "primary_nav": "التنقل الرئيسي"
   },
   "user_menu": {
     "account": "الحساب",

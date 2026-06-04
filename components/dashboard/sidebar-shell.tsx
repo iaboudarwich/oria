@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { Sidebar, type SidebarProps } from "@/components/dashboard/sidebar";
+import { BottomTabBar } from "@/components/dashboard/bottom-tab-bar";
 
 const SIDEBAR_COOKIE = "oria_sidebar";
 const SECTIONS_COOKIE = "oria_sections";
@@ -38,6 +39,10 @@ export function SidebarShell({
   const [sectionsOpen, setSectionsOpen] = useState(initialSectionsOpen);
   const [width, setWidth] = useState(initialWidth);
   const [dragging, setDragging] = useState(false);
+  // Mobile nav drawer open state, lifted here so the bottom tab bar's "More"
+  // tab can open the same drawer the Sidebar renders. Every drawer link calls
+  // onNavigate (close) on select, so a destination always dismisses it.
+  const [navOpen, setNavOpen] = useState(false);
   // Mirror width into a ref so the pointerup handler can read the *latest*
   // value at the end of a drag without re-binding listeners every render.
   const widthRef = useRef(initialWidth);
@@ -107,6 +112,8 @@ export function SidebarShell({
         onToggle={toggleCollapsed}
         sectionsOpen={sectionsOpen}
         onToggleSections={toggleSectionsOpen}
+        mobileOpen={navOpen}
+        onMobileOpenChange={setNavOpen}
       />
 
       {/* Drag handle. Only visible on lg+ and only when expanded. Sits at
@@ -137,11 +144,16 @@ export function SidebarShell({
         <main
           id="main-content"
           tabIndex={-1}
-          className="mx-auto max-w-[1200px] px-4 pb-safe-bottom outline-none sm:px-6 lg:px-10"
+          // Extra bottom padding on mobile so the fixed bottom tab bar (56px +
+          // safe area) never covers content; desktop has no tab bar.
+          className="mx-auto max-w-[1200px] px-4 pb-[calc(72px+env(safe-area-inset-bottom))] outline-none sm:px-6 lg:px-10 lg:pb-16"
         >
           {children}
         </main>
       </div>
+
+      {/* Mobile primary nav. Hidden on lg+ (the rail is always visible there). */}
+      <BottomTabBar onMore={() => setNavOpen(true)} />
     </div>
   );
 }

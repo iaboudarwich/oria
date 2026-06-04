@@ -820,7 +820,9 @@
     "expand": "Expand sidebar",
     "collapse": "Collapse sidebar",
     "smart_section": "Smart Section",
-    "today": "Today"
+    "today": "Today",
+    "more": "More",
+    "primary_nav": "Primary navigation"
   },
   "user_menu": {
     "account": "Account",

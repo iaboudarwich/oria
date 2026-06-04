@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Wordmark } from "@/components/brand/wordmark";
 import {
@@ -21,7 +21,6 @@ import {
   HomeIcon,
   InboxIcon,
   LinkIcon,
-  MenuIcon,
   PersonIcon,
   PlaneIcon,
   PropertiesIcon,
@@ -164,6 +163,10 @@ export type SidebarProps = {
   onToggle?: () => void;
   sectionsOpen?: boolean;
   onToggleSections?: () => void;
+  /** Mobile drawer open state, lifted to SidebarShell so the bottom tab bar's
+   *  "More" tab can open it. Falls back to internal state if not provided. */
+  mobileOpen?: boolean;
+  onMobileOpenChange?: (open: boolean) => void;
 };
 
 const BUILTIN_ICONS: Record<string, React.ComponentType<{ size?: number }>> = {
@@ -207,11 +210,19 @@ export function Sidebar({
   onToggle,
   sectionsOpen = true,
   onToggleSections,
+  mobileOpen,
+  onMobileOpenChange,
 }: SidebarProps) {
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = mobileOpen ?? internalOpen;
   const pathname = usePathname();
   const t = useTranslations("sidebar");
-  const close = () => setOpen(false);
+  // Stable closer: onMobileOpenChange is SidebarShell's setNavOpen (a stable
+  // useState setter), so the Escape effect doesn't churn each render.
+  const close = useCallback(() => {
+    if (onMobileOpenChange) onMobileOpenChange(false);
+    else setInternalOpen(false);
+  }, [onMobileOpenChange]);
 
   // Resolve a spec to a display row. The Records area (/dashboard/things) uses
   // the per-space label (custom, or the resolved default); everything else
@@ -226,26 +237,19 @@ export function Sidebar({
 
   useEffect(() => {
     if (!open) return;
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && close();
     document.addEventListener("keydown", onKey);
     document.body.style.overflow = "hidden";
     return () => {
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = "";
     };
-  }, [open]);
+  }, [open, close]);
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className="fixed left-4 top-3 z-40 inline-flex h-9 w-9 items-center justify-center rounded-xl border border-line bg-surface-raised text-ink-muted lg:hidden"
-        aria-label={t("open_nav")}
-      >
-        <MenuIcon />
-      </button>
-
+      {/* Mobile nav is reached via the bottom tab bar's "More" tab (which lifts
+          this drawer open), so there is no separate floating hamburger. */}
       {open ? (
         <div
           className="fixed inset-0 z-40 bg-ink/30 backdrop-blur-sm lg:hidden animate-fade-in"
