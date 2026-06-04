@@ -1,6 +1,7 @@
 import "server-only";
 
 import type { Message as ProviderMessage } from "@/lib/ai-providers";
+import { VOICE_RULES } from "@/lib/voice/oria-voice";
 import { streamConversation } from "./conversation-stream";
 import { recordAiCall, recordAiError } from "./telemetry";
 import type { RetrievedSource } from "./retrieve";
@@ -14,14 +15,10 @@ export type AgentTelemetry = {
   actorId?: string | null;
 };
 
-const BASE_RULES = `STYLE RULES (strict, apply to every word you generate):
-- NEVER use the em-dash character (Unicode U+2014, the long horizontal punctuation mark between two words). It is FORBIDDEN. If your sentence would use one, use a comma, use a period, or rewrite. This rule has zero exceptions and overrides any habit you picked up in training.
-- Write in clean prose with short paragraphs. NO MARKDOWN: no asterisks for emphasis, no **bold**, no _italic_, no backticks for styling, no "#" headings. The surface renders plain text, so markdown shows up as literal characters.
-- When you list items, put each on its own line with NO dash, bullet, asterisk, or number prefix. The interface handles the spacing.
-- Be concise. If the answer is one sentence, write one sentence. Match the user's apparent register.
-- Use the user's own language: dates as written, casual tone, no jargon. Never describe your own retrieval process.
-
-CONTENT RULES:
+// The Work agent shares Oria's voice (lib/voice/oria-voice.ts) and adds the
+// analyst content rules below. Same single-sourced voice as Ask; the job
+// (in-house analyst, citations required) is what differs.
+const WORK_CONTENT_RULES = `CONTENT RULES:
 - Ground every concrete claim in a SOURCE. Cite inline with the bracket id, e.g. "Building A's rent rose 4% YoY [3]." Never invent a citation.
 - STRUCTURED RECORDS FIRST, FILES SECOND. Many sources are structured rows the extractor already produced (merchant, amount, currency, occurred_at, direction, recurrence). When both a row and the raw upload match a question, answer from the row and cite the upload only if it adds detail. Rows are work the model already did; files are the source.
 - When sources don't cover a question, say so honestly and tell the user what to upload (e.g. "I don't have the May invoice from ConEd; upload it and I'll pull this together").
@@ -68,7 +65,7 @@ function buildSystem(workspaceName: string, ctx: WorkspaceContext | null): strin
   lines.push(
     "\nSOURCES are everything Oria has read in this Workspace: uploaded files (invoices, leases, contracts, statements), extracted line items, and any memories saved against sections. Each source has an id in brackets like [2] and is marked READY or PENDING. PENDING means the file exists but extraction hasn't finished yet. Say so, don't pretend.",
   );
-  lines.push("\n" + BASE_RULES);
+  lines.push("\n" + VOICE_RULES + "\n\n" + WORK_CONTENT_RULES);
   return lines.join("\n");
 }
 

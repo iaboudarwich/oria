@@ -157,7 +157,22 @@ people/vehicles/properties area; Trackables = the renewals feature.
 
 ## 6. Voice layer
 
-All LLM output is shaped by the voice rules in `docs/voice/oria-voice.md`, applied through the AI seam (`app/api/ask/route.ts` + `lib/ai-providers/`). Read that doc before editing voice config.
+All user-facing LLM output is shaped by one canonical voice block, `VOICE_RULES`
+in `lib/voice/oria-voice.ts` (derived from `docs/voice/oria-voice.md`). That
+module is the SINGLE SOURCE OF TRUTH (Round 14.7): Ask (`lib/ai/agent.ts`), the
+Work agent (`lib/ai/work-agent.ts`), and the daily routines + journal
+(`lib/daily/generate.ts`) all import `VOICE_RULES` and append their own content
+rules. No surface keeps its own copy of the voice. The same block reaches every
+provider intact because system-prompt handling is normalized once in
+`lib/ai-providers/system-prompt.ts` (Anthropic `system` field, OpenAI system
+message, Gemini / o-series folded into the first user turn), so Anthropic /
+OpenAI / Gemini yield the same voice and structure for the same request.
+
+`lib/voice/oria-voice.ts` also exports `BANNED_PHRASES` + `findBannedPhrases`
+(the anti-slop guard) and `sweepEmDash` (the post-hoc em-dash safety net for
+non-streamed generations). Edit `docs/voice/oria-voice.md` and `VOICE_RULES`
+together. Infrastructure AI (extraction, classifiers) is NOT voice-bearing and
+deliberately does not import the voice block. Read the doc before editing voice.
 
 Hard bans (these never appear in user-facing copy from any model):
 - em-dashes
@@ -293,8 +308,9 @@ Weekly Review, Yesterday Recap, Pre-Meeting Prep, and custom. Defaults are
 seeded per user in their primary space on first cron pass. Pre-Meeting Prep is
 event-driven (`last_ref_id` guards against re-prepping the same meeting). Output
 text is generated through the Conversation AI seam (`lib/daily/generate.ts`,
-which imports the exported `BASE_RULES` voice block from `lib/ai/agent.ts`) and
-swept for em-dashes as a safety net. Delivered to Today + generic push.
+which imports `VOICE_RULES` from `lib/voice/oria-voice.ts`, see §6) and swept for
+em-dashes via the shared `sweepEmDash` as a safety net. Delivered to Today +
+generic push.
 
 **Daily Journal** (`daily_journals`, unique per user/space/local-day). Written
 at 21:00 local through the seam; the unique key makes the cron idempotent.

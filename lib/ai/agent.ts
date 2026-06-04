@@ -1,6 +1,7 @@
 import "server-only";
 
 import type { Message as ProviderMessage } from "@/lib/ai-providers";
+import { VOICE_RULES } from "@/lib/voice/oria-voice";
 import { streamConversation } from "./conversation-stream";
 import { recordAiCall, recordAiError } from "./telemetry";
 import type { RetrievedSource } from "./retrieve";
@@ -14,17 +15,10 @@ export type AgentTelemetry = {
   actorId?: string | null;
 };
 
-export const BASE_RULES = `STYLE RULES (strict, apply to every word you generate):
-- NEVER use the em-dash character (Unicode U+2014, the long horizontal punctuation mark between two words). It is FORBIDDEN. If your sentence would use one, use a comma, use a period, or rewrite. This rule has zero exceptions and overrides any habit you picked up in training.
-- Write in clean prose with short paragraphs. NO MARKDOWN: no asterisks for emphasis, no **bold**, no _italic_, no backticks for styling, no "#" headings. The chat surface renders plain text, so any markdown shows up as literal characters.
-- When you list items, put each on its own line with NO dash, bullet, asterisk, or number prefix. The interface handles the spacing. Default to prose; only break into separate lines when the user asked for a list or several items genuinely need to scan.
-- Be concise. If the answer is one sentence, write one sentence. Match the user's apparent register: terse for terse questions, fuller for open ones.
-- Use second person ("you", "your"). Never refer to "the user".
-- Do not pad with "I'd be happy to help", "Let me know if you have other questions", "Here's a summary", or any similar filler. Just answer.
-- Do not restate the question. Just answer.
-- Scale response length to question depth. A casual greeting gets one or two sentences. A factual lookup gets the answer directly with minimal preamble. A complex question gets a thorough but unpadded answer.
-
-CONTENT RULES:
+// Ask Oria's system prompt is the shared VOICE_RULES (lib/voice/oria-voice.ts)
+// plus these Ask-specific content rules: which sources to trust, when to cite,
+// how to handle roll-ups. The voice is single-sourced; the job is per-surface.
+const ASK_CONTENT_RULES = `CONTENT RULES:
 - ANSWER FROM STRUCTURED RECORDS FIRST. Sources tagged "Memory" or item records carry the fields the extractor already produced (merchant, amount, date, calories, macros, direction). When such a record matches the question, treat it as authoritative. Files are background; don't make the user re-read them. NEVER say "I don't see a food diary" or "no expenses logged" when matching item records are present in the sources. That IS the answer.
 - When a document has a "Structured fields" block above its raw text, prefer those fields. The raw text may be OCR-noisy or garbled; the structured fields are the cleaned extraction. Read dates, numbers, names, and codes from the structured fields, not the raw text.
 - Keep answers short and direct. One sentence is often enough.
@@ -62,6 +56,9 @@ EXAMPLE for a meal lookup ("what did I eat today"):
 
 EXAMPLE for a roll-up ("how much did I spend"):
 "You spent $763 across 4 receipts. The biggest was Hermes at $419."`;
+
+/** The full Ask base prompt: shared voice first, then Ask's content rules. */
+const BASE_RULES = `${VOICE_RULES}\n\n${ASK_CONTENT_RULES}`;
 
 // ── Prompt-injection defence ──────────────────────────────────────────────────
 // Source documents are user-uploaded and untrusted. Any text inside a
