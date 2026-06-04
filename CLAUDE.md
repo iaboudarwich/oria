@@ -648,6 +648,46 @@ composer (`work-agent-chat`). Use it for any new text composer or log-by-text
 field. a11y: real `<textarea>` (labelled, IME, keyboard), grows downward with no
 horizontal shift, RTL inherited.
 
+## 19. Mobile nav, calendar agenda, sidebar dedupe, account menu (Round 16.5)
+
+**Mobile primary nav is a bottom tab bar.** `components/dashboard/bottom-tab-bar.tsx`
+(lg:hidden, fixed bottom, `glass`, `pb-safe`) shows the top destinations (Today,
+Ask, Calendar, Uploads) plus a More tab. More opens the side-rail DRAWER, whose
+open state is lifted into `SidebarShell` (`navOpen`) so the tab and the rail
+share it; the old floating hamburger is gone. The drawer auto-dismisses on
+navigation two ways (per-link `onNavigate` close + a `pathname` effect in the
+shell). The rail is unchanged on lg+. Main content gets mobile bottom padding so
+the bar never covers it. 56px targets, RTL-correct (logical flex, non-directional
+glyphs).
+
+**Calendar is agenda-first.** The default view is `list` (the "what's next"
+agenda); the month/week/day/year grid stays behind the Calendar toggle. The
+agenda adopts the 14.8 density preference via `stack-density` (reads
+`--density-stack` from the shell `data-density`). The mode bar, filter "All"
+labels, and the God's-Eye scope copy are localized (`calendar` namespace) and
+use logical properties (`ms-auto`) for RTL. Source filters (events / reminders /
+bills) already exist; a CIRCLE filter is NOT built (Round 21.5) because no
+`circle_id` exists in schema. The clean hook: a Circle is an org of `kind:
+"circle"` (a space), so it will appear in the existing per-space pill row
+automatically with no rework (comment marks the spot in `calendar-view.tsx`).
+
+**Sidebar section DEDUPE RULE.** A section name renders ONCE in the rail,
+resolved case-insensitively on the display name. When entries collide by name,
+the canonical one wins by precedence **smart > builtin > review > custom** (a
+curated/aggregation page or a built-in section beats a same-named user/seeded
+custom section); order is otherwise preserved. Pure helper
+`lib/sidebar/dedupe-sections.ts` (`dedupeSidebarSections`), applied in the
+dashboard layout BEFORE the rail's length cap. This is general by name, not
+hardcoded to Health/Bills; it also collapses the personal template's other
+seeded duplicates (Travel, Personal), which carry no data. (Root cause: the
+personal workspace template seeds custom sections that shadow the smart Bills
+page and the built-in sections.)
+
+**Account menu order.** The avatar menu (`user-menu.tsx`) is Settings, then
+"Tell Oria about you" (the reshape/onboarding-context flow, `reshape` key
+relabeled), then space management (Members/Team), then Admin (admin only), then
+Report; Sign out is pinned last in its own group. Plain-language labels.
+
 ---
 
 End of brief. Update this file when a principle changes, not when code changes.
