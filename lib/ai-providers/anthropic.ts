@@ -4,6 +4,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { embedQueryViaService } from "@/lib/extraction/service";
 import { modelFor, ANTHROPIC_THINKING_BUDGET } from "./model-map";
 import { mapErrorToStatus, errorStatus, errorMessage } from "./errors";
+import { flattenSystem, nonSystemMessages } from "./system-prompt";
 import type {
   CompletionOptions,
   CompletionResult,
@@ -31,19 +32,18 @@ function toBlocks(content: string | ContentPart[]): string | AnthropicBlock[] {
   );
 }
 
-/** Split Oria's flat messages into Anthropic's (system, messages) shape. */
+/** Split Oria's flat messages into Anthropic's (system, messages) shape. The
+ *  system string comes from the shared normalization so it is byte-identical to
+ *  what the other providers receive. */
 function splitMessages(messages: Message[]): {
   system: string;
   msgs: { role: "user" | "assistant"; content: string | AnthropicBlock[] }[];
 } {
-  const system = messages
-    .filter((m) => m.role === "system")
-    .map((m) => (typeof m.content === "string" ? m.content : ""))
-    .filter(Boolean)
-    .join("\n\n");
-  const msgs = messages
-    .filter((m) => m.role !== "system")
-    .map((m) => ({ role: m.role as "user" | "assistant", content: toBlocks(m.content) }));
+  const system = flattenSystem(messages);
+  const msgs = nonSystemMessages(messages).map((m) => ({
+    role: m.role as "user" | "assistant",
+    content: toBlocks(m.content),
+  }));
   return { system, msgs };
 }
 

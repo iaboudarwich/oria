@@ -3,6 +3,7 @@ import "server-only";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { modelFor, EMBEDDING_MODEL } from "./model-map";
 import { mapErrorToStatus, errorStatus, errorMessage } from "./errors";
+import { flattenSystem } from "./system-prompt";
 import type {
   CompletionOptions,
   CompletionResult,
@@ -14,15 +15,6 @@ import type {
 
 /** One Gemini content part: text, or an inline (base64) image. */
 type GeminiPart = { text: string } | { inlineData: { mimeType: string; data: string } };
-
-/** Flatten message content to text only (used for the system turn). */
-function asText(content: string | ContentPart[]): string {
-  if (typeof content === "string") return content;
-  return content
-    .map((p) => (p.type === "text" ? p.text : ""))
-    .filter(Boolean)
-    .join("\n");
-}
 
 /**
  * Map Oria's message content to Gemini parts. Text becomes a text part; an
@@ -50,7 +42,7 @@ function partsFor(content: string | ContentPart[]): GeminiPart[] {
  * the "model" role. Image parts are preserved per turn.
  */
 function toGeminiContents(messages: Message[]): { role: "user" | "model"; parts: GeminiPart[] }[] {
-  const system = messages.filter((m) => m.role === "system").map((m) => asText(m.content)).join("\n\n");
+  const system = flattenSystem(messages);
   const turns = messages.filter((m) => m.role !== "system");
   const out: { role: "user" | "model"; parts: GeminiPart[] }[] = [];
   let systemInjected = false;

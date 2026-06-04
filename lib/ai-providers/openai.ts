@@ -3,6 +3,7 @@ import "server-only";
 import OpenAI from "openai";
 import { modelFor, EMBEDDING_MODEL, openaiDeepReasoningModel } from "./model-map";
 import { mapErrorToStatus, errorStatus, errorMessage } from "./errors";
+import { foldSystemIntoFirstUser } from "./system-prompt";
 import type {
   CompletionOptions,
   CompletionResult,
@@ -42,28 +43,10 @@ function toOpenAIMessages(messages: Message[]): OpenAI.Chat.Completions.ChatComp
   });
 }
 
-/** o-series models reject the system role; fold system text into the first user
- *  turn (the documented workaround). */
+/** o-series models reject the system role; fold the system text into the first
+ *  user turn (the documented workaround) via the shared normalization. */
 function collapseSystemForOSeries(messages: Message[]): Message[] {
-  const system = messages
-    .filter((m) => m.role === "system")
-    .map((m) => (typeof m.content === "string" ? m.content : ""))
-    .filter(Boolean)
-    .join("\n\n");
-  const rest = messages.filter((m) => m.role !== "system");
-  if (!system) return rest;
-  const out = [...rest];
-  const i = out.findIndex((m) => m.role === "user");
-  if (i >= 0) {
-    const m = out[i];
-    out[i] =
-      typeof m.content === "string"
-        ? { role: "user", content: `${system}\n\n${m.content}` }
-        : { role: "user", content: [{ type: "text", text: system }, ...m.content] };
-  } else {
-    out.unshift({ role: "user", content: system });
-  }
-  return out;
+  return foldSystemIntoFirstUser(messages);
 }
 
 function toOpenAITools(tools: ToolDef[]): OpenAI.Chat.Completions.ChatCompletionTool[] {
