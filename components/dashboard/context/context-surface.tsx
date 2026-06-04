@@ -1,5 +1,8 @@
 import { getTranslations } from "next-intl/server";
 import type { ContextSurface as ContextSurfaceData } from "@/lib/daily/context-surface";
+import { GlassCard } from "@/components/ui/glass-card";
+import { Eyebrow } from "@/components/ui/eyebrow";
+import { HeroNumber } from "@/components/ui/hero-number";
 import { ContextChart } from "./context-chart";
 import { ContextTicker } from "./context-ticker";
 
@@ -25,16 +28,11 @@ export async function ContextSurface({ surface }: { surface: ContextSurfaceData 
     : null;
 
   return (
-    <section className="rounded-2xl border border-line bg-surface-raised p-4">
+    <GlassCard>
       <div className="flex items-baseline justify-between gap-3">
         <div>
-          <p className="text-[12px] font-medium uppercase tracking-wide text-ink-faint">
-            {t(`title_${archetype}`)}
-          </p>
-          <p className="mt-1 flex items-baseline gap-2">
-            <span className="text-[26px] font-semibold leading-none text-ink">{hero.stat}</span>
-            <span className="text-[12.5px] text-ink-muted">{t(hero.statLabel)}</span>
-          </p>
+          <Eyebrow>{t(`title_${archetype}`)}</Eyebrow>
+          <HeroNumber className="mt-1.5" value={hero.stat} label={t(hero.statLabel)} />
         </div>
       </div>
 
@@ -55,6 +53,6 @@ export async function ContextSurface({ surface }: { surface: ContextSurfaceData 
       ) : (
         <p className="mt-3 text-[12.5px] text-ink-faint">{t("empty")}</p>
       )}
-    </section>
+    </GlassCard>
   );
 }
