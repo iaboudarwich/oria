@@ -897,5 +897,26 @@
     "category_contract": "Contrats",
     "category_warranty": "Garanties",
     "category_other": "Autre"
+  },
+  "connectPrivacy": {
+    "header": "Avant de connecter quoi que ce soit, voici à quoi vous attendre.",
+    "do_title": "Ce que fait Oria",
+    "do_1": "Lit les comptes que vous connectez, pour trouver l'essentiel.",
+    "do_2": "Conserve ce qu'il extrait, chiffré au repos.",
+    "do_3": "Utilise l'IA pour repérer des tendances et anticiper ce qui arrive.",
+    "do_4": "Journalise chaque action. Vous pouvez consulter le journal.",
+    "do_5": "Vous laisse déconnecter ou supprimer, à tout moment.",
+    "never_title": "Ce qu'Oria ne fait jamais",
+    "never_1": "Vendre vos données. Jamais.",
+    "never_2": "Entraîner des modèles d'IA sur vos contenus.",
+    "never_3": "Lire les expéditeurs que vous marquez confidentiels.",
+    "never_4": "Envoyer, supprimer ou modifier quoi que ce soit sans demander.",
+    "never_5": "Partager quoi que ce soit avec des annonceurs.",
+    "footer": "Détails complets sur heyoria.com/trust. Vous pouvez changer d'avis à tout moment dans les Réglages.",
+    "continue": "J'ai compris, continuer",
+    "cancel": "Pas maintenant"
+  },
+  "askLimit": {
+    "reached": "Vous avez atteint votre limite Ask Oria du jour. Elle se réinitialise dans environ {hours} heures. Connectez votre propre clé IA dans les Réglages pour des questions illimitées."
   }
 }

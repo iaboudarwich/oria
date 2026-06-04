@@ -897,5 +897,26 @@
     "category_contract": "Contracts",
     "category_warranty": "Warranties",
     "category_other": "Other"
+  },
+  "connectPrivacy": {
+    "header": "Before we connect anything, here is what to expect.",
+    "do_title": "What Oria does",
+    "do_1": "Reads the accounts you connect, to find what matters.",
+    "do_2": "Stores what it extracts, encrypted at rest.",
+    "do_3": "Uses AI to find patterns and surface what is coming.",
+    "do_4": "Logs every action it takes. You can see the log.",
+    "do_5": "Lets you disconnect or delete, anytime.",
+    "never_title": "What Oria never does",
+    "never_1": "Sell your data. Not now, not ever.",
+    "never_2": "Train AI models on your content.",
+    "never_3": "Read senders you mark confidential.",
+    "never_4": "Send, delete, or change anything without asking.",
+    "never_5": "Share anything with advertisers.",
+    "footer": "Full details at heyoria.com/trust. You can change your mind anytime in Settings.",
+    "continue": "I understand, continue",
+    "cancel": "Not now"
+  },
+  "askLimit": {
+    "reached": "You have reached today's Ask Oria limit. It resets in about {hours} hours. Connect your own AI key in Settings for unlimited questions."
   }
 }
