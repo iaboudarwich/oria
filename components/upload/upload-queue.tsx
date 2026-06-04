@@ -29,13 +29,18 @@ function newId(name: string): string {
  * show "Done". Non-blocking: callers can enqueue more files at any time.
  */
 export function useUploadQueue(opts: {
-  /** Build the multipart body for one file (section/smart-section tagging). */
-  buildFormData: (file: File) => FormData;
+  /** Build the multipart body for one file (section/smart-section tagging,
+   *  plus an optional group_id for a multi-image set). */
+  buildFormData: (file: File, groupId?: string) => FormData;
   /** Fired after each file reaches a terminal state (e.g. router.refresh). */
   onComplete?: () => void;
+  /** Fired once after every file of a given group has settled, so the caller
+   *  can kick off the one-shot group extraction. */
+  onGroupSettled?: (groupId: string) => void;
 }) {
   const [tasks, setTasks] = useState<UploadTask[]>([]);
   const fileMapRef = useRef<Map<string, File>>(new Map());
+  const groupMapRef = useRef<Map<string, string | undefined>>(new Map());
   const queueRef = useRef<string[]>([]);
   const runningRef = useRef(0);
 
@@ -95,9 +100,10 @@ export function useUploadQueue(opts: {
         runningRef.current -= 1;
         return;
       }
+      const groupId = groupMapRef.current.get(id);
       setPhase(id, "uploading");
       try {
-        const result = await uploadFile(optsRef.current.buildFormData(file));
+        const result = await uploadFile(optsRef.current.buildFormData(file, groupId));
         if (!result.ok) {
           setPhase(id, "error", result.error);
         } else {
@@ -110,7 +116,20 @@ export function useUploadQueue(opts: {
         setPhase(id, "error", "Upload failed");
       } finally {
         fileMapRef.current.delete(id);
+        groupMapRef.current.delete(id);
         runningRef.current -= 1;
+        // When this was the last in-flight upload of its group, the set has
+        // settled: tell the caller so the one-shot group extraction can run.
+        if (groupId) {
+          let stillActive = false;
+          for (const v of groupMapRef.current.values()) {
+            if (v === groupId) {
+              stillActive = true;
+              break;
+            }
+          }
+          if (!stillActive) optsRef.current.onGroupSettled?.(groupId);
+        }
         pumpRef.current();
       }
     },
@@ -130,10 +149,11 @@ export function useUploadQueue(opts: {
   }, [pump]);
 
   const enqueue = useCallback(
-    (files: File[]) => {
+    (files: File[], groupId?: string) => {
       const added: UploadTask[] = files.map((f) => {
         const id = newId(f.name);
         fileMapRef.current.set(id, f);
+        groupMapRef.current.set(id, groupId);
         queueRef.current.push(id);
         return { id, name: f.name, phase: "pending" as const };
       });

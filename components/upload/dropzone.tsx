@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useId, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { uploadFile } from "@/lib/data/upload-actions";
+import { createUploadGroup } from "@/lib/data/upload-group-actions";
 import { ArrowRightIcon, CameraIcon, CheckIcon, CloseIcon, UploadIcon } from "@/components/ui/icon";
 import { useUploadQueue, UploadQueue } from "@/components/upload/upload-queue";
 
@@ -68,13 +69,14 @@ export function Dropzone({
   const objectUrlRef = useRef<string | null>(null);
 
   const buildFormData = useCallback(
-    (file: File) => {
+    (file: File, groupId?: string) => {
       const fd = new FormData();
       fd.append("file", file);
       if (defaultSection) fd.append("section", defaultSection);
       if (defaultCustomSectionId)
         fd.append("custom_section_id", defaultCustomSectionId);
       if (smartSection) fd.append("smart_section", smartSection);
+      if (groupId) fd.append("group_id", groupId);
       return fd;
     },
     [defaultSection, defaultCustomSectionId, smartSection],
@@ -116,14 +118,18 @@ export function Dropzone({
   }, []);
 
   const handleFiles = useCallback(
-    (files: FileList | null) => {
+    async (files: FileList | null) => {
       if (!files || files.length === 0) return;
-      // One file keeps the note-capture flow; many go to the parallel queue.
+      // One file keeps the note-capture flow (unchanged). Several files dropped
+      // in one action become a related set: create a group, then enqueue them
+      // all stamped with its id so the extractor can reason across the set.
       if (files.length === 1) {
         pickFile(files[0]);
-      } else {
-        queue.enqueue(Array.from(files));
+        return;
       }
+      const arr = Array.from(files);
+      const { groupId } = await createUploadGroup();
+      queue.enqueue(arr, groupId ?? undefined);
     },
     [pickFile, queue],
   );

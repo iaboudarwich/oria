@@ -127,6 +127,10 @@ export async function uploadFile(formData: FormData): Promise<Result> {
       ? (smartHintRaw as "diet" | "bills")
       : null;
 
+  // Part of a multi-image set (one drop): the group extraction reads the whole
+  // set together, so a grouped upload defers its per-file extraction.
+  const groupId = String(formData.get("group_id") ?? "").trim() || null;
+
   const uploadId = crypto.randomUUID();
 
   // iPhone HEIC → JPEG. Convert before storage so signed-URL
@@ -291,6 +295,7 @@ export async function uploadFile(formData: FormData): Promise<Result> {
     custom_section_id: finalCustomId,
     title: bodyName,
     status: "received",
+    group_id: groupId,
     metadata: {
       content_hash: contentHash,
       ...(userDescription ? { user_description: userDescription } : {}),
@@ -345,18 +350,23 @@ export async function uploadFile(formData: FormData): Promise<Result> {
   //    hitting the serverless function timeout on large files.
   //    Development: keep running inline via after() so a local cron isn't
   //    needed and the feedback loop stays tight.
-  if (process.env.NODE_ENV === "production") {
-    await createJob({
-      organizationId: ctx.organization.id,
-      actorId: ctx.profile.id,
-      kind: "upload.extract",
-      uploadId,
-      context: { uploadId },
-    });
-  } else {
-    after(async () => {
-      await runProcessUploadSafely(uploadId, ctx.organization.id);
-    });
+  // Grouped uploads defer their per-file extraction: the group is read as one
+  // set once all its images have settled (a client trigger plus a cron
+  // fallback), so we do NOT enqueue the single-file job here.
+  if (!groupId) {
+    if (process.env.NODE_ENV === "production") {
+      await createJob({
+        organizationId: ctx.organization.id,
+        actorId: ctx.profile.id,
+        kind: "upload.extract",
+        uploadId,
+        context: { uploadId },
+      });
+    } else {
+      after(async () => {
+        await runProcessUploadSafely(uploadId, ctx.organization.id);
+      });
+    }
   }
 
   revalidatePath("/dashboard");

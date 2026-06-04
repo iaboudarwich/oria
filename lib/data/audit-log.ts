@@ -50,6 +50,10 @@ export type AuditAction =
   | "upload.download"
   | "upload.delete"
   | "upload.restore"
+  | "upload.group_created"
+  | "upload.group_extracted"
+  | "upload.group_confirmed"
+  | "upload.group_split"
   // Reminders
   | "reminder.created"
   | "reminder.deleted"
@@ -320,6 +324,10 @@ export function actionLabel(action: string): string {
     "upload.download":              "Downloaded an upload",
     "upload.delete":                "Deleted an upload",
     "upload.restore":               "Restored an upload",
+    "upload.group_created":         "Grouped images for one extraction",
+    "upload.group_extracted":       "Read a group of images together",
+    "upload.group_confirmed":       "Confirmed a grouped record",
+    "upload.group_split":           "Split a grouped record",
     "reminder.created":             "Created a reminder",
     "reminder.deleted":             "Deleted a reminder",
     "member.invite.created":        "Sent an invite",
