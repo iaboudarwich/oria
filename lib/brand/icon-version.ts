@@ -15,7 +15,7 @@
  * on the iOS Home Screen or the macOS dock; those only update after the app is
  * removed and re-added.
  */
-export const ICON_VERSION = "2";
+export const ICON_VERSION = "3";
 
 /** Append the icon cache-busting version to a static icon path. */
 export function versionedIcon(path: string): string {

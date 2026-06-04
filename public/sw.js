@@ -19,15 +19,15 @@
  * Registration is production-only and is wired from components/pwa/sw-register.
  */
 
-// Bumped to v2 with the icon cache-bust (keep in sync with ICON_VERSION in
+// Bumped to v3 with the serif "O" monogram (keep in sync with ICON_VERSION in
 // lib/brand/icon-version.ts). A new VERSION renames the caches, so activate
 // deletes the old ones and the icons are re-fetched fresh, never stale.
-const VERSION = "v2";
+const VERSION = "v3";
 const PRECACHE = `oria-precache-${VERSION}`;
 const RUNTIME = `oria-runtime-${VERSION}`;
 const OFFLINE_URL = "/offline";
 // Must match versionedIcon() in lib/brand/icon-version.ts.
-const ICON_VERSION = "2";
+const ICON_VERSION = "3";
 const iconUrl = (path) => `${path}?v=${ICON_VERSION}`;
 
 // Minimal app shell to precache so the offline fallback works on first failure.

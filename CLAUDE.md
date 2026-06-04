@@ -232,15 +232,21 @@ When a round prompt names a skill, read the SKILL.md at that path before writing
 
 Oria is an installable, offline-capable, push-ready PWA.
 
-**Icons.** Source is `public/logo.svg` (the "Oria" wordmark master), rendered
-pixel-accurate to `public/brand/oria-1024.png`. `scripts/generate-icons.mjs`
-(sharp) resizes that raster master onto the canvas field and emits
-`public/icons/` (192, 512, 512-maskable scaled into the safe zone, apple-touch
-180) plus `app/favicon.ico` (16/32/48). Re-run after a logo change. The brand is
-a horizontal wordmark with no emblem, so it is illegible at favicon (16px) and
-cramped under a circular maskable mask; a monogram for small-icon contexts is a
-pending brand decision (do not invent one). The in-app `Wordmark` component is
-still the hand-built "O" disc + sans "Oria" and has not been changed to match.
+**Icons.** The square icon mark is the serif "O" MONOGRAM, not the horizontal
+wordmark: a single "O" stays legible at 16px and survives a circular maskable
+crop, where the full "Oria" lockup could not. Source is
+`public/brand/monogram.svg`, the Newsreader capital "O" as a font-INDEPENDENT
+vector path (ink #0f0f0f), so `scripts/generate-icons.mjs` (sharp only, no font,
+no network) rasterizes it identically anywhere. It composites the "O" on the
+cream field at 0.66 of the frame for the square icons and 0.56 for the maskable
+(inside the 80% safe circle), emitting `public/icons/` (192, 512, maskable-512,
+apple-touch 180) plus `app/favicon.ico` (16/32/48). Re-run after a brand change.
+The monogram itself (and the wordmark lockup) is re-extracted from the live
+Newsreader outlines by `scripts/build-brand-assets.mjs` (dev-only: needs network
++ `npm i --no-save opentype.js`; it writes `monogram.svg`, the `public/logo.svg`
+lockup, and `lib/brand/wordmark-path.ts`). The full wordmark is the in-app
+`Wordmark` component (now serif, §17), used only in lockup contexts; the square
+contexts use this monogram.
 
 **Icon cache-busting.** Filenames stay constant across logo changes, so a `?v=`
 query busts stale copies. `lib/brand/icon-version.ts` (`ICON_VERSION` +
