@@ -88,6 +88,26 @@ export async function getProvider(
   return oriaDefaultAdapter();
 }
 
+/**
+ * True when the user has an ACTIVE connected (BYO) conversation provider. Such
+ * users self-pay their tokens, so cost-control limits on Oria's default key do
+ * not apply to them. Reads user_ai_connections directly; soft-fails to false
+ * (treat as Oria-default) so a hiccup never grants an unintended exemption.
+ */
+export async function userHasOwnProvider(userId: string): Promise<boolean> {
+  try {
+    const admin = createAdminClient();
+    const { data } = await admin
+      .from("user_ai_connections")
+      .select("status")
+      .eq("user_id", userId)
+      .maybeSingle();
+    return (data as { status?: string } | null)?.status === "active";
+  } catch {
+    return false;
+  }
+}
+
 /** Convenience: a non-streaming completion through the resolved provider. */
 export async function complete(
   userId: string,

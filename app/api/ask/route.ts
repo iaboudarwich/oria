@@ -11,8 +11,12 @@ import { prepareAskImages } from "@/lib/ai/ask-images";
 import { logAuditEvent } from "@/lib/data/audit-log";
 import { recordLearningEvent } from "@/lib/data/learning";
 import { recordSystemEvent } from "@/lib/data/system-events";
-import { checkDailyAskRequests } from "@/lib/data/quotas";
 import { rateLimit, RATE_PRESETS } from "@/lib/rate-limit";
+import { userHasOwnProvider } from "@/lib/ai-providers";
+import { checkAskDailyLimit, hoursUntilReset } from "@/lib/ai/ask-limit";
+import { recordPattern } from "@/lib/patterns/patterns";
+import { getLocalParts, getOriaTzCookieName } from "@/lib/utils/tz";
+import { getTranslations } from "next-intl/server";
 import {
   createConversation,
   addMessage,
@@ -101,13 +105,35 @@ export async function POST(request: Request) {
     );
   }
 
-  // Beta safety net: per-user daily Ask Oria cap. Soft-fails open on DB error.
-  const quota = await checkDailyAskRequests(ctx.profile.id);
-  if (!quota.ok) {
+  // Per-user daily Ask cap. Applies only to users on Oria's default key
+  // (Oria pays those tokens); BYO-key users self-pay and are exempt. Durable
+  // via Upstash, degrades open if unconfigured. F3 (Round 14.6).
+  const isByo = await userHasOwnProvider(ctx.profile.id);
+  const askLimit = await checkAskDailyLimit(ctx.profile.id, isByo);
+  if (!askLimit.allowed) {
+    const localeCookie = (await cookies()).get("oria_locale")?.value;
+    const locale = ["en", "ar", "fr", "es"].includes(localeCookie ?? "")
+      ? (localeCookie as string)
+      : "en";
+    const t = await getTranslations({ locale, namespace: "askLimit" });
     return NextResponse.json(
-      { error: "rate_limited", message: quota.message },
+      {
+        error: "rate_limited",
+        message: t("reached", { hours: hoursUntilReset(askLimit.resetAt, Date.now()) }),
+      },
       { status: 429 },
     );
+  }
+
+  // Pattern memory: record the user's active local hour (best-effort, F1).
+  {
+    const tz = (await cookies()).get(getOriaTzCookieName())?.value ?? null;
+    void recordPattern({
+      userId: ctx.profile.id,
+      type: "active_hour",
+      key: String(getLocalParts(new Date(), tz).hour),
+      delta: 0.5,
+    });
   }
 
   // Optional section scope. When set, retrieval is restricted to this
