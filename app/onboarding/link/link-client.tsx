@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Wordmark } from "@/components/brand/wordmark";
 import { ConnectionModal } from "@/components/ai/connection-modal";
+import { CheckIcon, CloseIcon } from "@/components/ui/icon";
+import { acknowledgeConnectPrivacy } from "@/lib/data/connect-privacy-actions";
 import type { ProviderName } from "@/lib/ai-providers";
 
 const AI_PROVIDER_NAME: Record<string, string> = {
@@ -54,6 +56,7 @@ export function LinkClient({
   outlookConnected,
   onedriveConnected,
   aiProvider,
+  privacyAcknowledged,
 }: {
   gmailConnected: boolean;
   calendarConnected: boolean;
@@ -61,11 +64,20 @@ export function LinkClient({
   outlookConnected: boolean;
   onedriveConnected: boolean;
   aiProvider: ProviderName | null;
+  privacyAcknowledged: boolean;
 }) {
   const t = useTranslations("onboarding");
   const router = useRouter();
   const [aiModalOpen, setAiModalOpen] = useState(false);
   const [connectedAi, setConnectedAi] = useState<ProviderName | null>(aiProvider);
+  // Round 14.6 privacy-before-Connect, placed at the onboarding Connect step:
+  // the privacy step is the first thing the user sees here, before any connect
+  // prompt. Once acknowledged (now or on a prior visit) the connectors show.
+  const [acknowledged, setAcknowledged] = useState(privacyAcknowledged);
+
+  if (!acknowledged) {
+    return <ConnectPrivacyStep onAcknowledge={() => setAcknowledged(true)} onSkip={() => router.push("/dashboard")} />;
+  }
 
   const isConnected = (id: string): boolean =>
     (id === "gmail" && gmailConnected) ||
@@ -196,6 +208,95 @@ export function LinkClient({
           className="mt-7 w-full rounded-xl bg-ink px-5 py-3 text-[15px] font-medium text-surface transition-base hover:bg-ink-soft"
         >
           {t("link_done")}
+        </button>
+      </main>
+    </div>
+  );
+}
+
+/**
+ * The privacy step shown before the onboarding Connect prompts (Round 14.6 +
+ * 14.9). Two columns, what Oria does / never does (connectPrivacy namespace,
+ * from docs/trust/messaging.md). Continue records the acknowledgment
+ * (acknowledgeConnectPrivacy, audited) then reveals the connectors.
+ */
+function ConnectPrivacyStep({
+  onAcknowledge,
+  onSkip,
+}: {
+  onAcknowledge: () => void;
+  onSkip: () => void;
+}) {
+  const t = useTranslations("connectPrivacy");
+  const [pending, startTransition] = useTransition();
+
+  function proceed() {
+    startTransition(async () => {
+      await acknowledgeConnectPrivacy();
+      onAcknowledge();
+    });
+  }
+
+  return (
+    <div className="flex min-h-screen flex-col bg-canvas">
+      <header className="flex items-center justify-between px-6 py-5 sm:px-8">
+        <Wordmark />
+        <button
+          type="button"
+          onClick={onSkip}
+          className="text-[13px] text-ink-muted transition-base hover:text-ink"
+        >
+          {t("cancel")}
+        </button>
+      </header>
+
+      <main className="mx-auto w-full max-w-2xl flex-1 px-6 py-4 pb-16">
+        <h1 className="text-[24px] font-semibold tracking-tight text-ink sm:text-[28px]">
+          {t("header")}
+        </h1>
+
+        <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2">
+          <div className="rounded-2xl border border-line bg-surface-raised p-5">
+            <p className="text-[11px] font-medium uppercase tracking-wide text-ink-faint">
+              {t("do_title")}
+            </p>
+            <ul className="mt-2.5 space-y-2">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <li key={i} className="flex gap-1.5 text-[13px] text-ink">
+                  <span className="mt-0.5 shrink-0 text-brand" aria-hidden>
+                    <CheckIcon size={14} />
+                  </span>
+                  <span>{t(`do_${i}`)}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="rounded-2xl border border-line bg-surface-raised p-5">
+            <p className="text-[11px] font-medium uppercase tracking-wide text-ink-faint">
+              {t("never_title")}
+            </p>
+            <ul className="mt-2.5 space-y-2">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <li key={i} className="flex gap-1.5 text-[13px] text-ink-muted">
+                  <span className="mt-0.5 shrink-0 text-ink-faint" aria-hidden>
+                    <CloseIcon size={14} />
+                  </span>
+                  <span>{t(`never_${i}`)}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        <p className="mt-4 text-[11.5px] leading-snug text-ink-faint">{t("footer")}</p>
+
+        <button
+          type="button"
+          onClick={proceed}
+          disabled={pending}
+          className="mt-7 w-full rounded-xl bg-ink px-5 py-3 text-[15px] font-medium text-surface transition-base hover:bg-ink-soft disabled:opacity-50"
+        >
+          {t("continue")}
         </button>
       </main>
     </div>

@@ -1,6 +1,8 @@
 // Shared onboarding/reshape types. No server-only imports: the conversation
 // client and the preview client both read these.
 
+import type { OnboardingIntent } from "./intents";
+
 export type EngineMode = "initial_setup" | "reconfigure";
 
 /** What the conversation distils about the user. Drives template selection. */
@@ -12,6 +14,9 @@ export type UserContext = {
   collaborators: string[];
   week_one_priority: string;
   notes: string;
+  /** The intent classified from Q1 (Round 14.9 F1). Drives the question tree
+   *  and the provisioned template_key. "personal" when unbranched. */
+  intent: OnboardingIntent;
 };
 
 export const EMPTY_USER_CONTEXT: UserContext = {
@@ -22,6 +27,7 @@ export const EMPTY_USER_CONTEXT: UserContext = {
   collaborators: [],
   week_one_priority: "",
   notes: "",
+  intent: "personal",
 };
 
 export type QuestionType = "text" | "multiple_choice" | "yes_no";

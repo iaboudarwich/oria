@@ -1,51 +1,209 @@
 {
-  "initial_setup": [
+  "intro": [
     {
       "id": "role",
       "type": "text",
       "base": "What do you do? Tell me in a sentence.",
       "field": "roles"
-    },
-    {
-      "id": "role_followup",
-      "type": "text",
-      "base": "Tell me a bit more about that.",
-      "adaptive": true,
-      "field": "roles",
-      "dependsOn": "role"
-    },
-    {
-      "id": "chaos",
-      "type": "multiple_choice",
-      "base": "What feels most chaotic right now?",
-      "options": [
-        "Email overflow",
-        "Bills and finances",
-        "Documents everywhere",
-        "Calendar and appointments",
-        "Honestly, all of it"
-      ],
-      "field": "chaos_areas"
-    },
-    {
-      "id": "data_sources",
-      "type": "text",
-      "base": "Where does most of your life live? Email, paper, apps?",
-      "field": "data_sources"
-    },
-    {
-      "id": "collaborators",
-      "type": "text",
-      "base": "Anyone else in this with you? Family, a partner, a team?",
-      "field": "collaborators"
-    },
-    {
-      "id": "priority",
-      "type": "text",
-      "base": "If Oria could help with one thing this week, what would it be?",
-      "field": "week_one_priority"
     }
   ],
+  "trees": {
+    "investor": [
+      {
+        "id": "inv_focus",
+        "type": "multiple_choice",
+        "base": "What are you tracking most? Portfolio, deal flow, LP reporting, or all of it?",
+        "options": ["Portfolio", "Deal flow", "LP reporting", "Theses and research", "All of it"],
+        "field": "life_contexts"
+      },
+      {
+        "id": "inv_collaborators",
+        "type": "text",
+        "base": "Are you solo, or do you have partners and an LP base?",
+        "field": "collaborators"
+      },
+      {
+        "id": "inv_chaos",
+        "type": "multiple_choice",
+        "base": "What is hardest to stay on top of right now?",
+        "options": ["Deal flow", "Portfolio updates", "LP reports", "Capital calls", "Honestly, all of it"],
+        "field": "chaos_areas"
+      },
+      {
+        "id": "inv_priority",
+        "type": "text",
+        "base": "If Oria handled one thing this week, what would it be?",
+        "field": "week_one_priority"
+      }
+    ],
+    "family_office": [
+      {
+        "id": "fo_scope",
+        "type": "text",
+        "base": "Whose affairs are you managing? Yours, the family's, or both?",
+        "field": "collaborators"
+      },
+      {
+        "id": "fo_entities",
+        "type": "text",
+        "base": "Which entities are in scope? Trusts, properties, operating companies?",
+        "adaptive": true,
+        "field": "life_contexts"
+      },
+      {
+        "id": "fo_chaos",
+        "type": "multiple_choice",
+        "base": "What needs the most attention?",
+        "options": ["Trusts and estate", "Properties", "The family's calendars", "Reporting to principals", "All of it"],
+        "field": "chaos_areas"
+      },
+      {
+        "id": "fo_priority",
+        "type": "text",
+        "base": "If Oria handled one thing this week, what would it be?",
+        "field": "week_one_priority"
+      }
+    ],
+    "business": [
+      {
+        "id": "biz_what",
+        "type": "text",
+        "base": "What is the business, in a line?",
+        "adaptive": true,
+        "field": "roles"
+      },
+      {
+        "id": "biz_who",
+        "type": "text",
+        "base": "Who is involved? Just you, a team, clients?",
+        "field": "collaborators"
+      },
+      {
+        "id": "biz_chaos",
+        "type": "multiple_choice",
+        "base": "What feels most chaotic right now?",
+        "options": ["Invoices and cash", "Clients", "Contracts", "Taxes", "Honestly, all of it"],
+        "field": "chaos_areas"
+      },
+      {
+        "id": "biz_priority",
+        "type": "text",
+        "base": "If Oria handled one thing this week, what would it be?",
+        "field": "week_one_priority"
+      }
+    ],
+    "job_seeker": [
+      {
+        "id": "job_target",
+        "type": "text",
+        "base": "What kind of role are you going for?",
+        "field": "life_contexts"
+      },
+      {
+        "id": "job_stage",
+        "type": "multiple_choice",
+        "base": "Where are you in the search?",
+        "options": ["Just starting", "Sending applications", "Interviewing", "Weighing offers"],
+        "field": "notes"
+      },
+      {
+        "id": "job_chaos",
+        "type": "multiple_choice",
+        "base": "What is hardest to keep straight?",
+        "options": ["Tracking applications", "Prepping for interviews", "My resume and docs", "Follow-up deadlines", "All of it"],
+        "field": "chaos_areas"
+      },
+      {
+        "id": "job_priority",
+        "type": "text",
+        "base": "If Oria handled one thing this week, what would it be?",
+        "field": "week_one_priority"
+      }
+    ],
+    "student": [
+      {
+        "id": "stu_studying",
+        "type": "text",
+        "base": "What are you studying?",
+        "field": "life_contexts"
+      },
+      {
+        "id": "stu_load",
+        "type": "text",
+        "base": "What is the load like? Classes, research, a job on the side?",
+        "field": "roles"
+      },
+      {
+        "id": "stu_chaos",
+        "type": "multiple_choice",
+        "base": "What is hardest to keep on top of?",
+        "options": ["Assignments and deadlines", "Exams", "Money", "Applications", "All of it"],
+        "field": "chaos_areas"
+      },
+      {
+        "id": "stu_priority",
+        "type": "text",
+        "base": "If Oria handled one thing this week, what would it be?",
+        "field": "week_one_priority"
+      }
+    ],
+    "parent": [
+      {
+        "id": "par_family",
+        "type": "text",
+        "base": "Tell me about your family. How many kids, what ages?",
+        "adaptive": true,
+        "field": "life_contexts"
+      },
+      {
+        "id": "par_coordinate",
+        "type": "multiple_choice",
+        "base": "What takes the most coordinating?",
+        "options": ["School", "Health and appointments", "Activities", "Family events", "All of it"],
+        "field": "chaos_areas"
+      },
+      {
+        "id": "par_who",
+        "type": "text",
+        "base": "Anyone sharing this with you? A partner, a nanny, family?",
+        "field": "collaborators"
+      },
+      {
+        "id": "par_priority",
+        "type": "text",
+        "base": "If Oria handled one thing this week, what would it be?",
+        "field": "week_one_priority"
+      }
+    ],
+    "personal": [
+      {
+        "id": "role_followup",
+        "type": "text",
+        "base": "Tell me a bit more about that.",
+        "adaptive": true,
+        "field": "roles"
+      },
+      {
+        "id": "chaos",
+        "type": "multiple_choice",
+        "base": "What feels most chaotic right now?",
+        "options": ["Email overflow", "Bills and finances", "Documents everywhere", "Calendar and appointments", "Honestly, all of it"],
+        "field": "chaos_areas"
+      },
+      {
+        "id": "data_sources",
+        "type": "text",
+        "base": "Where does most of your life live? Email, paper, apps?",
+        "field": "data_sources"
+      },
+      {
+        "id": "priority",
+        "type": "text",
+        "base": "If Oria could help with one thing this week, what would it be?",
+        "field": "week_one_priority"
+      }
+    ]
+  },
   "reconfigure": [
     {
       "id": "reconfig_clarify",

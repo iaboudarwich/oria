@@ -3,6 +3,7 @@ import "server-only";
 import { randomUUID } from "node:crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { logAuditEvent } from "@/lib/data/audit-log";
+import { provisioningFor, resolveTemplateKey, type OnboardingIntent } from "./intents";
 import type { PlanPatch, SetupPlan, WorkspacePlan } from "./types";
 
 export type ExecuteResult = { ok: boolean; error?: string; primaryOrgId?: string };
@@ -24,9 +25,16 @@ export async function executeSetupPlan(input: {
   userId: string;
   plan: SetupPlan;
   source: "initial_setup" | "reconfigure";
+  /** Classified intent (Round 14.9). Drives the personal org's template_key so
+   *  the per-context surface (e.g. Investor) actually renders. */
+  intent?: OnboardingIntent;
 }): Promise<ExecuteResult> {
   const admin = createAdminClient();
   const createdOrgIds: string[] = [];
+  // The template_key the personal org should carry: the intent's hint when its
+  // archetype is personal (so an investor's personal org is keyed "investor"),
+  // else whatever template the AI chose for the personal workspace.
+  const intentHint = input.intent ? provisioningFor(input.intent) : null;
 
   // The personal org we may rewrite, plus a snapshot to restore on failure.
   const { data: personalRow } = await admin
@@ -61,11 +69,16 @@ export async function executeSetupPlan(input: {
       if (space.area === "personal" && personal) {
         // Absorb the personal area into the existing default personal org.
         const first = space.workspaces[0];
+        const personalTemplateKey = resolveTemplateKey(
+          intentHint && intentHint.area === "personal"
+            ? intentHint.templateKey
+            : first?.template_id,
+        );
         await admin
           .from("organizations")
           .update({
             accent_color: first?.accent_color ?? personal.accent_color,
-            template_key: "custom", // clears the legacy template gate
+            template_key: personalTemplateKey,
           })
           .eq("id", personal.id);
         personalTouched = true;
@@ -84,7 +97,7 @@ export async function executeSetupPlan(input: {
               parent_kind: space.area === "work" ? "work" : "personal",
               is_default_for_kind: space.area === "work" ? firstWorkOrg : false,
               accent_color: ws.accent_color,
-              template_key: "custom",
+              template_key: resolveTemplateKey(ws.template_id),
               created_by: input.userId,
             })
             .select("id")

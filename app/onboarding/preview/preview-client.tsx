@@ -22,6 +22,10 @@ export function PreviewClient() {
   const [building, setBuilding] = useState(false);
   const [error, setError] = useState(false);
   const started = useRef(false);
+  // The conversation's distilled context, kept so the build can pass the intent
+  // (drives the personal org's template_key) and the animation can name real
+  // answers in its callouts.
+  const ctxRef = useRef<UserContext>(EMPTY_USER_CONTEXT);
   // Build choreography + real execution run in parallel; we leave only when
   // both have finished (see useBuildGate).
   const gate = useBuildGate();
@@ -36,6 +40,7 @@ export function PreviewClient() {
     } catch {
       // fall through with empty context (generator has a fallback)
     }
+    ctxRef.current = ctx;
     void generateOnboardingPlan(ctx).then((p) => setPlan(p));
   }, []);
 
@@ -97,7 +102,7 @@ export function PreviewClient() {
     gate.reset();
     setBuilding(true);
     setError(false);
-    void executeOnboardingPlan(plan).then((r) => {
+    void executeOnboardingPlan(plan, ctxRef.current.intent).then((r) => {
       gate.signalExec(r.ok);
       maybeFinish();
     });

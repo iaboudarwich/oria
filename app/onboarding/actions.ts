@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { ConversationEngine } from "@/lib/onboarding/conversation-engine";
 import { generateSetupPlan } from "@/lib/onboarding/template-generator";
 import { executeSetupPlan } from "@/lib/onboarding/plan-executor";
+import type { OnboardingIntent } from "@/lib/onboarding/intents";
 import {
   EMPTY_USER_CONTEXT,
   type ConversationState,
@@ -42,14 +43,19 @@ export async function generateOnboardingPlan(userContext: UserContext): Promise<
   return generateSetupPlan(userContext, locale);
 }
 
-/** Build everything the (possibly user-edited) plan describes, in one go. */
-export async function executeOnboardingPlan(plan: SetupPlan): Promise<{ ok: boolean }> {
+/** Build everything the (possibly user-edited) plan describes, in one go. The
+ *  classified intent drives the personal org's template_key so the matching
+ *  per-context surface renders (Round 14.9). */
+export async function executeOnboardingPlan(
+  plan: SetupPlan,
+  intent?: OnboardingIntent,
+): Promise<{ ok: boolean }> {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return { ok: false };
-  const result = await executeSetupPlan({ userId: user.id, plan, source: "initial_setup" });
+  const result = await executeSetupPlan({ userId: user.id, plan, source: "initial_setup", intent });
   if (result.ok) revalidatePath("/dashboard", "layout");
   return { ok: result.ok };
 }

@@ -2,6 +2,7 @@ import "server-only";
 
 import { getAnthropic, getModel } from "@/lib/ai/anthropic";
 import bank from "./question-bank.json";
+import { classifyIntent, questionTreeKey, type OnboardingIntent } from "./intents";
 import {
   EMPTY_USER_CONTEXT,
   type ConversationState,
@@ -20,7 +21,13 @@ type BankQuestion = {
   field?: string;
 };
 
-const BANK: Record<EngineMode, BankQuestion[]> = bank as Record<EngineMode, BankQuestion[]>;
+type Bank = {
+  intro: BankQuestion[];
+  trees: Record<string, BankQuestion[]>;
+  reconfigure: BankQuestion[];
+};
+
+const BANK = bank as Bank;
 
 const LANG: Record<string, string> = {
   en: "English",
@@ -48,22 +55,36 @@ export class ConversationEngine {
     private readonly locale: string = "en",
   ) {}
 
-  private get questions(): BankQuestion[] {
-    return BANK[this.mode] ?? [];
+  /** The intent classified from Q1's answer. "personal" until Q1 is answered,
+   *  so the very first question is always the intro. After Q1 the tree branches. */
+  private intentOf(state: ConversationState): OnboardingIntent {
+    if (this.mode !== "initial_setup") return "personal";
+    const first = state.answers[0];
+    return first && !first.skipped ? classifyIntent(first.answer) : "personal";
   }
 
-  /** How many questions this mode asks (skips still count as asked). */
-  private get total(): number {
-    return this.mode === "initial_setup" ? this.questions.length : Math.min(2, this.questions.length);
+  /** The question list for the current state: intro + the intent's tree, or the
+   *  reconfigure list. Every initial_setup tree is the same length, so progress
+   *  stays stable once Q1 branches. */
+  private questionsFor(state: ConversationState): BankQuestion[] {
+    if (this.mode === "reconfigure") return BANK.reconfigure;
+    const tree = BANK.trees[questionTreeKey(this.intentOf(state))] ?? BANK.trees.personal;
+    return [...BANK.intro, ...tree];
+  }
+
+  private totalFor(questions: BankQuestion[]): number {
+    return this.mode === "initial_setup" ? questions.length : Math.min(2, questions.length);
   }
 
   async nextStep(state: ConversationState): Promise<EngineStep> {
     const asked = state.answers.length;
-    if (asked >= this.total) {
+    const questions = this.questionsFor(state);
+    const total = this.totalFor(questions);
+    if (asked >= total) {
       return { done: true, userContext: await this.synthesize(state) };
     }
 
-    const q = this.questions[asked];
+    const q = questions[asked];
     const text = await this.rewordQuestion(q, state);
     return {
       done: false,
@@ -73,7 +94,7 @@ export class ConversationEngine {
         type: q.type,
         options: q.type === "multiple_choice" ? text.options ?? q.options : undefined,
       },
-      progress: { current: asked + 1, total: this.total },
+      progress: { current: asked + 1, total },
     };
   }
 
@@ -125,9 +146,10 @@ Return JSON only: {"text": "the question", ${q.type === "multiple_choice" ? `"op
 
   /** Distil the answered conversation into a structured UserContext. */
   async synthesize(state: ConversationState): Promise<UserContext> {
+    const intent = this.intentOf(state);
     const anthropic = getAnthropic();
     if (!anthropic) {
-      return { ...EMPTY_USER_CONTEXT, notes: answersToNotes(state) };
+      return { ...EMPTY_USER_CONTEXT, intent, notes: answersToNotes(state) };
     }
 
     const transcript = state.answers
@@ -168,9 +190,10 @@ Infer sensibly from partial answers. Keep arrays tight (max 5 each).`;
         collaborators: arr(parsed.collaborators),
         week_one_priority: typeof parsed.week_one_priority === "string" ? parsed.week_one_priority : "",
         notes: typeof parsed.notes === "string" ? parsed.notes : "",
+        intent,
       };
     } catch {
-      return { ...EMPTY_USER_CONTEXT, notes: answersToNotes(state) };
+      return { ...EMPTY_USER_CONTEXT, intent, notes: answersToNotes(state) };
     }
   }
 }

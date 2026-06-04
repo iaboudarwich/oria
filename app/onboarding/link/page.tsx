@@ -15,14 +15,18 @@ export default async function OnboardingLinkPage() {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
-  const [gmail, calendar, drive, outlook, onedrive, ai] = await Promise.all([
+  const [gmail, calendar, drive, outlook, onedrive, ai, profile] = await Promise.all([
     listGmailConnections(user.id),
     listCloudConnectionsByService(user.id, "calendar"),
     listCloudConnectionsByService(user.id, "drive"),
     listOutlookConnections(user.id),
     listCloudConnectionsByService(user.id, "onedrive"),
     getAiConnection(user.id),
+    supabase.from("profiles").select("connect_privacy_ack_at").eq("id", user.id).maybeSingle(),
   ]);
+  const privacyAcknowledged = !!(
+    profile.data as { connect_privacy_ack_at: string | null } | null
+  )?.connect_privacy_ack_at;
   return (
     <LinkClient
       gmailConnected={gmail.length > 0}
@@ -31,6 +35,7 @@ export default async function OnboardingLinkPage() {
       outlookConnected={outlook.length > 0}
       onedriveConnected={onedrive.length > 0}
       aiProvider={ai?.provider ?? null}
+      privacyAcknowledged={privacyAcknowledged}
     />
   );
 }

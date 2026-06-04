@@ -79,17 +79,23 @@ describe("User-facing AI greeting strings are em-dash free", () => {
   // Spot-check the onboarding conversation question bank. These base
   // questions are the very first thing a user sees from Oria.
   it("onboarding question bank base strings", async () => {
-    const bank = (await import("@/lib/onboarding/question-bank.json"))
-      .default as Record<
-      string,
-      Array<{ base: string; options?: string[] }>
-    >;
-    for (const questions of Object.values(bank)) {
-      for (const q of questions) {
-        expect(q.base).not.toContain(EM_DASH);
-        for (const opt of q.options ?? []) {
-          expect(opt).not.toContain(EM_DASH);
-        }
+    // Round 14.9: the bank is { intro: [], trees: {key: []}, reconfigure: [] }.
+    type Q = { base: string; options?: string[] };
+    const bank = (await import("@/lib/onboarding/question-bank.json")).default as {
+      intro: Q[];
+      trees: Record<string, Q[]>;
+      reconfigure: Q[];
+    };
+    const all: Q[] = [
+      ...bank.intro,
+      ...Object.values(bank.trees).flat(),
+      ...bank.reconfigure,
+    ];
+    expect(all.length).toBeGreaterThan(5);
+    for (const q of all) {
+      expect(q.base).not.toContain(EM_DASH);
+      for (const opt of q.options ?? []) {
+        expect(opt).not.toContain(EM_DASH);
       }
     }
   });
