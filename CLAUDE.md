@@ -486,6 +486,52 @@ target `https://heyoria.com/auth/reset` (and the preview wildcard
 `https://*.vercel.app/**`) must be in the Redirect URLs allow-list, or the verify
 endpoint drops back to the Site URL instead of /auth/reset.
 
+## 16. Multi-image groups understood as one set (standalone round)
+
+A multi-image drop is NOT automatically one entity. When several images are
+selected or dropped in one action, Oria decides whether they are one logical
+thing (a flight: ticket + boarding pass + a bare flight-number screenshot) or
+several distinct things (five unrelated receipts), then files accordingly.
+
+**Grouping (slice 1).** Dropping >1 image in one action creates an
+`upload_groups` row and stamps each `uploads.group_id` (migration 0074, also on
+`extracted_entities` / `memory_items`). The single-file flow is unchanged.
+Grouped uploads defer per-file extraction (`lib/data/upload-actions.ts` skips
+the `upload.extract` job when `group_id` is set). The dropzone waits for the
+whole action to settle, then fires one extraction; late files form a NEW group,
+no retro-merge. Group completion is detected client-side in
+`useUploadQueue` (`components/upload/upload-queue.tsx`): grouped uploads skip the
+per-file poll (their status only flips as a side effect of the group read) and
+`settleGroup` runs once the last upload of the set lands.
+
+**Cross-image extraction (slice 2).** `lib/data/extract-upload-group.ts` claims
+the group atomically (`pending` -> `extracting`, so the client trigger and the
+cron fallback never double-run), downloads the images (cap 9; overflow is
+re-queued per-file), and makes ONE multimodal Infra-AI call
+(`lib/ai/extract-group.ts`, premium tier) that BOTH classifies one-vs-many AND
+returns the record(s). The prompt prefers SEVERAL when unsure, so batch uploads
+never regress into a blob. `sanitize` validates every enum and image index and
+collapses "merged" to true only when exactly one record came back. Dual trigger:
+the dropzone calls `finalizeUploadGroup` for snappiness; cron Phase E
+(`/api/cron/process-uploads`) sweeps any group still pending past a 90s window.
+AI failure falls back to per-image extraction (`group_id` cleared, jobs
+re-enqueued). Audited `upload.group_extracted`.
+
+**Review UI (slice 3).** A strip on the inbox (`components/upload/group-review.tsx`,
+fed by `listReviewableGroups`) shows each finished group's thumbnails and
+record(s), with Confirm plus a bidirectional correction: Keep separate (split a
+wrongly-merged set: supersede the record, detach + re-queue each image) and
+Combine into one (merge a wrongly-split set: supersede the records, re-read with
+`force_merge` so the model returns one record). Actions live in
+`lib/data/upload-group-actions.ts`, all org-scoped and audited
+(`group_confirmed` / `group_split` / `group_merged`). Migration 0075 adds
+`upload_groups.reviewed_at` (review state, NULL = needs review) and `force_merge`
+(drives the merge re-read). Grouped uploads awaiting review are hidden from the
+flat inbox list so a set shows as one card. Copy in en/ar/fr/es with ICU
+plurals; the deterministic `force_merge` fold is unit-tested
+(`group-extraction-sanitize.test.ts`); the live one-vs-many behavior is a manual
+device gate.
+
 ---
 
 End of brief. Update this file when a principle changes, not when code changes.
