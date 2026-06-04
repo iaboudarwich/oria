@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { logAuditEvent } from "@/lib/data/audit-log";
 import { createJob } from "@/lib/data/jobs";
+import { recordPattern } from "@/lib/patterns/patterns";
 import type {
   SuggestionAction,
   SuggestionPattern,
@@ -175,6 +176,14 @@ export async function executeSuggestion(input: {
       resourceId,
       metadata: { pattern: input.pattern, key: input.key, actionKind: action.kind },
     });
+    // Accepting is the strongest positive signal for this suggestion kind.
+    await recordPattern({
+      userId: user.id,
+      type: "suggestion_affinity",
+      key: input.pattern,
+      delta: 1,
+      organizationId,
+    });
 
     revalidatePath("/dashboard");
     return { ok: true };
@@ -211,6 +220,14 @@ export async function declineSuggestion(input: {
       resourceType: "suggestion",
       metadata: { pattern: input.pattern, key: input.key },
     });
+    // Dismissing nudges affinity for this suggestion kind down.
+    await recordPattern({
+      userId: user.id,
+      type: "suggestion_affinity",
+      key: input.pattern,
+      delta: -0.5,
+      organizationId: input.organizationId,
+    });
     revalidatePath("/dashboard");
   } catch {
     // Best-effort
@@ -242,6 +259,14 @@ export async function commentOnSuggestion(input: {
       organizationId: input.organizationId,
       resourceType: "suggestion",
       metadata: { pattern: input.pattern, key: input.key, comment },
+    });
+    // Engaging (even to steer) is a mild positive signal.
+    await recordPattern({
+      userId: user.id,
+      type: "suggestion_affinity",
+      key: input.pattern,
+      delta: 0.25,
+      organizationId: input.organizationId,
     });
   } catch {
     // Best-effort

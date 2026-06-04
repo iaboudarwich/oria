@@ -2,6 +2,7 @@ import "server-only";
 
 import { type NextRequest, NextResponse } from "next/server";
 import { runDailyLoop } from "@/lib/daily/runner";
+import { runPatternDecay } from "@/lib/patterns/patterns";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -27,6 +28,12 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const summary = await runDailyLoop(new Date());
-  return NextResponse.json(summary);
+  const now = new Date();
+  const summary = await runDailyLoop(now);
+
+  // Pattern-memory decay rides this same cron, gated to once per day (03:00
+  // UTC) so unreinforced patterns age down without compounding hourly.
+  const decay = now.getUTCHours() === 3 ? await runPatternDecay(now) : null;
+
+  return NextResponse.json({ ...summary, patternDecay: decay });
 }
