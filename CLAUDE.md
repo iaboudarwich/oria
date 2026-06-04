@@ -575,6 +575,51 @@ font nor that tool, only sharp + the committed `monogram.svg`. Email clients
 strip web fonts, so the email "Oria" lockup uses an email-safe serif stack
 (`Georgia, 'Times New Roman', Times, serif`), not Newsreader.
 
+## 18. Write-time correctness: Ask, calendar, reminders, composer (urgent bugfix)
+
+**Ask must never 500 on the rate limiter.** The Upstash daily-cap limiter
+(`lib/ai/ask-limit.ts`) degrades OPEN on ANY error, INCLUDING client
+construction (a stray newline in `UPSTASH_REDIS_REST_URL` made `new Redis()`
+throw outside the try, 500ing every Ask). Env values are trimmed; construction
+is wrapped. Never let a limiter take Ask down. The friendly "briefly
+unreachable" copy is a fallback, not a normal result.
+
+**Extracted event dates are floating wall-clock, not UTC instants.** The model
+writes the date/time printed on a document (a 6:00 AM flight) and often labels
+it `Z` or `+00`. Feeding that to `new Date()` and rendering in the viewer's
+timezone slips it a day (June 26 6:00 AM became June 25 11:00 PM in Pacific).
+`lib/utils/event-when.ts` (`parseEventWhen`, pure + tested) reads the wall-clock
+components without re-zoning. Calendar `item` entries (extracted memory_items)
+use it via `entryDayKey` / `formatEntryTime` (`calendar-shared.tsx`) and
+`today-pulse`; reminders and connector `event` entries stay real instants. A
+date-only or midnight value means the time is UNKNOWN, shown as "All day", never
+a fabricated 11:00 PM.
+
+**One ingested item = one calendar entry.** Event-shaped documents
+(boarding_pass, ticket, itinerary, schedule) already surface on the calendar via
+`memory_items.occurred_at`, so they are NOT reminder-eligible
+(`lib/ai/reminder-eligibility.ts`); otherwise the same flight showed twice
+("Suggested by Oria" reminder + "by Oria" item). `auto-reminders` also dedupes
+on (upload_id, due_at, title), and migration 0076 collapses existing duplicates
+plus a partial unique index `reminders_suggested_upload_due_uniq` blocks
+recreation.
+
+**Filing is consistent across section and calendar.** An extracted travel
+record lands in BOTH. The Trips view (`components/sections/trips-view.tsx`) reads
+the same travel `memory_items` that feed the calendar (section `travel` or
+document_type flight/ticket/itinerary), not a separate
+`extracted_entities.doc_type="flight"` taxonomy that image/group extraction
+never produces.
+
+**One auto-grow composer primitive.** `components/ui/auto-grow-textarea.tsx`
+(`AutoGrowTextarea`, controlled; pure `resolveAutoGrow` tested) shows input
+immediately and grows with content up to `maxRows`, then scrolls. Adopted by Ask
+(`ask-chat`), the section text-log (`text-log-form`, which backs Finance / Bills
+/ Travel / Diet), the reminder title (`add-reminder-form`), and the Work
+composer (`work-agent-chat`). Use it for any new text composer or log-by-text
+field. a11y: real `<textarea>` (labelled, IME, keyboard), grows downward with no
+horizontal shift, RTL inherited.
+
 ---
 
 End of brief. Update this file when a principle changes, not when code changes.
