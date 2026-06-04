@@ -251,8 +251,10 @@ export function Sidebar({
         // Mobile: full-width drawer that slides in. Desktop: width follows
         // the CSS var set by SidebarShell so expand/collapse stays in sync
         // with the main content padding.
-        style={{ width: "var(--sidebar-w, 250px)" }}
-        className={`fixed inset-y-0 left-0 z-50 flex flex-col overflow-hidden border-e border-line glass shadow-lg transition-[width,transform] duration-200 ease-[cubic-bezier(0.2,0.8,0.2,1)] max-lg:!w-[260px] lg:translate-x-0 ${
+        // left tracks the outer rail width (--rail-w): 0 on mobile (full-width
+        // drawer), 56px on lg so the inner rail sits beside the context rail.
+        style={{ width: "var(--sidebar-w, 250px)", left: "var(--rail-w, 0px)" }}
+        className={`fixed inset-y-0 z-50 flex flex-col overflow-hidden border-e border-line glass shadow-lg transition-[width,transform] duration-200 ease-[cubic-bezier(0.2,0.8,0.2,1)] max-lg:!w-[260px] lg:translate-x-0 ${
           open ? "translate-x-0" : "-translate-x-full"
         }`}
       >

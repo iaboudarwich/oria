@@ -48,7 +48,7 @@ export async function ContextSurface({ surface }: { surface: ContextSurfaceData 
 
       {ticker.length ? (
         <div className="mt-3">
-          <ContextTicker items={ticker} />
+          <ContextTicker items={ticker} label={t("ticker_label")} />
         </div>
       ) : (
         <p className="mt-3 text-[12.5px] text-ink-faint">{t("empty")}</p>

@@ -6,10 +6,18 @@ import type { TickerItem } from "@/lib/daily/context-surface";
  * different real values (renewals, events, holdings); the component is shared.
  * No auto-scroll, so it stays calm and respects reduced-motion by default.
  */
-export function ContextTicker({ items }: { items: TickerItem[] }) {
+export function ContextTicker({ items, label }: { items: TickerItem[]; label: string }) {
   if (!items.length) return null;
   return (
-    <div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+    // tabIndex + role + label give the horizontally scrollable strip keyboard
+    // access (WCAG: scrollable-region-focusable), since the chips inside are
+    // not themselves focusable.
+    <div
+      tabIndex={0}
+      role="group"
+      aria-label={label}
+      className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+    >
       {items.map((it, i) => (
         <span
           key={i}

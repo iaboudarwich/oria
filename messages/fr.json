@@ -801,7 +801,9 @@
     "close_nav": "Fermer la navigation",
     "expand": "Déplier la barre latérale",
     "collapse": "Replier la barre latérale",
-    "smart_section": "Section intelligente"
+    "smart_section": "Section intelligente",
+    "contexts": "Vos espaces",
+    "add_space": "Ajouter un espace"
   },
   "user_menu": {
     "account": "Compte",
@@ -907,7 +909,8 @@
     "category_id_document": "Pièces d'identité",
     "category_contract": "Contrats",
     "category_warranty": "Garanties",
-    "category_other": "Autre"
+    "category_other": "Autre",
+    "ticker_label": "Points clés"
   },
   "connectPrivacy": {
     "header": "Avant de connecter quoi que ce soit, voici à quoi vous attendre.",

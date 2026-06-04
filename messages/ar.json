@@ -801,7 +801,9 @@
     "close_nav": "إغلاق التنقل",
     "expand": "توسيع الشريط الجانبي",
     "collapse": "طي الشريط الجانبي",
-    "smart_section": "قسم ذكي"
+    "smart_section": "قسم ذكي",
+    "contexts": "مساحاتك",
+    "add_space": "إضافة مساحة"
   },
   "user_menu": {
     "account": "الحساب",
@@ -907,7 +909,8 @@
     "category_id_document": "وثائق هوية",
     "category_contract": "عقود",
     "category_warranty": "ضمانات",
-    "category_other": "أخرى"
+    "category_other": "أخرى",
+    "ticker_label": "أبرز النقاط"
   },
   "connectPrivacy": {
     "header": "قبل أن نربط أي شيء، إليك ما يمكن توقّعه.",

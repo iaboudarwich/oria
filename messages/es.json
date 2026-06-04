@@ -801,7 +801,9 @@
     "close_nav": "Cerrar navegación",
     "expand": "Expandir barra lateral",
     "collapse": "Contraer barra lateral",
-    "smart_section": "Sección inteligente"
+    "smart_section": "Sección inteligente",
+    "contexts": "Tus espacios",
+    "add_space": "Añadir un espacio"
   },
   "user_menu": {
     "account": "Cuenta",
@@ -907,7 +909,8 @@
     "category_id_document": "Identificaciones",
     "category_contract": "Contratos",
     "category_warranty": "Garantías",
-    "category_other": "Otros"
+    "category_other": "Otros",
+    "ticker_label": "Destacados"
   },
   "connectPrivacy": {
     "header": "Antes de conectar nada, esto es lo que puedes esperar.",

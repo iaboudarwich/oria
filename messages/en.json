@@ -801,7 +801,9 @@
     "close_nav": "Close navigation",
     "expand": "Expand sidebar",
     "collapse": "Collapse sidebar",
-    "smart_section": "Smart Section"
+    "smart_section": "Smart Section",
+    "contexts": "Your spaces",
+    "add_space": "Add a space"
   },
   "user_menu": {
     "account": "Account",
@@ -907,7 +909,8 @@
     "category_id_document": "IDs",
     "category_contract": "Contracts",
     "category_warranty": "Warranties",
-    "category_other": "Other"
+    "category_other": "Other",
+    "ticker_label": "Highlights"
   },
   "connectPrivacy": {
     "header": "Before we connect anything, here is what to expect.",
