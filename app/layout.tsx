@@ -8,6 +8,7 @@ import { NavigationBreadcrumbs } from "@/components/feedback/navigation-breadcru
 import { ServiceWorkerRegister } from "@/components/pwa/sw-register";
 import { InstallPrompt } from "@/components/pwa/install-prompt";
 import { Analytics } from "@vercel/analytics/next";
+import { versionedIcon } from "@/lib/brand/icon-version";
 import "./globals.css";
 
 const inter = Inter({
@@ -35,7 +36,9 @@ export const metadata: Metadata = {
     statusBarStyle: "default",
   },
   icons: {
-    apple: "/icons/apple-touch-icon.png",
+    // app/favicon.ico is content-hashed by Next automatically; the apple-touch
+    // icon is a static public path, so version it by hand to bust caches.
+    apple: versionedIcon("/icons/apple-touch-icon.png"),
   },
   other: {
     // Next emits the modern `mobile-web-app-capable`; older iOS still honors

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { isIos, isStandalone } from "@/lib/pwa/standalone";
 import { CloseIcon } from "@/components/ui/icon";
+import { versionedIcon } from "@/lib/brand/icon-version";
 
 /**
  * Install affordance.
@@ -100,7 +101,7 @@ export function InstallPrompt() {
         <div className="flex items-start gap-3 rounded-2xl border border-line bg-surface-floating p-3 shadow-raised">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/icons/icon-192.png"
+            src={versionedIcon("/icons/icon-192.png")}
             alt=""
             width={40}
             height={40}

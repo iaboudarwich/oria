@@ -19,13 +19,20 @@
  * Registration is production-only and is wired from components/pwa/sw-register.
  */
 
-const VERSION = "v1";
+// Bumped to v2 with the icon cache-bust (keep in sync with ICON_VERSION in
+// lib/brand/icon-version.ts). A new VERSION renames the caches, so activate
+// deletes the old ones and the icons are re-fetched fresh, never stale.
+const VERSION = "v2";
 const PRECACHE = `oria-precache-${VERSION}`;
 const RUNTIME = `oria-runtime-${VERSION}`;
 const OFFLINE_URL = "/offline";
+// Must match versionedIcon() in lib/brand/icon-version.ts.
+const ICON_VERSION = "2";
+const iconUrl = (path) => `${path}?v=${ICON_VERSION}`;
 
 // Minimal app shell to precache so the offline fallback works on first failure.
-const PRECACHE_URLS = [OFFLINE_URL, "/icons/icon-192.png", "/logo.svg"];
+// The icon is fetched at its versioned URL so a stale HTTP-cached copy is bypassed.
+const PRECACHE_URLS = [OFFLINE_URL, iconUrl("/icons/icon-192.png"), "/logo.svg"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -114,8 +121,8 @@ self.addEventListener("push", (event) => {
   const title = data.title || "Oria";
   const options = {
     body: data.body || "",
-    icon: "/icons/icon-192.png",
-    badge: "/icons/icon-192.png",
+    icon: iconUrl("/icons/icon-192.png"),
+    badge: iconUrl("/icons/icon-192.png"),
     tag: data.tag || "oria",
     data: { url: data.url || "/" },
   };

@@ -242,6 +242,18 @@ cramped under a circular maskable mask; a monogram for small-icon contexts is a
 pending brand decision (do not invent one). The in-app `Wordmark` component is
 still the hand-built "O" disc + sans "Oria" and has not been changed to match.
 
+**Icon cache-busting.** Filenames stay constant across logo changes, so a `?v=`
+query busts stale copies. `lib/brand/icon-version.ts` (`ICON_VERSION` +
+`versionedIcon`) is the source: `app/manifest.ts` (the three icons),
+`app/layout.tsx` (apple-touch), and the install prompt all version their URLs;
+`app/favicon.ico` is content-hashed by Next automatically (no `?v=` needed).
+`public/sw.js` carries its own `ICON_VERSION`/`VERSION` (it is plain JS, cannot
+import), bumped in lockstep. Bump all three (the TS const + the two in `sw.js`)
+on any icon change. LIMIT: an already-installed app caches its icon at OS
+install time. Versioning refreshes browser tabs and, over time, Android +
+desktop installed PWAs; it does NOT refresh an icon already on the iOS Home
+Screen or the macOS dock, which only update after remove + re-add.
+
 **Manifest.** `app/manifest.ts` (Next metadata route, `/manifest.webmanifest`):
 display standalone, start_url/scope `/`, theme/background from the `--canvas`
 token, the icons wired with the maskable purpose. Description localized; name
