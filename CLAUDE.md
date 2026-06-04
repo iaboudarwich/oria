@@ -376,4 +376,47 @@ Postgres function exists or is needed (no SQL path does tz-sensitive date math).
 
 ---
 
+## 13. Accessibility, appearance, two-rail, voice input (Round 14.8)
+
+**Accessibility floor.** WCAG AA is enforced, not aspirational. `scripts/verify-a11y.mjs`
+drives Chromium against `next start`, injects axe-core (WCAG 2.0/2.1 A+AA), and
+asserts zero critical/serious across six public routes plus three authenticated
+dashboard routes (it mints a dev session from the Supabase keys; override identity
+with `ORIA_A11Y_EMAIL`/`ORIA_A11Y_ORG`). Page errors are reported as warnings, not
+gate failures. Current: 0 violations across 9 routes; Lighthouse a11y / = 100,
+/login = 98. The dashboard has a skip-to-content link and a real `<main
+id="main-content">` landmark (in `SidebarShell`). `--ink-faint` was darkened to
+`#6e6557` so caption text clears 4.5:1 (the old `#9c9387` failed). The dark-mode
+neutral ramp (faint/muted) still needs an AA retune that preserves hierarchy.
+
+**Appearance prefs** (per user). Density (Comfortable/Compact, heuristics §1.14)
+and font size (4 steps) live in `user_preferences` (migration 0073) AND mirror to
+FOUC-free cookies (`oria_density`, `oria_font`) read by the dashboard layout.
+`lib/appearance/prefs.ts` is the pure source (clamps + `--font-scale` map);
+`setAppearance` (`lib/data/appearance-actions.ts`) persists + audits
+(`settings.appearance.changed`). The type utilities multiply by `--font-scale`;
+spacing-aware surfaces read `--density-*`. Control: `DisplayPanel` in Settings →
+Appearance, applied optimistically to `#oria-shell`.
+
+**Design primitives** (`components/ui/`): `Eyebrow`, `HeroNumber` (display type +
+`tabular-nums`), `GlassCard` (glass + density-aware padding). `.living-bg` is the
+fixed atmospheric layer (frozen under the blanket reduced-motion rule). Adopt the
+primitives incrementally; they are live on the Today per-context surface.
+
+**Two-rail sidebar.** `ContextRail` (`components/dashboard/context-rail.tsx`) is
+the 56px outer icon rail of spaces/contexts on lg+, additive to the existing
+inner `Sidebar`. Both inner rail and content offset by one `--rail-w` var
+(0 on mobile, 56px on lg), so it degrades to single-rail if the var is 0. Global
+actions (Ask, add space) live in the rail, not a redundant top bar. RTL of the
+rail follows the inner sidebar's existing physical-left layout (a known limit).
+
+**Voice input.** One reusable affordance, `components/ui/mic-button.tsx` (Whisper
+via `/api/transcribe`): real `<button>`, aria-label/aria-pressed, polite
+aria-live status, 44px target at md/lg, localized (`voice` namespace). State runs
+through the pure `lib/voice/recording-machine.ts` (unit-tested). Wired on Ask, the
+Work composer, the section text-log, the reminder title, and the upload inbox;
+search + settings free-text are the documented long tail.
+
+---
+
 End of brief. Update this file when a principle changes, not when code changes.
