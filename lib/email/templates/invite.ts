@@ -74,7 +74,7 @@ export function inviteEmailHtml(d: InviteEmailData): string {
         <td align="center" style="padding:40px 16px;">
           <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:480px;">
             <tr>
-              <td style="padding:0 4px 20px 4px;font-size:13px;letter-spacing:0.08em;text-transform:uppercase;color:#9c9387;">
+              <td style="padding:0 4px 20px 4px;font-family:Georgia,'Times New Roman',Times,serif;font-size:22px;font-weight:500;letter-spacing:-0.01em;color:#0f0f0f;">
                 Oria
               </td>
             </tr>

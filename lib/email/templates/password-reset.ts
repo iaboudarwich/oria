@@ -39,7 +39,7 @@ export function passwordResetHtml(d: PasswordResetEmailData): string {
     <tr><td align="center">
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:440px;background:#fbfaf6;border:1px solid #e2d9c5;border-radius:16px;padding:32px;">
         <tr><td>
-          <p style="margin:0 0 18px;font-size:22px;font-weight:600;letter-spacing:-0.01em;color:#0f0f0f;">Oria</p>
+          <p style="margin:0 0 18px;font-family:Georgia,'Times New Roman',Times,serif;font-size:24px;font-weight:500;letter-spacing:-0.01em;color:#0f0f0f;">Oria</p>
           <p style="margin:0 0 12px;font-size:15px;line-height:1.55;">${greeting}</p>
           <p style="margin:0 0 20px;font-size:15px;line-height:1.55;">We got a request to reset the password on your Oria account. Choose a new one below. This link expires in one hour and can be used once.</p>
           <table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="border-radius:10px;background:#0f0f0f;">

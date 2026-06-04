@@ -552,6 +552,29 @@ plurals; the deterministic `force_merge` fold is unit-tested
 (`group-extraction-sanitize.test.ts`); the live one-vs-many behavior is a manual
 device gate.
 
+## 17. Brand wordmark + monogram (standalone round)
+
+The brand face is **Newsreader** (serif). Two marks, both font-INDEPENDENT
+(committed as vector outlines, never live `<text>`, never a bundled font):
+
+- **Wordmark** (`components/brand/wordmark.tsx`) is the full "Oria" lockup, used
+  in lockup contexts (in-app header, login, marketing, error pages, email). It
+  renders an inline SVG path (`lib/brand/wordmark-path.ts`, the real Newsreader
+  "Oria" outlines) with `fill="currentColor"`, so it recolors via the `tone`
+  prop (ink / ivory), scales crisply, pulls no font into the bundle, and stays
+  upright under RTL (Latin mark). a11y: the link carries the name ("Oria home")
+  and the mark is `aria-hidden`; standalone it is `role="img" aria-label="Oria"`.
+  Size by height (`className`, default `h-5`).
+- **Monogram** is the serif "O" only, for every square / icon context (§10).
+
+Both outlines are extracted from the live Newsreader font by
+`scripts/build-brand-assets.mjs` (dev-only: network + `npm i --no-save
+opentype.js`), which writes `public/brand/monogram.svg`, `lib/brand/wordmark-path.ts`,
+and the `public/logo.svg` lockup. The downstream icon build needs neither the
+font nor that tool, only sharp + the committed `monogram.svg`. Email clients
+strip web fonts, so the email "Oria" lockup uses an email-safe serif stack
+(`Georgia, 'Times New Roman', Times, serif`), not Newsreader.
+
 ---
 
 End of brief. Update this file when a principle changes, not when code changes.
