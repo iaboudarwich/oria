@@ -4,6 +4,7 @@ import { forwardRef, useCallback, useEffect, useRef, useState } from "react";
 import { ArrowRightIcon, SparkIcon, PaperclipIcon, CloseIcon } from "@/components/ui/icon";
 import { SourceCard, type SourceItem } from "./source-card";
 import { MicButton } from "@/components/ui/mic-button";
+import { AutoGrowTextarea } from "@/components/ui/auto-grow-textarea";
 import { useLocale, useTranslations } from "next-intl";
 import { PatchPreview } from "@/components/onboarding/patch-preview";
 import { reshapeGeneratePatch, reshapeExecutePatch } from "@/app/dashboard/reshape/actions";
@@ -1170,16 +1171,17 @@ const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
             >
               <PaperclipIcon size={16} />
             </button>
-            <textarea
+            <AutoGrowTextarea
               ref={ref}
               value={value}
-              onChange={(e) => onChange(e.target.value)}
+              onChange={onChange}
               onKeyDown={onKeyDown}
               onPaste={onPaste}
-              rows={1}
+              minRows={1}
+              maxRows={6}
               autoFocus
               placeholder={placeholder ?? "Ask Oria anything…"}
-              className="block min-h-[40px] flex-1 resize-none bg-transparent px-2 py-2 text-[14.5px] text-ink placeholder:text-ink-faint outline-none"
+              className="block min-h-[40px] flex-1 bg-transparent px-2 py-2 text-[14.5px] text-ink placeholder:text-ink-faint outline-none"
             />
             <MicButton
               onTranscribed={(text) => onChange(value ? `${value} ${text}` : text)}

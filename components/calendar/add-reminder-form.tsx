@@ -3,6 +3,7 @@
 import { useRef, useState, useTransition } from "react";
 import { useLocale } from "next-intl";
 import { MicButton } from "@/components/ui/mic-button";
+import { AutoGrowTextarea } from "@/components/ui/auto-grow-textarea";
 import type { Locale } from "@/i18n/config";
 import { createReminder } from "@/lib/data/reminder-actions";
 
@@ -18,8 +19,8 @@ import { createReminder } from "@/lib/data/reminder-actions";
  */
 export function AddReminderForm() {
   const formRef = useRef<HTMLFormElement>(null);
-  const titleRef = useRef<HTMLInputElement>(null);
   const locale = useLocale() as Locale;
+  const [title, setTitle] = useState("");
   const [pending, startTransition] = useTransition();
   const [status, setStatus] = useState<"idle" | "added" | "error">("idle");
 
@@ -30,6 +31,7 @@ export function AddReminderForm() {
         await createReminder(formData);
         setStatus("added");
         formRef.current?.reset();
+        setTitle(""); // controlled field: reset() doesn't clear it
         window.setTimeout(() => setStatus("idle"), 3000);
       } catch {
         setStatus("error");
@@ -45,22 +47,31 @@ export function AddReminderForm() {
         className="flex flex-col gap-2 border-t border-line p-3 sm:flex-row sm:items-center"
       >
         <div className="relative flex-1">
-          <input
-            ref={titleRef}
-            type="text"
+          <AutoGrowTextarea
             name="title"
+            value={title}
+            onChange={setTitle}
             required
             autoFocus
+            minRows={1}
+            maxRows={3}
             placeholder="What to remember"
-            className="h-10 w-full rounded-lg bg-canvas/60 pe-12 ps-3 text-[13.5px] text-ink placeholder:text-ink-faint outline-none focus:bg-canvas"
+            aria-label="What to remember"
+            onKeyDown={(e) => {
+              // Keep the single-line feel: Enter submits, Shift+Enter newlines.
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                formRef.current?.requestSubmit();
+              }
+            }}
+            className="block w-full rounded-lg bg-canvas/60 pe-12 ps-3 py-2 text-[13.5px] text-ink placeholder:text-ink-faint outline-none focus:bg-canvas"
           />
-          <div className="absolute inset-y-0 end-1 flex items-center">
+          <div className="absolute end-1 top-1 flex items-center">
             <MicButton
               size="sm"
-              onTranscribed={(text) => {
-                const el = titleRef.current;
-                if (el) el.value = el.value ? `${el.value} ${text}` : text;
-              }}
+              onTranscribed={(text) =>
+                setTitle((prev) => (prev ? `${prev} ${text}` : text))
+              }
               targetLanguage={locale}
             />
           </div>

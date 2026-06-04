@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useLocale } from "next-intl";
 import { ArrowRightIcon } from "@/components/ui/icon";
 import { MicButton } from "@/components/ui/mic-button";
+import { AutoGrowTextarea } from "@/components/ui/auto-grow-textarea";
 import type { Locale } from "@/i18n/config";
 import {
   logFromText,
@@ -96,16 +97,17 @@ export function TextLogForm({
         }}
         className="rounded-2xl border border-line bg-surface-raised p-3 space-y-2"
       >
-        <textarea
+        <AutoGrowTextarea
           value={text}
-          onChange={(e) => {
-            setText(e.target.value);
+          onChange={(v) => {
+            setText(v);
             setError(null);
             setOk(null);
           }}
           placeholder={placeholder}
-          rows={rows}
-          className="block w-full resize-none rounded-xl bg-canvas/40 px-3 py-2 text-[13px] text-ink placeholder:text-ink-faint outline-none transition-base focus:bg-canvas"
+          minRows={rows}
+          maxRows={10}
+          className="block w-full rounded-xl bg-canvas/40 px-3 py-2 text-[13px] text-ink placeholder:text-ink-faint outline-none transition-base focus:bg-canvas"
           onKeyDown={(e) => {
             if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
               e.preventDefault();

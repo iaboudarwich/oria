@@ -4,6 +4,7 @@ import { useCallback, useRef, useState } from "react";
 import { useLocale } from "next-intl";
 import { ArrowRightIcon } from "@/components/ui/icon";
 import { MicButton } from "@/components/ui/mic-button";
+import { AutoGrowTextarea } from "@/components/ui/auto-grow-textarea";
 import type { Locale } from "@/i18n/config";
 import type { SourceItem } from "@/components/ask/source-card";
 import { SourceCard } from "@/components/ask/source-card";
@@ -261,13 +262,14 @@ export function WorkAgentChat({
         }}
         className="mt-3 flex items-end gap-2 border-t border-line pt-3"
       >
-        <textarea
+        <AutoGrowTextarea
           value={input}
-          onChange={(e) => setInput(e.target.value)}
+          onChange={setInput}
           onKeyDown={onKeyDown}
-          rows={2}
+          minRows={2}
+          maxRows={8}
           placeholder="Ask the Work AI. Cmd/Ctrl + Enter to send."
-          className="block min-h-[44px] flex-1 resize-y rounded-xl border border-line bg-surface-raised px-3 py-2 text-[13.5px] text-ink placeholder:text-ink-faint outline-none transition-base focus:border-line-strong"
+          className="block min-h-[44px] flex-1 rounded-xl border border-line bg-surface-raised px-3 py-2 text-[13.5px] text-ink placeholder:text-ink-faint outline-none transition-base focus:border-line-strong"
         />
         <MicButton
           size="sm"
