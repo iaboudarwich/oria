@@ -116,7 +116,10 @@ export type AuditAction =
   | "suggestion.commented"
   // Today surface (Round 16)
   | "today.rollover"
-  | "today.focus_blocked";
+  | "today.focus_blocked"
+  // Pattern memory + privacy gate (Round 14.6)
+  | "pattern.learned"
+  | "privacy.connect_acknowledged";
 
 export type AuditLogInput = {
   userId: string;
@@ -366,6 +369,8 @@ export function actionLabel(action: string): string {
     "suggestion.commented":         "Commented on a suggestion",
     "today.rollover":               "Carried unfinished items to today",
     "today.focus_blocked":          "Blocked focus time",
+    "pattern.learned":              "Oria learned a pattern",
+    "privacy.connect_acknowledged": "Acknowledged the privacy notice",
   };
   return map[action] ?? action;
 }
