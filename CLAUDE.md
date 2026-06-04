@@ -688,6 +688,26 @@ page and the built-in sections.)
 relabeled), then space management (Members/Team), then Admin (admin only), then
 Report; Sign out is pinned last in its own group. Plain-language labels.
 
+## 20. Deleting a space (workspace or circle)
+
+`deleteSpace` (`lib/data/space-actions.ts`) deletes a workspace (office) OR a
+circle and everything it owns; PERSONAL spaces are never deletable. The guard is
+the pure, tested `canDeleteSpace` (`lib/data/can-delete-space.ts`). The original
+bug: the action guarded `kind !== "circle"`, so a workspace delete silently
+no-op'd and the workspace persisted; the rail/management UI is shared between
+circles and workspaces, so the office path must work. The action returns a typed
+result (`{ok}` / `{ok:false, reason}`) so the UI shows a plain success/failure
+message instead of doing nothing; the DB error is checked, not swallowed.
+
+Deletion relies on FK `ON DELETE CASCADE` from every org-owned table (verified
+against the schema: only `system_events` is `SET NULL`, by design), so one
+`organizations` delete removes all owned rows with no orphans. The deletion
+audit (`space.deleted`) is logged with `organization_id: null` ON PURPOSE, so the
+record SURVIVES the org's own cascade (`audit_log.organization_id` is itself
+`ON DELETE CASCADE`); it stays visible to the user because audit visibility is by
+`user_id`. Proof without the UI: `node scripts/verify-workspace-delete.mjs`
+(temp office org + owned rows -> delete -> all gone).
+
 ---
 
 End of brief. Update this file when a principle changes, not when code changes.

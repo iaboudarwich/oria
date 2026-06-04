@@ -190,6 +190,7 @@ export default async function MembersPage() {
             circleName={ctx.organization.name}
             isOwner={isOwner}
             isSoloOwner={isSoloOwner}
+            isWorkspace={ctx.organization.kind === "office"}
             candidates={transferCandidates}
           />
         </div>

@@ -6,6 +6,8 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireContext } from "./organizations";
+import { logAuditEvent } from "./audit-log";
+import { canDeleteSpace, type DeleteSpaceReason } from "./can-delete-space";
 import { ACTIVE_SPACE_COOKIE } from "./active-space";
 
 const ONE_YEAR_SECONDS = 60 * 60 * 24 * 365;
@@ -159,32 +161,58 @@ export async function createCircle(formData: FormData): Promise<void> {
   redirect(`/dashboard/circles/${orgRow.id}/setup`);
 }
 
+export type DeleteSpaceResult =
+  | { ok: true }
+  | { ok: false; reason: DeleteSpaceReason | "failed" };
+
 /**
- * Permanently delete a circle and everything in it. Owner only, circles only
- * (personal spaces can't be deleted, they auto-create). Requires the owner
- * to type the circle name as confirmation so it's hard to fire by accident.
+ * Permanently delete a space (a workspace OR a circle) and everything it owns.
+ * Owner only; personal spaces are refused. Requires the owner to retype the
+ * name. Returns a typed result so the UI can show a plain success/failure
+ * message instead of silently doing nothing.
  *
  * FormData:
- *   - confirm_name: must match the circle's name exactly (case-insensitive,
- *     trimmed).
+ *   - confirm_name: must match the space's name (case-insensitive, trimmed).
  */
-export async function deleteCircle(formData: FormData): Promise<void> {
+export async function deleteSpace(formData: FormData): Promise<DeleteSpaceResult> {
   const confirm = String(formData.get("confirm_name") ?? "").trim();
-
   const ctx = await requireContext();
-  if (ctx.organization.kind !== "circle") return;
-  if (ctx.membership.role !== "owner") return;
-  if (confirm.toLowerCase() !== ctx.organization.name.trim().toLowerCase()) {
-    return;
-  }
+
+  const decision = canDeleteSpace({
+    kind: ctx.organization.kind,
+    role: ctx.membership.role,
+    confirmName: confirm,
+    orgName: ctx.organization.name,
+  });
+  if (!decision.ok) return decision;
+
+  const orgId = ctx.organization.id;
+  const orgName = ctx.organization.name;
+  const orgKind = ctx.organization.kind;
 
   const admin = createAdminClient();
-  // Cascades delete memberships, invites, uploads, etc. via FK ON DELETE CASCADE.
-  await admin.from("organizations").delete().eq("id", ctx.organization.id);
+  // FK ON DELETE CASCADE removes every owned row (memberships, invites,
+  // uploads, memory_items, reminders, trackables, custom_sections, ...).
+  // Verified against the schema: no org-owned table is left orphaned
+  // (system_events is SET NULL by design). The error is checked, not swallowed.
+  const { error } = await admin.from("organizations").delete().eq("id", orgId);
+  if (error) return { ok: false, reason: "failed" };
+
+  // Audit with organization_id NULL so this record survives the org's own
+  // cascade (audit_log.organization_id is ON DELETE CASCADE). The user still
+  // sees it: audit visibility is by user_id.
+  await logAuditEvent({
+    userId: ctx.profile.id,
+    organizationId: null,
+    action: "space.deleted",
+    resourceType: "organization",
+    resourceId: orgId,
+    metadata: { name: orgName, kind: orgKind },
+  });
 
   await clearActiveCookie();
   revalidatePath("/dashboard", "layout");
-  redirect("/dashboard");
+  return { ok: true };
 }
 
 /**
@@ -194,7 +222,8 @@ export async function deleteCircle(formData: FormData): Promise<void> {
  */
 export async function leaveCircle(): Promise<void> {
   const ctx = await requireContext();
-  if (ctx.organization.kind !== "circle") return;
+  // Personal spaces can't be left; circles AND workspaces (office) can.
+  if (ctx.organization.kind === "personal") return;
 
   const supabase = await createClient();
 
@@ -209,11 +238,20 @@ export async function leaveCircle(): Promise<void> {
       // we double-check on the server.
       return;
     }
+    const orgId = ctx.organization.id;
+    const orgName = ctx.organization.name;
+    const orgKind = ctx.organization.kind;
     const admin = createAdminClient();
-    await admin
-      .from("organizations")
-      .delete()
-      .eq("id", ctx.organization.id);
+    await admin.from("organizations").delete().eq("id", orgId);
+    // Same as deleteSpace: audit under a NULL org so it survives the cascade.
+    await logAuditEvent({
+      userId: ctx.profile.id,
+      organizationId: null,
+      action: "space.deleted",
+      resourceType: "organization",
+      resourceId: orgId,
+      metadata: { name: orgName, kind: orgKind, via: "leave" },
+    });
   } else {
     await supabase
       .from("memberships")

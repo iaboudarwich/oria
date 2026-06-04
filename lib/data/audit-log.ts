@@ -125,7 +125,9 @@ export type AuditAction =
   | "today.focus_blocked"
   // Pattern memory + privacy gate (Round 14.6)
   | "pattern.learned"
-  | "privacy.connect_acknowledged";
+  | "privacy.connect_acknowledged"
+  // Spaces
+  | "space.deleted";
 
 export type AuditLogInput = {
   userId: string;
@@ -368,6 +370,7 @@ export function actionLabel(action: string): string {
     "setup_template_retired":        "Migrated a space to a neutral setup",
     "calendar_sources_updated":      "Changed calendar source filters",
     "space_theme_variant_updated":   "Changed a space's light or dark theme",
+    "space.deleted":                "Deleted a workspace or circle",
     "email.verified":               "Verified email address",
     "2fa.prompt_shown":             "Shown the two-factor setup prompt",
     "2fa.prompt_dismissed":         "Dismissed the two-factor setup prompt",
