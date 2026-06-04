@@ -22,15 +22,36 @@ export type ContextSurface = {
   ticker: TickerItem[];
 };
 
-/** Map a space to one of the four user-facing contexts. */
+/**
+ * Work templates whose archetype is a Business (not a Family Office). Founder
+ * and freelancer both provision the "freelancer" key; teacher provisions
+ * "teacher". A family office work org carries no business work-template, so it
+ * falls through to the Family Office surface.
+ */
+const BUSINESS_WORK_TEMPLATES = new Set(["freelancer", "teacher"]);
+
+/**
+ * Map a space to one of the four user-facing contexts.
+ *
+ * Both a family office and a business (founder / freelancer / teacher) are
+ * work-area orgs tagged kind="office", parent_kind="work", so a blanket
+ * `kind==="office" -> family_office` made Business unreachable. We resolve a
+ * recognized business work-template to Business FIRST; an unsignaled office org
+ * (the genuine family office, keyed "custom") stays Family Office. The primary
+ * work org carries its intent's template_key (see lib/onboarding/plan-executor).
+ */
 export function resolveContextArchetype(org: {
   kind?: string | null;
   parent_kind?: string | null;
   template_key?: string | null;
 }): ContextArchetype {
-  if (org.kind === "office") return "family_office";
+  // Investor lives on the personal org, keyed explicitly.
   if (org.template_key === "investor") return "investor";
-  if (org.parent_kind === "work") return "business";
+  if (org.parent_kind === "work" || org.kind === "office") {
+    return BUSINESS_WORK_TEMPLATES.has(org.template_key ?? "")
+      ? "business"
+      : "family_office";
+  }
   return "personal";
 }
 

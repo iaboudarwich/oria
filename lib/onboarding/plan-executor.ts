@@ -97,7 +97,14 @@ export async function executeSetupPlan(input: {
               parent_kind: space.area === "work" ? "work" : "personal",
               is_default_for_kind: space.area === "work" ? firstWorkOrg : false,
               accent_color: ws.accent_color,
-              template_key: resolveTemplateKey(ws.template_id),
+              // The primary work org carries the intent's template_key so the
+              // per-context surface resolves correctly (founder/freelancer ->
+              // Business, family office -> Family Office). Later work orgs and
+              // non-work-intents keep the AI-chosen template.
+              template_key:
+                space.area === "work" && firstWorkOrg && intentHint?.area === "work"
+                  ? intentHint.templateKey
+                  : resolveTemplateKey(ws.template_id),
               created_by: input.userId,
             })
             .select("id")

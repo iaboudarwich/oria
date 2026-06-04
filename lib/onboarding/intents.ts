@@ -91,10 +91,13 @@ export type ProvisioningHint = {
   archetype: "personal" | "investor" | "business" | "family_office";
 };
 
-// The resolver (lib/daily/context-surface.ts) reads: kind==="office" -> family_office,
-// template_key==="investor" -> investor, parent_kind==="work" -> business, else personal.
-// So investor must land on the PERSONAL org with template_key "investor" (not an
-// office org, which would resolve to family_office).
+// The resolver (lib/daily/context-surface.ts) reads: template_key==="investor"
+// -> investor; a work/office org with a business work-template (freelancer,
+// teacher) -> business, else (an unsignaled office org, the family office) ->
+// family_office; else personal. So investor must land on the PERSONAL org with
+// template_key "investor", and the primary work org carries its intent's
+// template_key (freelancer for founder/freelancer, teacher, custom for family
+// office) so Business and Family Office both resolve.
 export const PROVISIONING: Record<OnboardingIntent, ProvisioningHint> = {
   investor:      { templateKey: "investor",   area: "personal", archetype: "investor" },
   family_office: { templateKey: "custom",     area: "work",     archetype: "family_office" },

@@ -459,13 +459,17 @@ tree is the same length, so the progress count stays stable after the branch.
 
 **Provisioning fills the surface choice.** `plan-executor.ts` no longer hardcodes
 `template_key: "custom"`. It writes the real key via `resolveTemplateKey(template_id)`,
-and an investor's personal org is keyed `"investor"` so the Round 16 per-context
-surface resolver (`lib/daily/context-surface.ts`: office -> family_office,
-template_key investor -> investor, parent_kind work -> business, else personal)
-renders the right archetype. `intent` threads conversation -> UserContext ->
-executeOnboardingPlan -> executeSetupPlan. Note: the resolver checks `kind==="office"`
-before `parent_kind==="work"`, so work orgs (office kind) resolve to family_office,
-not business; a true "business" surface needs a non-office work org. Flag, not fixed.
+an investor's personal org is keyed `"investor"`, and the PRIMARY work org carries
+its intent's `template_key` (founder/freelancer -> `"freelancer"`, teacher ->
+`"teacher"`, family office -> `"custom"`). The Round 16 per-context surface
+resolver (`lib/daily/context-surface.ts`) reads: `template_key==="investor"` ->
+investor; a work/office org with a BUSINESS work-template (`freelancer`,
+`teacher`) -> business, else (an unsignaled office org, the genuine family
+office) -> family_office; else personal. So founder/freelancer/teacher reach the
+Business surface while a real family office stays Family Office. (`template_key`
+has a CHECK constraint of 9 values that excludes "family_office", so the family
+office is the unsignaled-office default, not a positive key.) `intent` threads
+conversation -> UserContext -> executeOnboardingPlan -> executeSetupPlan.
 
 **Privacy-before-Connect** (Round 14.6) is placed at the onboarding Connect step:
 `/onboarding/link` shows the what-we-do / what-we-never-do panel (`connectPrivacy`
