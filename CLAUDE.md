@@ -275,4 +275,58 @@ final step on a real device.
 
 ---
 
+## 11. Today daily loop (Round 16)
+
+Today runs an intelligent daily loop. All of it lives under `lib/daily/` and
+renders on `app/dashboard/page.tsx`.
+
+**Scheduling.** One hourly cron, `/api/cron/daily-loop` (CRON_SECRET Bearer, in
+`vercel.json`), drives everything. It reads each user's local wall-clock from
+`profiles.timezone` (backfilled from the `oria_tz` cookie, with `profiles.locale`,
+via `syncLocaleTimezone` in `components/section/timezone-cookie.tsx`) and fires
+what is due this local hour. No-timezone users fall back to UTC. `getLocalParts`
+in `lib/utils/tz.ts` does the local-hour math.
+
+**Routines** (`routines` table, `lib/daily/runner.ts`). Morning Briefing,
+Weekly Review, Yesterday Recap, Pre-Meeting Prep, and custom. Defaults are
+seeded per user in their primary space on first cron pass. Pre-Meeting Prep is
+event-driven (`last_ref_id` guards against re-prepping the same meeting). Output
+text is generated through the Conversation AI seam (`lib/daily/generate.ts`,
+which imports the exported `BASE_RULES` voice block from `lib/ai/agent.ts`) and
+swept for em-dashes as a safety net. Delivered to Today + generic push.
+
+**Daily Journal** (`daily_journals`, unique per user/space/local-day). Written
+at 21:00 local through the seam; the unique key makes the cron idempotent.
+
+**Suggestions** (`lib/daily/suggestions.ts`, pure). Six grounded patterns:
+expiring Trackable, untracked recurring bill, unfiled upload (only when a
+section is inferable), stuck upload, calendar conflict, document-action-needed.
+Each maps a real signal to a real Yes-write (`executeSuggestion` in
+`lib/data/suggestion-actions.ts`, all RLS-scoped). No dismisses via
+`dismissed_suggestions`; Comment is audit-logged. A seventh was deliberately not
+shipped (no clean signal); grounded beats the round number.
+
+**Roll-forward** (F6, `lib/daily/rollforward.ts`). Yesterday's unfinished
+reminders are materialized as `rollover` rows in `today_pinned_cards` at the
+local dawn. Idempotent two ways: the pure `computeRolloverCards` skips
+already-carried ids, and a partial-unique index makes a duplicate insert a
+no-op.
+
+**Overcommitment** (F5, `lib/daily/overcommit.ts`). Heavy days surface an
+actionable warning that blocks focus time (a real "Focus time" reminder) in the
+largest open gap.
+
+**Per-context surface** (F7, `lib/daily/context-surface.ts` +
+`components/dashboard/context/`). One reusable `ContextChart` and one
+`ContextTicker`, configured for Personal / Investor / Business / Family Office
+(resolved from `kind` / `template_key` / `parent_kind`). Each leads with its own
+real data; thin data shows a calm empty state, never fabricated numbers.
+
+**Push payloads stay generic and are localized in code**
+(`lib/daily/push-copy.ts`, keyed on `profiles.locale`) because the cron has no
+request locale. In-app copy uses next-intl (`dailyLoop`, `suggestions`,
+`contextSurface` namespaces, all four locales).
+
+---
+
 End of brief. Update this file when a principle changes, not when code changes.
