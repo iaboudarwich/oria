@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { Wordmark } from "@/components/brand/wordmark";
 import { ReasoningIndicator } from "@/components/ai/reasoning-indicator";
 import { BuildAnimation, useBuildGate } from "@/components/onboarding/build-animation";
+import { buildCallouts } from "@/lib/onboarding/callouts";
 import { generateOnboardingPlan, executeOnboardingPlan } from "../actions";
 import { EMPTY_USER_CONTEXT, type SetupPlan, type UserContext } from "@/lib/onboarding/types";
 import { CONTEXT_STORAGE_KEY } from "../conversation/conversation-client";
@@ -25,7 +26,7 @@ export function PreviewClient() {
   // The conversation's distilled context, kept so the build can pass the intent
   // (drives the personal org's template_key) and the animation can name real
   // answers in its callouts.
-  const ctxRef = useRef<UserContext>(EMPTY_USER_CONTEXT);
+  const [userCtx, setUserCtx] = useState<UserContext>(EMPTY_USER_CONTEXT);
   // Build choreography + real execution run in parallel; we leave only when
   // both have finished (see useBuildGate).
   const gate = useBuildGate();
@@ -40,7 +41,7 @@ export function PreviewClient() {
     } catch {
       // fall through with empty context (generator has a fallback)
     }
-    ctxRef.current = ctx;
+    setUserCtx(ctx);
     void generateOnboardingPlan(ctx).then((p) => setPlan(p));
   }, []);
 
@@ -102,7 +103,7 @@ export function PreviewClient() {
     gate.reset();
     setBuilding(true);
     setError(false);
-    void executeOnboardingPlan(plan, ctxRef.current.intent).then((r) => {
+    void executeOnboardingPlan(plan, userCtx.intent).then((r) => {
       gate.signalExec(r.ok);
       maybeFinish();
     });
@@ -113,12 +114,15 @@ export function PreviewClient() {
       s.workspaces.flatMap((w) => w.sections.map((sec) => sec.title)),
     );
     const accent = plan.spaces[0]?.workspaces[0]?.accent_color ?? null;
+    // Three callouts naming the user's real sections + real answers.
+    const callouts = buildCallouts(plan, userCtx);
     return (
       <Shell>
         <BuildAnimation
           items={sectionNames}
+          callouts={callouts}
           accent={accent}
-          durationMs={7000}
+          durationMs={12000}
           onComplete={() => {
             gate.signalAnim();
             maybeFinish();

@@ -49,10 +49,10 @@
     "tone": "Si Oria écrit de façon décontractée ou plus formelle."
   },
   "build_anim": {
-    "phase1": "Mise en place de vos espaces...",
-    "phase2": "Adaptation des sections à votre façon de travailler...",
-    "phase3": "Choix de vos couleurs et questions de départ...",
-    "phase4": "Presque terminé..."
+    "assembling": "Nous construisons ton Oria",
+    "assembling_plain": "Préparation de tes espaces.",
+    "callout": "Ajout de {section}, parce que tu as mentionné {reason}.",
+    "callout_plain": "Ajout de {section}."
   },
   "new_workspace": {
     "intro": "Un espace de travail est son propre contexte opérationnel. Choisissez un point de départ, puis nommez-le.",

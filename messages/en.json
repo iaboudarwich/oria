@@ -49,10 +49,10 @@
     "tone": "Whether Oria writes casually or more formally in its answers."
   },
   "build_anim": {
-    "phase1": "Setting up your spaces...",
-    "phase2": "Tailoring sections to how you work...",
-    "phase3": "Choosing your colors and starter questions...",
-    "phase4": "Almost there..."
+    "assembling": "Building your Oria",
+    "assembling_plain": "Setting up your spaces.",
+    "callout": "Adding {section}, because you mentioned {reason}.",
+    "callout_plain": "Adding {section}."
   },
   "new_workspace": {
     "intro": "A workspace is its own operational context. Choose a starting point, then name it.",
