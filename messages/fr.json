@@ -244,7 +244,6 @@
     "forgot_title": "Réinitialiser votre mot de passe",
     "forgot_body": "Saisissez votre e-mail et nous vous enverrons un lien de réinitialisation.",
     "forgot_submit": "Envoyer le lien",
-    "forgot_sent": "Si un compte existe pour {email}, un lien de réinitialisation est en route.",
     "forgot_back": "Retour à la connexion",
     "reset_title": "Définir un nouveau mot de passe",
     "reset_body": "Choisissez un nouveau mot de passe pour votre compte.",
@@ -254,7 +253,16 @@
     "recovery_backup_body": "Lors de la configuration de l'authentification à deux facteurs, nous vous avons fourni dix codes de secours à usage unique. Saisissez-en un sur l'écran précédent à la place du code à 6 chiffres.",
     "recovery_none_title": "Pas de codes de secours?",
     "recovery_none_body": "Écrivez-nous depuis l'adresse e-mail de votre compte et nous vous aiderons à récupérer l'accès:",
-    "recovery_back": "Retour à l'écran du code"
+    "recovery_back": "Retour à l'écran du code",
+    "forgot_sent_neutral": "Si un compte existe pour cet email, nous avons envoyé un lien de réinitialisation. Vérifie ta boîte de réception.",
+    "forgot_rate_limited": "Trop de demandes. Patiente quelques minutes avant de réessayer.",
+    "forgot_sending": "Envoi",
+    "reset_verifying": "Vérification de ton lien",
+    "reset_invalid": "Ce lien a expiré ou a déjà été utilisé.",
+    "reset_request_new": "Demander un nouveau lien",
+    "reset_saving": "Enregistrement",
+    "new_password_placeholder": "Au moins 8 caractères",
+    "pw_min_8": "Le mot de passe doit comporter au moins 8 caractères."
   },
   "empty": {
     "uploads": "Aucun fichier importé.",

@@ -244,7 +244,6 @@
     "forgot_title": "Reset your password",
     "forgot_body": "Enter your email and we will send you a reset link.",
     "forgot_submit": "Send reset link",
-    "forgot_sent": "If an account exists for {email}, a reset link is on its way.",
     "forgot_back": "Back to sign in",
     "reset_title": "Set a new password",
     "reset_body": "Choose a new password for your account.",
@@ -254,7 +253,16 @@
     "recovery_backup_body": "When you set up two-factor, we gave you ten single-use backup codes. Enter one on the previous screen in place of the 6-digit code.",
     "recovery_none_title": "No backup codes?",
     "recovery_none_body": "Email us from the address on your account and we will help you regain access:",
-    "recovery_back": "Back to the code screen"
+    "recovery_back": "Back to the code screen",
+    "forgot_sent_neutral": "If an account exists for that email, we sent a reset link. Check your inbox.",
+    "forgot_rate_limited": "Too many requests. Please wait a few minutes before trying again.",
+    "forgot_sending": "Sending",
+    "reset_verifying": "Verifying your reset link",
+    "reset_invalid": "This reset link expired or was already used.",
+    "reset_request_new": "Request a new link",
+    "reset_saving": "Saving",
+    "new_password_placeholder": "At least 8 characters",
+    "pw_min_8": "Password must be at least 8 characters."
   },
   "empty": {
     "uploads": "No uploads yet.",

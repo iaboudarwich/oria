@@ -244,7 +244,6 @@
     "forgot_title": "Restablecer tu contraseña",
     "forgot_body": "Introduce tu correo y te enviaremos un enlace de restablecimiento.",
     "forgot_submit": "Enviar enlace",
-    "forgot_sent": "Si existe una cuenta para {email}, el enlace de restablecimiento va en camino.",
     "forgot_back": "Volver a iniciar sesión",
     "reset_title": "Establecer una nueva contraseña",
     "reset_body": "Elige una nueva contraseña para tu cuenta.",
@@ -254,7 +253,16 @@
     "recovery_backup_body": "Cuando configuraste la verificación en dos pasos, te dimos diez códigos de respaldo de un solo uso. Introduce uno en la pantalla anterior en lugar del código de 6 dígitos.",
     "recovery_none_title": "¿No tienes códigos de respaldo?",
     "recovery_none_body": "Escríbenos desde el correo de tu cuenta y te ayudaremos a recuperar el acceso:",
-    "recovery_back": "Volver a la pantalla del código"
+    "recovery_back": "Volver a la pantalla del código",
+    "forgot_sent_neutral": "Si existe una cuenta para ese correo, enviamos un enlace de restablecimiento. Revisa tu bandeja de entrada.",
+    "forgot_rate_limited": "Demasiadas solicitudes. Espera unos minutos antes de volver a intentarlo.",
+    "forgot_sending": "Enviando",
+    "reset_verifying": "Verificando tu enlace",
+    "reset_invalid": "Este enlace caducó o ya se usó.",
+    "reset_request_new": "Solicitar un enlace nuevo",
+    "reset_saving": "Guardando",
+    "new_password_placeholder": "Al menos 8 caracteres",
+    "pw_min_8": "La contraseña debe tener al menos 8 caracteres."
   },
   "empty": {
     "uploads": "Aún no hay archivos.",

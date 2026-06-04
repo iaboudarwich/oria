@@ -3,10 +3,27 @@
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { isCommonPassword, MIN_PASSWORD_LENGTH } from "@/lib/auth/common-passwords";
 import { logAnonAuthFailure, logAuditEvent } from "@/lib/data/audit-log";
 import { clearReauth, markReauthenticated } from "@/lib/auth/reauth";
+import { sendPasswordResetEmail } from "@/lib/email/send-password-reset";
+import { rateLimit } from "@/lib/rate-limit";
 import { trackEvent } from "@/lib/analytics";
+
+/**
+ * Where a recovery link should land. On a Vercel preview we use the deployment's
+ * own origin so the link works on that preview; production and dev use the
+ * configured site URL. (The chosen origin must be in Supabase's Auth Redirect
+ * URLs allow-list; see the round report.)
+ */
+function resetRedirectUrl(): string {
+  const base =
+    process.env.VERCEL_ENV === "preview" && process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : siteUrl();
+  return `${base.replace(/\/$/, "")}/auth/reset`;
+}
 
 function siteUrl() {
   return process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
@@ -43,7 +60,7 @@ export async function signIn(formData: FormData) {
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) {
-    // Anon failure — we know the email but not a user_id. Log with
+    // Anon failure: we know the email but not a user_id. Log with
     // null user_id; only admins can see these (RLS hides them from
     // the everyone-can-see-their-own-log surface so we don't leak
     // account-existence).
@@ -127,7 +144,7 @@ export async function signUp(formData: FormData) {
     redirect(`/auth/verify?${params.toString()}`);
   }
 
-  // Session exists — email was auto-confirmed (e.g. local dev or OTP disabled)
+  // Session exists: email was auto-confirmed (e.g. local dev or OTP disabled)
   trackEvent("signup_completed");
   redirect(next);
 }
@@ -178,55 +195,72 @@ export async function resendSignupEmail(
 }
 
 /**
- * Start the forgot-password flow. Sends a recovery link that lands on
- * /auth/callback (which exchanges the code for a session) and then
- * forwards to /auth/reset. Always redirects to a neutral confirmation so
- * we never disclose whether an account exists for the address.
+ * Start the forgot-password flow. Mints a recovery link with the admin API and
+ * delivers it through our branded Resend email (not Supabase's default SMTP).
+ * Returns a plain result so the client can drive the pending / success / rate-
+ * limit states. ALWAYS neutral: we never disclose whether the address exists.
  */
-export async function requestPasswordReset(formData: FormData) {
-  const email = String(formData.get("email") ?? "").trim();
-  if (!email) authError("/login", "Email required");
+export async function requestPasswordReset(
+  email: string,
+): Promise<{ ok: boolean; rateLimited?: boolean; retryAfterSeconds?: number }> {
+  const trimmed = email.trim().toLowerCase();
+  if (!trimmed || !trimmed.includes("@")) return { ok: false };
 
-  const supabase = await createClient();
-  const redirectTo = new URL(`${siteUrl()}/auth/callback`);
-  redirectTo.searchParams.set("next", "/auth/reset");
-  await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: redirectTo.toString(),
+  // Burst guard per address so repeated clicks can't spam a mailbox; friendly,
+  // never a raw provider error.
+  const rl = rateLimit({
+    key: `pwreset:${trimmed}`,
+    limit: 3,
+    windowMs: 15 * 60 * 1000,
+    label: "password reset",
   });
+  if (!rl.ok) return { ok: false, rateLimited: true, retryAfterSeconds: rl.retryAfterSeconds };
 
-  redirect(`/auth/forgot?sent=1&email=${encodeURIComponent(email)}`);
+  const admin = createAdminClient();
+  try {
+    const { data, error } = await admin.auth.admin.generateLink({
+      type: "recovery",
+      email: trimmed,
+      options: { redirectTo: resetRedirectUrl() },
+    });
+    // generateLink errors for an unknown address; swallow so the response is the
+    // same whether or not the account exists.
+    const actionLink = data?.properties?.action_link;
+    if (!error && actionLink) {
+      const { data: profile } = await admin
+        .from("profiles")
+        .select("full_name")
+        .eq("email", trimmed)
+        .maybeSingle();
+      await sendPasswordResetEmail({
+        toEmail: trimmed,
+        toName: (profile as { full_name: string | null } | null)?.full_name ?? null,
+        resetUrl: actionLink,
+      });
+    }
+  } catch {
+    // Never surface a cause; the response stays neutral.
+  }
+  return { ok: true };
 }
 
 /**
- * Complete the forgot-password flow. Requires the recovery session created
- * by the callback. Updates the password, audits it, and bounces to sign-in.
+ * Record the audited password change after the client has updated it against
+ * the recovery session. The browser established the session from the recovery
+ * token, so its cookies are present and getUser resolves here.
  */
-export async function updatePassword(formData: FormData) {
-  const password = String(formData.get("password") ?? "");
-  if (password.length < 8) {
-    redirect("/auth/reset?error=" + encodeURIComponent("Password must be at least 8 characters."));
-  }
-
+export async function recordPasswordReset(): Promise<{ ok: boolean }> {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) {
-    redirect("/auth/forgot?error=" + encodeURIComponent("Your reset link expired. Request a new one."));
-  }
-
-  const { error } = await supabase.auth.updateUser({ password });
-  if (error) {
-    redirect("/auth/reset?error=" + encodeURIComponent(error.message));
-  }
-
+  if (!user) return { ok: false };
   await logAuditEvent({
     userId: user.id,
     action: "settings.password.changed",
     metadata: { via: "reset" },
   });
-
-  redirect("/login?notice=" + encodeURIComponent("Password updated. You can sign in now."));
+  return { ok: true };
 }
 
 export async function signOut() {

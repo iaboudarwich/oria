@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { Wordmark } from "@/components/brand/wordmark";
-import { Button } from "@/components/ui/button";
 import { ArrowRightIcon } from "@/components/ui/icon";
 import { signIn, signInWithMagicLink } from "@/lib/auth/actions";
 import { PasswordField } from "@/components/auth/password-field";
+import { SubmitButton } from "@/components/auth/submit-button";
 
 export const metadata = { title: "Sign in to Oria" };
 
@@ -56,13 +56,13 @@ export default async function LoginPage({ searchParams }: Props) {
               required
               hint={
                 <Link href="/auth/forgot" className="text-[12px] text-brand hover:opacity-80 transition-base">
-                  Forgot?
+                  Forgot password?
                 </Link>
               }
             />
-            <Button type="submit" variant="primary" size="lg" className="w-full mt-1">
+            <SubmitButton pendingLabel="Signing in" className="w-full mt-1">
               Sign in <ArrowRightIcon size={14} />
-            </Button>
+            </SubmitButton>
           </form>
 
           <div className="my-5 flex items-center gap-3">

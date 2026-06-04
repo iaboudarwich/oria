@@ -461,4 +461,31 @@ reduced-motion read uses `useSyncExternalStore` (no setState-in-effect).
 
 ---
 
+## 15. Password reset (standalone round)
+
+The recovery link must establish a session on the CLIENT before the set-password
+form submits. Supabase delivers the recovery token in the URL hash (implicit
+flow), which the server never sees, so `/auth/reset` is a client component
+(`reset-client.tsx`) that consumes the token (hash `access_token`, or `?code` /
+`?token_hash`) into a session, then calls `updateUser({ password })` against it,
+audits via `recordPasswordReset` (`settings.password.changed`, via reset), and
+lands the now signed-in user on `/dashboard`. Expired/used tokens show a
+"request a new link" path.
+
+The reset email is branded via Resend (heyoria.com), NOT Supabase SMTP:
+`requestPasswordReset` mints the link with `admin.generateLink({ type: 'recovery' })`
+and sends it with `lib/email/send-password-reset.ts`. The response is always
+neutral ("if an account exists ...") and rate-limited with friendly copy. Every
+auth button has a pending/disabled state (`components/auth/submit-button.tsx`
+via useFormStatus for server-action forms; local state in the forgot/reset
+clients). Proof without an inbox: `node scripts/verify-password-reset.mjs`
+(temp user -> recovery OTP -> session -> updateUser -> new password signs in).
+
+REQUIRED Supabase dashboard setting (Auth -> URL Configuration): the redirect
+target `https://heyoria.com/auth/reset` (and the preview wildcard
+`https://*.vercel.app/**`) must be in the Redirect URLs allow-list, or the verify
+endpoint drops back to the Site URL instead of /auth/reset.
+
+---
+
 End of brief. Update this file when a principle changes, not when code changes.
