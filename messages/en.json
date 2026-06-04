@@ -20,7 +20,23 @@
   "calendar": {
     "source_events": "Events",
     "source_reminders": "Reminders",
-    "source_bills": "Bills"
+    "source_bills": "Bills",
+    "view_list": "List",
+    "view_calendar": "Calendar",
+    "view_year": "Year",
+    "view_month": "Month",
+    "view_week": "Week",
+    "view_day": "Day",
+    "today": "Today",
+    "prev": "Previous",
+    "next": "Next",
+    "filter_all_spaces": "All spaces",
+    "filter_all_categories": "All categories",
+    "filter_any_topic": "Any topic",
+    "scope_active": "This space",
+    "scope_all": "Everywhere I can access",
+    "scope_active_help": "Only the active space.",
+    "scope_all_help": "Across Personal, Circles, and Workspaces."
   },
   "bills": {
     "next_month": "Next month",

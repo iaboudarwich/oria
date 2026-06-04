@@ -20,7 +20,23 @@
   "calendar": {
     "source_events": "Événements",
     "source_reminders": "Rappels",
-    "source_bills": "Factures"
+    "source_bills": "Factures",
+    "view_list": "Liste",
+    "view_calendar": "Calendrier",
+    "view_year": "Année",
+    "view_month": "Mois",
+    "view_week": "Semaine",
+    "view_day": "Jour",
+    "today": "Aujourd'hui",
+    "prev": "Précédent",
+    "next": "Suivant",
+    "filter_all_spaces": "Tous les espaces",
+    "filter_all_categories": "Toutes les catégories",
+    "filter_any_topic": "Tous les sujets",
+    "scope_active": "Cet espace",
+    "scope_all": "Partout où j'ai accès",
+    "scope_active_help": "Uniquement l'espace actif.",
+    "scope_all_help": "Dans le Personnel, les Cercles et les Espaces de travail."
   },
   "bills": {
     "next_month": "Le mois prochain",

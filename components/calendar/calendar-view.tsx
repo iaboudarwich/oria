@@ -180,12 +180,10 @@ export function CalendarView({
                 : "border-line bg-canvas text-ink-muted hover:border-line-strong hover:text-ink"
             }`}
           >
-            {scope === "all" ? "Everywhere I can access" : "This space"}
+            {scope === "all" ? tc("scope_all") : tc("scope_active")}
           </button>
           <span className="text-[11.5px] text-ink-faint">
-            {scope === "all"
-              ? "Showing items across Personal, Circles, and Workspaces."
-              : "Only the active space."}
+            {scope === "all" ? tc("scope_all_help") : tc("scope_active_help")}
           </span>
         </div>
       ) : null}
@@ -193,10 +191,14 @@ export function CalendarView({
       {/* Filters */}
       {spaces.length > 0 || scoped.length > 0 ? (
         <div className="flex flex-col gap-2">
+          {/* Circle-filter hook (Round 21.5): a Circle is an org of kind
+              "circle", i.e. a space, so circles will appear in this same
+              space-pill row automatically with no rework. No circle_id exists
+              in schema today, so there is nothing to filter on yet. */}
           {showSpacePills ? (
             <PillRow>
               <Pill
-                label="All spaces"
+                label={tc("filter_all_spaces")}
                 active={spaceFilter === "all"}
                 onClick={() => setSpaceFilter("all")}
               />
@@ -222,7 +224,7 @@ export function CalendarView({
           </PillRow>
           <PillRow muted>
             <Pill
-              label="All categories"
+              label={tc("filter_all_categories")}
               active={categoryFilter === "all"}
               onClick={() => setCategoryFilter("all")}
             />
@@ -237,7 +239,7 @@ export function CalendarView({
           </PillRow>
           <PillRow muted>
             <Pill
-              label="Any topic"
+              label={tc("filter_any_topic")}
               active={topicFilter === "all"}
               onClick={() => setTopicFilter("all")}
             />
@@ -322,6 +324,7 @@ function ModeBar({
   cursor: Date;
   setCursor: (d: Date) => void;
 }) {
+  const tc = useTranslations("calendar");
   const isCalendar = mode !== "list";
 
   function stepCursor(delta: 1 | -1) {
@@ -343,13 +346,13 @@ function ModeBar({
     <div className="flex flex-wrap items-center gap-3">
       <Segment>
         <SegmentButton active={mode === "list"} onClick={() => setMode("list")}>
-          List
+          {tc("view_list")}
         </SegmentButton>
         <SegmentButton
           active={isCalendar}
           onClick={() => setMode(mode === "list" ? "month" : mode)}
         >
-          Calendar
+          {tc("view_calendar")}
         </SegmentButton>
       </Segment>
 
@@ -359,7 +362,7 @@ function ModeBar({
             <button
               type="button"
               onClick={() => stepCursor(-1)}
-              aria-label="Previous"
+              aria-label={tc("prev")}
               className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-line bg-surface text-ink-soft transition-base hover:border-line-strong hover:text-ink"
             >
               <ChevronLeftIcon size={12} />
@@ -369,12 +372,12 @@ function ModeBar({
               onClick={goToday}
               className="inline-flex h-8 items-center rounded-lg border border-line bg-surface px-3 text-[12px] text-ink-soft transition-base hover:border-line-strong hover:text-ink"
             >
-              Today
+              {tc("today")}
             </button>
             <button
               type="button"
               onClick={() => stepCursor(1)}
-              aria-label="Next"
+              aria-label={tc("next")}
               className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-line bg-surface text-ink-soft transition-base hover:border-line-strong hover:text-ink"
             >
               <ChevronRightIcon size={12} />
@@ -385,19 +388,19 @@ function ModeBar({
             {periodTitle(mode, cursor)}
           </p>
 
-          <div className="ml-auto">
+          <div className="ms-auto">
             <Segment>
               <SegmentButton active={mode === "year"} onClick={() => setMode("year")}>
-                Year
+                {tc("view_year")}
               </SegmentButton>
               <SegmentButton active={mode === "month"} onClick={() => setMode("month")}>
-                Month
+                {tc("view_month")}
               </SegmentButton>
               <SegmentButton active={mode === "week"} onClick={() => setMode("week")}>
-                Week
+                {tc("view_week")}
               </SegmentButton>
               <SegmentButton active={mode === "day"} onClick={() => setMode("day")}>
-                Day
+                {tc("view_day")}
               </SegmentButton>
             </Segment>
           </div>
@@ -539,7 +542,9 @@ function ListView({
     );
   }
   return (
-    <div className="space-y-7">
+    // Agenda adopts the 14.8 density preference: day-group spacing tightens in
+    // Compact (stack-density reads --density-stack from the shell data-density).
+    <div className="stack-density">
       {groups.map((g) => (
         <section key={g.key}>
           <div className="mb-2 flex items-baseline gap-2 px-1">

@@ -20,7 +20,23 @@
   "calendar": {
     "source_events": "الأحداث",
     "source_reminders": "التذكيرات",
-    "source_bills": "الفواتير"
+    "source_bills": "الفواتير",
+    "view_list": "قائمة",
+    "view_calendar": "تقويم",
+    "view_year": "سنة",
+    "view_month": "شهر",
+    "view_week": "أسبوع",
+    "view_day": "يوم",
+    "today": "اليوم",
+    "prev": "السابق",
+    "next": "التالي",
+    "filter_all_spaces": "كل المساحات",
+    "filter_all_categories": "كل الفئات",
+    "filter_any_topic": "أي موضوع",
+    "scope_active": "هذه المساحة",
+    "scope_all": "كل ما يمكنني الوصول إليه",
+    "scope_active_help": "المساحة النشطة فقط.",
+    "scope_all_help": "في المساحة الشخصية والدوائر ومساحات العمل."
   },
   "bills": {
     "next_month": "الشهر القادم",
