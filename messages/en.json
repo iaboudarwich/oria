@@ -262,7 +262,17 @@
     "reset_request_new": "Request a new link",
     "reset_saving": "Saving",
     "new_password_placeholder": "At least 8 characters",
-    "pw_min_8": "Password must be at least 8 characters."
+    "pw_min_8": "Password must be at least 8 characters.",
+    "twostep_title": "One more step",
+    "twostep_help": "Enter the 6-digit code from your authentication app to finish resetting your password.",
+    "twostep_code_label": "6-digit code",
+    "twostep_submit": "Continue",
+    "twostep_checking": "Checking",
+    "twostep_wrong": "That code wasn't right. Please try again.",
+    "twostep_expired": "That code expired. Tap to send a new one.",
+    "twostep_choose": "Which authentication app?",
+    "twostep_app_n": "Authentication app {n}",
+    "reset_update_failed": "We couldn't update your password. Please try again."
   },
   "empty": {
     "uploads": "No uploads yet.",

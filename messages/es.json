@@ -262,7 +262,17 @@
     "reset_request_new": "Solicitar un enlace nuevo",
     "reset_saving": "Guardando",
     "new_password_placeholder": "Al menos 8 caracteres",
-    "pw_min_8": "La contraseña debe tener al menos 8 caracteres."
+    "pw_min_8": "La contraseña debe tener al menos 8 caracteres.",
+    "twostep_title": "Un paso más",
+    "twostep_help": "Introduce el código de 6 dígitos de tu aplicación de autenticación para terminar de restablecer tu contraseña.",
+    "twostep_code_label": "Código de 6 dígitos",
+    "twostep_submit": "Continuar",
+    "twostep_checking": "Comprobando",
+    "twostep_wrong": "Ese código no era correcto. Inténtalo de nuevo.",
+    "twostep_expired": "Ese código caducó. Toca para obtener uno nuevo.",
+    "twostep_choose": "¿Qué aplicación de autenticación?",
+    "twostep_app_n": "Aplicación de autenticación {n}",
+    "reset_update_failed": "No pudimos actualizar tu contraseña. Inténtalo de nuevo."
   },
   "empty": {
     "uploads": "Aún no hay archivos.",

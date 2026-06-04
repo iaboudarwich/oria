@@ -262,7 +262,17 @@
     "reset_request_new": "Demander un nouveau lien",
     "reset_saving": "Enregistrement",
     "new_password_placeholder": "Au moins 8 caractères",
-    "pw_min_8": "Le mot de passe doit comporter au moins 8 caractères."
+    "pw_min_8": "Le mot de passe doit comporter au moins 8 caractères.",
+    "twostep_title": "Encore une étape",
+    "twostep_help": "Saisissez le code à 6 chiffres de votre application d'authentification pour terminer la réinitialisation de votre mot de passe.",
+    "twostep_code_label": "Code à 6 chiffres",
+    "twostep_submit": "Continuer",
+    "twostep_checking": "Vérification",
+    "twostep_wrong": "Ce code n'était pas correct. Veuillez réessayer.",
+    "twostep_expired": "Ce code a expiré. Touchez pour en obtenir un nouveau.",
+    "twostep_choose": "Quelle application d'authentification ?",
+    "twostep_app_n": "Application d'authentification {n}",
+    "reset_update_failed": "Nous n'avons pas pu mettre à jour votre mot de passe. Veuillez réessayer."
   },
   "empty": {
     "uploads": "Aucun fichier importé.",
