@@ -230,10 +230,15 @@ When a round prompt names a skill, read the SKILL.md at that path before writing
 
 Oria is an installable, offline-capable, push-ready PWA.
 
-**Icons.** Source is `public/logo.svg` (full lockup). `scripts/generate-icons.mjs`
-(sharp) isolates just the disc emblem, drops the wordmark, centers it on the
-`--canvas` field, and emits `public/icons/` (192, 512, 512-maskable with a ~10%
-safe zone, apple-touch 180) plus `app/favicon.ico`. Re-run after a logo change.
+**Icons.** Source is `public/logo.svg` (the "Oria" wordmark master), rendered
+pixel-accurate to `public/brand/oria-1024.png`. `scripts/generate-icons.mjs`
+(sharp) resizes that raster master onto the canvas field and emits
+`public/icons/` (192, 512, 512-maskable scaled into the safe zone, apple-touch
+180) plus `app/favicon.ico` (16/32/48). Re-run after a logo change. The brand is
+a horizontal wordmark with no emblem, so it is illegible at favicon (16px) and
+cramped under a circular maskable mask; a monogram for small-icon contexts is a
+pending brand decision (do not invent one). The in-app `Wordmark` component is
+still the hand-built "O" disc + sans "Oria" and has not been changed to match.
 
 **Manifest.** `app/manifest.ts` (Next metadata route, `/manifest.webmanifest`):
 display standalone, start_url/scope `/`, theme/background from the `--canvas`
