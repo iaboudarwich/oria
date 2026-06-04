@@ -83,6 +83,7 @@ These hold across every round, every commit, every file. No exceptions unless th
 4. i18n parity check: every new key exists in en, ar, fr, es.
 5. Diff audit: walk your own diff. Dead imports, dead vars, `console.log`, stale comments, duplicate helpers. Clean before commit.
 6. Migration safety: number assigned, schema-reality check passed, rollback noted in commit message if destructive.
+7. **Clean-clone check (from Round 16's deploy failure):** `git status` must show NO untracked source the build imports. A local build passes against files on disk even when they were never committed; the Vercel clone has only what's committed. Before declaring done, stage every new source file and confirm the Vercel deploy reaches READY, not just the local build.
 
 ### Commit
 - Format: `type(scope): one sentence summary`. Types: `feat`, `fix`, `chore`, `refactor`, `docs`, `test`, `perf`, `i18n`.
@@ -326,6 +327,36 @@ real data; thin data shows a calm empty state, never fabricated numbers.
 (`lib/daily/push-copy.ts`, keyed on `profiles.locale`) because the cron has no
 request locale. In-app copy uses next-intl (`dailyLoop`, `suggestions`,
 `contextSurface` namespaces, all four locales).
+
+---
+
+## 12. Pattern memory, privacy gate, Ask limit (Round 14.6)
+
+**Pattern memory** (`user_patterns`, `lib/patterns/`). Per-user (pattern_type,
+pattern_key) score, RLS own-rows. `recordPattern` reinforces (delta may be
+negative); the first observation of a key is audit-logged (`pattern.learned`),
+later reinforcements ride their already-audited source events. Two live
+sources: suggestion accept/dismiss/comment (`suggestion_affinity`) and active
+local hour on Ask (`active_hour`). `runPatternDecay` rides `/api/cron/daily-loop`
+gated to 03:00 UTC (once/day), aging unreinforced patterns by a factor and
+pruning below a floor (`decayStep`, pure + tested). Substrate for Round 20.
+
+**Privacy before Connect** (F2). `components/settings/connect-privacy-gate.tsx`
+intercepts the first Connect in the Connections hub with a what-we-do /
+what-we-never-do step (from `docs/trust/messaging.md`, `connectPrivacy`
+namespace). Acknowledgment persists in `profiles.connect_privacy_ack_at` (audit
+`privacy.connect_acknowledged`); once set, Connect proceeds directly.
+
+**Ask rate limit** (F3, `lib/ai/ask-limit.ts`). Per-user DAILY cap on Ask Oria
+via `@upstash/ratelimit`, applied ONLY to Oria-default users; BYO-key users
+(`userHasOwnProvider`) are exempt and never consume a token. Degrades OPEN if
+Upstash is unconfigured. At the cap the route returns a localized message with
+the reset window and a BYO nudge. Limit via `ORIA_ASK_DAILY_LIMIT` (default
+100). This complements the in-process burst limiter (`lib/rate-limit.ts`) and
+the DB daily quota that still guards the two Work-agent routes.
+
+**Per-user-local dates** stay app-side (`getLocalParts`); no `user_local_date()`
+Postgres function exists or is needed (no SQL path does tz-sensitive date math).
 
 ---
 
