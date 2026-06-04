@@ -16,6 +16,7 @@ import {
   deleteReminder,
 } from "@/lib/data/reminder-actions";
 import { ReminderCheckbox } from "./reminder-checkbox";
+import { parseEventWhen } from "@/lib/utils/event-when";
 import type {
   CalendarCategory,
   CalendarEntry,
@@ -151,14 +152,46 @@ export function formatTime(iso: string): string {
   });
 }
 
-/** Bucket entries by yyyy-mm-dd of due_at; items without due_at omitted. */
+/**
+ * Day key for an entry. "item" entries are extracted document dates: floating
+ * wall-clock values that must NOT be re-zoned (a 6:00 AM flight on June 26 must
+ * land on June 26, not slip to June 25 in a western timezone). Reminders and
+ * connector events are real instants and keep normal local-date handling.
+ */
+export function entryDayKey(e: CalendarEntry): string {
+  if (e.kind === "item") {
+    const w = parseEventWhen(e.due_at);
+    if (w) return w.date;
+  }
+  return dayKey(new Date(e.due_at));
+}
+
+/** Display time for an entry, floating-aware for extracted items. */
+export function formatEntryTime(e: CalendarEntry): string {
+  if (e.kind === "item") {
+    const w = parseEventWhen(e.due_at);
+    if (w) {
+      if (w.allDay || !w.time) return "All day";
+      // Format the wall-clock components as local time WITHOUT re-zoning.
+      const [y, mo, d] = w.date.split("-").map(Number);
+      const [hh, mm] = w.time.split(":").map(Number);
+      return new Date(y, mo - 1, d, hh, mm).toLocaleTimeString(undefined, {
+        hour: "numeric",
+        minute: "2-digit",
+      });
+    }
+  }
+  return formatTime(e.due_at);
+}
+
+/** Bucket entries by yyyy-mm-dd; items without due_at omitted. */
 export function bucketByDay(
   entries: CalendarEntry[],
 ): Map<string, CalendarEntry[]> {
   const buckets = new Map<string, CalendarEntry[]>();
   for (const e of entries) {
     if (!e.due_at) continue;
-    const k = dayKey(new Date(e.due_at));
+    const k = entryDayKey(e);
     const arr = buckets.get(k);
     if (arr) arr.push(e);
     else buckets.set(k, [e]);
@@ -230,7 +263,7 @@ export function CalendarRow({
           {showTime ? (
             <span className="inline-flex items-center gap-1">
               <ClockIcon size={11} />
-              {formatTime(e.due_at)}
+              {formatEntryTime(e)}
             </span>
           ) : null}
           {/* Item-specific quiet meta: amount, location. */}

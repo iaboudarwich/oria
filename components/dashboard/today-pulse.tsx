@@ -10,7 +10,26 @@ import {
 } from "@/components/ui/icon";
 import { loadCalendar } from "@/lib/data/calendar";
 import { countReviewUploads } from "@/lib/data/sections";
+import { parseEventWhen } from "@/lib/utils/event-when";
 import type { CalendarCategory, CalendarEntry } from "@/lib/data/calendar-types";
+
+/**
+ * Comparable wall-clock instant for an entry. "item" entries are extracted
+ * document dates (floating wall-clock): build the Date from their components so
+ * a 6:00 AM June 26 flight is not re-zoned into the previous evening. See
+ * lib/utils/event-when.ts.
+ */
+function entryDate(e: CalendarEntry): Date {
+  if (e.kind === "item") {
+    const w = parseEventWhen(e.due_at);
+    if (w) {
+      const [y, mo, d] = w.date.split("-").map(Number);
+      const [hh, mm] = (w.time ?? "00:00").split(":").map(Number);
+      return new Date(y, mo - 1, d, hh, mm);
+    }
+  }
+  return new Date(e.due_at);
+}
 
 const CATEGORY_ICON: Record<
   CalendarCategory,
@@ -56,8 +75,7 @@ export async function TodayPulse({ activeSpaceId }: { activeSpaceId: string }) {
     .filter((e) => !e.done)
     .filter((e) => {
       if (!e.due_at) return false;
-      const t = new Date(e.due_at);
-      return t < endOfDay;
+      return entryDate(e) < endOfDay;
     })
     .slice(0, 5);
 
@@ -151,7 +169,7 @@ function CalendarRow({
         {e.due_at ? (
           <span className="inline-flex items-center gap-1 text-[11.5px] text-ink-faint">
             <ClockIcon size={11} />
-            {formatTime(e.due_at)}
+            {formatTime(e)}
           </span>
         ) : null}
       </Link>
@@ -190,8 +208,13 @@ function ReviewRow({ count }: { count: number }) {
   );
 }
 
-function formatTime(iso: string): string {
-  const d = new Date(iso);
+function formatTime(e: CalendarEntry): string {
+  const d = entryDate(e);
+  // Floating items with no real time read as all-day (unknown), not 12:00 AM.
+  if (e.kind === "item") {
+    const w = parseEventWhen(e.due_at);
+    if (w && (w.allDay || !w.time)) return "All day";
+  }
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const isToday =

@@ -1,11 +1,53 @@
 import { describe, it, expect } from "vitest";
 import { reminderEligibilityForItem } from "@/lib/ai/reminder-eligibility";
 
-// Regression for "a diet meal got added as a reminder" and "flights/bills
-// should auto-become reminders but did not." Smart reminders now fire only
-// for a positive list of doc kinds.
+// Regression for "a diet meal got added as a reminder" and the flight
+// double-entry bug: event-shaped docs (boarding pass, ticket, itinerary,
+// schedule) self-surface on the calendar via memory_items.occurred_at, so they
+// must NOT also auto-create a "suggested" reminder. Smart reminders fire only
+// for the bill / recurring-receipt positive list.
 
-describe("reminderEligibilityForItem — excluded kinds make NO reminder", () => {
+describe("reminderEligibilityForItem: excluded kinds make NO reminder", () => {
+  it("a flight (boarding pass) does NOT qualify (it is its own calendar event)", () => {
+    expect(
+      reminderEligibilityForItem({
+        document_type: "boarding_pass",
+        smart_section: null,
+        is_recurring: false,
+      }).eligible,
+    ).toBe(false);
+  });
+
+  it("a flight (ticket) does NOT qualify", () => {
+    expect(
+      reminderEligibilityForItem({
+        document_type: "ticket",
+        smart_section: null,
+        is_recurring: false,
+      }).eligible,
+    ).toBe(false);
+  });
+
+  it("an itinerary does NOT qualify", () => {
+    expect(
+      reminderEligibilityForItem({
+        document_type: "itinerary",
+        smart_section: null,
+        is_recurring: false,
+      }).eligible,
+    ).toBe(false);
+  });
+
+  it("a scheduled appointment does NOT qualify (event-shaped)", () => {
+    expect(
+      reminderEligibilityForItem({
+        document_type: "schedule",
+        smart_section: null,
+        is_recurring: false,
+      }).eligible,
+    ).toBe(false);
+  });
+
   it("a meal (diet, photo) does not qualify, even when recurring", () => {
     expect(
       reminderEligibilityForItem({
@@ -57,26 +99,7 @@ describe("reminderEligibilityForItem — excluded kinds make NO reminder", () =>
   });
 });
 
-describe("reminderEligibilityForItem — eligible kinds DO make a reminder", () => {
-  it("a flight (boarding pass) qualifies with 1-day lead", () => {
-    const r = reminderEligibilityForItem({
-      document_type: "boarding_pass",
-      smart_section: null,
-      is_recurring: false,
-    });
-    expect(r).toEqual({ eligible: true, kind: "flight", leadDays: 1 });
-  });
-
-  it("a flight (ticket) qualifies", () => {
-    expect(
-      reminderEligibilityForItem({
-        document_type: "ticket",
-        smart_section: null,
-        is_recurring: false,
-      }).kind,
-    ).toBe("flight");
-  });
-
+describe("reminderEligibilityForItem: eligible kinds DO make a reminder", () => {
   it("a bill (smart_section bills) qualifies with 3-day lead", () => {
     const r = reminderEligibilityForItem({
       document_type: null,
@@ -104,14 +127,5 @@ describe("reminderEligibilityForItem — eligible kinds DO make a reminder", () 
         is_recurring: true,
       }).kind,
     ).toBe("receipt_recurring");
-  });
-
-  it("a scheduled appointment qualifies with 1-day lead", () => {
-    const r = reminderEligibilityForItem({
-      document_type: "schedule",
-      smart_section: null,
-      is_recurring: false,
-    });
-    expect(r).toEqual({ eligible: true, kind: "appointment", leadDays: 1 });
   });
 });

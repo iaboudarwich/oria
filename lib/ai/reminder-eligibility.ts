@@ -2,13 +2,16 @@ import type { DocumentType } from "@/lib/supabase/types";
 
 // Single source of truth for "should this extracted item become a reminder?"
 //
-// The bug: auto-reminders fired on too broad a set (any is_recurring item, any
-// "form"), so a recurring diet meal became a reminder. Meanwhile flights, which
-// are genuinely actionable, were excluded as "event docs".
-//
 // The fix is a positive list. An item auto-creates a reminder ONLY when it maps
 // to one of these reminder-eligible kinds. Everything else (meals, photos,
 // notes, receipts, screenshots, business cards, ...) produces nothing.
+//
+// DEDUPE (the flight double-entry bug): EVENT-shaped documents (boarding pass,
+// ticket, itinerary, schedule) are deliberately NOT eligible here. They already
+// appear on the calendar as their own entry via memory_items.occurred_at, so a
+// "suggested" reminder at the SAME time is a pure duplicate ("Suggested by Oria"
+// + "by Oria" for one flight). One ingested flight = one calendar event. See
+// lib/data/auto-reminders.ts.
 //
 // The task's taxonomy maps onto the signals we actually carry on memory_items
 // (document_type, smart_section, is_recurring) as follows:
@@ -16,15 +19,12 @@ import type { DocumentType } from "@/lib/supabase/types";
 //   subscription      -> recurring payment, lands in smart_section "bills"
 //   insurance_policy  -> payment, lands in smart_section "bills"
 //   receipt_recurring -> document_type "receipt" AND is_recurring
-//   flight            -> document_type "boarding_pass" or "ticket"
-//   appointment       -> document_type "schedule"
 //   trackable_renewal -> handled separately by suggest-reminders (trackables)
+//   flights / appointments -> NOT here: they self-surface on the calendar.
 
 export type ReminderKind =
   | "bill"
-  | "receipt_recurring"
-  | "flight"
-  | "appointment";
+  | "receipt_recurring";
 
 export type ReminderEligibility =
   | { eligible: true; kind: ReminderKind; leadDays: number }
@@ -54,18 +54,9 @@ export function reminderEligibilityForItem(item: {
     return { eligible: true, kind: "receipt_recurring", leadDays: 3 };
   }
 
-  // Flights: be at the airport on time.
-  if (document_type === "boarding_pass" || document_type === "ticket") {
-    return { eligible: true, kind: "flight", leadDays: 1 };
-  }
-
-  // Appointments: scheduled events the user needs to show up for.
-  if (document_type === "schedule") {
-    return { eligible: true, kind: "appointment", leadDays: 1 };
-  }
-
+  // Event-shaped docs (boarding_pass, ticket, itinerary, schedule) self-surface
+  // on the calendar via memory_items.occurred_at; a reminder would double them.
   // Meals (smart_section "diet"), photos, notes, screenshots, and any other
-  // type: no reminder, no suggestion. This is the deliberate exclusion that
-  // stops a diet meal from ever becoming a reminder.
+  // type: no reminder either. Everything not matched above produces nothing.
   return NOT_ELIGIBLE;
 }

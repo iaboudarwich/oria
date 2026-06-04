@@ -143,11 +143,43 @@ async function runProposalsForItems(
   }
 
   if (proposals.length === 0) return 0;
+
+  // Idempotency: a re-extraction of the same upload must not create a second
+  // copy of a suggested reminder. Key on (upload_id, due_at): drop any proposal
+  // that already exists. (Typed-text proposals have no upload_id; key those on
+  // due_at + title within the org.)
+  let existing: Array<{ upload_id: string | null; due_at: string | null; title: string }> = [];
+  if (scope.uploadId) {
+    const { data } = await supabase
+      .from("reminders")
+      .select("upload_id, due_at, title")
+      .eq("organization_id", scope.organizationId)
+      .eq("upload_id", scope.uploadId)
+      .eq("source", "suggested");
+    existing = (data ?? []) as typeof existing;
+  } else {
+    const { data } = await supabase
+      .from("reminders")
+      .select("upload_id, due_at, title")
+      .eq("organization_id", scope.organizationId)
+      .is("upload_id", null)
+      .eq("source", "suggested")
+      .in("due_at", proposals.map((p) => p.due_at));
+    existing = (data ?? []) as typeof existing;
+  }
+  const seen = new Set(
+    existing.map((r) => `${r.upload_id ?? ""}|${r.due_at ?? ""}|${r.title}`),
+  );
+  const fresh = proposals.filter(
+    (p) => !seen.has(`${p.upload_id ?? ""}|${p.due_at}|${p.title}`),
+  );
+  if (fresh.length === 0) return 0;
+
   const { error: insertError } = await supabase
     .from("reminders")
-    .insert(proposals);
+    .insert(fresh);
   if (insertError) return 0;
-  return proposals.length;
+  return fresh.length;
 }
 
 function composeTitle(

@@ -26,6 +26,7 @@ import {
   addDays,
   bucketByDay,
   dayKey,
+  entryDayKey,
   formatDayLabel,
   isSameDay,
   startOfMonth,
@@ -669,8 +670,7 @@ type Group = {
 function groupList(entries: CalendarEntry[]): Group[] {
   const buckets = new Map<string, CalendarEntry[]>();
   for (const e of entries) {
-    const d = new Date(e.due_at);
-    const k = dayKey(d);
+    const k = entryDayKey(e);
     const arr = buckets.get(k);
     if (arr) arr.push(e);
     else buckets.set(k, [e]);
