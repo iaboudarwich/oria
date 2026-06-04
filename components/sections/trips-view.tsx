@@ -2,48 +2,74 @@ import "server-only";
 
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { shortDate as fmt } from "@/lib/sections/format";
+import { parseEventWhen } from "@/lib/utils/event-when";
 
-type FlightRow = { upload_id: string; fields: Record<string, unknown> };
-type Flight = {
-  uploadId: string;
-  when: string;
-  origin: string;
-  dest: string;
-  flight: string;
-  airline: string;
+type Row = {
+  upload_id: string | null;
+  title: string;
+  location: string | null;
+  occurred_at: string;
+};
+type Leg = {
+  uploadId: string | null;
+  date: string;
+  sort: number;
+  title: string;
+  location: string;
 };
 
-function s(v: unknown): string {
-  return v == null ? "" : String(v);
+/** Format a wall-clock YYYY-MM-DD without timezone re-zoning. */
+function fmtDate(date: string): string {
+  const [y, mo, d] = date.split("-").map(Number);
+  return new Date(y, mo - 1, d).toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+function legLine(leg: Leg): string {
+  const loc = leg.location && !leg.title.includes(leg.location) ? leg.location : "";
+  return loc ? `${leg.title} · ${loc}` : leg.title;
 }
 
 /**
- * Travel "Trips" view. Auto-groups flights into trips by date proximity
- * (a gap of more than 14 days starts a new trip). One card per trip, each
- * flight linked back to its source upload. Server-rendered.
+ * Travel "Trips" view. Reads the SAME extracted travel records that surface on
+ * the calendar (travel-section memory_items, plus flight/ticket/itinerary
+ * documents), so a flight that reached the calendar also shows here. Previously
+ * this queried extracted_entities for doc_type="flight", which the image and
+ * group extraction never produce, so photographed boarding passes appeared on
+ * the calendar but never in Trips. Groups legs into trips by date proximity
+ * (a gap of more than 14 days starts a new trip). Server-rendered.
  */
 export async function TripsView({ orgId }: { orgId: string }) {
   const supabase = await createClient();
   const { data } = await supabase
-    .from("extracted_entities")
-    .select("upload_id, fields")
+    .from("memory_items")
+    .select("upload_id, title, location, occurred_at, document_type, section")
     .eq("organization_id", orgId)
-    .eq("doc_type", "flight");
+    .is("deleted_at", null)
+    .not("occurred_at", "is", null)
+    .or("section.eq.travel,document_type.in.(boarding_pass,ticket,itinerary)")
+    .order("occurred_at", { ascending: true });
 
-  const flights: Flight[] = ((data ?? []) as FlightRow[])
-    .map((r) => ({
-      uploadId: r.upload_id,
-      when: s(r.fields.departure_datetime),
-      origin: s(r.fields.origin_airport),
-      dest: s(r.fields.destination_airport) || s(r.fields.airline),
-      flight: s(r.fields.flight_number),
-      airline: s(r.fields.airline),
-    }))
-    .filter((f) => f.when)
-    .sort((a, b) => new Date(a.when).getTime() - new Date(b.when).getTime());
+  const legs: Leg[] = ((data ?? []) as Row[])
+    .map((r): Leg | null => {
+      const w = parseEventWhen(r.occurred_at);
+      if (!w) return null;
+      const [y, mo, d] = w.date.split("-").map(Number);
+      return {
+        uploadId: r.upload_id,
+        date: w.date,
+        sort: new Date(y, mo - 1, d).getTime(),
+        title: r.title,
+        location: r.location ?? "",
+      };
+    })
+    .filter((x): x is Leg => x !== null)
+    .sort((a, b) => a.sort - b.sort);
 
-  if (flights.length === 0) {
+  if (legs.length === 0) {
     return (
       <p className="px-1 text-[13px] text-ink-faint">
         No trips detected yet. Upload a flight confirmation and Oria will group
@@ -54,50 +80,52 @@ export async function TripsView({ orgId }: { orgId: string }) {
 
   // Group by 14-day proximity.
   const FOURTEEN_DAYS = 14 * 86_400_000;
-  const trips: Flight[][] = [];
-  for (const f of flights) {
+  const trips: Leg[][] = [];
+  for (const leg of legs) {
     const last = trips[trips.length - 1];
     const prev = last?.[last.length - 1];
-    if (prev && new Date(f.when).getTime() - new Date(prev.when).getTime() <= FOURTEEN_DAYS) {
-      last.push(f);
+    if (prev && leg.sort - prev.sort <= FOURTEEN_DAYS) {
+      last.push(leg);
     } else {
-      trips.push([f]);
+      trips.push([leg]);
     }
   }
 
   return (
     <ul className="space-y-3">
       {trips.map((trip, i) => {
-        const dests = Array.from(new Set(trip.map((f) => f.dest).filter(Boolean)));
-        const start = trip[0].when;
-        const end = trip[trip.length - 1].when;
+        const label =
+          trip.map((l) => l.location).find((l) => l) ?? trip[0].title;
+        const start = trip[0].date;
+        const end = trip[trip.length - 1].date;
         return (
           <li
             key={i}
             className="rounded-2xl border border-line bg-surface-raised p-4"
           >
             <div className="flex items-baseline justify-between gap-3">
-              <p className="text-title text-ink">
-                {dests.length > 0 ? dests.join(", ") : "Trip"}
-              </p>
+              <p className="min-w-0 truncate text-title text-ink">{label}</p>
               <p className="shrink-0 text-body-sm text-ink-muted">
-                {start === end ? fmt(start) : `${fmt(start)} to ${fmt(end)}`}
+                {start === end ? fmtDate(start) : `${fmtDate(start)} to ${fmtDate(end)}`}
               </p>
             </div>
             <ul className="mt-2 space-y-1">
-              {trip.map((f, j) => (
+              {trip.map((leg, j) => (
                 <li key={j}>
-                  <Link
-                    href={`/dashboard/uploads/${f.uploadId}`}
-                    className="flex items-center gap-2 text-body-sm text-ink-soft transition-base hover:text-ink"
-                  >
-                    <span className="text-ink-faint">{fmt(f.when)}</span>
-                    <span>
-                      {f.origin ? `${f.origin} to ` : ""}
-                      {f.dest}
-                      {f.flight ? ` · ${f.flight}` : ""}
-                    </span>
-                  </Link>
+                  {leg.uploadId ? (
+                    <Link
+                      href={`/dashboard/uploads/${leg.uploadId}`}
+                      className="flex items-center gap-2 text-body-sm text-ink-soft transition-base hover:text-ink"
+                    >
+                      <span className="shrink-0 text-ink-faint">{fmtDate(leg.date)}</span>
+                      <span className="min-w-0 truncate">{legLine(leg)}</span>
+                    </Link>
+                  ) : (
+                    <div className="flex items-center gap-2 text-body-sm text-ink-soft">
+                      <span className="shrink-0 text-ink-faint">{fmtDate(leg.date)}</span>
+                      <span className="min-w-0 truncate">{legLine(leg)}</span>
+                    </div>
+                  )}
                 </li>
               ))}
             </ul>
