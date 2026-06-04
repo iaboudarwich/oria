@@ -419,4 +419,38 @@ search + settings free-text are the documented long tail.
 
 ---
 
+## 14. Onboarding conversation router + build moment (Round 14.9)
+
+**Intent branching.** The onboarding conversation branches after Q1. The first
+answer is classified by `lib/onboarding/intents.ts` (pure, tested) into an intent
+(investor / family_office / founder / freelancer / job_seeker / student / parent /
+renter / caregiver / teacher / traveler / personal). `question-bank.json` is
+`{ intro, trees, reconfigure }`: the engine asks the intro question, then the
+intent's tree, so different people get different questions. Every initial-setup
+tree is the same length, so the progress count stays stable after the branch.
+
+**Provisioning fills the surface choice.** `plan-executor.ts` no longer hardcodes
+`template_key: "custom"`. It writes the real key via `resolveTemplateKey(template_id)`,
+and an investor's personal org is keyed `"investor"` so the Round 16 per-context
+surface resolver (`lib/daily/context-surface.ts`: office -> family_office,
+template_key investor -> investor, parent_kind work -> business, else personal)
+renders the right archetype. `intent` threads conversation -> UserContext ->
+executeOnboardingPlan -> executeSetupPlan. Note: the resolver checks `kind==="office"`
+before `parent_kind==="work"`, so work orgs (office kind) resolve to family_office,
+not business; a true "business" surface needs a non-office work org. Flag, not fixed.
+
+**Privacy-before-Connect** (Round 14.6) is placed at the onboarding Connect step:
+`/onboarding/link` shows the what-we-do / what-we-never-do panel (`connectPrivacy`
+namespace) before any connect prompt, recording the audited acknowledgment
+(`acknowledgeConnectPrivacy`) on continue, then revealing the connectors.
+
+**Build moment.** `lib/onboarding/callouts.ts` (pure, tested) pairs the plan's real
+sections with the conversation's real fragments. The `BuildAnimation` runs ~12s and
+assembles three of these callouts ("Adding {section}, because you mentioned {reason}",
+`build_anim` namespace, four locales). prefers-reduced-motion derives the end state
+in render (all callouts shown, no motion) and only schedules a quick finish; the
+reduced-motion read uses `useSyncExternalStore` (no setState-in-effect).
+
+---
+
 End of brief. Update this file when a principle changes, not when code changes.
