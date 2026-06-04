@@ -36,7 +36,7 @@ Oria connects to a user's accounts (Gmail, Calendar, Drive, WHOOP, banks, more),
 
 ---
 
-## 3. Operating principles (the 18)
+## 3. Operating principles (the 19)
 
 These hold across every round, every commit, every file. No exceptions unless this file is updated first.
 
@@ -58,6 +58,7 @@ These hold across every round, every commit, every file. No exceptions unless th
 16. **Rate limits exist and are graceful.** Oria-default users hit per-user Ask caps. BYO users are exempt. Messaging is human, never technical.
 17. **No drive-bys.** A round changes what its scope says it changes. Found dead code in a file you weren't touching? Note it in the report, don't fix it this round.
 18. **Standard final report** at the end of every round (see §5).
+19. **Plain language, always.** Every user-facing string (labels, buttons, errors, alerts, notifications, empty states) must read as plain language a non-technical person understands. Never surface jargon or a raw provider error: no MFA, AAL2, TOTP, OAuth, token, RLS, sync, null, undefined, 401/403, stack traces, or copied SDK messages. Map provider errors to plain copy at the source. The only exception is opt-in technical sections (privacy/security fine print, developer/BYO docs). The banned-phrase guard (`scripts/check-i18n-banned.mjs`, `JARGON_TERMS`) fails the build on a planted jargon term like an em-dash; its small documented exemption list (`JARGON_EXEMPT_PREFIXES`) covers the technical sections. A full app-wide rewrite of legacy strings is the Round 25 sweep, not this guard; borderline words still live in old copy (sync, 2fa, factor, api) are deliberately not yet in the blocklist.
 
 ---
 
@@ -148,10 +149,11 @@ Canonical terms. Synonyms fail lint.
 | BYO | bring-your-own, custom AI |
 
 The banned-phrase lint guard (`npm run lint` -> `scripts/check-i18n-banned.mjs`)
-fails the build on any em-dash and on item/entity/thing (and the per-locale
-equivalents) in user-facing i18n copy. It does NOT ban "Records" or
-"Trackables": those are the two legitimate canonical nouns. Records = the
-people/vehicles/properties area; Trackables = the renewals feature.
+fails the build on any em-dash, on item/entity/thing (and the per-locale
+equivalents), and on opaque jargon (principle 19, `JARGON_TERMS`) in user-facing
+i18n copy. It does NOT ban "Records" or "Trackables": those are the two
+legitimate canonical nouns. Records = the people/vehicles/properties area;
+Trackables = the renewals feature.
 
 ---
 

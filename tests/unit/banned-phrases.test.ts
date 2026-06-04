@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 // @ts-expect-error - plain .mjs module, no types
-import { scanValue, scanMessages, EM_DASH, LOCALES } from "../../scripts/check-i18n-banned.mjs";
+import { scanValue, scanMessages, scanJargon, EM_DASH, LOCALES } from "../../scripts/check-i18n-banned.mjs";
 
 /**
  * Guards the banned-phrase lint rule (wired into `npm run lint`).
@@ -66,5 +66,35 @@ describe("banned-phrase lint rule", () => {
 
   it("exports the em-dash sentinel", () => {
     expect(EM_DASH).toBe("—");
+  });
+});
+
+describe("plain-language jargon guard (CLAUDE.md principle 19)", () => {
+  it("flags opaque jargon and raw provider-error identifiers", () => {
+    expect(scanJargon("AAL2 session is required to update password.")).toContain('jargon "aal2"');
+    expect(scanJargon("Your MFA token expired.")).toEqual(
+      expect.arrayContaining(['jargon "mfa"', 'jargon "token"']),
+    );
+    expect(scanJargon("OAuth handshake failed.")).toContain('jargon "oauth"');
+    expect(scanJargon("Returned null from the API.")).toContain('jargon "null"');
+  });
+
+  it("does not flag plain language or words that merely contain a term", () => {
+    expect(scanJargon("Enter the 6-digit code from your authentication app.")).toEqual([]);
+    expect(scanJargon("Choose a new password for your account.")).toEqual([]);
+    // "null" must match as a standalone word, not inside "annulled".
+    expect(scanJargon("The contract was annulled last year.")).toEqual([]);
+  });
+
+  it("does not flag finance copy that collides with status numbers", () => {
+    // Bare HTTP status numbers are intentionally not matched (401(k), amounts).
+    expect(scanJargon("Roll over your 401(k) before April.")).toEqual([]);
+    expect(scanJargon("You saved $500 this month.")).toEqual([]);
+  });
+
+  it("respects the opt-in technical-section exemption by path", () => {
+    // With an empty exemption list nothing is exempt; this proves the path
+    // plumbing works (a non-exempt path still flags).
+    expect(scanJargon("token", "auth.reset_title").length).toBeGreaterThan(0);
   });
 });
