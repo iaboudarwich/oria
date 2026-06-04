@@ -5,7 +5,17 @@
     "variant_inherit": "افتراضي",
     "variant_light": "فاتح",
     "variant_dark": "داكن",
-    "variant_system": "النظام"
+    "variant_system": "النظام",
+    "display_label": "العرض",
+    "display_hint": "ينطبق حجم النص والكثافة في كل أنحاء Oria، على هذا الجهاز وأينما سجّلت الدخول.",
+    "font_size_label": "حجم النص",
+    "font_small": "صغير",
+    "font_default": "افتراضي",
+    "font_large": "كبير",
+    "font_xlarge": "كبير جداً",
+    "density_label": "الكثافة",
+    "density_comfortable": "مريحة",
+    "density_compact": "مدمجة"
   },
   "calendar": {
     "source_events": "الأحداث",
@@ -181,7 +191,8 @@
     "amount": "المبلغ",
     "notes": "ملاحظات",
     "yes": "نعم",
-    "no": "لا"
+    "no": "لا",
+    "skip_to_content": "تخطّي إلى المحتوى"
   },
   "errors": {
     "generic": "حدث خطأ ما. يرجى المحاولة مرة أخرى.",

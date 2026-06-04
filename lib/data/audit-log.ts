@@ -42,6 +42,7 @@ export type AuditAction =
   | "settings.password.changed"
   | "settings.language.changed"
   | "settings.theme.changed"
+  | "settings.appearance.changed"
   | "settings.preferences.changed"
   | "settings.understanding.reset"
   // Uploads
@@ -311,6 +312,7 @@ export function actionLabel(action: string): string {
     "mfa.backup_codes.rotated":     "Rotated backup codes",
     "settings.password.changed":    "Changed password",
     "settings.preferences.changed": "Updated preferences",
+    "settings.appearance.changed":  "Changed display settings",
     "settings.understanding.reset": "Reset Oria's understanding",
     "settings.language.changed":    "Changed language",
     "settings.theme.changed":       "Changed theme",

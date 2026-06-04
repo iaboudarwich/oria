@@ -93,12 +93,12 @@ export default async function SignupPage({ searchParams }: Props) {
               <span>
                 {t.rich("consent", {
                   terms: (chunks) => (
-                    <Link href="/terms" className="text-brand hover:opacity-80">
+                    <Link href="/terms" className="text-brand underline hover:opacity-80">
                       {chunks}
                     </Link>
                   ),
                   privacy: (chunks) => (
-                    <Link href="/privacy" className="text-brand hover:opacity-80">
+                    <Link href="/privacy" className="text-brand underline hover:opacity-80">
                       {chunks}
                     </Link>
                   ),
@@ -117,7 +117,7 @@ export default async function SignupPage({ searchParams }: Props) {
 
           <p className="mt-6 text-center text-[12px] text-ink-faint">
             Already have an account?{" "}
-            <Link href="/login" className="text-ink-muted hover:text-ink">
+            <Link href="/login" className="text-ink-muted underline hover:text-ink">
               Sign in
             </Link>
           </p>

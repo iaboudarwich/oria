@@ -5,7 +5,17 @@
     "variant_inherit": "Par défaut",
     "variant_light": "Clair",
     "variant_dark": "Sombre",
-    "variant_system": "Système"
+    "variant_system": "Système",
+    "display_label": "Affichage",
+    "display_hint": "La taille du texte et la densité s'appliquent partout dans Oria, sur cet appareil et partout où tu te connectes.",
+    "font_size_label": "Taille du texte",
+    "font_small": "Petit",
+    "font_default": "Par défaut",
+    "font_large": "Grand",
+    "font_xlarge": "Très grand",
+    "density_label": "Densité",
+    "density_comfortable": "Confortable",
+    "density_compact": "Compacte"
   },
   "calendar": {
     "source_events": "Événements",
@@ -181,7 +191,8 @@
     "amount": "Montant",
     "notes": "Notes",
     "yes": "Oui",
-    "no": "Non"
+    "no": "Non",
+    "skip_to_content": "Aller au contenu"
   },
   "errors": {
     "generic": "Une erreur s'est produite. Veuillez réessayer.",

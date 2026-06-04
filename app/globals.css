@@ -22,7 +22,9 @@
   --ink:             #1c1a17;
   --ink-soft:        #3a352d;
   --ink-muted:       #6b6258;
-  --ink-faint:       #9c9387;
+  /* Round 14.8 F1: darkened from #9c9387 (2.77:1, failed WCAG AA) so caption /
+   * fine-print text at body sizes clears 4.5:1 on canvas and white. */
+  --ink-faint:       #6e6557;
 
   /* Lines / borders */
   --line:            rgba(28, 26, 23, 0.08);
@@ -200,14 +202,16 @@
 /* ── Utility layer ──────────────────────────────────────────── */
 @layer utilities {
 
-  /* Typography scale */
-  .text-display  { font-size: 32px; line-height: 40px; font-weight: 600; letter-spacing: -0.02em; }
-  .text-headline { font-size: 24px; line-height: 32px; font-weight: 600; letter-spacing: -0.016em; }
-  .text-title    { font-size: 20px; line-height: 28px; font-weight: 600; letter-spacing: -0.012em; }
-  .text-body-lg  { font-size: 17px; line-height: 26px; font-weight: 400; }
-  .text-body     { font-size: 15px; line-height: 22px; font-weight: 400; }
-  .text-body-sm  { font-size: 13px; line-height: 18px; font-weight: 400; }
-  .text-caption  { font-size: 12px; line-height: 16px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; }
+  /* Typography scale. font-size and line-height are multiplied by the
+   * per-user --font-scale (Round 14.8 F1, default 1) so the whole design-system
+   * type resizes together without breaking line rhythm. */
+  .text-display  { font-size: calc(32px * var(--font-scale, 1)); line-height: calc(40px * var(--font-scale, 1)); font-weight: 600; letter-spacing: -0.02em; }
+  .text-headline { font-size: calc(24px * var(--font-scale, 1)); line-height: calc(32px * var(--font-scale, 1)); font-weight: 600; letter-spacing: -0.016em; }
+  .text-title    { font-size: calc(20px * var(--font-scale, 1)); line-height: calc(28px * var(--font-scale, 1)); font-weight: 600; letter-spacing: -0.012em; }
+  .text-body-lg  { font-size: calc(17px * var(--font-scale, 1)); line-height: calc(26px * var(--font-scale, 1)); font-weight: 400; }
+  .text-body     { font-size: calc(15px * var(--font-scale, 1)); line-height: calc(22px * var(--font-scale, 1)); font-weight: 400; }
+  .text-body-sm  { font-size: calc(13px * var(--font-scale, 1)); line-height: calc(18px * var(--font-scale, 1)); font-weight: 400; }
+  .text-caption  { font-size: calc(12px * var(--font-scale, 1)); line-height: calc(16px * var(--font-scale, 1)); font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; }
 
   /* Eyebrow: the small uppercase section label that sits above cards and
    * lists. The old inline pattern (10.5px, 0.12em tracking, ink-faint)
@@ -442,4 +446,81 @@
  * class, so they stay upright. See components/ui/icon.tsx. */
 [dir="rtl"] .oria-icon-dir {
   transform: scaleX(-1);
+}
+
+/* ── Appearance: per-user font scale + density (Round 14.8 F1) ─────
+ * Defaults live on the app shell; the dashboard layout sets data-font-size
+ * and data-density on the same element from the user's preference (cookie),
+ * and the Settings control updates them live. The type utilities consume
+ * --font-scale; spacing-aware components consume the --density-* vars. */
+.app-shell {
+  --font-scale: 1;
+  --density-card: 24px;
+  --density-stack: 16px;
+  --density-gutter: 32px;
+  --density-row: 8px;
+  /* Unclassed text inside the shell scales too. */
+  font-size: calc(15px * var(--font-scale));
+}
+.app-shell[data-font-size="small"]  { --font-scale: 0.92; }
+.app-shell[data-font-size="large"]  { --font-scale: 1.12; }
+.app-shell[data-font-size="xlarge"] { --font-scale: 1.25; }
+.app-shell[data-density="compact"] {
+  --density-card: 16px;
+  --density-stack: 12px;
+  --density-gutter: 24px;
+  --density-row: 6px;
+}
+
+/* Opt-in density utilities: components adopt these so Compact/Comfortable
+ * actually changes their spacing. Padding, vertical stack gap, page gutter. */
+.pad-density    { padding: var(--density-card, 24px); }
+.stack-density > * + * { margin-top: var(--density-stack, 16px); }
+.gutter-density {
+  padding-inline-start: var(--density-gutter, 32px);
+  padding-inline-end: var(--density-gutter, 32px);
+}
+
+/* ── Skip-to-content link (Round 14.8 F1) ─────────────────────────
+ * Visually hidden until focused, then pinned top-start. First tab stop. */
+.skip-link {
+  position: fixed;
+  top: 0;
+  inset-inline-start: 0;
+  z-index: 100;
+  margin: 8px;
+  padding: 10px 16px;
+  border-radius: 10px;
+  background: var(--ink);
+  color: var(--surface-raised);
+  font-size: 13px;
+  font-weight: 600;
+  transform: translateY(-150%);
+  transition: transform 120ms var(--ease-out-quart);
+}
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+/* ── Living background (Round 14.8 F3) ────────────────────────────
+ * A single fixed layer of slow, warm radial drift behind the app. Subtle,
+ * never faster than the heuristics floor. The blanket reduced-motion rule
+ * above freezes the animation to its first frame, so it becomes a static
+ * wash for users who opt out of motion (heuristic 6 + 11). */
+@keyframes oria-bg-drift {
+  0%   { background-position: 0% 0%, 100% 100%; }
+  50%  { background-position: 100% 20%, 0% 80%; }
+  100% { background-position: 0% 0%, 100% 100%; }
+}
+.living-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    radial-gradient(60% 50% at 20% 15%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 70%),
+    radial-gradient(55% 45% at 85% 85%, color-mix(in srgb, var(--brand) 10%, transparent), transparent 70%);
+  background-size: 180% 180%, 180% 180%;
+  background-repeat: no-repeat;
+  animation: oria-bg-drift 60s ease-in-out infinite;
 }

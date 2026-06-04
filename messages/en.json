@@ -5,7 +5,17 @@
     "variant_inherit": "Default",
     "variant_light": "Light",
     "variant_dark": "Dark",
-    "variant_system": "System"
+    "variant_system": "System",
+    "display_label": "Display",
+    "display_hint": "Text size and density apply across Oria, on this device and everywhere you sign in.",
+    "font_size_label": "Text size",
+    "font_small": "Small",
+    "font_default": "Default",
+    "font_large": "Large",
+    "font_xlarge": "Extra large",
+    "density_label": "Density",
+    "density_comfortable": "Comfortable",
+    "density_compact": "Compact"
   },
   "calendar": {
     "source_events": "Events",
@@ -181,7 +191,8 @@
     "amount": "Amount",
     "notes": "Notes",
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "skip_to_content": "Skip to content"
   },
   "errors": {
     "generic": "Something went wrong. Please try again.",

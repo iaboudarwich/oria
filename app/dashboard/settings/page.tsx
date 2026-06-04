@@ -34,6 +34,8 @@ import { LanguageSwitcher } from "@/components/settings/language-switcher";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { PushToggle } from "@/components/pwa/push-toggle";
 import { AppearancePanel } from "@/components/settings/appearance-panel";
+import { DisplayPanel } from "@/components/settings/display-panel";
+import { readAppearance } from "@/lib/data/appearance-prefs";
 import { defaultAccentFor } from "@/lib/data/space-theme";
 import { PreferencesPanel } from "@/components/settings/preferences-panel";
 import { LearnedRulesPanel } from "@/components/settings/learned-rules-panel";
@@ -106,6 +108,7 @@ export default async function SettingsPage({
       ? await getUserProfile(ctx.profile.id)
       : null;
   const timelineEnabled = extras.has("timeline");
+  const appearance = tab === "appearance" ? await readAppearance() : null;
 
   const visible = sections.filter((s) => !s.hidden);
   const total = sections.length;
@@ -145,12 +148,20 @@ export default async function SettingsPage({
         ) : null}
 
         {tab === "appearance" && ctx && (
-          <AppearancePanel
-            initialAccent={ctx.organization.accent_color ?? null}
-            initialShadow={ctx.organization.shadow_color ?? null}
-            defaultAccent={defaultAccentFor(ctx.organization)}
-            initialVariant={ctx.organization.theme_variant ?? null}
-          />
+          <div className="space-y-9">
+            {appearance ? (
+              <DisplayPanel
+                initialFontSize={appearance.fontSize}
+                initialDensity={appearance.density}
+              />
+            ) : null}
+            <AppearancePanel
+              initialAccent={ctx.organization.accent_color ?? null}
+              initialShadow={ctx.organization.shadow_color ?? null}
+              defaultAccent={defaultAccentFor(ctx.organization)}
+              initialVariant={ctx.organization.theme_variant ?? null}
+            />
+          </div>
         )}
 
         {tab === "general" && (

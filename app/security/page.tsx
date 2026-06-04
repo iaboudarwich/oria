@@ -77,7 +77,7 @@ export default function SecurityPage() {
                 it touches your email, and deletable in one click. If something
                 here worries you, write to me directly:{" "}
                 <a
-                  className="text-brand hover:opacity-80 transition-base"
+                  className="text-brand underline hover:opacity-80 transition-base"
                   href="mailto:hi@heyoria.com"
                 >
                   hi@heyoria.com
@@ -93,7 +93,7 @@ export default function SecurityPage() {
           <p>
             Email{" "}
             <a
-              className="text-brand hover:opacity-80 transition-base"
+              className="text-brand underline hover:opacity-80 transition-base"
               href="mailto:security@heyoria.com"
             >
               security@heyoria.com
@@ -207,7 +207,7 @@ export default function SecurityPage() {
           Machine-readable contact: {" "}
           <Link
             href="/.well-known/security.txt"
-            className="text-brand hover:opacity-80"
+            className="text-brand underline hover:opacity-80"
             prefetch={false}
           >
             /.well-known/security.txt

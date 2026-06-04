@@ -1,5 +1,6 @@
 import type { CSSProperties, ReactNode } from "react";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { SidebarShell } from "@/components/dashboard/sidebar-shell";
 import { CommandPalette } from "@/components/command/command-palette";
 import { FeatureTour } from "@/components/onboarding/feature-tour";
@@ -26,6 +27,8 @@ import {
   readSidebarWidth,
 } from "@/lib/data/sidebar-prefs";
 import { kindsForMode, modeForOrgKind } from "@/lib/data/mode";
+import { readAppearance } from "@/lib/data/appearance-prefs";
+import { fontScaleFor } from "@/lib/appearance/prefs";
 import { isCurrentUserAdmin } from "@/lib/data/admin";
 import { resolveThingsLabel } from "@/lib/data/things-label";
 import { resolveSpaceTheme, themeCssVars } from "@/lib/data/space-theme";
@@ -75,6 +78,8 @@ export default async function DashboardLayout({ children }: { children: ReactNod
     gmailConnections,
     cloudConnections,
     outlookConnections,
+    appearance,
+    tNav,
   ] = await Promise.all([
     listAllSections({ includeHidden: false }),
     listUserSpaces(),
@@ -88,6 +93,8 @@ export default async function DashboardLayout({ children }: { children: ReactNod
     listGmailConnections(ctx.profile.id),
     listCloudConnections(ctx.profile.id),
     listOutlookConnections(ctx.profile.id),
+    readAppearance(),
+    getTranslations("common"),
   ]);
 
   const showReveal = await shouldShowReveal(ctx.profile.id);
@@ -209,9 +216,23 @@ export default async function DashboardLayout({ children }: { children: ReactNod
 
   return (
     <div
-      className="min-h-screen bg-canvas"
-      style={themeVars as CSSProperties}
+      id="oria-shell"
+      className="app-shell relative min-h-screen"
+      data-density={appearance.density}
+      data-font-size={appearance.fontSize}
+      style={
+        {
+          ...(themeVars as CSSProperties),
+          "--font-scale": fontScaleFor(appearance.fontSize),
+        } as CSSProperties
+      }
     >
+      {/* First tab stop: jump past the sidebar to the page content. */}
+      <a href="#main-content" className="skip-link">
+        {tNav("skip_to_content")}
+      </a>
+      {/* Atmospheric living background; frozen under reduced motion (globals.css). */}
+      <div className="living-bg" aria-hidden />
       <OrgThemeApplier variant={ctx.organization.theme_variant ?? null} />
       <TimezoneCookie />
       <SidebarShell

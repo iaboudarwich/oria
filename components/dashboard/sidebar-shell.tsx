@@ -134,9 +134,13 @@ export function SidebarShell({
       ) : null}
 
       <div className="sidebar-content lg:pl-[var(--sidebar-w)] transition-[padding] duration-200 ease-[cubic-bezier(0.2,0.8,0.2,1)]">
-        <div className="mx-auto max-w-[1200px] px-4 pb-safe-bottom sm:px-6 lg:px-10">
+        <main
+          id="main-content"
+          tabIndex={-1}
+          className="mx-auto max-w-[1200px] px-4 pb-safe-bottom outline-none sm:px-6 lg:px-10"
+        >
           {children}
-        </div>
+        </main>
       </div>
     </div>
   );
