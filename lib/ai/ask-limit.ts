@@ -38,19 +38,32 @@ export function askDailyLimit(): number {
 }
 
 let cached: Ratelimit | null = null;
+let constructionFailed = false;
 function limiter(): Ratelimit | null {
-  const url = process.env.UPSTASH_REDIS_REST_URL;
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (constructionFailed) return null;
+  if (cached) return cached;
+  // Trim the env values: a stray trailing newline or surrounding whitespace in
+  // the dashboard secret makes @upstash/redis throw at construction ("The redis
+  // url contains whitespace or newline"), which previously escaped the daily
+  // limit check and 500'd every Ask. Trim defensively, and wrap construction so
+  // ANY misconfiguration degrades the limit OPEN instead of breaking Ask.
+  const url = process.env.UPSTASH_REDIS_REST_URL?.trim();
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN?.trim();
   if (!url || !token) return null;
-  if (!cached) {
+  try {
     cached = new Ratelimit({
       redis: new Redis({ url, token }),
       limiter: Ratelimit.fixedWindow(askDailyLimit(), "1 d"),
       prefix: "oria:ask:daily",
       analytics: false,
     });
+    return cached;
+  } catch {
+    // Malformed URL/token, unreachable host config, etc. Never let the rate
+    // limiter take down Ask: remember the failure and degrade open.
+    constructionFailed = true;
+    return null;
   }
-  return cached;
 }
 
 /**
@@ -63,16 +76,16 @@ export async function checkAskDailyLimit(
   isByo: boolean,
 ): Promise<AskLimitDecision> {
   if (isByo) return decideAskLimit({ isByo: true, limiter: null });
-  const rl = limiter();
-  if (!rl) return decideAskLimit({ isByo: false, limiter: null });
   try {
+    const rl = limiter();
+    if (!rl) return decideAskLimit({ isByo: false, limiter: null });
     const r = await rl.limit(`u:${userId}`);
     return decideAskLimit({
       isByo: false,
       limiter: { success: r.success, limit: r.limit, reset: r.reset },
     });
   } catch {
-    return { allowed: true }; // degrade open on limiter error
+    return { allowed: true }; // degrade open on ANY limiter error
   }
 }
 
