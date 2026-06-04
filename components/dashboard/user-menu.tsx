@@ -10,6 +10,7 @@ import {
   PersonIcon,
   SettingsIcon,
   SparkIcon,
+  StaffIcon,
 } from "@/components/ui/icon";
 import { ReportDialog } from "@/components/feedback/report-dialog";
 import { useDismissable } from "@/lib/hooks/use-dismissable";
@@ -96,27 +97,30 @@ export function UserMenu({
             </p>
           </div>
 
+          {/* Logical order: Settings first, then the personal/onboarding
+              context, then space management, then feedback + admin. Sign out
+              is pinned last in its own group below. */}
           <ul className="py-1">
-            {orgKind !== "personal" ? (
-              <MenuLink
-                href="/dashboard/circle"
-                icon={PersonIcon}
-                label={orgKind === "office" ? t("team") : t("members")}
-                onSelect={() => setOpen(false)}
-              />
-            ) : null}
-            <MenuLink
-              href="/dashboard/reshape"
-              icon={SparkIcon}
-              label={t("reshape")}
-              onSelect={() => setOpen(false)}
-            />
             <MenuLink
               href="/dashboard/settings"
               icon={SettingsIcon}
               label={t("settings")}
               onSelect={() => setOpen(false)}
             />
+            <MenuLink
+              href="/dashboard/reshape"
+              icon={PersonIcon}
+              label={t("reshape")}
+              onSelect={() => setOpen(false)}
+            />
+            {orgKind !== "personal" ? (
+              <MenuLink
+                href="/dashboard/circle"
+                icon={StaffIcon}
+                label={orgKind === "office" ? t("team") : t("members")}
+                onSelect={() => setOpen(false)}
+              />
+            ) : null}
             {isAdmin ? (
               <MenuLink
                 href="/dashboard/admin/health"
