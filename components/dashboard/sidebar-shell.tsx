@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { Sidebar, type SidebarProps } from "@/components/dashboard/sidebar";
-import { ContextRail } from "@/components/dashboard/context-rail";
 
 const SIDEBAR_COOKIE = "oria_sidebar";
 const SECTIONS_COOKIE = "oria_sections";
@@ -89,17 +88,9 @@ export function SidebarShell({
 
   const effectiveWidth = collapsed ? COLLAPSED_WIDTH : width;
 
-  // Outer rail width: 0 on mobile (the inner-rail drawer carries the space
-  // switcher there), 56px on lg+. Both the inner rail's left offset and the
-  // content padding read --rail-w so the two-rail layout stays in sync.
-  const addHref =
-    sidebarProps.activeSpace.kind === "office"
-      ? "/dashboard/work/spaces/new"
-      : "/dashboard/circles/new";
-
   return (
     <div
-      className={`${collapsed ? "sidebar-collapsed" : "sidebar-expanded"} [--rail-w:0px] lg:[--rail-w:56px] ${
+      className={`${collapsed ? "sidebar-collapsed" : "sidebar-expanded"} ${
         dragging ? "sidebar-dragging" : ""
       }`}
       style={
@@ -110,11 +101,6 @@ export function SidebarShell({
         } as React.CSSProperties
       }
     >
-      <ContextRail
-        spaces={sidebarProps.spaces}
-        activeId={sidebarProps.activeSpace.id}
-        addHref={addHref}
-      />
       <Sidebar
         {...sidebarProps}
         collapsed={collapsed}
@@ -133,7 +119,7 @@ export function SidebarShell({
           onPointerDown={startResize}
           className="group fixed bottom-0 top-0 z-50 hidden w-1.5 cursor-col-resize lg:block"
           style={{
-            left: `calc(var(--rail-w, 0px) + var(--sidebar-w) - 3px)`,
+            left: `calc(var(--sidebar-w) - 3px)`,
           }}
         >
           {/* Visible grip line on hover/active for affordance. */}
@@ -147,7 +133,7 @@ export function SidebarShell({
         </div>
       ) : null}
 
-      <div className="sidebar-content lg:pl-[calc(var(--rail-w,0px)+var(--sidebar-w))] transition-[padding] duration-200 ease-[cubic-bezier(0.2,0.8,0.2,1)]">
+      <div className="sidebar-content lg:pl-[var(--sidebar-w)] transition-[padding] duration-200 ease-[cubic-bezier(0.2,0.8,0.2,1)]">
         <main
           id="main-content"
           tabIndex={-1}

@@ -376,7 +376,7 @@ Postgres function exists or is needed (no SQL path does tz-sensitive date math).
 
 ---
 
-## 13. Accessibility, appearance, two-rail, voice input (Round 14.8)
+## 13. Accessibility, appearance, sidebar, voice input (Round 14.8)
 
 **Accessibility floor.** WCAG AA is enforced, not aspirational. `scripts/verify-a11y.mjs`
 drives Chromium against `next start`, injects axe-core (WCAG 2.0/2.1 A+AA), and
@@ -403,12 +403,15 @@ Appearance, applied optimistically to `#oria-shell`.
 fixed atmospheric layer (frozen under the blanket reduced-motion rule). Adopt the
 primitives incrementally; they are live on the Today per-context surface.
 
-**Two-rail sidebar.** `ContextRail` (`components/dashboard/context-rail.tsx`) is
-the 56px outer icon rail of spaces/contexts on lg+, additive to the existing
-inner `Sidebar`. Both inner rail and content offset by one `--rail-w` var
-(0 on mobile, 56px on lg), so it degrades to single-rail if the var is 0. Global
-actions (Ask, add space) live in the rail, not a redundant top bar. RTL of the
-rail follows the inner sidebar's existing physical-left layout (a known limit).
+**Single sidebar** (collapsed from the two-rail in a later side round). One rail
+(`components/dashboard/sidebar.tsx`): logo at top, then the Home (Today) and Ask
+primary actions, the Sections group, the mode-specific nav, the system tier, and
+the account avatar (`UserMenu`) at the bottom. Space switching lives inside this
+rail via `SpaceSwitcher` (with its create-space options); there is no second
+rail and no `--rail-w`. Search is deduped: the top-bar command button + the body
+command bar carry it, so the rail's Ask uses a chat glyph, not a magnifier.
+Report-a-problem moved into the account menu (out of the rail). Drag-to-resize is
+kept (a single rail still benefits from a user-set width for long section names).
 
 **Voice input.** One reusable affordance, `components/ui/mic-button.tsx` (Whisper
 via `/api/transcribe`): real `<button>`, aria-label/aria-pressed, polite

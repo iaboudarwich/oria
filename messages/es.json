@@ -802,8 +802,7 @@
     "expand": "Expandir barra lateral",
     "collapse": "Contraer barra lateral",
     "smart_section": "Sección inteligente",
-    "contexts": "Tus espacios",
-    "add_space": "Añadir un espacio"
+    "today": "Hoy"
   },
   "user_menu": {
     "account": "Cuenta",
@@ -812,7 +811,8 @@
     "reshape": "Pide a Oria que cambie algo",
     "settings": "Configuración",
     "admin_health": "Admin · Estado del sistema",
-    "sign_out": "Cerrar sesión"
+    "sign_out": "Cerrar sesión",
+    "report": "Reportar un problema"
   },
   "records": {
     "types": "Tipos",

@@ -9,6 +9,7 @@ import {
   BoxIcon,
   CalendarIcon,
   ChartIcon,
+  ChatIcon,
   CheckIcon,
   ChevronDownIcon,
   ChevronLeftIcon,
@@ -26,7 +27,6 @@ import {
   PropertiesIcon,
   PulseIcon,
   ScalesIcon,
-  SearchIcon,
   SettingsIcon,
   SparkIcon,
   StaffIcon,
@@ -40,7 +40,6 @@ import {
 } from "@/components/dashboard/space-switcher";
 import { ModeToggle } from "@/components/dashboard/mode-toggle";
 import { UserMenu } from "@/components/dashboard/user-menu";
-import { ReportProblemButton } from "@/components/feedback/report-problem-button";
 
 // A nav spec carries an i18n key (resolved against the "sidebar" namespace at
 // render); a NavItem is the resolved, display-ready row.
@@ -60,13 +59,21 @@ type NavItem = {
   shortcut?: string;
 };
 
-// The emotional centerpiece: a single primary action at the top of the
-// sidebar. Everything else is supporting cast.
+// Home (Today) folded into the primary nav from the old outer rail. Exact-match
+// active (NavLink special-cases "/dashboard") so it isn't always lit.
+const homeAction: NavSpec = {
+  key: "today",
+  href: "/dashboard",
+  icon: HomeIcon,
+};
+
+// The emotional centerpiece: the primary action near the top of the sidebar.
+// A chat glyph (not a magnifier): search lives in the top-bar command button +
+// the body command bar, so the rail carries no redundant search affordance.
 const primaryAction: NavSpec = {
   key: "ask",
   href: "/dashboard/ask",
-  icon: SearchIcon,
-  shortcut: "⌘K",
+  icon: ChatIcon,
 };
 
 // Personal mode: secondary verbs + views below the Sections group.
@@ -251,10 +258,8 @@ export function Sidebar({
         // Mobile: full-width drawer that slides in. Desktop: width follows
         // the CSS var set by SidebarShell so expand/collapse stays in sync
         // with the main content padding.
-        // left tracks the outer rail width (--rail-w): 0 on mobile (full-width
-        // drawer), 56px on lg so the inner rail sits beside the context rail.
-        style={{ width: "var(--sidebar-w, 250px)", left: "var(--rail-w, 0px)" }}
-        className={`fixed inset-y-0 z-50 flex flex-col overflow-hidden border-e border-line glass shadow-lg transition-[width,transform] duration-200 ease-[cubic-bezier(0.2,0.8,0.2,1)] max-lg:!w-[260px] lg:translate-x-0 ${
+        style={{ width: "var(--sidebar-w, 250px)" }}
+        className={`fixed inset-y-0 left-0 z-50 flex flex-col overflow-hidden border-e border-line glass shadow-lg transition-[width,transform] duration-200 ease-[cubic-bezier(0.2,0.8,0.2,1)] max-lg:!w-[260px] lg:translate-x-0 ${
           open ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -314,7 +319,17 @@ export function Sidebar({
             collapsed ? "px-2" : "px-3"
           }`}
         >
-          {/* TIER 1. Ask Oria, the primary action. Alone, with a ⌘K hint. */}
+          {/* TIER 1. Home (Today) + Ask Oria, the primary actions at the top. */}
+          <ul className="flex flex-col gap-0.5">
+            <li>
+              <NavLink
+                item={toItem(homeAction)}
+                pathname={pathname}
+                onNavigate={close}
+                collapsed={collapsed}
+              />
+            </li>
+          </ul>
           <PrimaryRow
             item={toItem(primaryAction)}
             pathname={pathname}
@@ -412,9 +427,8 @@ export function Sidebar({
                 />
               </li>
             </ul>
-            {/* Report a problem: persistent, quiet, available from every
-                dashboard page. Opens the shared report dialog. */}
-            <ReportProblemButton userId={userId} collapsed={collapsed} />
+            {/* "Report a problem" moved into the account menu (UserMenu) so the
+                rail stays free of the bug/debug affordance. */}
 
             {/* Discreet security-disclosure link at the very bottom.
                 Doesn't merit a top-level nav slot, but every page should
@@ -433,6 +447,7 @@ export function Sidebar({
 
         <UserMenu
           user={user}
+          userId={userId}
           isAdmin={isAdmin}
           orgKind={orgKind}
           collapsed={collapsed}

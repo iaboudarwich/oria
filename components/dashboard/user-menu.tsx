@@ -1,14 +1,17 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { signOut } from "@/lib/auth/actions";
 import {
+  BugIcon,
   LockIcon,
   PersonIcon,
   SettingsIcon,
   SparkIcon,
 } from "@/components/ui/icon";
+import { ReportDialog } from "@/components/feedback/report-dialog";
 import { useDismissable } from "@/lib/hooks/use-dismissable";
 
 /**
@@ -23,11 +26,14 @@ import { useDismissable } from "@/lib/hooks/use-dismissable";
  */
 export function UserMenu({
   user,
+  userId,
   isAdmin,
   orgKind,
   collapsed,
 }: {
   user: { name: string; email: string };
+  /** Threaded to the Report-a-problem dialog (moved here from the rail). */
+  userId?: string;
   isAdmin: boolean;
   /** Drives the Members link inside the menu. Personal is solo, so
    *  there's nothing to manage; Circles and Workspaces both have a
@@ -37,6 +43,7 @@ export function UserMenu({
 }) {
   const t = useTranslations("user_menu");
   const { ref, open, toggle, setOpen } = useDismissable<HTMLDivElement>();
+  const [reportOpen, setReportOpen] = useState(false);
   const initials =
     user.name
       .split(/\s+/)
@@ -118,6 +125,21 @@ export function UserMenu({
                 onSelect={() => setOpen(false)}
               />
             ) : null}
+            <li>
+              <button
+                type="button"
+                onClick={() => {
+                  setOpen(false);
+                  setReportOpen(true);
+                }}
+                className="flex w-full items-center gap-2.5 px-3.5 py-2 text-left text-[13px] text-ink-soft transition-base hover:bg-canvas hover:text-ink"
+              >
+                <span className="inline-flex h-4 w-4 items-center justify-center text-ink-faint">
+                  <BugIcon size={13} />
+                </span>
+                <span className="flex-1 truncate">{t("report")}</span>
+              </button>
+            </li>
           </ul>
 
           <div className="border-t border-line py-1">
@@ -135,6 +157,8 @@ export function UserMenu({
           </div>
         </div>
       ) : null}
+
+      <ReportDialog open={reportOpen} onClose={() => setReportOpen(false)} userId={userId} />
     </div>
   );
 }

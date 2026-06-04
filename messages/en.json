@@ -802,8 +802,7 @@
     "expand": "Expand sidebar",
     "collapse": "Collapse sidebar",
     "smart_section": "Smart Section",
-    "contexts": "Your spaces",
-    "add_space": "Add a space"
+    "today": "Today"
   },
   "user_menu": {
     "account": "Account",
@@ -812,7 +811,8 @@
     "reshape": "Tell Oria to change something",
     "settings": "Settings",
     "admin_health": "Admin · System Health",
-    "sign_out": "Sign out"
+    "sign_out": "Sign out",
+    "report": "Report a problem"
   },
   "records": {
     "types": "Types",
