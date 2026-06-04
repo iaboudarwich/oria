@@ -949,5 +949,15 @@
     "error_failed": "Transcription failed",
     "error_denied": "Microphone permission denied. Enable it in browser settings.",
     "error_mic": "Could not access microphone."
+  },
+  "groupReview": {
+    "eyebrow": "Read together",
+    "merged_summary": "{count, plural, one {# image} other {# images}}, read as one",
+    "split_summary": "{count, plural, one {# image} other {# images}}, kept as {records, plural, one {# record} other {# records}}",
+    "confirm": "Looks right",
+    "split": "Keep separate",
+    "merge": "Combine into one",
+    "working": "Working...",
+    "image_alt": "Image {index} of {count}"
   }
 }

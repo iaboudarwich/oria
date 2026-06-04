@@ -195,6 +195,26 @@ export interface Upload {
   section_assigned_by?: "user" | "auto" | null;
   auto_section?: string | null;
   auto_custom_section_id?: UUID | null;
+  // Multi-image group (migration 0074): set when this upload was dropped as
+  // part of a multi-image set read together.
+  group_id?: UUID | null;
+}
+
+export type UploadGroupStatus =
+  | "pending"
+  | "extracting"
+  | "merged"
+  | "split";
+
+export interface UploadGroup {
+  id: UUID;
+  organization_id: UUID;
+  created_by: UUID | null;
+  status: UploadGroupStatus;
+  created_at: TimestampString;
+  // Migration 0075: review affordance.
+  reviewed_at: TimestampString | null;
+  force_merge: boolean;
 }
 
 export interface Extraction {
@@ -280,6 +300,8 @@ export interface MemoryItem {
   id: UUID;
   organization_id: UUID;
   upload_id: UUID | null;
+  /** Set when this record came from a multi-image group read (migration 0074). */
+  group_id?: UUID | null;
   document_type: DocumentType | null;
   section: Section | null;
   custom_section_id: UUID | null;

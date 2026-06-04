@@ -949,5 +949,15 @@
     "error_failed": "La transcripción falló",
     "error_denied": "Permiso de micrófono denegado. Actívalo en la configuración del navegador.",
     "error_mic": "No se pudo acceder al micrófono."
+  },
+  "groupReview": {
+    "eyebrow": "Leídas juntas",
+    "merged_summary": "{count, plural, one {# imagen} other {# imágenes}}, leídas como una",
+    "split_summary": "{count, plural, one {# imagen} other {# imágenes}}, guardadas como {records, plural, one {# registro} other {# registros}}",
+    "confirm": "Está bien",
+    "split": "Mantener separadas",
+    "merge": "Unir en una",
+    "working": "Procesando...",
+    "image_alt": "Imagen {index} de {count}"
   }
 }

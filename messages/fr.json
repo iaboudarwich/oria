@@ -949,5 +949,15 @@
     "error_failed": "Échec de la transcription",
     "error_denied": "Accès au microphone refusé. Activez-le dans les paramètres du navigateur.",
     "error_mic": "Impossible d'accéder au microphone."
+  },
+  "groupReview": {
+    "eyebrow": "Lues ensemble",
+    "merged_summary": "{count, plural, one {# image} other {# images}}, lues comme une seule",
+    "split_summary": "{count, plural, one {# image} other {# images}}, gardées comme {records, plural, one {# fiche} other {# fiches}}",
+    "confirm": "C'est juste",
+    "split": "Garder séparées",
+    "merge": "Réunir en une seule",
+    "working": "En cours...",
+    "image_alt": "Image {index} sur {count}"
   }
 }

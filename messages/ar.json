@@ -949,5 +949,15 @@
     "error_failed": "فشل التفريغ",
     "error_denied": "تم رفض إذن الميكروفون. فعّله من إعدادات المتصفح.",
     "error_mic": "تعذّر الوصول إلى الميكروفون."
+  },
+  "groupReview": {
+    "eyebrow": "قراءة مجمّعة",
+    "merged_summary": "{count, plural, one {صورة واحدة} other {# صور}}، قُرئت كوحدة واحدة",
+    "split_summary": "{count, plural, one {صورة واحدة} other {# صور}}، حُفظت كـ {records, plural, one {سجل واحد} other {# سجلات}}",
+    "confirm": "صحيح",
+    "split": "اتركها منفصلة",
+    "merge": "ادمجها في واحد",
+    "working": "جارٍ العمل...",
+    "image_alt": "صورة {index} من {count}"
   }
 }

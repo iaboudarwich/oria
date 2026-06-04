@@ -54,6 +54,7 @@ export type AuditAction =
   | "upload.group_extracted"
   | "upload.group_confirmed"
   | "upload.group_split"
+  | "upload.group_merged"
   // Reminders
   | "reminder.created"
   | "reminder.deleted"
@@ -328,6 +329,7 @@ export function actionLabel(action: string): string {
     "upload.group_extracted":       "Read a group of images together",
     "upload.group_confirmed":       "Confirmed a grouped record",
     "upload.group_split":           "Split a grouped record",
+    "upload.group_merged":          "Merged grouped records into one",
     "reminder.created":             "Created a reminder",
     "reminder.deleted":             "Deleted a reminder",
     "member.invite.created":        "Sent an invite",

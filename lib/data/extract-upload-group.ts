@@ -32,11 +32,12 @@ export async function extractUploadGroup(groupId: string): Promise<{ ok: boolean
     .update({ status: "extracting" })
     .eq("id", groupId)
     .eq("status", "pending")
-    .select("id, organization_id, created_by")
+    .select("id, organization_id, created_by, force_merge")
     .maybeSingle();
   if (!claimed) return { ok: false }; // already claimed, or not pending
   const orgId = (claimed as { organization_id: string }).organization_id;
   const actorId = (claimed as { created_by: string | null }).created_by;
+  const forceMerge = (claimed as { force_merge?: boolean }).force_merge === true;
 
   // 2. Member uploads (images), in drop order.
   const { data: rows } = await admin
@@ -72,7 +73,7 @@ export async function extractUploadGroup(groupId: string): Promise<{ ok: boolean
   }
 
   // 4. The one group call. Fall back to per-image extraction on failure.
-  const result = await extractImageGroup(images);
+  const result = await extractImageGroup(images, { forceMerge });
   if (!result) {
     await requeueIndividually(members, groupId);
     await admin.from("upload_groups").update({ status: "split" }).eq("id", groupId);

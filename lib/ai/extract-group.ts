@@ -61,7 +61,15 @@ function str(v: unknown): string | null {
   return typeof v === "string" && v.trim() ? v.trim() : null;
 }
 
-function sanitize(parsed: unknown, imageCount: number): GroupExtraction | null {
+/** Fold several records into one (used when the user forced a merge): keep the
+ *  highest-confidence record's fields, union every image index onto it. */
+function foldToOne(records: GroupRecord[]): GroupRecord {
+  const base = records.reduce((a, b) => (b.confidence > a.confidence ? b : a));
+  const idxs = Array.from(new Set(records.flatMap((r) => r.image_indexes))).sort((a, b) => a - b);
+  return { ...base, image_indexes: idxs };
+}
+
+function sanitize(parsed: unknown, imageCount: number, forceMerge = false): GroupExtraction | null {
   if (!parsed || typeof parsed !== "object") return null;
   const p = parsed as Record<string, unknown>;
   const rawRecords = Array.isArray(p.records) ? p.records : [];
@@ -92,7 +100,11 @@ function sanitize(parsed: unknown, imageCount: number): GroupExtraction | null {
     });
   }
   if (records.length === 0) return null;
-  // "merged" only holds if the model returned exactly one record.
+  // The user already decided these are one thing: collapse to a single record.
+  if (forceMerge) {
+    return { merged: true, reason: str(p.reason) ?? "forced merge", records: [foldToOne(records)] };
+  }
+  // Otherwise "merged" only holds if the model returned exactly one record.
   const merged = p.merged === true && records.length === 1;
   return { merged, reason: str(p.reason) ?? "", records };
 }
@@ -104,7 +116,7 @@ function sanitize(parsed: unknown, imageCount: number): GroupExtraction | null {
  */
 export async function extractImageGroup(
   images: GroupImage[],
-  opts: { language?: string | null } = {},
+  opts: { language?: string | null; forceMerge?: boolean } = {},
 ): Promise<GroupExtraction | null> {
   if (images.length === 0) return null;
 
@@ -115,9 +127,11 @@ export async function extractImageGroup(
   });
   content.push({
     type: "text",
-    text: `${images.length} images, dropped together. Decide one-vs-many and return JSON.${
-      opts.language ? ` Write user-facing strings (title, summary) in ${opts.language}.` : ""
-    }`,
+    text: `${images.length} images, dropped together. ${
+      opts.forceMerge
+        ? "The user has confirmed these are ONE thing: return exactly one record (merged=true) whose image_indexes cover every image."
+        : "Decide one-vs-many and return JSON."
+    }${opts.language ? ` Write user-facing strings (title, summary) in ${opts.language}.` : ""}`,
   });
 
   const startedAt = Date.now();
@@ -142,7 +156,7 @@ export async function extractImageGroup(
     );
     if (!res?.content) return null;
     const cleaned = res.content.trim().replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim();
-    return sanitize(JSON.parse(cleaned), images.length);
+    return sanitize(JSON.parse(cleaned), images.length, opts.forceMerge ?? false);
   } catch {
     return null;
   }

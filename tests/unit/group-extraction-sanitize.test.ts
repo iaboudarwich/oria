@@ -115,6 +115,26 @@ describe("sanitizeGroupExtraction", () => {
     expect(sanitizeGroupExtraction("nope", 2)).toBeNull();
   });
 
+  it("folds several records into one when the user forced a merge", () => {
+    const out = sanitizeGroupExtraction(
+      {
+        merged: false,
+        reason: "model still saw two",
+        records: [
+          { title: "Low", document_type: "screenshot", section: "travel", confidence: 0.4, image_indexes: [0] },
+          { title: "High", document_type: "ticket", section: "travel", confidence: 0.95, image_indexes: [1, 2] },
+        ],
+      },
+      3,
+      true, // forceMerge
+    );
+    expect(out!.merged).toBe(true);
+    expect(out!.records).toHaveLength(1);
+    // Keeps the highest-confidence record's identity, unions every image.
+    expect(out!.records[0].title).toBe("High");
+    expect(out!.records[0].image_indexes).toEqual([0, 1, 2]);
+  });
+
   it("supplies a title when the model omits it", () => {
     const out = sanitizeGroupExtraction(
       { merged: true, records: [{ document_type: "receipt", section: "finance", image_indexes: [0] }] },

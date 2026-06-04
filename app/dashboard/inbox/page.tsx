@@ -7,11 +7,13 @@ import { DropzoneCompact } from "@/components/upload/dropzone-compact";
 import { UploadsPoller } from "@/components/upload/uploads-poller";
 import { SectionsGrid } from "@/components/dashboard/sections-grid";
 import { InboxList } from "@/components/upload/inbox-list";
+import { GroupReviewStrip } from "@/components/upload/group-review";
 import {
   countUploadsBySection,
   getSignedUrlMap,
   listUploadsWithUploader,
 } from "@/lib/data/uploads";
+import { listReviewableGroups } from "@/lib/data/upload-groups";
 import { listAllSections } from "@/lib/data/all-sections";
 import { countReviewUploads } from "@/lib/data/sections";
 import { recoverStuckUploads } from "@/lib/data/stuck-uploads";
@@ -30,14 +32,22 @@ export default async function UploadPage() {
   // list them, so the row either flips fast or shows a real Failed
   // pill instead of pretending it's still reading.
   await recoverStuckUploads();
-  const [counts, uploads, allSections, reviewCount, seenHints] =
+  const [counts, uploads, allSections, reviewCount, seenHints, reviewGroups] =
     await Promise.all([
       countUploadsBySection(),
       listUploadsWithUploader({ limit: 50 }),
       listAllSections({ includeHidden: false, includeReview: false }),
       countReviewUploads(),
       getSeenHintKeys(),
+      listReviewableGroups(),
     ]);
+
+  // Uploads in a group still awaiting review are shown as one group card, not as
+  // loose rows, so hide them from the flat list until the user resolves them.
+  const groupedUploadIds = new Set(
+    reviewGroups.flatMap((g) => g.images.map((im) => im.uploadId)),
+  );
+  const ungrouped = uploads.filter((u) => !groupedUploadIds.has(u.id));
 
   const thumbs = await getSignedUrlMap(
     uploads.map((u) => ({ id: u.id, storage_path: u.storage_path })),
@@ -48,7 +58,7 @@ export default async function UploadPage() {
   );
 
   // Uploads that have a low-confidence suggestion but no section yet.
-  const pendingSuggestions: SuggestionItem[] = uploads
+  const pendingSuggestions: SuggestionItem[] = ungrouped
     .filter(
       (u) =>
         !u.section &&
@@ -81,14 +91,17 @@ export default async function UploadPage() {
           </Link>
         ) : null}
         <SectionSuggestionsBanner suggestions={pendingSuggestions} />
-        {uploads.length === 0 ? (
-          <EmptyState
-            icon={<InboxIcon size={22} />}
-            headline={t("inbox_headline")}
-            description={t("inbox_desc")}
-          />
+        <GroupReviewStrip groups={reviewGroups} />
+        {ungrouped.length === 0 ? (
+          reviewGroups.length === 0 ? (
+            <EmptyState
+              icon={<InboxIcon size={22} />}
+              headline={t("inbox_headline")}
+              description={t("inbox_desc")}
+            />
+          ) : null
         ) : (
-          <InboxList items={uploads} thumbs={thumbs} />
+          <InboxList items={ungrouped} thumbs={thumbs} />
         )}
         <SectionsGrid sections={allSections} counts={counts} />
       </div>
