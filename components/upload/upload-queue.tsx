@@ -41,6 +41,10 @@ export function useUploadQueue(opts: {
   const [tasks, setTasks] = useState<UploadTask[]>([]);
   const fileMapRef = useRef<Map<string, File>>(new Map());
   const groupMapRef = useRef<Map<string, string | undefined>>(new Map());
+  // Per-group bookkeeping so a multi-image set is read as one: which task ids
+  // belong to a group, and how many of its uploads are still in flight.
+  const groupTaskIdsRef = useRef<Map<string, string[]>>(new Map());
+  const groupRemainingRef = useRef<Map<string, number>>(new Map());
   const queueRef = useRef<string[]>([]);
   const runningRef = useRef(0);
 
@@ -93,6 +97,25 @@ export function useUploadQueue(opts: {
 
   const pumpRef = useRef<() => void>(() => {});
 
+  // Once every upload of a group has landed: run the one-shot group extraction
+  // (the caller's onGroupSettled), then flip the group's reading tasks to done.
+  // Grouped uploads do NOT poll per file, because their status only becomes
+  // "filed" as a side effect of this group read.
+  const settleGroup = useCallback(async (groupId: string) => {
+    try {
+      await optsRef.current.onGroupSettled?.(groupId);
+    } catch {
+      // The cron fallback will still read the group; never block the UI.
+    }
+    const ids = new Set(groupTaskIdsRef.current.get(groupId) ?? []);
+    setTasks((prev) =>
+      prev.map((t) => (ids.has(t.id) && t.phase === "reading" ? { ...t, phase: "done" } : t)),
+    );
+    optsRef.current.onComplete?.();
+    groupTaskIdsRef.current.delete(groupId);
+    groupRemainingRef.current.delete(groupId);
+  }, []);
+
   const runTask = useCallback(
     async (id: string) => {
       const file = fileMapRef.current.get(id);
@@ -106,6 +129,9 @@ export function useUploadQueue(opts: {
         const result = await uploadFile(optsRef.current.buildFormData(file, groupId));
         if (!result.ok) {
           setPhase(id, "error", result.error);
+        } else if (groupId) {
+          // Grouped: uploaded; wait for the whole set to be read together.
+          setPhase(id, "reading");
         } else {
           setPhase(id, "reading");
           await pollUntilDone(result.id);
@@ -118,22 +144,15 @@ export function useUploadQueue(opts: {
         fileMapRef.current.delete(id);
         groupMapRef.current.delete(id);
         runningRef.current -= 1;
-        // When this was the last in-flight upload of its group, the set has
-        // settled: tell the caller so the one-shot group extraction can run.
         if (groupId) {
-          let stillActive = false;
-          for (const v of groupMapRef.current.values()) {
-            if (v === groupId) {
-              stillActive = true;
-              break;
-            }
-          }
-          if (!stillActive) optsRef.current.onGroupSettled?.(groupId);
+          const remaining = (groupRemainingRef.current.get(groupId) ?? 1) - 1;
+          groupRemainingRef.current.set(groupId, remaining);
+          if (remaining <= 0) void settleGroup(groupId);
         }
         pumpRef.current();
       }
     },
-    [setPhase, pollUntilDone],
+    [setPhase, pollUntilDone, settleGroup],
   );
 
   const pump = useCallback(() => {
@@ -150,13 +169,19 @@ export function useUploadQueue(opts: {
 
   const enqueue = useCallback(
     (files: File[], groupId?: string) => {
+      const ids: string[] = [];
       const added: UploadTask[] = files.map((f) => {
         const id = newId(f.name);
         fileMapRef.current.set(id, f);
         groupMapRef.current.set(id, groupId);
         queueRef.current.push(id);
+        ids.push(id);
         return { id, name: f.name, phase: "pending" as const };
       });
+      if (groupId) {
+        groupTaskIdsRef.current.set(groupId, ids);
+        groupRemainingRef.current.set(groupId, ids.length);
+      }
       setTasks((prev) => [...prev, ...added]);
       pump();
     },

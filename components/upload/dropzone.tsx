@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useId, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { uploadFile } from "@/lib/data/upload-actions";
-import { createUploadGroup } from "@/lib/data/upload-group-actions";
+import { createUploadGroup, finalizeUploadGroup } from "@/lib/data/upload-group-actions";
 import { ArrowRightIcon, CameraIcon, CheckIcon, CloseIcon, UploadIcon } from "@/components/ui/icon";
 import { useUploadQueue, UploadQueue } from "@/components/upload/upload-queue";
 
@@ -84,6 +84,10 @@ export function Dropzone({
   const queue = useUploadQueue({
     buildFormData,
     onComplete: () => router.refresh(),
+    // Read the whole multi-image set as one once it has settled.
+    onGroupSettled: async (groupId) => {
+      await finalizeUploadGroup(groupId);
+    },
   });
 
   useEffect(() => {

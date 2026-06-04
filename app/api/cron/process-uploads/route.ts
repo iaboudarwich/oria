@@ -18,6 +18,7 @@ import { runImageAnalysis } from "@/lib/ai/run-image-analysis";
 import { runCategorizeSection } from "@/lib/ai/run-categorize-section";
 import { runDetectTrackable } from "@/lib/ai/run-detect-trackable";
 import { recordSystemEvent } from "@/lib/data/system-events";
+import { extractUploadGroup } from "@/lib/data/extract-upload-group";
 
 /** Maximum concurrent jobs per phase per cron tick. */
 const BATCH_SIZE = 3;
@@ -214,6 +215,28 @@ export async function GET(req: NextRequest) {
     }),
   );
 
+  // ── Phase E: stale upload groups (fallback) ───────────────────────────────
+  // The dropzone normally triggers group extraction the moment a set settles.
+  // This catches groups whose client never fired (tab closed): any group still
+  // "pending" past the settle window is read here. extractUploadGroup claims
+  // the group atomically, so this never races the client trigger.
+  const GROUP_SETTLE_MS = 90_000;
+  const staleCutoff = new Date(Date.now() - GROUP_SETTLE_MS).toISOString();
+  const groupAdmin = createAdminClient();
+  const { data: staleGroups } = await groupAdmin
+    .from("upload_groups")
+    .select("id")
+    .eq("status", "pending")
+    .lt("created_at", staleCutoff)
+    .order("created_at", { ascending: true })
+    .limit(BATCH_SIZE);
+  const groupResults = await Promise.allSettled(
+    ((staleGroups ?? []) as { id: string }[]).map(async (g) => {
+      const res = await extractUploadGroup(g.id);
+      return { ok: res.ok };
+    }),
+  );
+
   const countOk = (results: PromiseSettledResult<{ ok: boolean }>[]) =>
     results.filter((r) => r.status === "fulfilled" && r.value.ok).length;
 
@@ -233,6 +256,10 @@ export async function GET(req: NextRequest) {
     categorize: {
       processed: categorizationResults.length,
       succeeded: countOk(categorizationResults as PromiseSettledResult<{ ok: boolean }>[]),
+    },
+    groups: {
+      processed: groupResults.length,
+      succeeded: countOk(groupResults as PromiseSettledResult<{ ok: boolean }>[]),
     },
   });
 }
