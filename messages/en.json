@@ -929,5 +929,14 @@
   },
   "askLimit": {
     "reached": "You have reached today's Ask Oria limit. It resets in about {hours} hours. Connect your own AI key in Settings for unlimited questions."
+  },
+  "voice": {
+    "start": "Start voice dictation",
+    "stop": "Stop recording",
+    "recording": "Recording",
+    "transcribing": "Transcribing your voice",
+    "error_failed": "Transcription failed",
+    "error_denied": "Microphone permission denied. Enable it in browser settings.",
+    "error_mic": "Could not access microphone."
   }
 }

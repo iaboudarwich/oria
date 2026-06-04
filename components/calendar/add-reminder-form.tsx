@@ -1,6 +1,9 @@
 "use client";
 
 import { useRef, useState, useTransition } from "react";
+import { useLocale } from "next-intl";
+import { MicButton } from "@/components/ui/mic-button";
+import type { Locale } from "@/i18n/config";
 import { createReminder } from "@/lib/data/reminder-actions";
 
 /**
@@ -15,6 +18,8 @@ import { createReminder } from "@/lib/data/reminder-actions";
  */
 export function AddReminderForm() {
   const formRef = useRef<HTMLFormElement>(null);
+  const titleRef = useRef<HTMLInputElement>(null);
+  const locale = useLocale() as Locale;
   const [pending, startTransition] = useTransition();
   const [status, setStatus] = useState<"idle" | "added" | "error">("idle");
 
@@ -39,14 +44,27 @@ export function AddReminderForm() {
         action={onSubmit}
         className="flex flex-col gap-2 border-t border-line p-3 sm:flex-row sm:items-center"
       >
-        <input
-          type="text"
-          name="title"
-          required
-          autoFocus
-          placeholder="What to remember"
-          className="h-10 flex-1 rounded-lg bg-canvas/60 px-3 text-[13.5px] text-ink placeholder:text-ink-faint outline-none focus:bg-canvas"
-        />
+        <div className="relative flex-1">
+          <input
+            ref={titleRef}
+            type="text"
+            name="title"
+            required
+            autoFocus
+            placeholder="What to remember"
+            className="h-10 w-full rounded-lg bg-canvas/60 pe-12 ps-3 text-[13.5px] text-ink placeholder:text-ink-faint outline-none focus:bg-canvas"
+          />
+          <div className="absolute inset-y-0 end-1 flex items-center">
+            <MicButton
+              size="sm"
+              onTranscribed={(text) => {
+                const el = titleRef.current;
+                if (el) el.value = el.value ? `${el.value} ${text}` : text;
+              }}
+              targetLanguage={locale}
+            />
+          </div>
+        </div>
         <input
           type="date"
           name="date"

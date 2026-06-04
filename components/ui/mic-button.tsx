@@ -1,7 +1,14 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
+import { useTranslations } from "next-intl";
 import type { Locale } from "@/i18n/config";
+import {
+  nextRecordingState,
+  isBusy,
+  isPressed,
+  type RecordingState,
+} from "@/lib/voice/recording-machine";
 
 type MicButtonProps = {
   onTranscribed: (text: string) => void;
@@ -14,11 +21,9 @@ type MicButtonProps = {
   breatheWhenIdle?: boolean;
 };
 
-type RecordingState = "idle" | "recording" | "transcribing" | "error";
-
 function MicIcon({ size }: { size: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
       <rect x="9" y="3" width="6" height="11" rx="3" />
       <path d="M5 11a7 7 0 0 0 14 0" />
       <path d="M12 18v3" />
@@ -34,9 +39,14 @@ function formatDuration(ms: number): string {
 }
 
 /**
- * Tap-to-start, tap-to-stop voice dictation button.
- * Sends audio to /api/transcribe, calls onTranscribed with the result.
- * Renders nothing if MediaRecorder is unavailable.
+ * The single, reusable voice-input affordance (Round 14.8 F4). Tap to record,
+ * tap to stop; audio goes to /api/transcribe (Whisper) and the result is passed
+ * to onTranscribed. Renders nothing if MediaRecorder is unavailable.
+ *
+ * Accessibility: a real <button> (Enter/Space activate), an aria-label that
+ * tracks state, aria-pressed for the recording toggle, a polite aria-live
+ * status so screen-reader users hear recording / transcribing / error, and a
+ * 44px minimum target at md/lg. State runs through the pure recording machine.
  */
 export function MicButton({
   onTranscribed,
@@ -45,6 +55,7 @@ export function MicButton({
   className = "",
   breatheWhenIdle = false,
 }: MicButtonProps) {
+  const t = useTranslations("voice");
   const [state, setState] = useState<RecordingState>("idle");
   const [error, setError] = useState<string | null>(null);
   const [elapsed, setElapsed] = useState(0);
@@ -58,6 +69,12 @@ export function MicButton({
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const startTimeRef = useRef<number>(0);
 
+  const dispatch = useCallback(
+    (event: Parameters<typeof nextRecordingState>[1]) => {
+      setState((s) => nextRecordingState(s, event));
+    },
+    [],
+  );
 
   const stopTimer = useCallback(() => {
     if (timerRef.current) {
@@ -66,16 +83,25 @@ export function MicButton({
     }
   }, []);
 
+  const failTransient = useCallback((message: string, ms: number) => {
+    setError(message);
+    setState((s) => nextRecordingState(s, { type: "FAIL" }));
+    setTimeout(() => {
+      setState((s) => nextRecordingState(s, { type: "RESET" }));
+      setError(null);
+    }, ms);
+  }, []);
+
   const handleStop = useCallback(async () => {
     stopTimer();
     const chunks = chunksRef.current;
     chunksRef.current = [];
     if (chunks.length === 0) {
-      setState("idle");
+      dispatch({ type: "EMPTY" });
       return;
     }
 
-    setState("transcribing");
+    dispatch({ type: "STOP" });
     try {
       const mimeType = mediaRef.current?.mimeType ?? "audio/webm";
       const blob = new Blob(chunks, { type: mimeType });
@@ -84,26 +110,19 @@ export function MicButton({
       form.append("audio", blob, "recording.webm");
       if (targetLanguage) form.append("target_language", targetLanguage);
 
-      const res = await fetch("/api/transcribe", {
-        method: "POST",
-        body: form,
-      });
+      const res = await fetch("/api/transcribe", { method: "POST", body: form });
       if (!res.ok) {
-        const data = await res.json() as { error?: string; message?: string };
-        throw new Error(data.message ?? data.error ?? "Transcription failed");
+        const data = (await res.json()) as { error?: string; message?: string };
+        throw new Error(data.message ?? data.error ?? t("error_failed"));
       }
       const data = (await res.json()) as { text: string };
-      if (data.text) {
-        onTranscribed(data.text);
-      }
-      setState("idle");
+      if (data.text) onTranscribed(data.text);
+      dispatch({ type: "TRANSCRIBED" });
       setError(null);
     } catch (err) {
-      setState("error");
-      setError(err instanceof Error ? err.message : "Transcription failed");
-      setTimeout(() => { setState("idle"); setError(null); }, 3000);
+      failTransient(err instanceof Error ? err.message : t("error_failed"), 3000);
     }
-  }, [onTranscribed, targetLanguage, stopTimer]);
+  }, [dispatch, failTransient, onTranscribed, stopTimer, t, targetLanguage]);
 
   async function startRecording() {
     setError(null);
@@ -115,23 +134,22 @@ export function MicButton({
         if (e.data.size > 0) chunksRef.current.push(e.data);
       };
       recorder.onstop = () => {
-        stream.getTracks().forEach((t) => t.stop());
+        stream.getTracks().forEach((tr) => tr.stop());
         void handleStop();
       };
       recorder.start();
       mediaRef.current = recorder;
       startTimeRef.current = Date.now();
-      setState("recording");
+      dispatch({ type: "START" });
       timerRef.current = setInterval(() => {
         setElapsed(Date.now() - startTimeRef.current);
       }, 100);
     } catch (err) {
-      const msg = err instanceof Error && err.name === "NotAllowedError"
-        ? "Microphone permission denied. Enable it in browser settings."
-        : "Could not access microphone.";
-      setState("error");
-      setError(msg);
-      setTimeout(() => { setState("idle"); setError(null); }, 4000);
+      const msg =
+        err instanceof Error && err.name === "NotAllowedError"
+          ? t("error_denied")
+          : t("error_mic");
+      failTransient(msg, 4000);
     }
   }
 
@@ -142,47 +160,52 @@ export function MicButton({
   }
 
   function handleClick() {
-    if (state === "recording") {
-      stopRecording();
-    } else if (state === "idle") {
-      void startRecording();
-    }
+    if (state === "recording") stopRecording();
+    else if (state === "idle") void startRecording();
   }
 
   if (!supported) return null;
 
-  const iconSize = size === "lg" ? 22 : size === "md" ? 16 : 13;
-  const btnSize = size === "lg"
-    ? "h-14 w-14"
-    : size === "md"
-    ? "h-9 w-9"
-    : "h-7 w-7";
+  const iconSize = size === "lg" ? 22 : size === "md" ? 18 : 14;
+  // 44px minimum target at md/lg (heuristics §1.8 / WCAG). sm stays compact for
+  // dense inline composers.
+  const btnSize = size === "lg" ? "h-14 w-14" : size === "md" ? "h-11 w-11" : "h-9 w-9";
 
-  const isRecording = state === "recording";
-  const isTranscribing = state === "transcribing";
+  const recording = state === "recording";
+  const transcribing = isBusy(state);
+
+  // Status announced to assistive tech (polite). Empty while idle.
+  const status = recording
+    ? t("recording")
+    : transcribing
+      ? t("transcribing")
+      : state === "error"
+        ? (error ?? t("error_failed"))
+        : "";
+  const label = recording ? t("stop") : t("start");
 
   return (
     <div className={`relative inline-flex flex-col items-center ${className}`}>
       <button
         type="button"
         onClick={handleClick}
-        disabled={isTranscribing}
-        title={
-          error ??
-          (isRecording ? "Stop recording" : "Start voice dictation")
-        }
+        disabled={transcribing}
+        aria-label={label}
+        aria-pressed={isPressed(state)}
+        title={error ?? label}
         className={`${btnSize} inline-flex items-center justify-center rounded-full transition-base
-          ${isRecording
-            ? "bg-claret text-surface animate-mic-breathe"
-            : isTranscribing
-            ? "bg-ink/10 text-ink-faint cursor-wait"
-            : state === "error"
-            ? "bg-claret/10 text-claret"
-            : `bg-canvas border border-line text-ink-muted hover:bg-surface-raised hover:text-ink ${breatheWhenIdle ? "animate-mic-breathe" : ""}`
+          ${
+            recording
+              ? "bg-claret text-surface animate-mic-breathe"
+              : transcribing
+                ? "bg-ink/10 text-ink-faint cursor-wait"
+                : state === "error"
+                  ? "bg-claret/10 text-claret"
+                  : `bg-canvas border border-line text-ink-muted hover:bg-surface-raised hover:text-ink ${breatheWhenIdle ? "animate-mic-breathe" : ""}`
           }
           disabled:cursor-wait`}
       >
-        {isTranscribing ? (
+        {transcribing ? (
           <span className="h-3.5 w-3.5 rounded-full border-2 border-ink-faint border-t-transparent animate-spin" />
         ) : (
           <MicIcon size={iconSize} />
@@ -190,13 +213,16 @@ export function MicButton({
       </button>
 
       {/* Recording duration */}
-      {isRecording && (
-        <span className="mt-0.5 text-[10px] text-claret tabular-nums">
+      {recording && (
+        <span className="mt-0.5 text-[10px] text-claret tabular-nums" aria-hidden>
           {formatDuration(elapsed)}
         </span>
       )}
 
-      {/* Error tooltip */}
+      {/* Polite live status for screen readers, plus a visible error tooltip. */}
+      <span role="status" aria-live="polite" className="sr-only">
+        {status}
+      </span>
       {state === "error" && error && (
         <div className="absolute bottom-full mb-1 w-48 rounded-lg bg-ink px-2.5 py-1.5 text-[11px] text-surface shadow-md z-50">
           {error}

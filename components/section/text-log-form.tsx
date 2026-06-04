@@ -2,7 +2,10 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useLocale } from "next-intl";
 import { ArrowRightIcon } from "@/components/ui/icon";
+import { MicButton } from "@/components/ui/mic-button";
+import type { Locale } from "@/i18n/config";
 import {
   logFromText,
   type LogFromTextInput,
@@ -42,6 +45,7 @@ export function TextLogForm({
   rows?: number;
 }) {
   const router = useRouter();
+  const locale = useLocale() as Locale;
   const [text, setText] = useState("");
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -119,6 +123,16 @@ export function TextLogForm({
                   ? <span className="text-ink-muted">{ok}</span>
                   : "⌘ + Enter to log."}
           </p>
+          <div className="flex items-center gap-2">
+          <MicButton
+            size="sm"
+            onTranscribed={(t) => {
+              setText(text ? `${text} ${t}` : t);
+              setError(null);
+              setOk(null);
+            }}
+            targetLanguage={locale}
+          />
           <button
             type="submit"
             disabled={pending || text.trim().length === 0}
@@ -127,6 +141,7 @@ export function TextLogForm({
             {pending ? "Logging" : "Log"}
             <ArrowRightIcon size={11} />
           </button>
+          </div>
         </div>
       </form>
     </section>

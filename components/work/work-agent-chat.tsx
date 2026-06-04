@@ -1,7 +1,10 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
+import { useLocale } from "next-intl";
 import { ArrowRightIcon } from "@/components/ui/icon";
+import { MicButton } from "@/components/ui/mic-button";
+import type { Locale } from "@/i18n/config";
 import type { SourceItem } from "@/components/ask/source-card";
 import { SourceCard } from "@/components/ask/source-card";
 
@@ -35,6 +38,7 @@ export function WorkAgentChat({
   const [turns, setTurns] = useState<Turn[]>([]);
   const [busy, setBusy] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const locale = useLocale() as Locale;
 
   const updateTurn = useCallback(
     (id: string, fn: (t: Turn) => Turn) => {
@@ -264,6 +268,11 @@ export function WorkAgentChat({
           rows={2}
           placeholder="Ask the Work AI. Cmd/Ctrl + Enter to send."
           className="block min-h-[44px] flex-1 resize-y rounded-xl border border-line bg-surface-raised px-3 py-2 text-[13.5px] text-ink placeholder:text-ink-faint outline-none transition-base focus:border-line-strong"
+        />
+        <MicButton
+          size="sm"
+          onTranscribed={(text) => setInput(input ? `${input} ${text}` : text)}
+          targetLanguage={locale}
         />
         <button
           type="submit"

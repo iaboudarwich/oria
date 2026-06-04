@@ -929,5 +929,14 @@
   },
   "askLimit": {
     "reached": "Vous avez atteint votre limite Ask Oria du jour. Elle se réinitialise dans environ {hours} heures. Connectez votre propre clé IA dans les Réglages pour des questions illimitées."
+  },
+  "voice": {
+    "start": "Démarrer la dictée vocale",
+    "stop": "Arrêter l'enregistrement",
+    "recording": "Enregistrement",
+    "transcribing": "Transcription de votre voix",
+    "error_failed": "Échec de la transcription",
+    "error_denied": "Accès au microphone refusé. Activez-le dans les paramètres du navigateur.",
+    "error_mic": "Impossible d'accéder au microphone."
   }
 }

@@ -929,5 +929,14 @@
   },
   "askLimit": {
     "reached": "Has alcanzado tu límite de Ask Oria de hoy. Se restablece en unas {hours} horas. Conecta tu propia clave de IA en Ajustes para preguntas ilimitadas."
+  },
+  "voice": {
+    "start": "Iniciar dictado por voz",
+    "stop": "Detener la grabación",
+    "recording": "Grabando",
+    "transcribing": "Transcribiendo tu voz",
+    "error_failed": "La transcripción falló",
+    "error_denied": "Permiso de micrófono denegado. Actívalo en la configuración del navegador.",
+    "error_mic": "No se pudo acceder al micrófono."
   }
 }
