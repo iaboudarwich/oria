@@ -31,6 +31,7 @@ import { readAppearance } from "@/lib/data/appearance-prefs";
 import { fontScaleFor } from "@/lib/appearance/prefs";
 import { isCurrentUserAdmin } from "@/lib/data/admin";
 import { resolveThingsLabel } from "@/lib/data/things-label";
+import { dedupeSidebarSections } from "@/lib/sidebar/dedupe-sections";
 import { resolveSpaceTheme, themeCssVars } from "@/lib/data/space-theme";
 import { VersionWatcher } from "@/components/system/version-watcher";
 import { readMfaEnrolledAt } from "@/lib/auth/mfa";
@@ -134,7 +135,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
     kind: ctx.organization.kind,
   };
 
-  const personalSections = [
+  const personalSections = dedupeSidebarSections([
     // Smart Sections live at the top of the Sections group. they're
     // AI-driven aggregation pages, not browsing folders. Marked as
     // kind:"smart" so the sidebar can render a subtle sparkle next to them.
@@ -149,7 +150,6 @@ export default async function DashboardLayout({ children }: { children: ReactNod
     ...sections
       // Show Review only when there's something there.
       .filter((s) => s.ref.kind !== "review" || reviewCount > 0)
-      .slice(0, 7)
       .map((s) => ({
         label: s.name,
         href: s.href,
@@ -160,7 +160,9 @@ export default async function DashboardLayout({ children }: { children: ReactNod
             ? String(reviewCount)
             : undefined,
       })),
-  ];
+  ])
+    // Dedupe BEFORE limiting so a dropped duplicate frees a real slot.
+    .slice(0, 8);
 
   const sidebarProps = {
     user: {
