@@ -40,6 +40,8 @@ import { defaultAccentFor } from "@/lib/data/space-theme";
 import { PreferencesPanel } from "@/components/settings/preferences-panel";
 import { LearnedRulesPanel } from "@/components/settings/learned-rules-panel";
 import { ReshapePanel } from "@/components/settings/reshape-panel";
+import { TrustedDevicesPanel } from "@/components/settings/trusted-devices-panel";
+import { listTrustedDevices } from "@/lib/auth/trusted-device";
 import { getUserProfile, type UserProfile } from "@/lib/data/user-profile";
 import type { OrgKind } from "@/lib/supabase/types";
 import type { Locale } from "@/i18n/config";
@@ -99,6 +101,8 @@ export default async function SettingsPage({
     tab === "security" && ctx?.profile.id
       ? await listRecentAuditEvents(ctx.profile.id, 100)
       : [];
+  const trustedDevices =
+    tab === "security" ? await listTrustedDevices() : [];
   const aiConnection =
     tab === "ai" && ctx?.profile.id ? await getAiConnection(ctx.profile.id) : null;
   const aiReasoningMode =
@@ -267,6 +271,7 @@ export default async function SettingsPage({
               enrolled={mfa.enrolled}
               backupCodesLeft={mfa.backupCodesLeft}
             />
+            <TrustedDevicesPanel devices={trustedDevices} />
             <SessionsPanel />
             <AuditActivity
               events={auditEvents}

@@ -1,50 +1,48 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { Wordmark } from "@/components/brand/wordmark";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
+import { isTrustedDevice } from "@/lib/auth/trusted-device";
 import { verifyAtSignIn } from "@/lib/auth/mfa-actions";
 
-export const metadata = { title: "Two-factor code · Oria" };
+export const metadata = { title: "Confirm it's you · Oria" };
 
 type Props = {
   searchParams: Promise<{ error?: string; next?: string }>;
 };
 
 /**
- * MFA gate that runs between password sign-in and dashboard. The
- * password step already validated the user; this page elevates the
- * session from AAL1 to AAL2 by verifying a TOTP or a backup code.
+ * Sign-in step-up. The password step already validated the user; this confirms
+ * it's them with a 6-digit code (or a backup code), elevating the session.
  *
- * Server-rendered (no client state). The form posts to
- * verifyAtSignIn(), which redirects to `next` on success or back here
- * with `?error=…` on failure. Rate limiting (5 / 15 min) sits in the
- * action.
+ * It only appears when it genuinely matters: a verified second factor exists
+ * AND this is not a trusted device. Everyday returning logins on a trusted
+ * device skip it entirely (Round 16.7). The "remember this device" box trusts
+ * the device on success so the step doesn't repeat here.
  */
 export default async function MfaPromptPage({ searchParams }: Props) {
   const { error, next } = await searchParams;
   const safeNext =
-    next && next.startsWith("/") && !next.startsWith("//")
-      ? next
-      : "/dashboard";
+    next && next.startsWith("/") && !next.startsWith("//") ? next : "/dashboard";
 
-  // Guard rails: only render if the user actually has a session AND
-  // needs AAL2. A direct visit without a session bounces to /login;
-  // an already-elevated user bounces straight to next.
   const supabase = await createClient();
   const { data: userData } = await supabase.auth.getUser();
   if (!userData.user) redirect("/login");
   const aal = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-  if (!(aal.data?.nextLevel === "aal2" && aal.data.currentLevel === "aal1")) {
+  const needsStepUp =
+    aal.data?.nextLevel === "aal2" && aal.data.currentLevel === "aal1";
+  // Already elevated, or no factor, or a trusted device: nothing to confirm.
+  if (!needsStepUp || (await isTrustedDevice(userData.user.id))) {
     redirect(safeNext);
   }
 
+  const t = await getTranslations("auth");
+
   return (
     <div className="min-h-screen bg-canvas relative flex flex-col items-center justify-center px-4 py-12 overflow-hidden">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 overflow-hidden"
-      >
+      <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="absolute -top-40 -start-40 h-[600px] w-[600px] rounded-full bg-brand/5 blur-3xl" />
       </div>
 
@@ -56,15 +54,18 @@ export default async function MfaPromptPage({ searchParams }: Props) {
         <div className="rounded-2xl border border-line bg-surface-raised shadow-xl px-8 py-8">
           <div className="mb-6 text-center">
             <h1 className="text-[22px] font-semibold tracking-tight text-ink">
-              Two-factor code
+              {t("signin_2fa_title")}
             </h1>
             <p className="mt-1.5 text-[13.5px] text-ink-muted">
-              Enter the 6-digit code from your authenticator app, or one of your backup codes.
+              {t("signin_2fa_help")}
             </p>
           </div>
 
           {error ? (
-            <div className="mb-4 rounded-xl border border-claret/20 bg-claret/5 px-3.5 py-2.5 text-[13px] text-claret">
+            <div
+              role="alert"
+              className="mb-4 rounded-xl border border-claret/20 bg-claret/5 px-3.5 py-2.5 text-[13px] text-claret"
+            >
               {error}
             </div>
           ) : null}
@@ -73,21 +74,40 @@ export default async function MfaPromptPage({ searchParams }: Props) {
             <input type="hidden" name="next" value={safeNext} />
             <label className="block">
               <span className="block mb-1.5 text-[12.5px] font-medium text-ink">
-                Code
+                {t("signin_2fa_code_label")}
               </span>
               <input
                 type="text"
                 name="code"
                 autoComplete="one-time-code"
                 inputMode="text"
-                placeholder="123456 or xxxxx-xxxxx"
+                placeholder="123456"
                 autoFocus
                 required
                 className="block h-11 w-full rounded-xl border border-line bg-canvas px-3 text-[16px] text-ink placeholder:text-ink-faint outline-none transition-base focus:border-brand focus:ring-[3px] focus:ring-brand/12"
               />
             </label>
+
+            <label className="flex items-start gap-2.5">
+              <input
+                type="checkbox"
+                name="remember_device"
+                value="1"
+                defaultChecked
+                className="mt-0.5 h-4 w-4 accent-brand"
+              />
+              <span className="min-w-0">
+                <span className="block text-[12.5px] text-ink">
+                  {t("signin_2fa_remember")}
+                </span>
+                <span className="block text-[11.5px] text-ink-faint">
+                  {t("signin_2fa_remember_help")}
+                </span>
+              </span>
+            </label>
+
             <Button type="submit" variant="primary" size="lg" className="w-full">
-              Verify
+              {t("signin_2fa_submit")}
             </Button>
           </form>
 
@@ -95,12 +115,10 @@ export default async function MfaPromptPage({ searchParams }: Props) {
             <Link
               className="text-brand hover:opacity-80"
               href={`/login/mfa/recovery${
-                safeNext !== "/dashboard"
-                  ? `?next=${encodeURIComponent(safeNext)}`
-                  : ""
+                safeNext !== "/dashboard" ? `?next=${encodeURIComponent(safeNext)}` : ""
               }`}
             >
-              Lost access to your authenticator?
+              {t("signin_2fa_recovery")}
             </Link>
           </p>
         </div>

@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { rateLimit, RATE_PRESETS } from "@/lib/rate-limit";
 import { logAuditEvent } from "@/lib/data/audit-log";
 import { markReauthenticated } from "@/lib/auth/reauth";
+import { trustThisDevice } from "@/lib/auth/trusted-device";
 import { trackEvent } from "@/lib/analytics";
 import {
   clearBackupCodes,
@@ -261,6 +262,11 @@ export async function verifyAtSignIn(formData: FormData): Promise<void> {
   // 5-minute re-auth window so the user can flow into a sensitive
   // action (disable 2FA, export data, etc.) without re-prompting.
   await markReauthenticated(userData.user.id);
+  // "Remember this device": trust it so this step is skipped here next time
+  // (Round 16.7). Best-effort; never blocks the sign-in.
+  if (String(formData.get("remember_device") ?? "") === "1") {
+    await trustThisDevice(userData.user.id);
+  }
   redirect(safeNext);
 }
 

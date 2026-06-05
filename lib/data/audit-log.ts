@@ -127,7 +127,10 @@ export type AuditAction =
   | "pattern.learned"
   | "privacy.connect_acknowledged"
   // Spaces
-  | "space.deleted";
+  | "space.deleted"
+  // Trusted devices (Round 16.7)
+  | "device.trusted"
+  | "device.revoked";
 
 export type AuditLogInput = {
   userId: string;
@@ -371,6 +374,8 @@ export function actionLabel(action: string): string {
     "calendar_sources_updated":      "Changed calendar source filters",
     "space_theme_variant_updated":   "Changed a space's light or dark theme",
     "space.deleted":                "Deleted a workspace or circle",
+    "device.trusted":               "Trusted this device",
+    "device.revoked":               "Removed a trusted device",
     "email.verified":               "Verified email address",
     "2fa.prompt_shown":             "Shown the two-factor setup prompt",
     "2fa.prompt_dismissed":         "Dismissed the two-factor setup prompt",

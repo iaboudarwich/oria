@@ -7,6 +7,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { isCommonPassword, MIN_PASSWORD_LENGTH } from "@/lib/auth/common-passwords";
 import { logAnonAuthFailure, logAuditEvent } from "@/lib/data/audit-log";
 import { clearReauth, markReauthenticated } from "@/lib/auth/reauth";
+import { isTrustedDevice } from "@/lib/auth/trusted-device";
 import { sendPasswordResetEmail } from "@/lib/email/send-password-reset";
 import { rateLimit } from "@/lib/rate-limit";
 import { trackEvent } from "@/lib/analytics";
@@ -68,26 +69,28 @@ export async function signIn(formData: FormData) {
     authError("/login", error.message, email, next);
   }
 
-  // After a valid password, check whether the user has a verified TOTP
-  // factor. If so the session is currently AAL1 and we need to gate
-  // them through /login/mfa before any dashboard route resolves their
-  // actor. The MFA page completes the AAL2 elevation, then bounces to
-  // `next`. No change to page-side reads is needed: the session itself
-  // is already valid; AAL is metadata Supabase tracks alongside it.
+  // After a valid password, check whether the user has a verified second
+  // factor (session is AAL1). If so we'd gate them through /login/mfa, UNLESS
+  // this is a device they've already verified and chosen to trust: a trusted
+  // device skips the second-factor step (Round 16.7), so everyday returning
+  // logins land straight in.
   const aal = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-  const needsMfa =
+  const hasSecondFactor =
     aal.data?.nextLevel === "aal2" && aal.data.currentLevel === "aal1";
 
   // Successful password step is logged here whether MFA follows or not;
   // the MFA gate logs its own success/failure on top.
   const { data: userData } = await supabase.auth.getUser();
+  const trusted =
+    hasSecondFactor && userData.user ? await isTrustedDevice(userData.user.id) : false;
+  const needsMfa = hasSecondFactor && !trusted;
   if (userData.user) {
     await logAuditEvent({
       userId: userData.user.id,
       action: "auth.signin.success",
-      metadata: { method: "password", mfa_required: needsMfa },
+      metadata: { method: "password", mfa_required: needsMfa, trusted_device: trusted },
     });
-    // Open the 5-min re-auth window unless MFA is still required;
+    // Open the 5-min re-auth window unless the second factor is still required;
     // when needsMfa is true the MFA gate is the proof, not this.
     if (!needsMfa) await markReauthenticated(userData.user.id);
   }

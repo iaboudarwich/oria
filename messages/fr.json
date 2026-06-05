@@ -288,7 +288,14 @@
     "twostep_expired": "Ce code a expiré. Touchez pour en obtenir un nouveau.",
     "twostep_choose": "Quelle application d'authentification ?",
     "twostep_app_n": "Application d'authentification {n}",
-    "reset_update_failed": "Nous n'avons pas pu mettre à jour votre mot de passe. Veuillez réessayer."
+    "reset_update_failed": "Nous n'avons pas pu mettre à jour votre mot de passe. Veuillez réessayer.",
+    "signin_2fa_title": "Confirmez que c'est bien vous",
+    "signin_2fa_help": "Saisissez le code à 6 chiffres de votre application d'authentification, ou un code de secours.",
+    "signin_2fa_code_label": "Code à 6 chiffres",
+    "signin_2fa_submit": "Continuer",
+    "signin_2fa_remember": "Se souvenir de cet appareil",
+    "signin_2fa_remember_help": "Passer cette étape sur cet appareil la prochaine fois.",
+    "signin_2fa_recovery": "Vous n'avez plus accès à votre application d'authentification ?"
   },
   "empty": {
     "uploads": "Aucun fichier importé.",

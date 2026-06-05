@@ -288,7 +288,14 @@
     "twostep_expired": "That code expired. Tap to send a new one.",
     "twostep_choose": "Which authentication app?",
     "twostep_app_n": "Authentication app {n}",
-    "reset_update_failed": "We couldn't update your password. Please try again."
+    "reset_update_failed": "We couldn't update your password. Please try again.",
+    "signin_2fa_title": "Confirm it's you",
+    "signin_2fa_help": "Enter the 6-digit code from your authentication app, or a backup code.",
+    "signin_2fa_code_label": "6-digit code",
+    "signin_2fa_submit": "Continue",
+    "signin_2fa_remember": "Remember this device",
+    "signin_2fa_remember_help": "Skip this step on this device next time.",
+    "signin_2fa_recovery": "Lost access to your authentication app?"
   },
   "empty": {
     "uploads": "No uploads yet.",

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { isTrustedDevice } from "@/lib/auth/trusted-device";
 
 // Handles email confirmation / magic-link callbacks.
 // Supabase redirects to /auth/callback?code=... after the user clicks the link.
@@ -12,10 +13,18 @@ export async function GET(request: Request) {
     const supabase = await createClient();
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
-      // Gate magic-link landings through the MFA prompt when the user
-      // has a verified TOTP factor — same rule as password sign-in.
+      // Gate magic-link landings through the second-factor prompt when the
+      // user has a verified factor, UNLESS this is a trusted device (same rule
+      // as password sign-in, Round 16.7).
       const aal = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-      if (aal.data?.nextLevel === "aal2" && aal.data.currentLevel === "aal1") {
+      const hasSecondFactor =
+        aal.data?.nextLevel === "aal2" && aal.data.currentLevel === "aal1";
+      const { data: userData } = await supabase.auth.getUser();
+      const trusted =
+        hasSecondFactor && userData.user
+          ? await isTrustedDevice(userData.user.id)
+          : false;
+      if (hasSecondFactor && !trusted) {
         const params = new URLSearchParams({ next });
         return NextResponse.redirect(
           new URL(`/login/mfa?${params.toString()}`, url.origin),

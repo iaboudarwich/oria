@@ -288,7 +288,14 @@
     "twostep_expired": "Ese código caducó. Toca para obtener uno nuevo.",
     "twostep_choose": "¿Qué aplicación de autenticación?",
     "twostep_app_n": "Aplicación de autenticación {n}",
-    "reset_update_failed": "No pudimos actualizar tu contraseña. Inténtalo de nuevo."
+    "reset_update_failed": "No pudimos actualizar tu contraseña. Inténtalo de nuevo.",
+    "signin_2fa_title": "Confirma que eres tú",
+    "signin_2fa_help": "Introduce el código de 6 dígitos de tu aplicación de autenticación, o un código de respaldo.",
+    "signin_2fa_code_label": "Código de 6 dígitos",
+    "signin_2fa_submit": "Continuar",
+    "signin_2fa_remember": "Recordar este dispositivo",
+    "signin_2fa_remember_help": "Omitir este paso en este dispositivo la próxima vez.",
+    "signin_2fa_recovery": "¿Perdiste el acceso a tu aplicación de autenticación?"
   },
   "empty": {
     "uploads": "Aún no hay archivos.",
