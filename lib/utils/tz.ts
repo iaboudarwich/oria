@@ -154,6 +154,63 @@ export function getLocalParts(
   }
 }
 
+/**
+ * Convert a wall-clock date + time the user typed (e.g. "2026-06-05" + "14:00")
+ * into the exact UTC instant, interpreting it in the given IANA timezone. This
+ * is how a reminder's due time is stored: 2pm in the user's zone is 2pm there,
+ * never re-zoned through the server's clock. Returns null on bad input so the
+ * caller can refuse rather than guess (no silent fallback to "now").
+ *
+ * Method: guess the instant as if the wall-clock were UTC, measure how far that
+ * guess's wall-clock in the target zone is from UTC, and shift by that offset.
+ * The offset is read at the guess instant, so it follows DST. Pure + tested.
+ */
+export function localDateTimeToISO(
+  date: string,
+  time: string,
+  tz: string | null | undefined,
+): string | null {
+  const dm = /^(\d{4})-(\d{2})-(\d{2})$/.exec((date ?? "").trim());
+  const tm = /^(\d{2}):(\d{2})/.exec((time ?? "").trim());
+  if (!dm || !tm) return null;
+  const [, y, mo, d] = dm.map(Number);
+  const [, hh, mm] = tm.map(Number);
+  if (mo < 1 || mo > 12 || d < 1 || d > 31 || hh > 23 || mm > 59) return null;
+  const zone = tz && isValidTz(tz) ? tz : "UTC";
+
+  const guess = Date.UTC(y, mo - 1, d, hh, mm);
+  try {
+    // What wall-clock does `guess` show in the target zone vs in UTC? The
+    // difference is the zone's offset at that instant.
+    const fmt = new Intl.DateTimeFormat("en-US", {
+      timeZone: zone,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: false,
+    });
+    const parts: Record<string, number> = {};
+    for (const p of fmt.formatToParts(new Date(guess))) {
+      if (p.type !== "literal") parts[p.type] = Number(p.value);
+    }
+    const asZoneUTC = Date.UTC(
+      parts.year,
+      (parts.month ?? 1) - 1,
+      parts.day ?? 1,
+      parts.hour === 24 ? 0 : parts.hour ?? 0,
+      parts.minute ?? 0,
+      parts.second ?? 0,
+    );
+    const offset = asZoneUTC - guess; // zone is ahead of UTC by `offset`
+    return new Date(guess - offset).toISOString();
+  } catch {
+    return new Date(guess).toISOString();
+  }
+}
+
 function isValidTz(tz: string): boolean {
   try {
     new Intl.DateTimeFormat("en-US", { timeZone: tz });

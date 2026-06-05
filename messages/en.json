@@ -52,6 +52,7 @@
     "rd_cancel": "Cancel",
     "rd_added": "Reminder added. It's now on your calendar.",
     "rd_error": "We couldn't save the reminder. Please try again.",
+    "rd_need_time": "Please choose a time for the reminder.",
     "adding_to": "Adding to {space}"
   },
   "bills": {

@@ -52,6 +52,7 @@
     "rd_cancel": "Cancelar",
     "rd_added": "Recordatorio añadido. Ya está en tu calendario.",
     "rd_error": "No pudimos guardar el recordatorio. Inténtalo de nuevo.",
+    "rd_need_time": "Elige una hora para el recordatorio.",
     "adding_to": "Añadiendo a {space}"
   },
   "bills": {

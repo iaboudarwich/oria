@@ -596,6 +596,7 @@ function LinkedReminders({
           <input
             type="time"
             name="time"
+            required
             className="h-9 rounded-md border border-line bg-canvas px-2 text-[12px] text-ink-soft outline-none focus:border-ink-muted sm:w-[100px]"
           />
           <button

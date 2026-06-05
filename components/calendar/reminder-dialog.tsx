@@ -25,7 +25,7 @@ export function ReminderDialog({ scopeName }: { scopeName: string | null }) {
   const [title, setTitle] = useState("");
   const [notes, setNotes] = useState("");
   const [pending, startTransition] = useTransition();
-  const [status, setStatus] = useState<"idle" | "added" | "error">("idle");
+  const [status, setStatus] = useState<"idle" | "added" | "error" | "notime">("idle");
 
   // Default the date to today (local), so the common case is one tap away.
   const todayLocal = (() => {
@@ -51,6 +51,11 @@ export function ReminderDialog({ scopeName }: { scopeName: string | null }) {
 
   function onSubmit(formData: FormData) {
     if (!title.trim()) return;
+    // The time must be chosen: a reminder is never silently saved at "now".
+    if (!String(formData.get("time") ?? "").trim()) {
+      setStatus("notime");
+      return;
+    }
     setStatus("idle");
     startTransition(async () => {
       try {
@@ -165,6 +170,7 @@ export function ReminderDialog({ scopeName }: { scopeName: string | null }) {
                     id="rd-time"
                     type="time"
                     name="time"
+                    required
                     className="h-10 w-full rounded-lg border border-line bg-canvas px-2 text-[12.5px] text-ink-soft outline-none focus:border-ink-muted"
                   />
                 </div>
@@ -190,6 +196,8 @@ export function ReminderDialog({ scopeName }: { scopeName: string | null }) {
 
               {status === "error" ? (
                 <p className="text-[12px] text-claret">{t("rd_error")}</p>
+              ) : status === "notime" ? (
+                <p className="text-[12px] text-claret">{t("rd_need_time")}</p>
               ) : status === "added" ? (
                 <p className="text-[12px] text-sage">{t("rd_added")}</p>
               ) : null}

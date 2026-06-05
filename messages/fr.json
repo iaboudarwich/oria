@@ -52,6 +52,7 @@
     "rd_cancel": "Annuler",
     "rd_added": "Rappel ajouté. Il est maintenant sur votre calendrier.",
     "rd_error": "Nous n'avons pas pu enregistrer le rappel. Veuillez réessayer.",
+    "rd_need_time": "Veuillez choisir une heure pour le rappel.",
     "adding_to": "Ajout à {space}"
   },
   "bills": {

@@ -1,19 +1,13 @@
 "use server";
 
+import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { listUserSpaces, requireContext } from "./organizations";
 import { recordLearningEvent } from "./learning";
 import { logAuditEvent } from "./audit-log";
 import { trackEvent } from "@/lib/analytics";
-
-function combineDateTime(date: string, time: string): string | null {
-  if (!date) return null;
-  const timeStr = time && /^\d{2}:\d{2}/.test(time) ? time : "09:00";
-  const d = new Date(`${date}T${timeStr}:00`);
-  if (Number.isNaN(d.getTime())) return null;
-  return d.toISOString();
-}
+import { localDateTimeToISO, getOriaTzCookieName } from "@/lib/utils/tz";
 
 function parseDueDate(raw: string | null): string | null {
   if (!raw) return null;
@@ -26,16 +20,26 @@ export async function createReminder(formData: FormData): Promise<void> {
   const title = String(formData.get("title") ?? "").trim();
   if (!title) return;
 
-  // Two accepted shapes:
-  //   1. date + (optional) time inputs from the lightweight picker
-  //   2. a single datetime-local string in `due_at` (legacy callers)
+  // The reminder's due time is the user's chosen date + time, interpreted in
+  // THEIR local timezone (the oria_tz cookie set on every dashboard visit), so
+  // 2pm means 2pm to them, never re-zoned through the server clock. We never
+  // silently default a missing time to "now" or start-of-day: a date without a
+  // usable time is refused (the forms make time required). A precise `due_at`
+  // instant from a caller that already computed one is honored as-is.
   const date = String(formData.get("date") ?? "").trim();
   const time = String(formData.get("time") ?? "").trim();
+  const dueAtRaw = String(formData.get("due_at") ?? "").trim();
   let due_at: string | null = null;
-  if (date) {
-    due_at = combineDateTime(date, time);
-  } else {
-    due_at = parseDueDate(String(formData.get("due_at") ?? "") || null);
+  if (dueAtRaw) {
+    due_at = parseDueDate(dueAtRaw);
+  } else if (date) {
+    const tz = (await cookies()).get(getOriaTzCookieName())?.value ?? null;
+    due_at = localDateTimeToISO(date, time, tz);
+  }
+  // A date (or due_at) was given but produced no valid instant -> the time was
+  // empty or malformed. Refuse rather than guess.
+  if ((date || dueAtRaw) && !due_at) {
+    throw new Error("A reminder needs a date and time.");
   }
 
   const upload_id_raw = String(formData.get("upload_id") ?? "").trim();
