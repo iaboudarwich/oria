@@ -83,6 +83,12 @@ export type AuditAction =
   // Health (WHOOP) (Round 17)
   | "whoop.connected"
   | "whoop.disconnected"
+  // Rituals (Round 17.x)
+  | "ritual.created"
+  | "ritual.updated"
+  | "ritual.archived"
+  | "ritual.completed"
+  | "ritual.freeze_consumed"
   // AI provider (bring-your-own Claude / ChatGPT / Gemini)
   | "ai_connection_added"
   | "ai_connection_removed"
@@ -360,6 +366,11 @@ export function actionLabel(action: string): string {
     "cloud.file_unlinked":          "Removed a linked Drive file",
     "whoop.connected":              "Connected WHOOP",
     "whoop.disconnected":           "Disconnected WHOOP",
+    "ritual.created":               "Created a ritual",
+    "ritual.updated":               "Edited a ritual",
+    "ritual.archived":              "Archived a ritual",
+    "ritual.completed":             "Marked a ritual done",
+    "ritual.freeze_consumed":       "A streak freeze saved a missed day",
     "ai_connection_added":          "Connected an AI provider",
     "ai_connection_removed":        "Disconnected an AI provider",
     "section.suggested":            "Suggested a new section",

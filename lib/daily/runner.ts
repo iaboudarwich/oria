@@ -8,6 +8,7 @@ import { gatherDaySignals, type DaySignals } from "./signals";
 import { generateRoutineText, generateJournalText, type RoutineKind } from "./generate";
 import { applyRollForward } from "./rollforward";
 import { dailyPushBody } from "./push-copy";
+import { runRitualsForUser, type RitualRow, type RitualCompletionRow } from "./ritual-runner";
 
 /**
  * The daily-loop orchestrator. The hourly cron calls runDailyLoop(now); for
@@ -47,6 +48,7 @@ export type RunSummary = {
   prepsRun: number;
   journalsRun: number;
   rolledForward: number;
+  ritualReminders: number;
 };
 
 type Profile = { id: string; timezone: string | null; locale: string | null };
@@ -66,7 +68,14 @@ type RoutineRow = {
 
 export async function runDailyLoop(now: Date): Promise<RunSummary> {
   const admin = createAdminClient();
-  const summary: RunSummary = { users: 0, routinesRun: 0, prepsRun: 0, journalsRun: 0, rolledForward: 0 };
+  const summary: RunSummary = {
+    users: 0,
+    routinesRun: 0,
+    prepsRun: 0,
+    journalsRun: 0,
+    rolledForward: 0,
+    ritualReminders: 0,
+  };
 
   const { data: profiles } = await admin
     .from("profiles")
@@ -98,6 +107,34 @@ export async function runDailyLoop(now: Date): Promise<RunSummary> {
     const list = routinesByUser.get(r.user_id) ?? [];
     list.push(r);
     routinesByUser.set(r.user_id, list);
+  }
+
+  // Rituals: active definitions + their completions, grouped per user. Drives
+  // the reminder hook and the freeze audit (see ritual-runner).
+  const { data: ritualRows } = await admin
+    .from("rituals")
+    .select(
+      "id, user_id, organization_id, title, cadence, days, reminder_time, last_reminder_date, last_eval_date, created_at",
+    )
+    .is("archived_at", null);
+  const ritualsByUser = new Map<string, RitualRow[]>();
+  for (const r of (ritualRows ?? []) as RitualRow[]) {
+    const list = ritualsByUser.get(r.user_id) ?? [];
+    list.push(r);
+    ritualsByUser.set(r.user_id, list);
+  }
+  const completionsByRitual = new Map<string, Set<string>>();
+  const ritualIds = ((ritualRows ?? []) as RitualRow[]).map((r) => r.id);
+  if (ritualIds.length) {
+    const { data: comps } = await admin
+      .from("ritual_completions")
+      .select("ritual_id, completed_date")
+      .in("ritual_id", ritualIds);
+    for (const c of (comps ?? []) as RitualCompletionRow[]) {
+      const set = completionsByRitual.get(c.ritual_id) ?? new Set<string>();
+      set.add(c.completed_date);
+      completionsByRitual.set(c.ritual_id, set);
+    }
   }
 
   for (const profile of profiles as Profile[]) {
@@ -160,6 +197,21 @@ export async function runDailyLoop(now: Date): Promise<RunSummary> {
     if (hour === JOURNAL_LOCAL_HOUR) {
       const ran = await runJournal(admin, profile, orgId, ymd, getSignals);
       if (ran) summary.journalsRun += 1;
+    }
+
+    // Rituals: reminder hook (at each ritual's hour) + freeze audit (at dawn).
+    const userRituals = ritualsByUser.get(profile.id);
+    if (userRituals?.length) {
+      summary.ritualReminders += await runRitualsForUser(
+        admin,
+        profile.id,
+        orgId,
+        { hour, dayOfWeek, ymd },
+        tz,
+        now,
+        userRituals,
+        completionsByRitual,
+      );
     }
   }
 

@@ -11,17 +11,24 @@ import type { HealthToday } from "@/lib/daily/health-today";
  * headline, with today's calorie balance beneath when both sides exist. Links
  * into the Health surface. Rendered only when loadHealthToday returns data.
  */
-export async function HealthStatCard({ data }: { data: HealthToday }) {
+export async function HealthStatCard({
+  data,
+  rituals,
+}: {
+  data: HealthToday | null;
+  rituals?: { done: number; total: number } | null;
+}) {
   const t = await getTranslations("health");
+  if (!data && !rituals) return null;
 
-  const usesRecovery = data.recoveryPct !== null;
+  const usesRecovery = data?.recoveryPct != null;
   const hero = usesRecovery
-    ? t("today_recovery", { n: data.recoveryPct! })
-    : data.sleepPct !== null
-      ? t("today_sleep", { n: data.sleepPct! })
+    ? t("today_recovery", { n: data!.recoveryPct! })
+    : data?.sleepPct != null
+      ? t("today_sleep", { n: data.sleepPct })
       : null;
 
-  const net = netBalance(data.intakeKcal, data.burnKcal);
+  const net = data ? netBalance(data.intakeKcal, data.burnKcal) : null;
   let balance: string | null = null;
   if (net !== null) {
     balance =
@@ -47,6 +54,11 @@ export async function HealthStatCard({ data }: { data: HealthToday }) {
       {balance ? (
         <p className="mt-2 text-[13px] text-ink-muted tabular-nums">
           {t("balance_title")}: {balance}
+        </p>
+      ) : null}
+      {rituals ? (
+        <p className="mt-1 text-[13px] text-ink-muted tabular-nums">
+          {t("today_rituals", { done: rituals.done, total: rituals.total })}
         </p>
       ) : null}
     </Link>

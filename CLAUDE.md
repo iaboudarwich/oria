@@ -745,4 +745,42 @@ up / re-auth exactly as before (none consult `isTrustedDevice`).
 
 ---
 
+## 22. Rituals + streaks with a freeze (Round 17.x)
+
+The Rituals tab of the Health surface (§ Round 17) is real. A **ritual** is a
+recurring habit (cadence `daily`, or `weekly` on chosen weekdays). Own tables,
+NOT bent onto trackables: `rituals` + `ritual_completions` (migration 0079,
+user-scoped RLS, full CRUD for the owner). `ritual_completions.completed_date`
+is the user's LOCAL day key, computed app-side, so "done today" is a trivial
+lookup and streak math is timezone-correct.
+
+**Streaks are COMPUTED, never stored** (`lib/rituals/streak.ts`, pure +
+unit-tested), so they cannot drift. The walk runs over scheduled days only (a
+weekly ritual never breaks on a day it wasn't scheduled), in the user's local
+day keys (`getLocalParts`), bounded to ~800 days back.
+
+**THE FREEZE RULE (locked):** you earn **one freeze for every 7 completed
+scheduled days, capped at 3**. A missed scheduled day in the past **consumes one
+freeze** if available and the streak survives (the frozen day does not add to the
+streak); with no freeze, the miss breaks the streak. Today, still in progress, is
+never a miss (not yet done leaves the streak pending, consumes nothing).
+Freezes-remaining is shown to the user in plain language on each ritual, with a
+one-line explanation of how they work.
+
+**Mark done** two ways: tap the circle on a ritual (`toggleRitualDone`), or by
+voice/text on the Rituals tab (`markRitualByText`, reusing the shared mic +
+auto-grow composer; matching is deterministic by ritual name, never AI, and an
+unclear note asks the user to name the ritual rather than guessing).
+
+**Reminder hook + freeze audit ride the existing daily-loop cron**
+(`lib/daily/ritual-runner.ts`, no new reminder system): at a ritual's
+`reminder_time` hour on a scheduled, not-done day it creates ONE reminder row
+(the existing send-reminders cron delivers it), guarded by `last_reminder_date`;
+at the local dawn it logs `ritual.freeze_consumed` when yesterday was a scheduled
+day a freeze saved, guarded by `last_eval_date`. All mutations are audited
+(`ritual.created/updated/archived/completed/freeze_consumed`). A "rituals done
+today" line shows on the Today health card when rituals are scheduled.
+
+---
+
 End of brief. Update this file when a principle changes, not when code changes.
