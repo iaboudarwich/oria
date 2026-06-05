@@ -25,6 +25,10 @@
       "schedule": "0 * * * *"
     },
     {
+      "path": "/api/cron/whoop-sync",
+      "schedule": "0 */4 * * *"
+    },
+    {
       "path": "/api/cron/ai-revalidate",
       "schedule": "0 4 * * 1"
     }

@@ -5,10 +5,13 @@ import { listCloudConnectionsByService } from "@/lib/google/cloud-connections";
 import { isGmailOAuthConfigured } from "@/lib/integrations/gmail/oauth";
 import { isGoogleOAuthConfigured } from "@/lib/google/oauth";
 import { isMicrosoftOAuthConfigured } from "@/lib/microsoft/oauth";
+import { isWhoopOAuthConfigured } from "@/lib/whoop/oauth";
+import { listWhoopConnections } from "@/lib/whoop/connections";
 import { isTokenCryptoConfigured } from "@/lib/security/token-crypto";
 import { ConnectionsPanel } from "./connections-panel";
 import { CloudServicesPanel } from "./cloud-services-panel";
 import { MicrosoftServicesPanel } from "./microsoft-services-panel";
+import { WhoopPanel } from "./whoop-panel";
 import { ConnectButton } from "./connect-privacy-gate";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -38,20 +41,22 @@ export async function ConnectionsZones({ userId, notice }: { userId: string; not
   const gmailOk = isGmailOAuthConfigured() && crypto;
   const googleOk = isGoogleOAuthConfigured() && crypto;
   const msOk = isMicrosoftOAuthConfigured() && crypto;
+  const whoopOk = isWhoopOAuthConfigured() && crypto;
 
-  const [gmail, outlook, cal, drive, ocal, onedrive, ackAt] = await Promise.all([
+  const [gmail, outlook, cal, drive, ocal, onedrive, whoop, ackAt] = await Promise.all([
     listGmailConnections(userId),
     listOutlookConnections(userId),
     listCloudConnectionsByService(userId, "calendar"),
     listCloudConnectionsByService(userId, "drive"),
     listCloudConnectionsByService(userId, "outlook_calendar"),
     listCloudConnectionsByService(userId, "onedrive"),
+    listWhoopConnections(userId),
     readConnectPrivacyAck(userId),
   ]);
   const privacyAcknowledged = ackAt !== null;
   const has = (a: { length: number }) => a.length > 0;
   const anyConnected =
-    has(gmail) || has(outlook) || has(cal) || has(drive) || has(ocal) || has(onedrive);
+    has(gmail) || has(outlook) || has(cal) || has(drive) || has(ocal) || has(onedrive) || has(whoop);
 
   // Real OAuth connectors that are not connected yet. A provider whose OAuth
   // is not configured is shown as coming soon rather than a dead Connect link.
@@ -62,6 +67,7 @@ export async function ConnectionsZones({ userId, notice }: { userId: string; not
     { id: "outlook", name: "Outlook", descKey: "outlook_desc", connected: has(outlook), ok: msOk, href: "/api/oauth/microsoft/connect?service=mail" },
     { id: "ocal", name: "Outlook Calendar", descKey: "ocal_desc", connected: has(ocal), ok: msOk, href: "/api/oauth/microsoft/connect?service=calendar" },
     { id: "onedrive", name: "OneDrive", descKey: "onedrive_desc", connected: has(onedrive), ok: msOk, href: "/api/oauth/microsoft/connect?service=onedrive" },
+    { id: "whoop", name: "WHOOP", descKey: "whoop_desc", connected: has(whoop), ok: whoopOk, href: "/api/oauth/whoop/start" },
   ];
 
   const real: AvailableItem[] = candidates
@@ -70,7 +76,6 @@ export async function ConnectionsZones({ userId, notice }: { userId: string; not
 
   // Always-visible coming-soon connectors.
   const soon: AvailableItem[] = [
-    { id: "whoop", name: "WHOOP", descKey: "whoop_desc", available: false },
     { id: "banking", name: "Banking", descKey: "banking_desc", available: false },
   ];
 
@@ -86,6 +91,7 @@ export async function ConnectionsZones({ userId, notice }: { userId: string; not
             <ConnectionsPanel userId={userId} notice={notice} />
             <CloudServicesPanel userId={userId} />
             <MicrosoftServicesPanel userId={userId} />
+            <WhoopPanel userId={userId} />
           </div>
         ) : (
           <p className="text-[13px] text-ink-muted">{t("none_connected")}</p>
