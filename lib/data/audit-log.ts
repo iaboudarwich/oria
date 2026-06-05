@@ -150,8 +150,10 @@ export type AuditAction =
   // Write-back framework (Round 21)
   | "write_action.executed"
   | "write_action.undone"
-  // Spaces
+  // Spaces + circles
   | "space.deleted"
+  | "circle.items_reverted"
+  | "item.scope_changed"
   // Trusted devices (Round 16.7)
   | "device.trusted"
   | "device.revoked";

@@ -950,4 +950,40 @@ they read as one product, not one-off screens. The rules:
 
 ---
 
+## 28. Privacy and circles: private by default, isolated in RLS (Round 21.5)
+
+Sharing is real and safe, and it reuses the 16.8 space/scope model, it does not
+duplicate it.
+
+- **A circle IS a space.** A circle is an `organizations` row of `kind="circle"`
+  carrying its own name + `accent_color`. There is no separate circles table.
+  Membership, roles, invites, the connect-to-scope routing, and the persistent
+  "Editing: Personal / Work / Circle" control are the existing org/membership
+  machinery.
+- **Private by default; shared = in exactly one circle.** An item is scoped by
+  which org owns it (`organization_id`): the owner's personal space = private;
+  a circle = shared with that circle. Some tables additionally carry a
+  `visibility` enum (private/circle/specific) for finer control. Re-scoping
+  (`setItemScope`) re-homes the item between the user's personal space and a
+  circle they belong to; it is audited (`item.scope_changed`).
+- **Isolation is in RLS, never the UI.** Every shareable table's read policy is
+  membership-based (`is_org_member(organization_id)` / `my_access_level`, or
+  `created_by = auth.uid()`). A circle member belongs ONLY to that circle, so
+  they see ONLY its slice; the owner belongs to many orgs, so they see the
+  UNION; a private item is visible only to its owner; a removed member loses
+  access immediately (their membership row is gone). Proven at the data layer by
+  `scripts/verify-circle-rls.mjs` and the `circle-scope` unit tests, NOT by a
+  client filter.
+- **The orphan rule.** Deleting a circle must NOT destroy its scoped items via
+  the FK cascade. They revert to PRIVATE under the deleting owner (who could
+  already see them while the circle existed, so no new access is granted) by
+  moving them into the owner's personal space before the org is deleted
+  (audited `circle.items_reverted`). If the owner has no personal space, the
+  delete is refused rather than cascade-destroying data.
+- **Plain language.** The user sees "Private" or "Shared with {circle}" (the
+  circle's name + color), and one line that says who can see it. No policy talk,
+  no jargon.
+
+---
+
 End of brief. Update this file when a principle changes, not when code changes.

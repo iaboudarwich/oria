@@ -1277,5 +1277,14 @@
     "cancelled": "حسنًا، تركته كما هو.",
     "undo": "تراجع",
     "undone": "تم التراجع."
+  },
+  "scope": {
+    "private": "خاص",
+    "shared_with": "مُشارَك مع {circle}",
+    "who_private": "أنت فقط من يمكنه رؤيته.",
+    "who_circle": "يمكن لكل من في {circle} رؤيته، ولا أحد غيرهم.",
+    "make_private": "جعله خاصًا",
+    "share_to": "المشاركة مع {circle}",
+    "changed": "تم تحديث من يمكنه رؤيته."
   }
 }

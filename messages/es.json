@@ -1277,5 +1277,14 @@
     "cancelled": "De acuerdo, lo dejé como estaba.",
     "undo": "Deshacer",
     "undone": "Deshecho."
+  },
+  "scope": {
+    "private": "Privado",
+    "shared_with": "Compartido con {circle}",
+    "who_private": "Solo tú puedes verlo.",
+    "who_circle": "Todos en {circle} pueden verlo, y nadie más.",
+    "make_private": "Hacer privado",
+    "share_to": "Compartir con {circle}",
+    "changed": "Se actualizó quién puede verlo."
   }
 }

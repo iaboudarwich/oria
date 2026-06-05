@@ -1277,5 +1277,14 @@
     "cancelled": "Okay, I left it as it was.",
     "undo": "Undo",
     "undone": "Reverted."
+  },
+  "scope": {
+    "private": "Private",
+    "shared_with": "Shared with {circle}",
+    "who_private": "Only you can see this.",
+    "who_circle": "Everyone in {circle} can see this, and no one else.",
+    "make_private": "Make private",
+    "share_to": "Share with {circle}",
+    "changed": "Updated who can see this."
   }
 }

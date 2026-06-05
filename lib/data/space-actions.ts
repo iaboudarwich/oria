@@ -8,6 +8,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { requireContext } from "./organizations";
 import { logAuditEvent } from "./audit-log";
 import { canDeleteSpace, type DeleteSpaceReason } from "./can-delete-space";
+import { orphanRevertTarget, ORG_SCOPED_ITEM_TABLES } from "@/lib/circles/scope";
 import { ACTIVE_SPACE_COOKIE } from "./active-space";
 
 const ONE_YEAR_SECONDS = 60 * 60 * 24 * 365;
@@ -191,10 +192,44 @@ export async function deleteSpace(formData: FormData): Promise<DeleteSpaceResult
   const orgKind = ctx.organization.kind;
 
   const admin = createAdminClient();
-  // FK ON DELETE CASCADE removes every owned row (memberships, invites,
-  // uploads, memory_items, reminders, trackables, custom_sections, ...).
-  // Verified against the schema: no org-owned table is left orphaned
-  // (system_events is SET NULL by design). The error is checked, not swallowed.
+
+  // ORPHAN RULE (Round 21.5): deleting a CIRCLE must NOT destroy its scoped
+  // items via the FK cascade. They revert to private under the deleting owner
+  // (who could already see them while the circle existed, so no new access is
+  // granted) by moving them into the owner's personal space BEFORE the delete.
+  // If the owner has no personal space, we refuse rather than cascade-destroy.
+  if (orgKind === "circle") {
+    const { data: personal } = await admin
+      .from("organizations")
+      .select("id")
+      .eq("created_by", ctx.profile.id)
+      .eq("kind", "personal")
+      .is("deleted_at", null)
+      .maybeSingle();
+    const target = orphanRevertTarget((personal as { id?: string } | null)?.id);
+    if (!target) return { ok: false, reason: "failed" };
+    let moved = 0;
+    for (const tbl of ORG_SCOPED_ITEM_TABLES) {
+      const { count } = await admin
+        .from(tbl)
+        .update({ organization_id: target }, { count: "exact" })
+        .eq("organization_id", orgId);
+      moved += count ?? 0;
+    }
+    await logAuditEvent({
+      userId: ctx.profile.id,
+      organizationId: target,
+      action: "circle.items_reverted",
+      resourceType: "organization",
+      resourceId: orgId,
+      metadata: { circle: orgName, reverted: moved },
+    });
+  }
+
+  // FK ON DELETE CASCADE removes the remaining owned rows (memberships, invites,
+  // custom_sections, ...). For a circle, the shareable items were just reverted
+  // to the owner's private space above, so they survive. system_events is
+  // SET NULL by design. The error is checked, not swallowed.
   const { error } = await admin.from("organizations").delete().eq("id", orgId);
   if (error) return { ok: false, reason: "failed" };
 

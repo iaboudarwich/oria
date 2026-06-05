@@ -1277,5 +1277,14 @@
     "cancelled": "D’accord, je n’ai rien changé.",
     "undo": "Annuler",
     "undone": "Annulé."
+  },
+  "scope": {
+    "private": "Privé",
+    "shared_with": "Partagé avec {circle}",
+    "who_private": "Vous seul pouvez le voir.",
+    "who_circle": "Tout le monde dans {circle} peut le voir, et personne d’autre.",
+    "make_private": "Rendre privé",
+    "share_to": "Partager avec {circle}",
+    "changed": "Qui peut le voir a été mis à jour."
   }
 }
