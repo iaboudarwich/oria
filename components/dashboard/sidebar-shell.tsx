@@ -140,13 +140,14 @@ export function SidebarShell({
         </div>
       ) : null}
 
-      <div className="sidebar-content lg:pl-[var(--sidebar-w)] transition-[padding] duration-200 ease-[cubic-bezier(0.2,0.8,0.2,1)]">
+      <div className="sidebar-content md:pl-16 lg:pl-[var(--sidebar-w)] transition-[padding] duration-200 ease-[cubic-bezier(0.2,0.8,0.2,1)]">
         <main
           id="main-content"
           tabIndex={-1}
-          // Extra bottom padding on mobile so the fixed bottom tab bar (56px +
-          // safe area) never covers content; desktop has no tab bar.
-          className="mx-auto max-w-[1200px] px-4 pb-[calc(72px+env(safe-area-inset-bottom))] outline-none sm:px-6 lg:px-10 lg:pb-16"
+          // Phone: extra bottom padding so the fixed bottom tab bar (56px + safe
+          // area) never covers content. Tablet: the nav is a left rail (the
+          // md:pl-16 above), so the bottom gap is dropped. Desktop: the sidebar.
+          className="mx-auto max-w-[1200px] px-4 pb-[calc(72px+env(safe-area-inset-bottom))] outline-none sm:px-6 md:pb-16 lg:px-10"
         >
           {children}
         </main>
