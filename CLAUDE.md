@@ -814,4 +814,43 @@ sectioned).
 
 ---
 
+## 24. Native feel: progressive disclosure, one thing per screen, motion (Round 16.9)
+
+Oria should feel like an app, not a web page. Three rules hold app-wide.
+
+**Progressive disclosure.** Dense screens start collapsed and expand in place.
+Every collapsed header says what is inside (it answers "what will I find if I
+expand this?"), so the `Accordion` primitive (`components/ui/accordion.tsx`)
+carries a `hint` line while collapsed. Data follows the three-layer pattern:
+one headline number for the instant read, then the trend, then full detail on
+drill-down, and the insight stays on the same screen as the action it implies
+(never split "what" from "what to do"). A color carries ONE meaning everywhere
+(an accent never means two different things across surfaces).
+
+**One thing per screen.** Each screen has a single primary job and a single
+primary action. Modal content that should keep context visible uses the bottom
+`Sheet` (`components/ui/sheet.tsx`, vaul) rather than a full-screen takeover;
+quick forms, row actions, filters, and capture are sheets. Instant feedback on
+capture / log / done uses React 19 `useOptimistic` (reflect now, reconcile in
+the background, revert on failure).
+
+**Native-feel motion, reduced-motion safe.** Route changes and shared-element
+transitions use the View Transitions API (`experimental.viewTransition` +
+the root CSS in `app/globals.css`), CSS-driven, no animation library. It is
+strictly progressive enhancement: it lives inside
+`@media (prefers-reduced-motion: no-preference)`, so reduced-motion users get an
+instant swap, and browsers without `startViewTransition` navigate normally.
+Animate only `transform` and `opacity`, never layout props (width/height/top).
+
+**One responsive nav, never two** (`bottom-tab-bar.tsx` + `sidebar.tsx`,
+state lifted in `sidebar-shell.tsx`): a bottom tab bar in the phone thumb zone,
+the same destinations as a slim left rail on tablet, the full sidebar on
+desktop. Four destinations plus More (never more than five), 44 to 48px targets,
+always-visible active state, safe-area insets for the iOS home indicator. Swipe
+and gesture accelerators are fine, but a visible control (e.g. `BackButton`)
+is ALWAYS present too, never gesture-only. The center thumb-zone slot is
+reserved for the Round 19.5 voice button.
+
+---
+
 End of brief. Update this file when a principle changes, not when code changes.

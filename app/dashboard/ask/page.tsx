@@ -75,7 +75,10 @@ export default async function AskPage() {
           toggle, so it never sits on top of the chat in normal flow. */}
       <div className="flex flex-col gap-6 md:flex-row md:items-start">
         <ConversationSidebar conversations={conversations} />
-        <div className="relative min-w-0 flex-1">
+        {/* Chat-first, Claude-like: the conversation reflows into the remaining
+            width, then centers in a comfortable reading column on large screens
+            instead of stretching edge to edge (Round 16.9 Part 4). */}
+        <div className="relative min-w-0 flex-1 lg:mx-auto lg:w-full lg:max-w-3xl">
           <AskChat
             crossSpaceAvailable={crossSpaceAvailable}
             recentQuestions={recentQuestions}
