@@ -2,20 +2,61 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
+import { useFocusNext } from "@/lib/hooks/use-focus-next";
 import type { ProviderName } from "@/lib/ai-providers";
 
-const PROVIDERS: { id: ProviderName; name: string; console: string }[] = [
-  { id: "anthropic", name: "Claude", console: "https://console.anthropic.com/settings/keys" },
-  { id: "openai", name: "ChatGPT", console: "https://platform.openai.com/api-keys" },
-  { id: "gemini", name: "Gemini", console: "https://aistudio.google.com/app/apikey" },
+/**
+ * Per-provider get-a-key guide. `console` is the exact page; `steps` name the
+ * exact page, section, and button the user clicks, so there is no guessing.
+ * The button/section labels are the provider's own UI text, kept literal.
+ */
+type Step = [key: string, vars: Record<string, string>];
+const PROVIDERS: {
+  id: ProviderName;
+  name: string;
+  console: string;
+  steps: Step[];
+}[] = [
+  {
+    id: "anthropic",
+    name: "Claude",
+    console: "https://console.anthropic.com/settings/keys",
+    steps: [
+      ["step_open_at", { page: "console.anthropic.com" }],
+      ["step_go_to", { section: "API Keys" }],
+      ["step_create_named", { button: "Create Key" }],
+      ["step_paste", {}],
+    ],
+  },
+  {
+    id: "openai",
+    name: "ChatGPT",
+    console: "https://platform.openai.com/api-keys",
+    steps: [
+      ["step_open_at", { page: "platform.openai.com" }],
+      ["step_go_to", { section: "API keys" }],
+      ["step_create_named", { button: "Create new secret key" }],
+      ["step_paste", {}],
+    ],
+  },
+  {
+    id: "gemini",
+    name: "Gemini",
+    console: "https://aistudio.google.com/app/apikey",
+    steps: [
+      ["step_open_at", { page: "aistudio.google.com" }],
+      ["step_create_named", { button: "Get API key" }],
+      ["step_paste", {}],
+    ],
+  },
 ];
 
-type Step = "choose" | "setup" | "done";
+type ModalStep = "choose" | "setup" | "done";
 
 /**
- * Assisted "connect your AI" flow. Pick a provider, follow the guide to create a
- * key in the provider's console, paste + validate, confirm. Used by onboarding
- * (F4) and Settings -> AI (F5). Calls the F2 validate + save endpoints.
+ * Assisted "connect your AI" flow. Pick a provider, follow the exact steps to
+ * create a key in its console, paste + validate, confirm. A user can run this
+ * repeatedly to connect several providers. Used by onboarding and Settings.
  */
 export function ConnectionModal({
   open,
@@ -27,12 +68,21 @@ export function ConnectionModal({
   onConnected: (provider: ProviderName) => void;
 }) {
   const t = useTranslations("ai");
-  const [step, setStep] = useState<Step>("choose");
+  const [step, setStep] = useState<ModalStep>("choose");
   const [provider, setProvider] = useState<(typeof PROVIDERS)[number] | null>(null);
   const [apiKey, setApiKey] = useState("");
   const [showKey, setShowKey] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Focus the next action as each step appears: the key field on setup, the
+  // Done button on success (Part 1 useFocusNext).
+  const keyInputRef = useFocusNext<HTMLInputElement>(step === "setup" ? "setup" : null, {
+    enabled: step === "setup",
+  });
+  const doneRef = useFocusNext<HTMLButtonElement>(step === "done" ? "done" : null, {
+    enabled: step === "done",
+  });
 
   if (!open) return null;
 
@@ -42,6 +92,7 @@ export function ConnectionModal({
     setApiKey("");
     setShowKey(false);
     setError(null);
+    setBusy(false);
   }
   function close() {
     reset();
@@ -89,6 +140,8 @@ export function ConnectionModal({
                   type="button"
                   onClick={() => {
                     setProvider(p);
+                    setApiKey("");
+                    setError(null);
                     setStep("setup");
                   }}
                   className="flex w-full items-center justify-between rounded-xl border border-line bg-surface-raised px-4 py-3 text-left transition-base hover:bg-canvas"
@@ -101,7 +154,8 @@ export function ConnectionModal({
                 </button>
               ))}
             </div>
-            <button type="button" onClick={close} className="mt-4 text-[12.5px] text-ink-faint hover:text-ink">
+            <p className="mt-4 text-[11.5px] leading-snug text-ink-faint">{t("data_principle_body")}</p>
+            <button type="button" onClick={close} className="mt-3 text-[12.5px] text-ink-faint hover:text-ink">
               {t("cancel")}
             </button>
           </>
@@ -111,9 +165,11 @@ export function ConnectionModal({
               {t("setup_title", { name: provider.name })}
             </h2>
             <ol className="mt-3 space-y-1.5 text-[13px] text-ink-muted">
-              <li>1. {t("step_open", { name: provider.name })}</li>
-              <li>2. {t("step_create")}</li>
-              <li>3. {t("step_paste")}</li>
+              {provider.steps.map(([key, vars], i) => (
+                <li key={key}>
+                  {i + 1}. {t(key, vars)}
+                </li>
+              ))}
             </ol>
             <a
               href={provider.console}
@@ -127,6 +183,7 @@ export function ConnectionModal({
               <label className="mb-1 block text-[12px] font-medium text-ink">{t("paste_label")}</label>
               <div className="flex items-center gap-2">
                 <input
+                  ref={keyInputRef}
                   type={showKey ? "text" : "password"}
                   value={apiKey}
                   onChange={(e) => setApiKey(e.target.value)}
@@ -164,13 +221,28 @@ export function ConnectionModal({
             </div>
             <h2 className="mt-3 text-[16px] font-semibold text-ink">{t("success")}</h2>
             <p className="mt-1 text-[13px] text-ink-muted">{t("success_body", { name: provider.name })}</p>
-            <button
-              type="button"
-              onClick={close}
-              className="mt-4 rounded-lg bg-ink px-4 py-2 text-[13px] font-medium text-surface transition-base hover:bg-ink-soft"
-            >
-              {t("done")}
-            </button>
+            <div className="mt-4 flex items-center justify-center gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setProvider(null);
+                  setApiKey("");
+                  setError(null);
+                  setStep("choose");
+                }}
+                className="rounded-lg border border-line px-4 py-2 text-[13px] text-ink transition-base hover:bg-canvas"
+              >
+                {t("connect_another")}
+              </button>
+              <button
+                ref={doneRef}
+                type="button"
+                onClick={close}
+                className="rounded-lg bg-ink px-4 py-2 text-[13px] font-medium text-surface transition-base hover:bg-ink-soft"
+              >
+                {t("done")}
+              </button>
+            </div>
           </div>
         ) : null}
       </div>

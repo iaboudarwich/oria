@@ -22,7 +22,7 @@ import { DeleteAccountPanel } from "@/components/settings/delete-account-panel";
 import { ResetAccountPanel } from "@/components/settings/reset-account-panel";
 import { ConnectionsZones } from "@/components/settings/connections-zones";
 import { AiSettings } from "@/components/ai/ai-settings";
-import { getAiConnection, getReasoningMode } from "@/lib/data/ai-connections";
+import { listAiConnections, getReasoningMode } from "@/lib/data/ai-connections";
 import { SectionsEditorLazy } from "@/components/settings/sections-editor-lazy";
 import { SecurityPanel } from "@/components/settings/security-panel";
 import { SessionsPanel } from "@/components/settings/sessions-panel";
@@ -110,8 +110,8 @@ export default async function SettingsPage({
       : [];
   const trustedDevices =
     tab === "security" ? await listTrustedDevices() : [];
-  const aiConnection =
-    tab === "ai" && ctx?.profile.id ? await getAiConnection(ctx.profile.id) : null;
+  const aiConnections =
+    tab === "ai" && ctx?.profile.id ? await listAiConnections(ctx.profile.id) : [];
   const aiReasoningMode =
     tab === "ai" && ctx?.profile.id ? await getReasoningMode(ctx.profile.id) : "auto";
   const profile: UserProfile | null =
@@ -336,7 +336,7 @@ export default async function SettingsPage({
         {tab === "ai" && (
           <>
             <ScopeBadge tone="account" label={accountBadge} />
-            <AiSettings connection={aiConnection} reasoningMode={aiReasoningMode} />
+            <AiSettings connections={aiConnections} reasoningMode={aiReasoningMode} />
           </>
         )}
 

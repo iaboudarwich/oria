@@ -61,6 +61,7 @@ async function resolveUserConversationAdapter(userId: string): Promise<ProviderA
       .from("user_ai_connections")
       .select("provider, encrypted_api_key, status")
       .eq("user_id", userId)
+      .eq("is_active", true)
       .maybeSingle();
     if (!data) return null;
     const r = data as { provider: ProviderName; encrypted_api_key: string; status: string };
@@ -101,6 +102,7 @@ export async function userHasOwnProvider(userId: string): Promise<boolean> {
       .from("user_ai_connections")
       .select("status")
       .eq("user_id", userId)
+      .eq("is_active", true)
       .maybeSingle();
     return (data as { status?: string } | null)?.status === "active";
   } catch {

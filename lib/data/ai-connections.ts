@@ -34,13 +34,49 @@ export type AiConnectionSummary = {
   lastError: string | null;
 };
 
-/** The user's AI connection (no key), or null. RLS-scoped. */
+/** One of the user's stored AI accounts (no key). RLS-scoped. */
+export type AiConnection = AiConnectionSummary & {
+  id: string;
+  isActive: boolean;
+  label: string | null;
+};
+
+/** All of a user's AI accounts (no keys), oldest first. */
+export async function listAiConnections(userId: string): Promise<AiConnection[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("user_ai_connections")
+    .select("id, provider, status, is_active, label, last_validated_at, last_error")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: true });
+  return ((data ?? []) as Array<{
+    id: string;
+    provider: ProviderName;
+    status: ConnectionStatus;
+    is_active: boolean;
+    label: string | null;
+    last_validated_at: string | null;
+    last_error: string | null;
+  }>).map((r) => ({
+    id: r.id,
+    provider: r.provider,
+    status: r.status,
+    isActive: r.is_active,
+    label: r.label,
+    lastValidatedAt: r.last_validated_at,
+    lastError: r.last_error,
+  }));
+}
+
+/** The user's ACTIVE AI connection (no key), or null. Back-compat summary used
+ *  by the "powered by" surfaces. */
 export async function getAiConnection(userId: string): Promise<AiConnectionSummary | null> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("user_ai_connections")
     .select("provider, status, last_validated_at, last_error")
     .eq("user_id", userId)
+    .eq("is_active", true)
     .maybeSingle();
   if (!data) return null;
   const r = data as {
@@ -57,7 +93,7 @@ export async function getAiConnection(userId: string): Promise<AiConnectionSumma
   };
 }
 
-/** Internal: the active connection's provider + decrypted key, for routing.
+/** Internal: the ACTIVE connection's provider + decrypted key, for routing.
  *  Server-only; the key is never logged or returned to the client. */
 export async function getActiveAiConnectionKey(
   userId: string,
@@ -67,6 +103,7 @@ export async function getActiveAiConnectionKey(
     .from("user_ai_connections")
     .select("provider, encrypted_api_key, status")
     .eq("user_id", userId)
+    .eq("is_active", true)
     .maybeSingle();
   if (!data) return null;
   const r = data as { provider: ProviderName; encrypted_api_key: string; status: ConnectionStatus };
@@ -77,13 +114,17 @@ export async function getActiveAiConnectionKey(
   }
 }
 
-/** Create or replace the user's connection (one per user). Encrypts the key. */
-export async function upsertAiConnection(input: {
+/** Add or replace one provider's key for the user. The first account a user
+ *  adds becomes active; later ones are stored but not made active until the
+ *  user picks them. Encrypts the key. */
+export async function addAiConnection(input: {
   userId: string;
   provider: ProviderName;
   apiKey: string;
-}): Promise<boolean> {
+}): Promise<{ ok: boolean; activated: boolean }> {
   const admin = createAdminClient();
+  // Re-adding a provider keeps its existing is_active (column omitted from the
+  // update set); a brand-new row inserts with the default (false).
   const { error } = await admin.from("user_ai_connections").upsert(
     {
       user_id: input.userId,
@@ -94,28 +135,105 @@ export async function upsertAiConnection(input: {
       last_error: null,
       updated_at: new Date().toISOString(),
     },
-    { onConflict: "user_id" },
+    { onConflict: "user_id,provider" },
   );
+  if (error) return { ok: false, activated: false };
+
+  // Ensure exactly one active: if the user has none active, activate this one.
+  const { data: actives } = await admin
+    .from("user_ai_connections")
+    .select("id")
+    .eq("user_id", input.userId)
+    .eq("is_active", true);
+  if (!actives || actives.length === 0) {
+    await admin
+      .from("user_ai_connections")
+      .update({ is_active: true })
+      .eq("user_id", input.userId)
+      .eq("provider", input.provider);
+    return { ok: true, activated: true };
+  }
+  return { ok: true, activated: false };
+}
+
+/** Make one of the user's connections the active one (deactivating the rest). */
+export async function setActiveAiConnection(userId: string, connectionId: string): Promise<boolean> {
+  const admin = createAdminClient();
+  const { data: row } = await admin
+    .from("user_ai_connections")
+    .select("id")
+    .eq("id", connectionId)
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (!row) return false;
+  // Deactivate first so the one-active partial unique index never conflicts.
+  await admin
+    .from("user_ai_connections")
+    .update({ is_active: false })
+    .eq("user_id", userId)
+    .eq("is_active", true);
+  const { error } = await admin
+    .from("user_ai_connections")
+    .update({ is_active: true })
+    .eq("id", connectionId)
+    .eq("user_id", userId);
   return !error;
 }
 
-export async function deleteAiConnection(userId: string): Promise<void> {
+/** Remove one connection by id. If it was active, promote the newest remaining
+ *  one so the user keeps a working active account. */
+export async function removeAiConnection(
+  userId: string,
+  connectionId: string,
+): Promise<{ ok: boolean; provider: ProviderName | null }> {
   const admin = createAdminClient();
-  await admin.from("user_ai_connections").delete().eq("user_id", userId);
+  const { data: row } = await admin
+    .from("user_ai_connections")
+    .select("provider, is_active")
+    .eq("id", connectionId)
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (!row) return { ok: false, provider: null };
+  const r = row as { provider: ProviderName; is_active: boolean };
+  await admin.from("user_ai_connections").delete().eq("id", connectionId).eq("user_id", userId);
+  if (r.is_active) {
+    const { data: next } = await admin
+      .from("user_ai_connections")
+      .select("id")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (next) {
+      await admin
+        .from("user_ai_connections")
+        .update({ is_active: true })
+        .eq("id", (next as { id: string }).id);
+    }
+  }
+  return { ok: true, provider: r.provider };
 }
 
-/** Re-validate every stored connection (weekly cron). Updates each status. */
+/** Re-validate every stored connection (weekly cron). Updates each by id. */
 export async function revalidateAllAiConnections(): Promise<{ checked: number }> {
   const admin = createAdminClient();
   const { data } = await admin
     .from("user_ai_connections")
-    .select("user_id, provider, encrypted_api_key");
-  const rows = (data as { user_id: string; provider: ProviderName; encrypted_api_key: string }[] | null) ?? [];
+    .select("id, provider, encrypted_api_key");
+  const rows = (data as { id: string; provider: ProviderName; encrypted_api_key: string }[] | null) ?? [];
   for (const r of rows) {
     try {
       const key = decryptToken(r.encrypted_api_key);
       const result = await buildAdapter(r.provider, key).validateKey();
-      await setAiConnectionStatus(r.user_id, result.status, result.valid ? null : result.error ?? null);
+      await admin
+        .from("user_ai_connections")
+        .update({
+          status: result.status,
+          last_error: result.valid ? null : result.error ?? null,
+          last_validated_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", r.id);
     } catch {
       // A single failure must not abort the batch.
     }
@@ -123,7 +241,9 @@ export async function revalidateAllAiConnections(): Promise<{ checked: number }>
   return { checked: rows.length };
 }
 
-/** Update the connection's status after a (re)validation or a runtime failure. */
+/** Update the ACTIVE connection's status after a runtime failure or a
+ *  per-user revalidation. Scoped to the active row so it never touches the
+ *  user's other stored accounts. */
 export async function setAiConnectionStatus(
   userId: string,
   status: ConnectionStatus,
@@ -138,7 +258,8 @@ export async function setAiConnectionStatus(
       last_validated_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     })
-    .eq("user_id", userId);
+    .eq("user_id", userId)
+    .eq("is_active", true);
 }
 
 export type PendingAiNotice = { provider: ProviderName; status: ConnectionStatus; at: string };
