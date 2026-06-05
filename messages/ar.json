@@ -67,7 +67,19 @@
     "due_this_week": "مستحقة هذا الأسبوع",
     "upcoming": "القادمة",
     "bills_caption": "فواتير",
-    "forecast_empty": "يظهر بمجرد أن ترى Oria بعض الفواتير المتكررة."
+    "forecast_empty": "يظهر بمجرد أن ترى Oria بعض الفواتير المتكررة.",
+    "spend_over_time": "الإنفاق عبر الوقت",
+    "by_category": "حسب الفئة",
+    "subscriptions": "الاشتراكات",
+    "transactions": "المعاملات الأخيرة",
+    "lens_6mo": "6 أشهر",
+    "lens_12mo": "12 شهرًا",
+    "renews": "يتجدد {date}",
+    "per_once": "مرة واحدة",
+    "per_monthly": "/شهر",
+    "per_quarterly": "/ربع",
+    "per_semi_annually": "/6 أشهر",
+    "per_annually": "/سنة"
   },
   "connectors": {
     "connected": "المتصلة",

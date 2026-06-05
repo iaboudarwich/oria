@@ -14,6 +14,7 @@ import {
 } from "@/lib/data/smart-sections";
 import { listSectionMemories } from "@/lib/data/section-memory";
 import { listRecentUserQuestions } from "@/lib/data/recent-questions";
+import { listTrackables } from "@/lib/data/trackables";
 import { requireContext } from "@/lib/data/organizations";
 import { billsSummary } from "@/lib/sections/summaries";
 import { SectionSummaryCard } from "@/components/sections/section-summary-card";
@@ -41,12 +42,14 @@ export default async function BillsPage({
   );
   const view = sp.view === "spend" ? "spend" : "overview";
   const ctx = await requireContext();
-  const [bills, memories, recentQuestions, summary] = await Promise.all([
+  const [bills, memories, recentQuestions, summary, trackables] = await Promise.all([
     listBills(200),
     listSectionMemories(SCOPE),
     listRecentUserQuestions({ surface: "ask", scope: SCOPE, limit: 3 }),
     billsSummary(ctx.organization.id),
+    listTrackables(),
   ]);
+  const subscriptions = trackables.filter((tr) => tr.category === "subscription");
   const now = new Date();
 
   const upcoming = bills
@@ -117,7 +120,9 @@ export default async function BillsPage({
           />
         ) : null}
 
-        {view === "spend" && !empty ? <BillsSpendView bills={bills} /> : null}
+        {view === "spend" && !empty ? (
+          <BillsSpendView bills={bills} subscriptions={subscriptions} />
+        ) : null}
 
         {view === "overview" && upcoming.length > 0 ? (
           <section>

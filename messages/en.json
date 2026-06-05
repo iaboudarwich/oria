@@ -67,7 +67,19 @@
     "due_this_week": "Due this week",
     "upcoming": "Upcoming",
     "bills_caption": "bills",
-    "forecast_empty": "Fills in once Oria sees a few recurring bills."
+    "forecast_empty": "Fills in once Oria sees a few recurring bills.",
+    "spend_over_time": "Spend over time",
+    "by_category": "By category",
+    "subscriptions": "Subscriptions",
+    "transactions": "Recent transactions",
+    "lens_6mo": "6 months",
+    "lens_12mo": "12 months",
+    "renews": "Renews {date}",
+    "per_once": "once",
+    "per_monthly": "/mo",
+    "per_quarterly": "/qtr",
+    "per_semi_annually": "/6mo",
+    "per_annually": "/yr"
   },
   "connectors": {
     "connected": "Connected",

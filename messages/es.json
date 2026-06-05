@@ -67,7 +67,19 @@
     "due_this_week": "Vence esta semana",
     "upcoming": "Próximas",
     "bills_caption": "facturas",
-    "forecast_empty": "Aparece cuando Oria detecta algunas facturas recurrentes."
+    "forecast_empty": "Aparece cuando Oria detecta algunas facturas recurrentes.",
+    "spend_over_time": "Gasto a lo largo del tiempo",
+    "by_category": "Por categoría",
+    "subscriptions": "Suscripciones",
+    "transactions": "Transacciones recientes",
+    "lens_6mo": "6 meses",
+    "lens_12mo": "12 meses",
+    "renews": "Se renueva {date}",
+    "per_once": "una vez",
+    "per_monthly": "/mes",
+    "per_quarterly": "/trim.",
+    "per_semi_annually": "/6 meses",
+    "per_annually": "/año"
   },
   "connectors": {
     "connected": "Conectados",
