@@ -10,6 +10,7 @@ import {
   InboxIcon,
   MenuIcon,
 } from "@/components/ui/icon";
+import { CaptureButton } from "./capture-button";
 
 /**
  * The primary navigation's small-screen face (Round 16.9). ONE nav, three
@@ -20,10 +21,11 @@ import {
  * The "More" item opens the same Sidebar drawer on phone + tablet, so there is
  * one nav system, never two. Four destinations + More (never more than five).
  *
- * A reserved center slot in the phone thumb zone is left clear for the future
- * voice button (Round 19.5); it is built here as an empty placeholder so the
- * spot is not blocked. 56px tap targets clear the 44px floor. RTL: the bottom
- * bar uses a logical flex row; the rail sits on the same side as the Sidebar.
+ * The center thumb-zone slot holds a prominent quick-capture "+" (CaptureButton)
+ * that opens the capture sheet; it is one slot by design so the Round 19.5 voice
+ * button can later replace or sit beside it. 56px tap targets clear the 44px
+ * floor. RTL: the bottom bar uses a logical flex row; the rail sits on the same
+ * side as the Sidebar.
  */
 type Tab = {
   key: string;
@@ -75,9 +77,10 @@ export function BottomTabBar({ onMore }: { onMore: () => void }) {
       <ul className="mx-auto flex max-w-[640px] items-stretch md:mx-0 md:h-full md:max-w-none md:flex-col md:justify-start md:gap-1 md:pt-3">
         {tabItem(TABS[0])}
         {tabItem(TABS[1])}
-        {/* Reserved voice slot: phone thumb zone only, kept clear for Round 19.5. */}
-        <li aria-hidden className="hidden flex-1 max-md:block">
-          <div data-voice-slot className="min-h-[56px]" />
+        {/* Center quick-capture action in the thumb zone. The single-slot design
+            lets the Round 19.5 voice button replace or sit beside this "+". */}
+        <li className="flex flex-1 items-center justify-center md:flex-none md:py-1">
+          <CaptureButton />
         </li>
         {tabItem(TABS[2])}
         {tabItem(TABS[3])}

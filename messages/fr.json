@@ -1204,5 +1204,14 @@
     "add": "Ajouter à {section}",
     "dismiss": "Pas maintenant",
     "filed": "Ajouté à {section}."
+  },
+  "capture": {
+    "open": "Capture rapide",
+    "title": "Ajouter à Oria",
+    "subtitle": "Notez quelque chose, importez un fichier ou créez un rappel.",
+    "note_label": "Note rapide",
+    "note_ph": "Tapez ou collez n’importe quoi. Oria le classe.",
+    "upload": "Importer un fichier",
+    "reminder": "Ajouter un rappel"
   }
 }
