@@ -97,6 +97,8 @@ export type CalendarEntry = {
   /** Which toggleable source group this entry belongs to (F3 filter). */
   sourceGroup: CalendarSource;
   title: string;
+  /** Optional reminder notes (the "Add reminder" form). Null on items/events. */
+  notes: string | null;
   /** Always non-null: the calendar excludes anything without a real date. */
   due_at: string;
   /** Only meaningful for reminder entries. Null for items. */

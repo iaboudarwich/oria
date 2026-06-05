@@ -259,6 +259,9 @@ export function CalendarRow({
             {e.title}
           </p>
         )}
+        {e.notes ? (
+          <p className="mt-0.5 line-clamp-2 text-[12px] text-ink-muted">{e.notes}</p>
+        ) : null}
         <div className="mt-0.5 flex flex-wrap items-center gap-2 text-[11.5px] text-ink-faint">
           {showTime ? (
             <span className="inline-flex items-center gap-1">

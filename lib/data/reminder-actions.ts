@@ -40,6 +40,7 @@ export async function createReminder(formData: FormData): Promise<void> {
 
   const upload_id_raw = String(formData.get("upload_id") ?? "").trim();
   const upload_id = upload_id_raw || null;
+  const notes = String(formData.get("notes") ?? "").trim().slice(0, 2000) || null;
 
   const ctx = await requireContext();
   const supabase = await createClient();
@@ -50,6 +51,7 @@ export async function createReminder(formData: FormData): Promise<void> {
       organization_id: ctx.organization.id,
       created_by: ctx.profile.id,
       title,
+      notes,
       due_at,
       upload_id,
       source: "manual",

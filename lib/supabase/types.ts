@@ -251,6 +251,7 @@ export interface Reminder {
   organization_id: UUID;
   created_by: UUID | null;
   title: string;
+  notes: string | null;
   due_at: TimestampString | null;
   done: boolean;
   upload_id: UUID | null;
