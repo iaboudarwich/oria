@@ -1120,7 +1120,15 @@
     "today_title": "Today's health",
     "today_recovery": "{n}% recovery",
     "today_sleep": "{n}% sleep",
-    "open": "Open Health"
+    "open": "Open Health",
+    "state_primed": "Primed",
+    "state_balanced": "Balanced",
+    "state_low": "Low",
+    "lens_week": "1 week",
+    "lens_month": "1 month",
+    "contributors": "What shaped it",
+    "contributors_hint": "Tap to see the numbers behind it",
+    "sleep_efficiency": "Efficiency"
   },
   "settingsScope": {
     "editing": "Editing",
@@ -1248,7 +1256,8 @@
     "net_worth_eyebrow": "Net worth",
     "net_worth_label": "across your accounts",
     "net_worth_tap": "Tap to see what is behind it.",
-    "net_worth_insight": "{assets} in assets, {debts} in debts."
+    "net_worth_insight": "{assets} in assets, {debts} in debts.",
+    "spend_vs_last": "vs {amount} last month"
   },
   "agenda": {
     "title": "Today",

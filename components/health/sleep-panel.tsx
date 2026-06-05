@@ -1,13 +1,18 @@
 import { getTranslations } from "next-intl/server";
-import { Eyebrow } from "@/components/ui/eyebrow";
-import { HeroNumber } from "@/components/ui/hero-number";
-import { HealthBars } from "./health-bars";
 import { WhoopCta } from "./whoop-cta";
-import { buildWeekSeries, formatSleepDuration } from "@/lib/health/compute";
+import { MetricDial, type Contributor } from "./metric-dial";
+import {
+  buildWeekSeries,
+  buildMonthSeries,
+  formatSleepDuration,
+  scoreState,
+} from "@/lib/health/compute";
 import { latestWith, type HealthMetric } from "@/lib/data/health-data";
+import { DATA_VAR, DATA_TRACK } from "@/lib/ui/status-color";
 
-/** Sleep: last night's performance is the headline, with hours asleep, and a
- *  7-day performance trend. */
+/** Sleep: last night's performance is the headline dial (semantic indigo), with
+ *  hours asleep + efficiency as tap-through contributors and a 1-week / 1-month
+ *  performance trend. */
 export async function SleepPanel({
   metrics,
   whoopConnected,
@@ -22,6 +27,7 @@ export async function SleepPanel({
   const t = await getTranslations("health");
   const perf = latestWith(metrics, "sleep_performance");
   const dur = latestWith(metrics, "sleep_total_minutes");
+  const eff = latestWith(metrics, "sleep_efficiency");
   const hasData = !!(perf || dur);
 
   if (!hasData) {
@@ -34,26 +40,35 @@ export async function SleepPanel({
     );
   }
 
-  const bars = buildWeekSeries(metrics, "sleep_performance", now);
+  const score = perf?.sleep_performance ?? null;
   const hours = formatSleepDuration(dur?.sleep_total_minutes ?? null);
+  const contributors: Contributor[] = [];
+  if (hours) contributors.push({ label: t("last_night"), value: hours });
+  if (eff?.sleep_efficiency != null)
+    contributors.push({ label: t("sleep_efficiency"), value: `${eff.sleep_efficiency}%` });
+
+  const week = buildWeekSeries(metrics, "sleep_performance", now);
+  const month = buildMonthSeries(metrics, "sleep_performance", now);
 
   return (
-    <div className="space-y-5">
-      <div className="rounded-2xl border border-line bg-surface-raised p-4">
-        <Eyebrow>{t("last_night")}</Eyebrow>
-        <HeroNumber
-          className="mt-1"
-          value={perf ? `${perf.sleep_performance}%` : hours ?? "·"}
-          label={perf ? t("sleep_performance") : undefined}
-        />
-        {hours && perf ? (
-          <p className="mt-3 text-[13px] text-ink-muted tabular-nums">{hours}</p>
-        ) : null}
-      </div>
-
-      {bars.some((b) => b.value > 0) ? (
-        <HealthBars bars={bars} caption={t("sleep_caption")} />
-      ) : null}
-    </div>
+    <MetricDial
+      title={t("sleep_performance")}
+      // No performance score (only a duration) leaves the ring empty but still
+      // shows the real hours in the center; never a fabricated percent.
+      arcScore={score ?? 0}
+      displayValue={score != null ? `${score}` : hours ?? "·"}
+      unit={score != null ? "%" : undefined}
+      colorVar={DATA_VAR.sleep}
+      trackVar={DATA_TRACK.sleep}
+      state={score != null ? t(`state_${scoreState(score)}` as "state_primed") : undefined}
+      contributors={contributors}
+      contributorsLabel={t("contributors")}
+      contributorsHint={t("contributors_hint")}
+      week={week}
+      month={month}
+      weekLabel={t("lens_week")}
+      monthLabel={t("lens_month")}
+      trendCaption={t("sleep_caption")}
+    />
   );
 }

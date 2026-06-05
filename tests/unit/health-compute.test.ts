@@ -1,6 +1,8 @@
 import { describe, it, expect } from "vitest";
 import {
   buildWeekSeries,
+  buildDaySeries,
+  buildMonthSeries,
   formatSleepDuration,
   netBalance,
   utcDayKey,
@@ -43,5 +45,26 @@ describe("health compute", () => {
 
   it("utcDayKey is the date slice", () => {
     expect(utcDayKey(new Date("2026-06-04T23:30:00Z"))).toBe("2026-06-04");
+  });
+
+  it("buildDaySeries(7) matches buildWeekSeries", () => {
+    const rows = [
+      { metric_date: "2026-06-04", day_strain: 14.2 },
+      { metric_date: "2026-06-01", day_strain: 9 },
+    ];
+    expect(buildDaySeries(rows, "day_strain", now, 7)).toEqual(
+      buildWeekSeries(rows, "day_strain", now),
+    );
+  });
+
+  it("buildMonthSeries is 30 points, today last, with sparse day-number labels", () => {
+    const rows = [{ metric_date: "2026-06-04", recovery_score: 80 }];
+    const s = buildMonthSeries(rows, "recovery_score", now);
+    expect(s).toHaveLength(30);
+    expect(s[29].value).toBe(80); // today, last point
+    expect(s[29].label).toBe("4"); // today's day-of-month is labelled
+    expect(s[0].label).toBe("6"); // 29 days before 2026-06-04 is 2026-05-06
+    // interior days between weekly marks are blank so 30 bars stay readable
+    expect(s[1].label).toBe("");
   });
 });

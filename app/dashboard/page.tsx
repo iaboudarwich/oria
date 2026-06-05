@@ -38,6 +38,9 @@ import { currentNetWorth } from "@/lib/data/net-worth";
 import { getDashboardCardPrefs } from "@/lib/data/dashboard-cards";
 import { DashboardCards } from "@/components/dashboard/dashboard-cards";
 import { NetWorthMiniCard } from "@/components/dashboard/net-worth-mini-card";
+import { SpendMiniCard } from "@/components/dashboard/spend-mini-card";
+import { listBills } from "@/lib/data/smart-sections";
+import { summarizeSpend } from "@/lib/sections/spend-summary";
 import { defaultStatCards, resolveStatCards, type StatCardKey } from "@/lib/daily/stat-cards";
 import type { ReactNode } from "react";
 
@@ -131,7 +134,7 @@ export default async function DashboardHome() {
           : s.organization.name,
   }));
 
-  const [contextSurface, dailyLoop, healthToday, ritualsToday, netWorth, cardPrefs] = ctx
+  const [contextSurface, dailyLoop, healthToday, ritualsToday, netWorth, cardPrefs, bills] = ctx
     ? await Promise.all([
         loadContextSurface(ctx.organization.id, ctx.organization, now),
         loadDailyLoop(ctx.profile.id, ctx.organization.id, tz, now),
@@ -139,8 +142,17 @@ export default async function DashboardHome() {
         ritualsDoneToday(),
         currentNetWorth(),
         getDashboardCardPrefs(ctx.profile.id),
+        listBills(200),
       ])
-    : [null, null, null, null, null, []];
+    : [null, null, null, null, null, [], []];
+
+  // Real spend aggregation (no invented budget): the home Spending ring reads
+  // this month vs last month from the user's actual bills.
+  const spend = summarizeSpend(bills ?? [], now);
+  const spendMonthLabel = now.toLocaleDateString(locale, {
+    month: "long",
+    timeZone: tz || undefined,
+  });
 
   // Today daily-stats: the tailored, per-archetype card set, narrowed to what
   // the user actually has, then ordered by their saved prefs (Round: surfaces).
@@ -150,12 +162,14 @@ export default async function DashboardHome() {
     cardNodes.health = <HealthStatCard data={healthToday} rituals={ritualsToday} />;
   if (netWorth && netWorth.totalAssets > 0)
     cardNodes.net_worth = <NetWorthMiniCard nw={netWorth} />;
+  if (spend.hasData)
+    cardNodes.spend = <SpendMiniCard summary={spend} monthLabel={spendMonthLabel} />;
   const cardSignals = {
     archetype: contextSurface?.archetype ?? ("personal" as const),
     hasHealth: !!healthToday,
     hasRituals: !!ritualsToday,
     hasFinance: !!netWorth && netWorth.totalAssets > 0,
-    hasBills: false,
+    hasBills: spend.hasData,
   };
   const availableCards = defaultStatCards(cardSignals).filter((k) => cardNodes[k]);
   const resolvedCards = resolveStatCards(availableCards, cardPrefs ?? []);

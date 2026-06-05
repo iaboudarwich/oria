@@ -1,14 +1,17 @@
 import { getTranslations } from "next-intl/server";
-import { Eyebrow } from "@/components/ui/eyebrow";
-import { HeroNumber } from "@/components/ui/hero-number";
-import { HealthBars } from "./health-bars";
 import { WhoopCta } from "./whoop-cta";
-import { buildWeekSeries } from "@/lib/health/compute";
+import { MetricDial, type Contributor } from "./metric-dial";
+import { buildWeekSeries, buildMonthSeries } from "@/lib/health/compute";
 import { latestWith, kjToKcal, type HealthMetric } from "@/lib/data/health-data";
+import { DATA_VAR, DATA_TRACK } from "@/lib/ui/status-color";
 
-/** Movement: day strain is the headline, with active energy and steps beside
- *  it, and a 7-day strain trend. Steps show only when a source provides them
- *  (WHOOP's public data does not always include a step count). */
+// WHOOP day strain runs 0 to 21, so the ring fills against that scale while the
+// center shows the real figure (e.g. 14.2). Not a percent; never invented.
+const STRAIN_MAX = 21;
+
+/** Movement: day strain is the headline dial (semantic cyan), with active
+ *  energy + steps as tap-through contributors and a 1-week / 1-month strain
+ *  trend. Steps show only when a source provides them. */
 export async function MovementPanel({
   metrics,
   whoopConnected,
@@ -36,33 +39,31 @@ export async function MovementPanel({
     );
   }
 
-  const bars = buildWeekSeries(metrics, "day_strain", now);
+  const value = strain?.day_strain ?? null;
+  const contributors: Contributor[] = [];
+  if (energy) {
+    contributors.push({
+      label: t("active_energy"),
+      value: `${kjToKcal(energy.day_kilojoule)!.toLocaleString()} ${t("kcal")}`,
+    });
+  }
+  if (steps) contributors.push({ label: t("steps"), value: steps.steps!.toLocaleString() });
 
   return (
-    <div className="space-y-5">
-      <div className="rounded-2xl border border-line bg-surface-raised p-4">
-        <Eyebrow>{t("day_strain")}</Eyebrow>
-        <HeroNumber className="mt-1" value={strain ? strain.day_strain!.toFixed(1) : "·"} />
-        <div className="mt-3 flex flex-wrap gap-x-8 gap-y-2 text-[13px] text-ink-muted tabular-nums">
-          {energy ? (
-            <span>
-              {t("active_energy")}{" "}
-              <span className="text-ink">
-                {kjToKcal(energy.day_kilojoule)!.toLocaleString()} {t("kcal")}
-              </span>
-            </span>
-          ) : null}
-          {steps ? (
-            <span>
-              {t("steps")} <span className="text-ink">{steps.steps!.toLocaleString()}</span>
-            </span>
-          ) : null}
-        </div>
-      </div>
-
-      {bars.some((b) => b.value > 0) ? (
-        <HealthBars bars={bars} caption={t("strain_caption")} />
-      ) : null}
-    </div>
+    <MetricDial
+      title={t("day_strain")}
+      arcScore={value != null ? Math.min(100, (value / STRAIN_MAX) * 100) : 0}
+      displayValue={value != null ? value.toFixed(1) : "·"}
+      colorVar={DATA_VAR.strain}
+      trackVar={DATA_TRACK.strain}
+      contributors={contributors}
+      contributorsLabel={t("contributors")}
+      contributorsHint={t("contributors_hint")}
+      week={buildWeekSeries(metrics, "day_strain", now)}
+      month={buildMonthSeries(metrics, "day_strain", now)}
+      weekLabel={t("lens_week")}
+      monthLabel={t("lens_month")}
+      trendCaption={t("strain_caption")}
+    />
   );
 }

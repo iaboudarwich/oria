@@ -1120,7 +1120,15 @@
     "today_title": "صحة اليوم",
     "today_recovery": "تعافٍ {n}%",
     "today_sleep": "نوم {n}%",
-    "open": "فتح الصحة"
+    "open": "فتح الصحة",
+    "state_primed": "جاهز",
+    "state_balanced": "متوازن",
+    "state_low": "منخفض",
+    "lens_week": "أسبوع",
+    "lens_month": "شهر",
+    "contributors": "ما الذي شكّله",
+    "contributors_hint": "اضغط لرؤية الأرقام",
+    "sleep_efficiency": "الكفاءة"
   },
   "settingsScope": {
     "editing": "تحرير",
@@ -1248,7 +1256,8 @@
     "net_worth_eyebrow": "صافي الثروة",
     "net_worth_label": "عبر حساباتك",
     "net_worth_tap": "اضغط لرؤية التفاصيل.",
-    "net_worth_insight": "{assets} أصول، {debts} ديون."
+    "net_worth_insight": "{assets} أصول، {debts} ديون.",
+    "spend_vs_last": "مقابل {amount} الشهر الماضي"
   },
   "agenda": {
     "title": "اليوم",

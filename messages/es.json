@@ -1120,7 +1120,15 @@
     "today_title": "Salud de hoy",
     "today_recovery": "{n}% de recuperación",
     "today_sleep": "{n}% de sueño",
-    "open": "Abrir Salud"
+    "open": "Abrir Salud",
+    "state_primed": "A tope",
+    "state_balanced": "Equilibrado",
+    "state_low": "Bajo",
+    "lens_week": "1 semana",
+    "lens_month": "1 mes",
+    "contributors": "Qué influyó",
+    "contributors_hint": "Toca para ver los números",
+    "sleep_efficiency": "Eficiencia"
   },
   "settingsScope": {
     "editing": "Editando",
@@ -1248,7 +1256,8 @@
     "net_worth_eyebrow": "Patrimonio neto",
     "net_worth_label": "en tus cuentas",
     "net_worth_tap": "Toca para ver el detalle.",
-    "net_worth_insight": "{assets} en activos, {debts} en deudas."
+    "net_worth_insight": "{assets} en activos, {debts} en deudas.",
+    "spend_vs_last": "frente a {amount} el mes pasado"
   },
   "agenda": {
     "title": "Hoy",

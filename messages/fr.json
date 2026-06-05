@@ -1120,7 +1120,15 @@
     "today_title": "Santé du jour",
     "today_recovery": "{n}% de récupération",
     "today_sleep": "{n}% de sommeil",
-    "open": "Ouvrir Santé"
+    "open": "Ouvrir Santé",
+    "state_primed": "En forme",
+    "state_balanced": "Équilibré",
+    "state_low": "Bas",
+    "lens_week": "1 semaine",
+    "lens_month": "1 mois",
+    "contributors": "Ce qui l'a influencé",
+    "contributors_hint": "Touchez pour voir les chiffres",
+    "sleep_efficiency": "Efficacité"
   },
   "settingsScope": {
     "editing": "Modification",
@@ -1248,7 +1256,8 @@
     "net_worth_eyebrow": "Valeur nette",
     "net_worth_label": "sur vos comptes",
     "net_worth_tap": "Touchez pour voir le détail.",
-    "net_worth_insight": "{assets} d’actifs, {debts} de dettes."
+    "net_worth_insight": "{assets} d’actifs, {debts} de dettes.",
+    "spend_vs_last": "contre {amount} le mois dernier"
   },
   "agenda": {
     "title": "Aujourd’hui",

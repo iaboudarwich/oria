@@ -3,13 +3,15 @@ import { getTranslations } from "next-intl/server";
 import { Eyebrow } from "@/components/ui/eyebrow";
 import { ScoreRing } from "@/components/ui/score-ring";
 import { ArrowRightIcon } from "@/components/ui/icon";
-import { netBalance } from "@/lib/health/compute";
+import { netBalance, scoreState } from "@/lib/health/compute";
+import { DATA_VAR, DATA_TRACK } from "@/lib/ui/status-color";
 import type { HealthToday } from "@/lib/daily/health-today";
 
 /**
- * Today's single Health stat: recovery (or sleep, if recovery is absent) as the
- * headline, with today's calorie balance beneath when both sides exist. Links
- * into the Health surface. Rendered only when loadHealthToday returns data.
+ * Today's Health hero tile: the recovery score (or sleep, if recovery is
+ * absent) as a real dial in its semantic color, with a one-word state read
+ * beside it, then today's calorie balance + rituals. Links into the Health
+ * surface for the full dial set. Rendered only when loadHealthToday returns data.
  */
 export async function HealthStatCard({
   data,
@@ -23,11 +25,10 @@ export async function HealthStatCard({
 
   const usesRecovery = data?.recoveryPct != null;
   const score = usesRecovery ? data!.recoveryPct! : data?.sleepPct ?? null;
-  const hero = usesRecovery
-    ? t("today_recovery", { n: data!.recoveryPct! })
-    : data?.sleepPct != null
-      ? t("today_sleep", { n: data.sleepPct })
-      : null;
+  const metricLabel = usesRecovery ? t("recovery") : t("sleep_performance");
+  const colorVar = usesRecovery ? DATA_VAR.recovery : DATA_VAR.sleep;
+  const trackVar = usesRecovery ? DATA_TRACK.recovery : DATA_TRACK.sleep;
+  const state = score != null ? t(`state_${scoreState(score)}` as "state_primed") : null;
 
   const net = data ? netBalance(data.intakeKcal, data.burnKcal) : null;
   let balance: string | null = null;
@@ -43,7 +44,7 @@ export async function HealthStatCard({
   return (
     <Link
       href="/dashboard/health"
-      className="block rounded-2xl border border-line bg-surface-raised p-4 transition-base hover:border-ink/20"
+      className="block rounded-card border border-line bg-surface p-4 shadow-soft transition-base hover:border-ink/20"
     >
       <div className="flex items-center justify-between">
         <Eyebrow>{t("today_title")}</Eyebrow>
@@ -52,17 +53,30 @@ export async function HealthStatCard({
         </span>
       </div>
       <div className="mt-2 flex items-center gap-4">
-        {score != null ? <ScoreRing score={score} size={68} /> : null}
-        <div className="min-w-0 space-y-1">
-          {/* Insight first (the words), the dial is the evidence beside it. */}
-          {hero ? <p className="text-[14px] text-ink">{hero}</p> : null}
-          {balance ? (
-            <p className="text-[13px] text-ink-muted tabular-nums">
-              {t("balance_title")}: {balance}
+        {score != null ? (
+          <ScoreRing
+            score={score}
+            size={78}
+            colorVar={colorVar}
+            trackVar={trackVar}
+            center={
+              <span className="num text-[19px] font-semibold" style={{ color: colorVar }}>
+                {Math.round(score)}
+              </span>
+            }
+            ariaLabel={`${metricLabel} ${Math.round(score)}`}
+          />
+        ) : null}
+        <div className="min-w-0 space-y-0.5">
+          <p className="text-[14px] font-medium text-ink">{metricLabel}</p>
+          {state ? (
+            <p className="text-[13px] font-semibold" style={{ color: colorVar }}>
+              {state}
             </p>
           ) : null}
+          {balance ? <p className="num text-[12.5px] text-ink-muted">{balance}</p> : null}
           {rituals ? (
-            <p className="text-[13px] text-ink-muted tabular-nums">
+            <p className="num text-[12.5px] text-ink-muted">
               {t("today_rituals", { done: rituals.done, total: rituals.total })}
             </p>
           ) : null}
