@@ -139,11 +139,10 @@ export async function ConnectionsZones({
                   <ConnectButton
                     href={item.href}
                     acknowledged={privacyAcknowledged}
-                    label={
-                      item.scoped
-                        ? ts("connect_to", { name: item.name, scope: scope.name })
-                        : t("connect")
-                    }
+                    /* Just "Connect": the scope is shown by the "Applies to
+                       {scope}" pill above and named again in the confirm dialog,
+                       so repeating it on every card was redundant and overflowed. */
+                    label={t("connect")}
                     confirm={{
                       title: item.scoped
                         ? ts("confirm_title", { scope: scope.name })
