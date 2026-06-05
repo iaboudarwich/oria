@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Wordmark } from "@/components/brand/wordmark";
+import { BuildingSpace } from "@/components/onboarding/building-space";
+import { useFocusNext } from "@/lib/hooks/use-focus-next";
 import { onboardingNextStep } from "../actions";
 import type { Answer, ConversationState, EngineStep } from "@/lib/onboarding/types";
 
@@ -24,9 +26,19 @@ export function ConversationClient() {
   const [question, setQuestion] = useState<Question | null>(null);
   const [progress, setProgress] = useState({ current: 1, total: 6 });
   const [draft, setDraft] = useState("");
+  const [selected, setSelected] = useState<string[]>([]);
   const [busy, setBusy] = useState(true);
   const [building, setBuilding] = useState(false);
   const started = useRef(false);
+
+  // When a new question appears, bring it into view and move focus to it. Text
+  // questions keep the textarea autofocus (focus:false here so we do not steal
+  // it); choice questions get the region focused so the next tap is right there.
+  const isText = question?.type === "text";
+  const regionRef = useFocusNext<HTMLDivElement>(question?.id, {
+    enabled: !!question && !busy,
+    focus: !isText,
+  });
 
   function applyStep(step: EngineStep) {
     if (step.done) {
@@ -42,6 +54,7 @@ export function ConversationClient() {
     setQuestion(step.question);
     setProgress(step.progress);
     setDraft("");
+    setSelected([]);
     setBusy(false);
   }
 
@@ -69,10 +82,7 @@ export function ConversationClient() {
   if (building) {
     return (
       <Shell>
-        <div className="flex flex-col items-center gap-4 text-center">
-          <span className="h-6 w-6 animate-spin rounded-full border-2 border-line-strong border-t-ink" aria-hidden />
-          <p className="text-[15px] text-ink-soft">{t("conv_building")}</p>
-        </div>
+        <BuildingSpace />
       </Shell>
     );
   }
@@ -95,8 +105,51 @@ export function ConversationClient() {
               {question.text}
             </h1>
 
-            <div className="mt-6">
-              {question.type === "multiple_choice" && question.options ? (
+            <div className="mt-6" ref={regionRef} aria-label={question.text}>
+              {question.type === "multiple_choice" && question.options && question.multi ? (
+                <div className="flex flex-col gap-2">
+                  <div className="flex flex-col gap-2">
+                    {question.options.map((opt) => {
+                      const on = selected.includes(opt);
+                      return (
+                        <button
+                          key={opt}
+                          type="button"
+                          aria-pressed={on}
+                          onClick={() =>
+                            setSelected((prev) =>
+                              prev.includes(opt) ? prev.filter((o) => o !== opt) : [...prev, opt],
+                            )
+                          }
+                          className={`flex items-center gap-2.5 rounded-xl border px-4 py-3 text-left text-[14px] transition-base ${
+                            on
+                              ? "border-brand bg-brand-soft/50 text-ink"
+                              : "border-line bg-surface-raised text-ink hover:border-line-strong hover:bg-surface"
+                          }`}
+                        >
+                          <span
+                            className={`inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-[5px] border text-[10px] ${
+                              on ? "border-brand bg-brand text-surface" : "border-line-strong text-transparent"
+                            }`}
+                            aria-hidden
+                          >
+                            ✓
+                          </span>
+                          {opt}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <button
+                    type="button"
+                    disabled={selected.length === 0}
+                    onClick={() => advance(selected.join(", "), false)}
+                    className="mt-1 self-start rounded-xl bg-ink px-5 py-2.5 text-[14px] font-medium text-surface transition-base hover:bg-ink-soft disabled:opacity-40"
+                  >
+                    {t("conv_continue")}
+                  </button>
+                </div>
+              ) : question.type === "multiple_choice" && question.options ? (
                 <div className="flex flex-col gap-2">
                   {question.options.map((opt) => (
                     <button

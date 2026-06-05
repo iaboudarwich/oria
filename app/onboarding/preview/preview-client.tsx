@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Wordmark } from "@/components/brand/wordmark";
-import { ReasoningIndicator } from "@/components/ai/reasoning-indicator";
+import { BuildingSpace } from "@/components/onboarding/building-space";
 import { BuildAnimation, useBuildGate } from "@/components/onboarding/build-animation";
 import { buildCallouts } from "@/lib/onboarding/callouts";
 import { generateOnboardingPlan, executeOnboardingPlan } from "../actions";
@@ -135,10 +135,7 @@ export function PreviewClient() {
   if (!plan) {
     return (
       <Shell>
-        <div className="flex flex-col items-center gap-3 text-center">
-          <ReasoningIndicator label={t("preview_designing")} />
-          <p className="text-[12.5px] text-ink-faint">{t("preview_designing_time")}</p>
-        </div>
+        <BuildingSpace />
       </Shell>
     );
   }

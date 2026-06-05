@@ -3,8 +3,49 @@
     {
       "id": "role",
       "type": "text",
-      "base": "What do you do? Tell me in a sentence.",
+      "base": "In a sentence, what do you do day to day?",
       "field": "roles"
+    }
+  ],
+  "common": [
+    {
+      "id": "common_focus",
+      "type": "multiple_choice",
+      "multi": true,
+      "base": "What do you most want Oria to help with? Pick any that fit.",
+      "options": [
+        "Money and bills",
+        "Documents in one place",
+        "Renewals and deadlines",
+        "Travel",
+        "Household and family",
+        "Health and habits",
+        "Work and clients"
+      ],
+      "field": "week_one_priority"
+    },
+    {
+      "id": "common_tools",
+      "type": "multiple_choice",
+      "multi": true,
+      "base": "Which of these do you use? Pick any.",
+      "options": [
+        "Gmail",
+        "Outlook",
+        "Google Drive",
+        "Calendar",
+        "WhatsApp",
+        "Bank apps",
+        "Notes apps"
+      ],
+      "field": "data_sources"
+    },
+    {
+      "id": "common_emphasis",
+      "type": "multiple_choice",
+      "base": "Is Oria mostly for your personal life or your work?",
+      "options": ["My personal life", "Work or business", "A bit of both"],
+      "field": "life_contexts"
     }
   ],
   "trees": {
@@ -179,7 +220,7 @@
       {
         "id": "role_followup",
         "type": "text",
-        "base": "Tell me a bit more about that.",
+        "base": "What does a normal week look like for you?",
         "adaptive": true,
         "field": "roles"
       },
@@ -193,13 +234,13 @@
       {
         "id": "data_sources",
         "type": "text",
-        "base": "Where does most of your life live? Email, paper, apps?",
+        "base": "Where does most of your life live right now? Email, paper, or apps?",
         "field": "data_sources"
       },
       {
         "id": "priority",
         "type": "text",
-        "base": "If Oria could help with one thing this week, what would it be?",
+        "base": "If Oria handled one thing for you this week, what would it be?",
         "field": "week_one_priority"
       }
     ]

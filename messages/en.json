@@ -171,7 +171,17 @@
     "error_generic": "Something went wrong. Please try again.",
     "success": "Connected",
     "success_body": "Your {name} is now powering Ask Oria. Your AI will learn your Oria life as you use it.",
-    "done": "Done"
+    "done": "Done",
+    "active_badge": "Active",
+    "make_active": "Make active",
+    "remove": "Remove",
+    "add_another": "Add another AI",
+    "connect_another": "Connect another",
+    "data_principle_title": "Your key picks the model, not your data.",
+    "data_principle_body": "A key only chooses whose AI does the thinking and whose quota it uses. It never gives that provider, or Oria, access to your accounts or files.",
+    "step_open_at": "Open {page}.",
+    "step_go_to": "Go to {section}.",
+    "step_create_named": "Click {button}."
   },
   "cloud": {
     "open_in_onedrive": "Open in OneDrive",
@@ -842,7 +852,12 @@
     "reveal_spaces": "Each space in the sidebar is shaped for that part of your life.",
     "reveal_sections": "Sections are where trackables land. Rename, hide, or add anything anytime.",
     "reveal_scan": "Your first email scan is running, trackables will appear soon.",
-    "reveal_dismiss": "Got it, let me explore"
+    "reveal_dismiss": "Got it, let me explore",
+    "build_title": "Building your Oria",
+    "build_stage_1": "Reading your answers",
+    "build_stage_2": "Choosing your sections",
+    "build_stage_3": "Shaping your spaces",
+    "build_stage_4": "Almost ready"
   },
   "sidebar": {
     "ask": "Ask Oria",

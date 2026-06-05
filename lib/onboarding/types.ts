@@ -51,7 +51,14 @@ export type ConversationState = {
 export type EngineStep =
   | {
       done: false;
-      question: { id: string; text: string; type: QuestionType; options?: string[] };
+      question: {
+        id: string;
+        text: string;
+        type: QuestionType;
+        options?: string[];
+        /** When true, the multiple-choice question accepts several answers. */
+        multi?: boolean;
+      };
       progress: { current: number; total: number };
     }
   | { done: true; userContext: UserContext };

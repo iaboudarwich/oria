@@ -17,12 +17,16 @@ type BankQuestion = {
   type: QuestionType;
   base: string;
   options?: string[];
+  /** Multiple-choice that accepts several answers (tap-many then continue). */
+  multi?: boolean;
   adaptive?: boolean;
   field?: string;
 };
 
 type Bank = {
   intro: BankQuestion[];
+  /** Shared quick-tap questions asked to everyone, after the intro. */
+  common: BankQuestion[];
   trees: Record<string, BankQuestion[]>;
   reconfigure: BankQuestion[];
 };
@@ -69,7 +73,11 @@ export class ConversationEngine {
   private questionsFor(state: ConversationState): BankQuestion[] {
     if (this.mode === "reconfigure") return BANK.reconfigure;
     const tree = BANK.trees[questionTreeKey(this.intentOf(state))] ?? BANK.trees.personal;
-    return [...BANK.intro, ...tree];
+    // intro (classifies the intent) -> shared quick-tap questions -> the intent
+    // tree. The common block is the same length for every intent, so the total
+    // and progress stay stable once Q1 branches, and the intent (hence the
+    // archetype resolver) is still decided from answers[0] alone.
+    return [...BANK.intro, ...(BANK.common ?? []), ...tree];
   }
 
   private totalFor(questions: BankQuestion[]): number {
@@ -93,6 +101,7 @@ export class ConversationEngine {
         text: text.text,
         type: q.type,
         options: q.type === "multiple_choice" ? text.options ?? q.options : undefined,
+        multi: q.type === "multiple_choice" ? q.multi === true : undefined,
       },
       progress: { current: asked + 1, total },
     };

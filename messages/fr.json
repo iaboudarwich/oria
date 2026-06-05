@@ -171,7 +171,17 @@
     "error_generic": "Une erreur est survenue. Veuillez réessayer.",
     "success": "Connecté",
     "success_body": "Votre {name} alimente désormais Ask Oria. Votre IA apprendra votre vie Oria au fil de l'usage.",
-    "done": "Terminé"
+    "done": "Terminé",
+    "active_badge": "Actif",
+    "make_active": "Activer",
+    "remove": "Retirer",
+    "add_another": "Ajouter une autre IA",
+    "connect_another": "Connecter une autre",
+    "data_principle_title": "Votre clé choisit le modèle, pas vos données.",
+    "data_principle_body": "Une clé choisit seulement quelle IA réfléchit et quel quota elle utilise. Elle ne donne jamais à ce fournisseur, ni à Oria, accès à vos comptes ou fichiers.",
+    "step_open_at": "Ouvrez {page}.",
+    "step_go_to": "Allez dans {section}.",
+    "step_create_named": "Cliquez sur {button}."
   },
   "cloud": {
     "open_in_onedrive": "Ouvrir dans OneDrive",
@@ -842,7 +852,12 @@
     "reveal_spaces": "Chaque espace de la barre latérale est façonné pour cette partie de votre vie.",
     "reveal_sections": "Les sections sont l'endroit où les suivis atterrissent. Renommez, masquez ou ajoutez à tout moment.",
     "reveal_scan": "Votre première analyse d'e-mails est en cours, les suivis apparaîtront bientôt.",
-    "reveal_dismiss": "Compris, laissez-moi explorer"
+    "reveal_dismiss": "Compris, laissez-moi explorer",
+    "build_title": "Création de votre Oria",
+    "build_stage_1": "Lecture de vos réponses",
+    "build_stage_2": "Choix de vos rubriques",
+    "build_stage_3": "Mise en forme de vos espaces",
+    "build_stage_4": "Presque prêt"
   },
   "sidebar": {
     "ask": "Demander à Oria",
