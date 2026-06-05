@@ -20,6 +20,7 @@ export async function WhoopPanel({ userId }: { userId: string }) {
   if (conns.length === 0) return null;
   const conn = conns[0];
   const t = await getTranslations("health");
+  const ts = await getTranslations("settingsScope");
 
   const updated = conn.lastSyncedAt
     ? t("whoop_updated", { time: relativeTime(conn.lastSyncedAt) })
@@ -41,6 +42,7 @@ export async function WhoopPanel({ userId }: { userId: string }) {
       <p className="text-[12px] text-ink-muted">
         {conn.status === "error" && conn.lastError ? conn.lastError : updated}
       </p>
+      <p className="text-[11.5px] text-ink-faint">{ts("feeds_you")}</p>
     </section>
   );
 }

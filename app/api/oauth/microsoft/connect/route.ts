@@ -11,6 +11,7 @@ import {
   scopesForService,
 } from "@/lib/microsoft/oauth";
 import { isTokenCryptoConfigured } from "@/lib/security/token-crypto";
+import { setConnectScopeCookie } from "@/lib/oauth/connect-scope";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -61,6 +62,7 @@ export async function GET(request: Request) {
   };
   store.set(MS_STATE_COOKIE, state, cookieOpts);
   store.set(MS_SERVICE_COOKIE, service, cookieOpts);
+  await setConnectScopeCookie(url.searchParams.get("org"));
 
   return NextResponse.redirect(
     buildMicrosoftAuthUrl({ state, scopes: scopesForService(service), loginHint }),

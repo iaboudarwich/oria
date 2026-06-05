@@ -11,6 +11,7 @@ import {
   scopesForService,
 } from "@/lib/google/oauth";
 import { isTokenCryptoConfigured } from "@/lib/security/token-crypto";
+import { setConnectScopeCookie } from "@/lib/oauth/connect-scope";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -68,6 +69,7 @@ export async function GET(request: Request) {
   };
   store.set(GOOGLE_STATE_COOKIE, state, cookieOpts);
   store.set(GOOGLE_SERVICE_COOKIE, service, cookieOpts);
+  await setConnectScopeCookie(url.searchParams.get("org"));
 
   return NextResponse.redirect(
     buildGoogleAuthUrl({ state, scopes: scopesForService(service), loginHint }),

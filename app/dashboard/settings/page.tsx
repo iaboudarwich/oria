@@ -1,6 +1,13 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { Topbar } from "@/components/dashboard/topbar";
 import { listAllSections } from "@/lib/data/all-sections";
+import { scopeKindOf, scopeLabel, resolveEditingScopeId } from "@/lib/settings/scope";
+import {
+  SettingsScopeBar,
+  type ScopeOption,
+} from "@/components/settings/settings-scope-bar";
+import { ScopeBadge } from "@/components/settings/scope-badge";
 import {
   getCurrentContext,
   listUserSpaces,
@@ -118,9 +125,45 @@ export default async function SettingsPage({
   const total = sections.length;
   const orgKind = ctx?.organization.kind ?? "personal";
 
+  // Settings-local editing scope (Round 16.8). Resolved from ?scope=, validated
+  // against the user's spaces, defaulting to the active org. It never touches
+  // the active-space cookie, so the rest of the app stays where it was.
+  const ts = await getTranslations("settingsScope");
+  const memberIds = spaces.map((s) => s.organization.id);
+  const editingId = resolveEditingScopeId(
+    typeof sp.scope === "string" ? sp.scope : null,
+    memberIds,
+    ctx?.organization.id ?? null,
+  );
+  const editing =
+    spaces.find((s) => s.organization.id === editingId) ??
+    (ctx ? { organization: ctx.organization, membership: ctx.membership } : null);
+  const editingOrg = editing?.organization ?? ctx?.organization ?? null;
+  const editingKind = editingOrg ? scopeKindOf(editingOrg) : "personal";
+  const editingScopeName = editingOrg
+    ? scopeLabel(ts, editingKind, editingOrg.name)
+    : ts("personal");
+  const scopeOptions: ScopeOption[] = spaces.map((s) => ({
+    id: s.organization.id,
+    kind: scopeKindOf(s.organization),
+    name: s.organization.name,
+  }));
+  const accountBadge = ts("account_wide");
+  const scopeAppliesBadge = ts("applies_to", { scope: editingScopeName });
+  // Sections still edit the space you're in (re-scoping the sections editor is
+  // deferred), so they badge the ACTIVE space, not the editing scope.
+  const activeScopeName = ctx
+    ? scopeLabel(ts, scopeKindOf(ctx.organization), ctx.organization.name)
+    : ts("personal");
+
   return (
     <>
       <Topbar title="Settings" />
+
+      {/* Editing scope (Round 16.8): re-scopes per-space panels in place. */}
+      {editingId && scopeOptions.length > 0 ? (
+        <SettingsScopeBar scopes={scopeOptions} currentId={editingId} tab={tab} />
+      ) : null}
 
       {/* Tab bar */}
       <div className="mb-6 -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-10 lg:px-10 border-b border-line">
@@ -128,7 +171,7 @@ export default async function SettingsPage({
           {TABS.map((t) => (
             <Link
               key={t.key}
-              href={`/dashboard/settings?tab=${t.key}`}
+              href={`/dashboard/settings?tab=${t.key}${editingId ? `&scope=${editingId}` : ""}`}
               className={`shrink-0 px-3 py-2.5 text-[13px] transition-base border-b-2 -mb-px ${
                 tab === t.key
                   ? "border-ink text-ink font-medium"
@@ -144,6 +187,7 @@ export default async function SettingsPage({
       <div className="mx-auto max-w-2xl space-y-9 animate-fade-up">
         {tab === "preferences" && profile ? (
           <>
+            <ScopeBadge tone="account" label={accountBadge} />
             <PreferencesPanel initial={profile.preferences} />
             <NoticedPanel derived={profile.derived} />
             <LearnedRulesPanel />
@@ -151,25 +195,35 @@ export default async function SettingsPage({
           </>
         ) : null}
 
-        {tab === "appearance" && ctx && (
+        {tab === "appearance" && ctx && editingOrg && (
           <div className="space-y-9">
-            {appearance ? (
-              <DisplayPanel
-                initialFontSize={appearance.fontSize}
-                initialDensity={appearance.density}
+            <section>
+              <ScopeBadge tone="account" label={accountBadge} className="mb-3" />
+              {appearance ? (
+                <DisplayPanel
+                  initialFontSize={appearance.fontSize}
+                  initialDensity={appearance.density}
+                />
+              ) : null}
+            </section>
+            <div>
+              <ScopeBadge tone="scope" label={scopeAppliesBadge} className="mb-3 ms-1" />
+              <AppearancePanel
+                key={editingOrg.id}
+                organizationId={editingOrg.id}
+                scopeName={editingScopeName}
+                initialAccent={editingOrg.accent_color ?? null}
+                initialShadow={editingOrg.shadow_color ?? null}
+                defaultAccent={defaultAccentFor(editingOrg)}
+                initialVariant={editingOrg.theme_variant ?? null}
               />
-            ) : null}
-            <AppearancePanel
-              initialAccent={ctx.organization.accent_color ?? null}
-              initialShadow={ctx.organization.shadow_color ?? null}
-              defaultAccent={defaultAccentFor(ctx.organization)}
-              initialVariant={ctx.organization.theme_variant ?? null}
-            />
+            </div>
           </div>
         )}
 
         {tab === "general" && (
           <>
+            <ScopeBadge tone="account" label={accountBadge} />
             <ModesPanel orgKind={orgKind} />
             <SidebarPrefsPanel timelineEnabled={timelineEnabled} />
             {/* Appearance */}
@@ -188,17 +242,19 @@ export default async function SettingsPage({
               </div>
             </section>
 
-            {/* Language preferences */}
+            {/* Language preferences. Account language is account-wide; the
+                content language below applies to the selected scope. */}
             <section>
-              <h2 className="mb-3 px-1 text-eyebrow">
-                Language
-              </h2>
+              <div className="mb-3 flex items-center justify-between px-1">
+                <h2 className="text-eyebrow">Language</h2>
+                <ScopeBadge tone="scope" label={scopeAppliesBadge} />
+              </div>
               <div className="overflow-hidden rounded-2xl border border-line bg-surface-raised px-4 py-4 shadow-[0_1px_2px_rgba(28,26,23,0.04)]">
                 <LanguageSwitcher
                   currentAccountLanguage={(ctx?.profile?.preferred_language ?? "en") as Locale}
-                  currentWorkspaceLanguage={(ctx?.organization?.content_language ?? "en") as Locale}
-                  organizationId={ctx?.organization.id ?? ""}
-                  isOwner={ctx?.membership.role === "owner"}
+                  currentWorkspaceLanguage={(editingOrg?.content_language ?? "en") as Locale}
+                  organizationId={editingOrg?.id ?? ""}
+                  isOwner={editing?.membership.role === "owner"}
                 />
               </div>
             </section>
@@ -212,13 +268,16 @@ export default async function SettingsPage({
 
         {tab === "sections" && (
           <section>
+            <div className="mb-3">
+              <ScopeBadge tone="scope" label={ts("applies_to", { scope: activeScopeName })} />
+            </div>
             <div className="mb-2 flex items-end justify-between px-1">
               <div>
                 <h2 className="text-eyebrow">
                   Sections
                 </h2>
                 <p className="mt-1 text-[12px] text-ink-faint">
-                  {`${visible.length} of ${total} visible.`}
+                  {`${visible.length} of ${total} visible. Sections follow the space you're in.`}
                 </p>
               </div>
               <Link
@@ -233,40 +292,57 @@ export default async function SettingsPage({
         )}
 
         {tab === "circles" && (
+          <>
+          <ScopeBadge tone="account" label={accountBadge} />
           <SpacesPanel
             spaces={spaces}
             activeOrgId={ctx?.organization.id ?? null}
             kind="circle"
           />
+          </>
         )}
 
         {tab === "workspaces" && (
+          <>
+          <ScopeBadge tone="account" label={accountBadge} />
           <SpacesPanel
             spaces={spaces}
             activeOrgId={ctx?.organization.id ?? null}
             kind="office"
           />
+          </>
         )}
 
         {tab === "storage" && (
           <>
+            <ScopeBadge tone="account" label={accountBadge} />
             {storageStats ? <StorageSection stats={storageStats} /> : (
               <p className="text-[13px] text-ink-faint px-1">Storage stats unavailable.</p>
             )}
           </>
         )}
 
-        {tab === "connections" && ctx?.profile.id && (
-          <ConnectionsZones
-            userId={ctx.profile.id}
-            notice={typeof sp.notice === "string" ? sp.notice : undefined}
-          />
+        {tab === "connections" && ctx?.profile.id && editingId && (
+          <div className="space-y-4">
+            <ScopeBadge tone="scope" label={scopeAppliesBadge} />
+            <ConnectionsZones
+              userId={ctx.profile.id}
+              notice={typeof sp.notice === "string" ? sp.notice : undefined}
+              scope={{ id: editingId, name: editingScopeName, kind: editingKind }}
+            />
+          </div>
         )}
 
-        {tab === "ai" && <AiSettings connection={aiConnection} reasoningMode={aiReasoningMode} />}
+        {tab === "ai" && (
+          <>
+            <ScopeBadge tone="account" label={accountBadge} />
+            <AiSettings connection={aiConnection} reasoningMode={aiReasoningMode} />
+          </>
+        )}
 
         {tab === "security" && (
           <div className="space-y-9">
+            <ScopeBadge tone="account" label={accountBadge} />
             <SecurityPanel
               enrolled={mfa.enrolled}
               backupCodesLeft={mfa.backupCodesLeft}
@@ -282,6 +358,7 @@ export default async function SettingsPage({
 
         {tab === "privacy" && (
           <>
+            <ScopeBadge tone="account" label={accountBadge} />
             <div className="rounded-2xl border border-line bg-surface-raised px-4 py-3 text-[12.5px] text-ink-faint">
               Voice dictation uses OpenAI Whisper. Audio is sent to OpenAI for transcription only and is not retained per their terms of service.
             </div>

@@ -1076,5 +1076,25 @@
     "today_recovery": "تعافٍ {n}%",
     "today_sleep": "نوم {n}%",
     "open": "فتح الصحة"
+  },
+  "settingsScope": {
+    "editing": "تحرير",
+    "personal": "شخصي",
+    "work": "عمل - {name}",
+    "circle": "دائرة - {name}",
+    "switch_label": "اختر ما تحرّره",
+    "account_wide": "على مستوى الحساب",
+    "account_wide_hint": "ينطبق على حسابك كله، في كل المساحات.",
+    "applies_to": "ينطبق على {scope}",
+    "connect_to": "ربط {name} بـ {scope}",
+    "confirm_title": "الربط بـ {scope}؟",
+    "confirm_body": "سيُربط {name} بـ {scope}. يمكنك تغيير ذلك لاحقاً.",
+    "confirm_body_account": "سيُضاف {name} إلى حسابك.",
+    "confirm_title_account": "ربط {name}؟",
+    "continue": "متابعة",
+    "cancel": "إلغاء",
+    "feeds": "يغذّي {scope}",
+    "feeds_auto": "يُصنّف في المساحة المناسبة تلقائياً",
+    "feeds_you": "أنت فقط، غير مشترك مع أي مساحة"
   }
 }

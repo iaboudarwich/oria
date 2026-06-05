@@ -1076,5 +1076,25 @@
     "today_recovery": "{n}% recovery",
     "today_sleep": "{n}% sleep",
     "open": "Open Health"
+  },
+  "settingsScope": {
+    "editing": "Editing",
+    "personal": "Personal",
+    "work": "Work - {name}",
+    "circle": "Circle - {name}",
+    "switch_label": "Choose what you're editing",
+    "account_wide": "Account-wide",
+    "account_wide_hint": "Applies to your whole account, every space.",
+    "applies_to": "Applies to {scope}",
+    "connect_to": "Connect {name} to {scope}",
+    "confirm_title": "Connect to {scope}?",
+    "confirm_body": "{name} will be connected to {scope}. You can change this later.",
+    "confirm_body_account": "{name} will be added to your account.",
+    "confirm_title_account": "Connect {name}?",
+    "continue": "Continue",
+    "cancel": "Cancel",
+    "feeds": "Feeds {scope}",
+    "feeds_auto": "Sorts into the right space automatically",
+    "feeds_you": "Just you, not shared to any space"
   }
 }

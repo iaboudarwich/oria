@@ -14,6 +14,7 @@ import {
   isGmailEmailConnected,
 } from "@/lib/integrations/gmail/connections";
 import { startGmailScan } from "@/lib/integrations/gmail/scan";
+import { takeConnectScope } from "@/lib/oauth/connect-scope";
 import { logAuditEvent } from "@/lib/data/audit-log";
 import { STATE_COOKIE, SKIP_CONFIDENTIAL_COOKIE } from "../start/route";
 
@@ -93,10 +94,13 @@ export async function GET(request: Request) {
     // background, so a second/third account starts scanning immediately even
     // though the review page already has items from the others.
     const ctx = await getCurrentContext();
+    // Feed the scope the user chose at connect time (Settings editing scope),
+    // falling back to the active space.
+    const connectOrg = await takeConnectScope(user.id);
     const started = await startGmailScan({
       userId: user.id,
       connectionId: id,
-      organizationId: ctx?.organization.id ?? null,
+      organizationId: connectOrg ?? ctx?.organization.id ?? null,
       timeframeMonths: 6,
     });
     if (started) after(started.process);

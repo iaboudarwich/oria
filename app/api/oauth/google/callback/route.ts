@@ -10,6 +10,7 @@ import {
 } from "@/lib/google/oauth";
 import { upsertCloudConnection } from "@/lib/google/cloud-connections";
 import { syncUserCalendars } from "@/lib/google/calendar";
+import { takeConnectScope } from "@/lib/oauth/connect-scope";
 import { logAuditEvent } from "@/lib/data/audit-log";
 import { GOOGLE_STATE_COOKIE, GOOGLE_SERVICE_COOKIE } from "../connect/route";
 
@@ -59,6 +60,7 @@ export async function GET(request: Request) {
     const email = await fetchGooglePrimaryEmail(tokens.accessToken);
     if (!email) return settingsRedirect("error=no_email");
 
+    await takeConnectScope(user.id); // consume the scope cookie (cloud routing is set via the existing per-connection controls)
     const result = await upsertCloudConnection({
       userId: user.id,
       service,

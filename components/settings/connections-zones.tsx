@@ -32,10 +32,21 @@ type AvailableItem = {
   descKey: string;
   available: boolean;
   href?: string;
+  /** Per-space connectors feed a scope; WHOOP is the user's own data. */
+  scoped: boolean;
 };
 
-export async function ConnectionsZones({ userId, notice }: { userId: string; notice?: string }) {
+export async function ConnectionsZones({
+  userId,
+  notice,
+  scope,
+}: {
+  userId: string;
+  notice?: string;
+  scope: { id: string; name: string; kind: string };
+}) {
   const t = await getTranslations("connectors");
+  const ts = await getTranslations("settingsScope");
   const crypto = isTokenCryptoConfigured();
   const gmailOk = isGmailOAuthConfigured() && crypto;
   const googleOk = isGoogleOAuthConfigured() && crypto;
@@ -72,13 +83,24 @@ export async function ConnectionsZones({ userId, notice }: { userId: string; not
     { id: "whoop", name: "WHOOP", descKey: "whoop_desc", connected: has(whoop), ok: true, href: "/api/oauth/whoop/start" },
   ];
 
+  // WHOOP is the user's own data (no scope); every other connector feeds the
+  // selected scope, so its Connect carries ?org=<scope> and names the scope.
   const real: AvailableItem[] = candidates
     .filter((c) => !c.connected)
-    .map((c) => ({ id: c.id, name: c.name, descKey: c.descKey, available: c.ok, href: c.ok ? c.href : undefined }));
+    .map((c) => {
+      const scoped = c.id !== "whoop";
+      const href =
+        c.ok && c.href
+          ? scoped
+            ? `${c.href}${c.href.includes("?") ? "&" : "?"}org=${scope.id}`
+            : c.href
+          : undefined;
+      return { id: c.id, name: c.name, descKey: c.descKey, available: c.ok, href, scoped };
+    });
 
   // Always-visible coming-soon connectors.
   const soon: AvailableItem[] = [
-    { id: "banking", name: "Banking", descKey: "banking_desc", available: false },
+    { id: "banking", name: "Banking", descKey: "banking_desc", available: false, scoped: true },
   ];
 
   // Available first, coming soon last.
@@ -117,7 +139,21 @@ export async function ConnectionsZones({ userId, notice }: { userId: string; not
                   <ConnectButton
                     href={item.href}
                     acknowledged={privacyAcknowledged}
-                    label={t("connect")}
+                    label={
+                      item.scoped
+                        ? ts("connect_to", { name: item.name, scope: scope.name })
+                        : t("connect")
+                    }
+                    confirm={{
+                      title: item.scoped
+                        ? ts("confirm_title", { scope: scope.name })
+                        : ts("confirm_title_account", { name: item.name }),
+                      body: item.scoped
+                        ? ts("confirm_body", { name: item.name, scope: scope.name })
+                        : ts("confirm_body_account", { name: item.name }),
+                      continueLabel: ts("continue"),
+                      cancelLabel: ts("cancel"),
+                    }}
                   />
                 ) : (
                   <span className="inline-flex items-center rounded-md bg-canvas px-2 py-1 text-[11px] text-ink-faint">

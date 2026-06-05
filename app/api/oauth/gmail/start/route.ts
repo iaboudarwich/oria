@@ -5,6 +5,7 @@ import { cookies } from "next/headers";
 import { randomBytes } from "node:crypto";
 import { createClient } from "@/lib/supabase/server";
 import { buildAuthUrl, isGmailOAuthConfigured } from "@/lib/integrations/gmail/oauth";
+import { setConnectScopeCookie } from "@/lib/oauth/connect-scope";
 import { isTokenCryptoConfigured } from "@/lib/security/token-crypto";
 
 export const dynamic = "force-dynamic";
@@ -64,6 +65,9 @@ export async function GET(request: Request) {
   } else {
     store.delete(SKIP_CONFIDENTIAL_COOKIE);
   }
+
+  // Carry the chosen Settings scope so the new connection feeds that space.
+  await setConnectScopeCookie(new URL(request.url).searchParams.get("org"));
 
   return NextResponse.redirect(buildAuthUrl(state));
 }

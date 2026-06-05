@@ -13,21 +13,26 @@ const HEX = /^#[0-9a-fA-F]{6}$/;
  */
 export async function setSpaceThemeVariant(
   variant: "light" | "dark" | "system" | null,
+  organizationId?: string,
 ): Promise<void> {
   const value =
     variant === "light" || variant === "dark" || variant === "system" ? variant : null;
   const ctx = await requireContext();
+  // Target the explicit scope when given (Settings editing scope), else the
+  // active space. RLS on organizations only lets a member update; only an owner
+  // can change a space's theme.
+  const targetOrgId = organizationId ?? ctx.organization.id;
   const supabase = await createClient();
   await supabase
     .from("organizations")
     .update({ theme_variant: value })
-    .eq("id", ctx.organization.id);
+    .eq("id", targetOrgId);
   void logAuditEvent({
     userId: ctx.profile.id,
-    organizationId: ctx.organization.id,
+    organizationId: targetOrgId,
     action: "space_theme_variant_updated",
     resourceType: "organization",
-    resourceId: ctx.organization.id,
+    resourceId: targetOrgId,
     metadata: { theme_variant: value },
   });
   revalidatePath("/dashboard", "layout");
@@ -40,15 +45,19 @@ export async function setSpaceThemeVariant(
 export async function setSpaceTheme(formData: FormData): Promise<void> {
   const rawAccent = String(formData.get("accent_color") ?? "").trim();
   const rawShadow = String(formData.get("shadow_color") ?? "").trim();
+  const rawOrg = String(formData.get("organization_id") ?? "").trim();
   const accent_color = HEX.test(rawAccent) ? rawAccent : null;
   const shadow_color = HEX.test(rawShadow) ? rawShadow : null;
 
   const ctx = await requireContext();
+  // Target the explicit scope when given (Settings editing scope), else the
+  // active space. RLS scopes the update to a space the user belongs to.
+  const targetOrgId = rawOrg || ctx.organization.id;
   const supabase = await createClient();
   await supabase
     .from("organizations")
     .update({ accent_color, shadow_color })
-    .eq("id", ctx.organization.id);
+    .eq("id", targetOrgId);
 
   revalidatePath("/dashboard", "layout");
 }

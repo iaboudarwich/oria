@@ -27,15 +27,22 @@ export function AppearancePanel({
   initialShadow,
   defaultAccent,
   initialVariant,
+  organizationId,
+  scopeName,
 }: {
   initialAccent: string | null;
   initialShadow: string | null;
   defaultAccent: string;
   initialVariant: ThemeVariant;
+  /** The scope being edited (Settings editing scope). */
+  organizationId: string;
+  /** Plain-language name of that scope, for the heading copy. */
+  scopeName: string;
 }) {
   const ta = useTranslations("appearance");
   const router = useRouter();
   const [pending, startTransition] = useTransition();
+  // Re-key state to the scope so switching scope in place reflects its colors.
   const [accent, setAccent] = useState(initialAccent ?? defaultAccent);
   const [shadow, setShadow] = useState(initialShadow ?? "");
   const [variant, setVariant] = useState<ThemeVariant>(initialVariant);
@@ -44,7 +51,7 @@ export function AppearancePanel({
   function selectVariant(v: ThemeVariant) {
     setVariant(v);
     startTransition(async () => {
-      await setSpaceThemeVariant(v);
+      await setSpaceThemeVariant(v, organizationId);
       router.refresh();
     });
   }
@@ -52,6 +59,7 @@ export function AppearancePanel({
   function save() {
     if (pending) return;
     const fd = new FormData();
+    fd.set("organization_id", organizationId);
     if (HEX.test(accent)) fd.set("accent_color", accent);
     if (HEX.test(shadow)) fd.set("shadow_color", shadow);
     startTransition(async () => {
@@ -66,6 +74,7 @@ export function AppearancePanel({
     setAccent(defaultAccent);
     setShadow("");
     const fd = new FormData(); // empty clears both -> template default
+    fd.set("organization_id", organizationId);
     startTransition(async () => {
       await setSpaceTheme(fd);
       router.refresh();
@@ -77,9 +86,9 @@ export function AppearancePanel({
       <div>
         <h2 className="text-[15px] font-semibold text-ink">Appearance</h2>
         <p className="mt-1 text-[13px] text-ink-muted">
-          Give this space its own identity. The accent drives buttons,
+          Give {scopeName} its own identity. The accent drives buttons,
           indicators, and focus rings; the shadow tints the depth on cards and
-          modals. Changes apply to this space only.
+          modals. Changes apply to {scopeName} only.
         </p>
       </div>
 

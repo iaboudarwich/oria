@@ -1076,5 +1076,25 @@
     "today_recovery": "{n}% de recuperación",
     "today_sleep": "{n}% de sueño",
     "open": "Abrir Salud"
+  },
+  "settingsScope": {
+    "editing": "Editando",
+    "personal": "Personal",
+    "work": "Trabajo - {name}",
+    "circle": "Círculo - {name}",
+    "switch_label": "Elige qué estás editando",
+    "account_wide": "Toda la cuenta",
+    "account_wide_hint": "Se aplica a toda tu cuenta, en todos los espacios.",
+    "applies_to": "Se aplica a {scope}",
+    "connect_to": "Conectar {name} a {scope}",
+    "confirm_title": "¿Conectar a {scope}?",
+    "confirm_body": "{name} se conectará a {scope}. Puedes cambiarlo más tarde.",
+    "confirm_body_account": "{name} se añadirá a tu cuenta.",
+    "confirm_title_account": "¿Conectar {name}?",
+    "continue": "Continuar",
+    "cancel": "Cancelar",
+    "feeds": "Alimenta {scope}",
+    "feeds_auto": "Se ordena automáticamente en el espacio correcto",
+    "feeds_you": "Solo tú, no compartido con ningún espacio"
   }
 }

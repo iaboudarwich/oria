@@ -14,6 +14,7 @@ import { upsertOutlookConnection } from "@/lib/microsoft/connections";
 import { startOutlookScan } from "@/lib/microsoft/outlook-scan";
 import { syncUserOutlookCalendars } from "@/lib/microsoft/calendar";
 import { upsertCloudConnection } from "@/lib/google/cloud-connections";
+import { takeConnectScope } from "@/lib/oauth/connect-scope";
 import { logAuditEvent } from "@/lib/data/audit-log";
 import { MS_STATE_COOKIE, MS_SERVICE_COOKIE } from "../connect/route";
 
@@ -70,17 +71,20 @@ export async function GET(request: Request) {
         resourceId: id,
         metadata: { source: "outlook", email },
       });
-      // Kick off the first scan in the background.
+      // Kick off the first scan in the background, feeding the scope chosen at
+      // connect time (Settings editing scope), else the active space.
       const ctx = await getCurrentContext();
+      const connectOrg = await takeConnectScope(user.id);
       const started = await startOutlookScan({
         userId: user.id,
         connectionId: id,
-        organizationId: ctx?.organization.id ?? null,
+        organizationId: connectOrg ?? ctx?.organization.id ?? null,
       });
       if (started) after(started.process());
       return settingsRedirect("notice=outlook_connected");
     }
 
+    await takeConnectScope(user.id); // consume the scope cookie (cloud routing is set via the existing per-connection controls)
     const cloudService = cloudServiceFor(service);
     const result = await upsertCloudConnection({
       userId: user.id,

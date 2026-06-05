@@ -16,26 +16,47 @@ export function ConnectButton({
   href,
   acknowledged,
   label,
+  confirm,
 }: {
   href: string;
   acknowledged: boolean;
   label: string;
+  /** Scope confirm shown before linking, naming the target scope (Round 16.8). */
+  confirm?: { title: string; body: string; continueLabel: string; cancelLabel: string };
 }) {
   const t = useTranslations("connectPrivacy");
   const [open, setOpen] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const [pending, startTransition] = useTransition();
 
   function onClick(e: React.MouseEvent<HTMLAnchorElement>) {
-    if (acknowledged) return; // already consented: let the link navigate
     e.preventDefault();
-    setOpen(true);
+    if (!acknowledged) {
+      setOpen(true); // first-time: privacy step, then the scope confirm
+      return;
+    }
+    if (confirm) {
+      setConfirmOpen(true);
+      return;
+    }
+    window.location.href = href;
   }
 
+  // After the privacy step: record consent, then name the scope (if any).
   function proceed() {
     startTransition(async () => {
       await acknowledgeConnectPrivacy();
-      window.location.href = href;
+      if (confirm) {
+        setOpen(false);
+        setConfirmOpen(true);
+      } else {
+        window.location.href = href;
+      }
     });
+  }
+
+  function go() {
+    window.location.href = href;
   }
 
   return (
@@ -47,6 +68,40 @@ export function ConnectButton({
       >
         {label}
       </a>
+
+      {confirmOpen && confirm ? (
+        <div
+          className="fixed inset-0 z-[60] flex items-end justify-center bg-ink/30 p-4 animate-fade-in sm:items-center"
+          role="dialog"
+          aria-modal="true"
+          aria-label={confirm.title}
+          onClick={() => setConfirmOpen(false)}
+        >
+          <div
+            className="w-full max-w-sm rounded-2xl border border-line bg-surface-floating p-5 shadow-raised animate-fade-up"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-[15px] font-semibold text-ink">{confirm.title}</h2>
+            <p className="mt-2 text-[13px] text-ink-muted">{confirm.body}</p>
+            <div className="mt-4 flex items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setConfirmOpen(false)}
+                className="inline-flex h-9 items-center rounded-lg px-3 text-[12.5px] text-ink-muted transition-base hover:text-ink"
+              >
+                {confirm.cancelLabel}
+              </button>
+              <button
+                type="button"
+                onClick={go}
+                className="inline-flex h-9 items-center rounded-lg bg-ink px-3 text-[12.5px] font-medium text-surface transition-base hover:bg-ink-soft"
+              >
+                {confirm.continueLabel}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       {open ? (
         <div
