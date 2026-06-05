@@ -11,7 +11,8 @@ import { useTheme } from "next-themes";
  *   - "system": follow prefers-color-scheme.
  *   - null: inherit the user's global theme (follow next-themes' resolvedTheme).
  *
- * We toggle the same `.dark` class next-themes uses, so accent and every token
+ * We toggle the same `.dark` / `.light` classes next-themes uses (dark is the
+ * :root default, light overrides under `.light`), so accent and every token
  * cascade correctly. Switching spaces re-renders the layout, which re-runs this.
  */
 export function OrgThemeApplier({
@@ -32,8 +33,10 @@ export function OrgThemeApplier({
       if (variant === "dark") dark = true;
       else if (variant === "light") dark = false;
       else if (variant === "system") dark = prefersDark();
-      else dark = resolvedTheme === "dark"; // inherit the global theme
+      else dark = resolvedTheme !== "light"; // inherit the global theme (dark default)
+      // Keep the two-class model in lockstep: exactly one of dark/light is set.
       root.classList.toggle("dark", dark);
+      root.classList.toggle("light", !dark);
     }
 
     apply();

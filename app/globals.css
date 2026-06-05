@@ -3,64 +3,74 @@
 
 /*
  * ═══════════════════════════════════════════════════════════
- * ORIA DESIGN SYSTEM — v2
- * Warm, confident, premium. Inspired by Linear, Vercel, Things 3.
+ * ORIA DESIGN SYSTEM — v3 (Round: home redesign)
+ * Premium, layered, calm. Dark by default, light on toggle.
+ * Palette + roles match docs/design/home-target.html. One mint accent,
+ * semantic data colors (recovery/sleep/strain/spend, up/down), tabular numbers.
+ * See docs/design/heuristics.md for the full source of truth.
  * ═══════════════════════════════════════════════════════════
  */
 
-/* ── Light mode (default) ──────────────────────────────────── */
+/* ── Dark (DEFAULT) ────────────────────────────────────────── */
 :root {
-  color-scheme: light;
+  color-scheme: dark;
 
-  /* Surfaces */
-  --canvas:          #f7f5f0;
-  --surface:         #fbfaf6;
-  --surface-raised:  #ffffff;
-  --surface-floating:#ffffff;
+  /* Layered surfaces (near-black) */
+  --canvas:           #08090B;
+  --surface:          #15181C;
+  --surface-raised:   #1B1F24;
+  --surface-floating: #23282E;
+  --surface-2:        #1B1F24;
+  --surface-3:        #23282E;
 
-  /* Ink (text) */
-  --ink:             #1c1a17;
-  --ink-soft:        #3a352d;
-  --ink-muted:       #6b6258;
-  /* Round 14.8 F1: darkened from #9c9387 (2.77:1, failed WCAG AA) so caption /
-   * fine-print text at body sizes clears 4.5:1 on canvas and white. */
-  --ink-faint:       #6e6557;
+  /* Ink */
+  --ink:              #F2F2F0;
+  --ink-soft:         #C8CCD2;
+  --ink-muted:        #9CA1A8;
+  --ink-faint:        #686D74;
 
-  /* Lines / borders */
-  --line:            rgba(28, 26, 23, 0.08);
-  --line-strong:     rgba(28, 26, 23, 0.14);
+  /* Hairline borders */
+  --line:             rgba(255, 255, 255, 0.07);
+  --line-strong:      rgba(255, 255, 255, 0.13);
 
-  /* Brand — warm indigo */
-  --brand:           #5B5FDD;
-  --brand-soft:      #ededfc;
-  --brand-muted:     rgba(91, 95, 221, 0.12);
+  /* The ONE mint accent */
+  --brand:            #4FE3AC;
+  --brand-soft:       rgba(79, 227, 172, 0.13);
+  --brand-muted:      rgba(79, 227, 172, 0.10);
+  --accent-ink:       #04130D; /* readable ink on the accent fill */
 
-  /* Accent — warm gold */
-  --accent:          #b89968;
-  --accent-soft:     #efe6d4;
-  --sand:            #ece4d4;
+  /* Legacy warm "accent" repointed to the amber data color (keeps one mint) */
+  --accent:           #F2B441;
+  --accent-soft:      rgba(242, 180, 65, 0.16);
+  --sand:             rgba(242, 180, 65, 0.10);
 
-  /* Semantic */
-  --sage:            #6f8472;
-  --claret:          #9b4a4a;
-  --success:         #5a7a5a;
-  --success-soft:    #e8f0e8;
-  --warning:         #b07a30;
-  --warning-soft:    #fdf0da;
-  --danger:          #9b4a4a;
-  --danger-soft:     #faeaea;
-  --info:            var(--brand);
-  --info-soft:       var(--brand-soft);
+  /* Semantic data colors (one fixed meaning each) */
+  --rec:    #54D98C;  --rec-t:    rgba(84, 217, 140, 0.16);
+  --sleep:  #8C8CFF;  --sleep-t:  rgba(140, 140, 255, 0.16);
+  --strain: #46CBE0;  --strain-t: rgba(70, 203, 224, 0.16);
+  --spend:  #F2B441;  --spend-t:  rgba(242, 180, 65, 0.16);
+  --up:     #54D98C;  --down:     #F2685C;
 
-  /* Shadow scale */
-  --shadow-xs:  0 1px 2px rgba(28,26,23,0.04);
-  --shadow-sm:  0 2px 4px rgba(28,26,23,0.06);
-  --shadow-md:  0 4px 12px rgba(28,26,23,0.08);
-  --shadow-lg:  0 12px 24px rgba(28,26,23,0.10);
-  --shadow-xl:  0 24px 48px rgba(28,26,23,0.12);
+  /* Semantic roles map onto the data colors (no color means two things) */
+  --sage:          var(--rec);
+  --claret:        var(--down);
+  --success:       var(--rec);    --success-soft: var(--rec-t);
+  --warning:       var(--spend);  --warning-soft: var(--spend-t);
+  --danger:        var(--down);   --danger-soft:  rgba(242, 104, 92, 0.14);
+  --info:          var(--brand);  --info-soft:    var(--brand-soft);
 
-  /* Brand shadow (for focused/active elements) */
-  --shadow-brand: 0 0 0 3px rgba(91,95,221,0.12);
+  /* Soft elevation */
+  --shadow:     0 1px 0 rgba(255,255,255,0.03) inset, 0 8px 24px -12px rgba(0,0,0,0.7);
+  --shadow-xs:  0 1px 2px rgba(0,0,0,0.25);
+  --shadow-sm:  var(--shadow);
+  --shadow-md:  var(--shadow);
+  --shadow-lg:  0 14px 34px -16px rgba(0,0,0,0.7);
+  --shadow-xl:  0 24px 60px -24px rgba(0,0,0,0.75);
+  --shadow-brand: 0 0 0 3px rgba(79,227,172,0.18);
+
+  /* Radii (4/8pt scale; cards 20, tiles 18, pills 999) */
+  --radius-tile: 18px;
+  --radius-card: 20px;
 
   /* Motion */
   --ease-out-quart:  cubic-bezier(0.25, 1, 0.5, 1);
@@ -71,47 +81,47 @@
   --duration-slow:   300ms;
 }
 
-/* ── Dark mode ─────────────────────────────────────────────── */
-.dark {
-  color-scheme: dark;
+/* ── Light (on toggle) ─────────────────────────────────────── */
+.light {
+  color-scheme: light;
 
-  --canvas:          #0f0e0d;
-  --surface:         #161412;
-  --surface-raised:  #1e1c1a;
-  --surface-floating:#252220;
+  --canvas:           #ECEAE4;
+  --surface:          #FFFFFF;
+  --surface-raised:   #FBFAF7;
+  --surface-floating: #F1F0EB;
+  --surface-2:        #FBFAF7;
+  --surface-3:        #F1F0EB;
 
-  --ink:             #f0ede8;
-  --ink-soft:        #ccc5bc;
-  --ink-muted:       #8a8077;
-  --ink-faint:       #5c554e;
+  --ink:              #14171B;
+  --ink-soft:         #3A3F47;
+  --ink-muted:        #5C616A;
+  --ink-faint:        #90949C;
 
-  --line:            rgba(240, 237, 232, 0.08);
-  --line-strong:     rgba(240, 237, 232, 0.14);
+  --line:             rgba(20, 22, 26, 0.09);
+  --line-strong:      rgba(20, 22, 26, 0.16);
 
-  --brand:           #7b7fe8;
-  --brand-soft:      rgba(123,127,232,0.15);
-  --brand-muted:     rgba(123,127,232,0.10);
+  --brand:            #0E9E70;
+  --brand-soft:       rgba(14, 158, 112, 0.12);
+  --brand-muted:      rgba(14, 158, 112, 0.10);
+  --accent-ink:       #FFFFFF;
 
-  --accent:          #c9a870;
-  --accent-soft:     rgba(201,168,112,0.12);
-  --sand:            rgba(201,168,112,0.10);
+  --accent:           #C5860F;
+  --accent-soft:      rgba(197, 134, 15, 0.14);
+  --sand:             rgba(197, 134, 15, 0.10);
 
-  --sage:            #7a9980;
-  --claret:          #b86060;
-  --success:         #6a9a6a;
-  --success-soft:    rgba(106,154,106,0.12);
-  --warning:         #c0903a;
-  --warning-soft:    rgba(192,144,58,0.12);
-  --danger:          #b86060;
-  --danger-soft:     rgba(184,96,96,0.12);
+  --rec:    #1AA559;  --rec-t:    rgba(26, 165, 89, 0.14);
+  --sleep:  #5557E0;  --sleep-t:  rgba(85, 87, 224, 0.13);
+  --strain: #0E9CB2;  --strain-t: rgba(14, 156, 178, 0.13);
+  --spend:  #C5860F;  --spend-t:  rgba(197, 134, 15, 0.14);
+  --up:     #1AA559;  --down:     #D8493C;
 
-  --shadow-xs:  0 1px 2px rgba(0,0,0,0.2);
-  --shadow-sm:  0 2px 4px rgba(0,0,0,0.25);
-  --shadow-md:  0 4px 12px rgba(0,0,0,0.3);
-  --shadow-lg:  0 12px 24px rgba(0,0,0,0.35);
-  --shadow-xl:  0 24px 48px rgba(0,0,0,0.4);
+  --danger-soft: rgba(216, 73, 60, 0.13);
 
-  --shadow-brand: 0 0 0 3px rgba(123,127,232,0.2);
+  --shadow:     0 1px 2px rgba(20,22,26,0.04), 0 12px 30px -16px rgba(20,22,26,0.22);
+  --shadow-xs:  0 1px 2px rgba(20,22,26,0.05);
+  --shadow-lg:  0 16px 38px -18px rgba(20,22,26,0.25);
+  --shadow-xl:  0 28px 64px -28px rgba(20,22,26,0.28);
+  --shadow-brand: 0 0 0 3px rgba(14,158,112,0.16);
 }
 
 /* ── Tailwind token bridge ─────────────────────────────────── */
@@ -121,6 +131,8 @@
   --color-surface:         var(--surface);
   --color-surface-raised:  var(--surface-raised);
   --color-surface-floating:var(--surface-floating);
+  --color-surface-2:       var(--surface-2);
+  --color-surface-3:       var(--surface-3);
 
   /* Ink */
   --color-ink:        var(--ink);
@@ -132,14 +144,31 @@
   --color-line:        var(--line);
   --color-line-strong: var(--line-strong);
 
-  /* Brand */
+  /* Brand (the one mint accent) */
   --color-brand:      var(--brand);
   --color-brand-soft: var(--brand-soft);
   --color-brand-muted:var(--brand-muted);
+  --color-accent-ink: var(--accent-ink);
 
-  /* Accent */
+  /* Semantic data colors */
+  --color-rec:        var(--rec);
+  --color-rec-t:      var(--rec-t);
+  --color-sleep:      var(--sleep);
+  --color-sleep-t:    var(--sleep-t);
+  --color-strain:     var(--strain);
+  --color-strain-t:   var(--strain-t);
+  --color-spend:      var(--spend);
+  --color-spend-t:    var(--spend-t);
+  --color-up:         var(--up);
+  --color-down:       var(--down);
+
+  /* Accent (legacy warm, now amber) */
   --color-accent:      var(--accent);
   --color-accent-soft: var(--accent-soft);
+
+  /* Radii */
+  --radius-tile: var(--radius-tile);
+  --radius-card: var(--radius-card);
 
   /* Legacy aliases (used throughout existing code) */
   --color-champagne:      var(--accent);
@@ -154,14 +183,14 @@
   --color-danger:         var(--danger);
   --color-danger-soft:    var(--danger-soft);
 
-  /* Fonts */
-  --font-sans:    var(--font-inter), ui-sans-serif, system-ui, -apple-system, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
-  --font-display: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
+  /* Fonts — Hanken Grotesk (UI + numbers), Fraunces (display) */
+  --font-sans:    var(--font-hanken), ui-sans-serif, system-ui, -apple-system, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+  --font-display: var(--font-fraunces), Georgia, "Times New Roman", Times, serif;
   --font-mono:    var(--font-jetbrains-mono), var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
 
   /* Shadow tokens */
-  --shadow-soft:   var(--shadow-sm);
-  --shadow-raised: var(--shadow-md);
+  --shadow-soft:   var(--shadow);
+  --shadow-raised: var(--shadow);
 }
 
 /* ── Base layer ─────────────────────────────────────────────── */
@@ -170,7 +199,8 @@
     background: var(--canvas);
     color: var(--ink);
     font-family: var(--font-sans);
-    font-feature-settings: "cv11", "ss03", "kern";
+    /* Tabular figures everywhere: this is a data app, numbers must align. */
+    font-feature-settings: "tnum", "kern";
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
@@ -225,6 +255,13 @@
     letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--ink-muted);
+  }
+
+  /* Tabular figures with the design's tight number tracking. Use on any
+   * displayed metric (dial values, money, counts) so digits align + lock. */
+  .num {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
   }
 
   /* Text balance utilities */

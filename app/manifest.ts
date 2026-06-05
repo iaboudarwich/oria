@@ -5,9 +5,9 @@ import { versionedIcon } from "@/lib/brand/icon-version";
 /**
  * Web app manifest (Next metadata route, served at /manifest.webmanifest).
  *
- * Colors mirror the light --canvas token in app/globals.css (#f7f5f0): the
- * splash background and the toolbar/theme color match the icon field, so the
- * install splash reads as one calm surface. Icons are the wordmark set from
+ * Colors mirror the dark --canvas token in app/globals.css (#08090B), the
+ * default theme: the splash background and the toolbar/theme color match it, so
+ * the install splash reads as one calm surface. Icons are the wordmark set from
  * public/icons, version-stamped via versionedIcon (lib/brand/icon-version) so a
  * logo change busts caches; the 512 maskable variant carries its own purpose so
  * Android can mask it.
@@ -26,8 +26,8 @@ export default async function manifest(): Promise<MetadataRoute.Manifest> {
     scope: "/",
     display: "standalone",
     orientation: "natural",
-    theme_color: "#f7f5f0",
-    background_color: "#f7f5f0",
+    theme_color: "#08090B",
+    background_color: "#08090B",
     icons: [
       {
         src: versionedIcon("/icons/icon-192.png"),

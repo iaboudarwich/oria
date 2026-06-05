@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google";
+import { Fraunces, Hanken_Grotesk, JetBrains_Mono } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
 import { isRtl, type Locale } from "@/i18n/config";
@@ -11,10 +11,22 @@ import { Analytics } from "@vercel/analytics/next";
 import { versionedIcon } from "@/lib/brand/icon-version";
 import "./globals.css";
 
-const inter = Inter({
-  variable: "--font-inter",
+// UI + numbers. Hanken Grotesk has clean tabular figures (see globals.css).
+const hanken = Hanken_Grotesk({
+  variable: "--font-hanken",
   subsets: ["latin", "latin-ext"],
   display: "swap",
+  weight: ["400", "500", "600", "700"],
+});
+
+// Display: wordmark, greeting, section + briefing headlines. Variable font, so
+// the optical-size axis is on and every weight (400-600 used) comes from the
+// variable range; `weight` must be omitted when `axes` is set.
+const fraunces = Fraunces({
+  variable: "--font-fraunces",
+  subsets: ["latin"],
+  display: "swap",
+  axes: ["opsz"],
 });
 
 const jetbrainsMono = JetBrains_Mono({
@@ -54,8 +66,8 @@ export const viewport: Viewport = {
   viewportFit: "cover",
   // Status bar / toolbar color tracks the canvas token in each scheme.
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f7f5f0" },
-    { media: "(prefers-color-scheme: dark)", color: "#0f0e0d" },
+    { media: "(prefers-color-scheme: light)", color: "#ECEAE4" },
+    { media: "(prefers-color-scheme: dark)", color: "#08090B" },
   ],
 };
 
@@ -73,7 +85,7 @@ export default async function RootLayout({
       lang={locale}
       dir={dir}
       suppressHydrationWarning
-      className={`${inter.variable} ${jetbrainsMono.variable} h-full antialiased`}
+      className={`${hanken.variable} ${fraunces.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
       <body className="min-h-full bg-canvas text-ink">
         <ThemeProvider>

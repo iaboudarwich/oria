@@ -41,9 +41,41 @@ export const STATUS_VAR: Record<StatusTone, string> = {
   neutral: "var(--ink-faint)",
 };
 
+/** The tinted track behind a dial's arc, in the same hue as the tone (soft). */
+export const STATUS_TRACK: Record<StatusTone, string> = {
+  good: "var(--success-soft)",
+  warn: "var(--warning-soft)",
+  bad: "var(--danger-soft)",
+  info: "var(--brand-soft)",
+  neutral: "var(--line)",
+};
+
 /** A 0-100 score to a tone: low = needs attention, mid = soon, high = good. */
 export function toneForScore(score: number): StatusTone {
   if (score >= 67) return "good";
   if (score >= 34) return "warn";
   return "bad";
 }
+
+/**
+ * Named DATA series (heuristics: "show data as visuals"). Each has ONE fixed
+ * hue from the @theme tokens (recovery green, sleep indigo, strain cyan, spend
+ * amber), used by the home dials so a metric's color is stable everywhere.
+ */
+export type DataTone = "recovery" | "sleep" | "strain" | "spend" | "networth";
+
+export const DATA_VAR: Record<DataTone, string> = {
+  recovery: "var(--rec)",
+  sleep: "var(--sleep)",
+  strain: "var(--strain)",
+  spend: "var(--spend)",
+  networth: "var(--up)",
+};
+
+export const DATA_TRACK: Record<DataTone, string> = {
+  recovery: "var(--rec-t)",
+  sleep: "var(--sleep-t)",
+  strain: "var(--strain-t)",
+  spend: "var(--surface-3)",
+  networth: "var(--rec-t)",
+};

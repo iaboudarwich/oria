@@ -6,15 +6,25 @@ The aesthetic floor for every interface decision. Read before opening any UI rou
 
 ## 0. The North Star
 
-Calm. Confident. Restrained. Specific.
+Premium. Layered. Calm. Specific.
 
-The benchmark stack: Linear, Things 3, Vercel, Notion (the early years). Oria sits on the spectrum between Things 3 (warm, human) and Linear (sharp, deliberate). Closer to Things 3 in warmth, closer to Linear in density.
+Oria reads like a high-end health/finance instrument, not a notes page. The
+benchmark stack: WHOOP (data as dials, dark + considered), Linear (sharp,
+deliberate), Things 3 (warm, human), Vercel (restraint). **Dark is the default
+theme**; the warm off-white light theme is an explicit toggle. Both are
+first-class and must look equally finished.
 
-Never: Stripe-dashboard cluttered. Never: Material-glossy. Never: gradient-vomit. Never: emoji-laden. Never: AI-product-tropes (sparkle icons, "powered by" badges, glowing borders).
+The source of truth for every value below is the `@theme` block of
+`app/globals.css` and the reference mock `docs/design/home-target.html`. When a
+value here and a token disagree, the token wins and this doc is updated.
+
+Never: Stripe-dashboard cluttered. Never: Material-glossy. Never: gradient-vomit.
+Never: emoji-laden. Never: AI-product-tropes (sparkle icons, "powered by" badges,
+glowing borders). Never: a wall of words where a dial or number would say it.
 
 ---
 
-## 1. The 14 Heuristics
+## 1. The Heuristics
 
 These hold across every screen, every component, every state.
 
@@ -26,7 +36,12 @@ These hold across every screen, every component, every state.
 
 4. **Eyebrows label every section.** Tiny uppercase letterspaced label above the section content (text-xs tracking-[0.18em] uppercase text-muted). Sets context. Replaces redundant H2s.
 
-5. **Glass cards, not shadow cards.** bg-surface/80 backdrop-blur-md border border-tile-border. Avoid heavy box-shadows. Cards float through transparency, not elevation.
+5. **Layered surfaces + one soft elevation.** The world is built from stacked
+   surface tints (canvas < surface < surface-2 < surface-3), separated by
+   hairline borders (border-line) and ONE soft shadow token (`--shadow`, the
+   `shadow-soft`/`shadow-raised` aliases). Tiles read as gently lifted glass, not
+   flat paper and not heavy Material cards. Glass (`.glass`) is still used for
+   floating chrome (nav, command bar). No second, heavier shadow scale.
 
 6. **Living background, slow.** Subtle warm-noise gradient on the canvas. Never animated faster than 30 seconds per cycle. Never on prefers-reduced-motion.
 
@@ -40,25 +55,56 @@ These hold across every screen, every component, every state.
 
 11. **Reduced motion is respected everywhere.** @media (prefers-reduced-motion: reduce) disables all motion above 80ms. Living background freezes. Page transitions become instant.
 
-12. **Color carries meaning, never decoration.**
-    - Canvas: #f5f1ea (beige)
-    - Tile: #efe9dc (slightly darker beige)
-    - Ink: #0f0f0f (near-black, primary text)
-    - Muted: #9a8f7e (warm gray, secondary text)
-    - Sub: #6b6357 (slightly darker muted, captions)
-    - Border: #e2d9c5 (tile border)
-    - Success: #2d6a4f (forest)
-    - Warning: #b08900 (mustard, never yellow)
-    - Error: #9d2933 (oxblood, never red-red)
-    - No other colors. Accent colors are earned per context (Personal/Investor/Business/Family Office), drawn from the warm palette only.
+12. **Color carries meaning, never decoration.** Two themes, same roles. Every
+    value is a token (`app/globals.css`); never inline a hex. The ONE brand
+    accent is mint, and it means "Oria / primary action / the live thing", never
+    a data value. Each data series owns one fixed hue, in both themes.
+
+    | Role | Token | Dark | Light |
+    |---|---|---|---|
+    | Page | `--canvas` | `#08090B` | `#ECEAE4` |
+    | Surface (tile) | `--surface` | `#15181C` | `#FFFFFF` |
+    | Surface raised | `--surface-2` | `#1B1F24` | `#FBFAF7` |
+    | Surface high | `--surface-3` | `#23282E` | `#F1F0EB` |
+    | Hairline | `--line` / `--line-strong` | white .07 / .13 | ink .09 / .16 |
+    | Text | `--ink` | `#F2F2F0` | `#14171B` |
+    | Muted | `--ink-muted` | `#9CA1A8` | `#5C616A` |
+    | Faint (captions) | `--ink-faint` | `#686D74` | `#90949C` |
+    | Accent (mint) | `--brand` (`--accent-ink` on fill) | `#4FE3AC` | `#0E9E70` |
+    | Recovery / up | `--rec` / `--up` | `#54D98C` | `#1AA559` |
+    | Sleep | `--sleep` | `#8C8CFF` | `#5557E0` |
+    | Strain | `--strain` | `#46CBE0` | `#0E9CB2` |
+    | Spend | `--spend` | `#F2B441` | `#C5860F` |
+    | Down / negative | `--down` | `#F2685C` | `#D8493C` |
+
+    Each data hue has a `*-t` tinted companion (`--rec-t`, ...) for dial tracks
+    and pill fills. Status semantics route through `lib/ui/status-color.ts`
+    (good=rec, warn=spend, bad=down, info=brand), so one color never means two
+    things. Per-context accents are earned, but the global accent stays mint.
 
 13. **Type sets rhythm.**
-    - Display (wordmark, hero numbers): Newsreader 400, opsz 72, letter-spacing -0.02em
-    - Body and UI: Inter, weights 400/500/600 only
-    - Mono (code, IDs, timestamps): JetBrains Mono
-    - Body 15px line-height 1.55. Display >= 32px line-height 1.15. Eyebrows 11px tracking 0.18em.
+    - Display (wordmark, greeting, section + briefing headlines): **Fraunces**
+      (serif), weights 400/500/600, opsz axis on. Greeting ~27px, line-height
+      ~1.1, letter-spacing -0.015em. `--font-display`.
+    - Body, UI, and ALL numbers: **Hanken Grotesk**, weights 400/500/600/700.
+      `--font-sans`. Body 15px line-height ~1.5.
+    - Mono (code, IDs): JetBrains Mono. `--font-mono`.
+    - **Tabular figures everywhere** (heuristic 3): `tnum` is on at the body
+      level; the `.num` utility adds the design's -0.01em number tracking. Inter
+      is removed; do not reintroduce it.
 
 14. **Density toggle.** User picks Comfortable (default) or Compact in Settings. Stored in user_preferences.density. Components consult the token via a hook. No third option, no auto-detect.
+
+15. **Both themes are first-class.** Dark is the default; light is a toggle
+    (persisted via next-themes; per-space override via `OrgThemeApplier`). Every
+    surface must be designed and checked in BOTH. Because everything is a token,
+    this is mostly free, but verify contrast and that no value is hardcoded to
+    one theme. Class model: dark = `:root` (and the `.dark` class next-themes
+    adds); light = the `.light` class overriding the palette.
+
+16. **Show data as visuals, not words** (see §4b). Prefer a dial, ring, bar row,
+    sparkline, or a single big tabular number over a descriptive sentence. Words
+    annotate the visual; they do not replace it.
 
 ---
 
@@ -78,29 +124,53 @@ Use the 4px scale: 4, 8, 12, 16, 20, 24, 32, 40, 48, 64, 96. Nothing in between.
 
 ## 3. Border radius
 
-- Buttons, inputs, chips: 10px
-- Cards, tiles: 16px
-- Modals, sheets, big surfaces: 24px
-- App icon (PWA): 28px
-- Hero containers (Today blocks): 22px
+- Buttons, inputs, small chips, icon tiles: 10-12px
+- Stat tiles: 18px (`--radius-tile`, `rounded-tile`)
+- Cards, hero containers (briefing, week): 20px (`--radius-card`, `rounded-card`)
+- Pills, chips, dials track, avatars: 999px (fully round)
+- Modals, sheets: 24px; phone/app icon (PWA): per §10
 
-Avoid: anything below 8px (feels sharp), anything above 28px (feels rounded-app-y).
+Avoid: anything below 8px (feels sharp). The tile/card pair (18/20) is the
+house style; do not mix in 16px tiles.
 
 ---
 
-## 4. Shadows
+## 4. Elevation
 
-Heavy shadows are banned. The aesthetic is glass and texture, not paper.
+ONE soft shadow, layered surfaces, hairline borders. The aesthetic is lifted
+glass, not paper and not Material.
 
-Allowed:
-- shadow-sm only on floating elements (toasts, dropdowns, tooltips)
-- A single soft "lift" shadow on hovered cards: 0 4px 16px rgba(0,0,0,0.04)
+- `--shadow` (aliased `shadow-soft` / `shadow-raised`) is the only card shadow:
+  in dark it is a faint top inset + a deep, low-spread drop; in light a soft
+  short drop. Tiles, the briefing, the week chart, and the Talk-to-Oria cube all
+  carry it.
+- `--shadow-xs` for tiny floating chrome (toggle thumb). `--shadow-lg`/`xl`
+  reserved for modals/sheets/dropdowns.
+- Depth otherwise comes from the surface ramp (canvas -> surface -> surface-2 ->
+  surface-3) plus `--line` borders, not extra shadows.
 
-Banned:
-- Multi-layer shadows
-- Colored shadows
-- Inner shadows
-- Anything that simulates 3D depth
+Banned: a second heavy shadow scale, colored shadows (except the accent glow on
+the accent cube/`+`), 3D skeuomorphism.
+
+---
+
+## 4b. Dials + data visualization (show data, not words)
+
+Oria is a data product: a number or a dial almost always beats a sentence.
+
+- **Dials** are the `ScoreRing` primitive (`components/ui/score-ring.tsx`):
+  hand-rolled SVG arc, rounded linecap, a tinted track in the SAME hue as the
+  arc (`*-t` token), value centered in tabular figures. Drive a named series
+  with `colorVar`/`trackVar` from `DATA_VAR`/`DATA_TRACK`
+  (`lib/ui/status-color.ts`): recovery=green, sleep=indigo, strain=cyan,
+  spend=amber. A 0-100 score with no explicit color auto-tones (low=attention).
+- **Rings vs bars vs sparklines:** a ring for a single 0-100 / budget-fraction
+  value; a mini bar row for a week of one metric (today's bar in accent); a
+  sparkline for a trend where the shape matters more than the axis.
+- **Deltas** are pills: `↑`/`↓` + percent, `--up`/`--down` text on the tinted
+  fill. Never a bare colored number.
+- **No fabricated data.** A series with thin/empty data shows a calm empty state
+  (heuristic: never invent a dial value). Reduced motion: dials render static.
 
 ---
 
@@ -203,10 +273,11 @@ Default easing: cubic-bezier(0.2, 0, 0, 1) (ease-out-quart). Never linear except
 - Close on ESC, backdrop click, and visible X
 - Focus trapped inside, returned to trigger on close
 
-### Sidebar (two-rail, from Round 14.8)
-- Outer rail: 56px wide, icon-only contexts (Personal/Investor/Business/Family Office)
-- Inner rail: 240px wide, expanded for current context
-- Collapsible inner rail (icon-only mode) saved in user_preferences.sidebar_collapsed
+### Navigation
+- Desktop: a SINGLE left rail (`components/dashboard/sidebar.tsx`), drag-to-resize
+  width persisted. Logo, Today + Ask primary, Sections, mode nav, account.
+- Mobile: a bottom tab bar (`components/dashboard/bottom-tab-bar.tsx`) with a
+  center filled accent `+` for capture; More opens the rail as a drawer.
 
 ---
 
