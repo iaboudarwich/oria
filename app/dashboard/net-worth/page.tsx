@@ -7,7 +7,8 @@ import { HeroNumber } from "@/components/ui/hero-number";
 import { Eyebrow } from "@/components/ui/eyebrow";
 import { AllocationDonut, KIND_LABEL, colorForKind } from "@/components/finance/allocation-donut";
 import { CardStack, CardStackItem } from "@/components/ui/card-stack";
-import { NetWorthChart, type NetWorthPoint } from "@/components/finance/net-worth-chart";
+import { type NetWorthPoint } from "@/components/finance/net-worth-chart";
+import { TrendChart } from "@/components/ui/trend-chart";
 import { ManualAssetsPanel } from "@/components/finance/manual-assets-panel";
 import {
   listManualAssets,
@@ -96,7 +97,14 @@ export default async function NetWorthPage() {
                 ) : null}
               </div>
               <div className="mt-5">
-                <NetWorthChart points={points} caption={t("line_caption")} />
+                <TrendChart
+                  week={points.slice(-7).map((p) => ({ label: p.label, value: p.value }))}
+                  month={points.map((p) => ({ label: p.label, value: p.value }))}
+                  kind="line"
+                  caption={t("line_caption")}
+                  weekLabel={t("lens_week")}
+                  monthLabel={t("lens_month")}
+                />
               </div>
             </GlassCard>
 

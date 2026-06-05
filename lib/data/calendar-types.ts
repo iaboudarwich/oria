@@ -103,6 +103,8 @@ export type CalendarEntry = {
   due_at: string;
   /** Only meaningful for reminder entries. Null for items. */
   done: boolean | null;
+  /** Reminder is flagged (the Smart-List "Flagged" view). False for items/events. */
+  flagged: boolean;
   /** Only meaningful for reminder entries. Null for items. */
   source: ReminderSource | null;
   /** Only meaningful for reminder entries. Null for items. */

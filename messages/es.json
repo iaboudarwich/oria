@@ -1169,7 +1169,9 @@
     "empty_headline": "Sigue tu patrimonio neto",
     "empty_desc": "Añade lo que tienes y lo que debes, y Oria mantiene un total con una instantánea diaria.",
     "other_currencies": "más {list}",
-    "footnote": "El patrimonio neto se construye con lo que añades aquí. La conexión bancaria llegará más tarde."
+    "footnote": "El patrimonio neto se construye con lo que añades aquí. La conexión bancaria llegará más tarde.",
+    "lens_week": "1 semana",
+    "lens_month": "1 mes"
   },
   "trackablesUi": {
     "add": "Añadir una suscripción u objetivo",
@@ -1247,5 +1249,20 @@
     "net_worth_label": "en tus cuentas",
     "net_worth_tap": "Toca para ver el detalle.",
     "net_worth_insight": "{assets} en activos, {debts} en deudas."
+  },
+  "agenda": {
+    "title": "Hoy",
+    "open_calendar": "Abrir calendario",
+    "empty": "Nada aquí. Un día tranquilo.",
+    "now": "Ahora",
+    "flag": "Marcar",
+    "unflag": "Desmarcar",
+    "view_today": "Hoy",
+    "view_overdue": "Atrasados",
+    "view_this_week": "Esta semana",
+    "view_flagged": "Marcados",
+    "bucket_morning": "Mañana",
+    "bucket_afternoon": "Tarde",
+    "bucket_evening": "Noche"
   }
 }

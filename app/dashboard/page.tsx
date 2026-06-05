@@ -183,7 +183,7 @@ export default async function DashboardHome() {
 
         <SmartPaste />
 
-        <TodayPulse activeSpaceId={ctx?.organization.id ?? ""} />
+        <TodayPulse activeSpaceId={ctx?.organization.id ?? ""} tz={tz} />
 
         <InsightsCard insights={insights} />
 

@@ -228,6 +228,34 @@ export async function deleteReminder(formData: FormData): Promise<void> {
   if (up) revalidatePath(`/dashboard/uploads/${up}`);
 }
 
+/** Flag / unflag a reminder (the Smart-List "Flagged" view). Scope-guarded + audited. */
+export async function setReminderFlagged(input: {
+  id: string;
+  flagged: boolean;
+}): Promise<{ ok: boolean }> {
+  const ctx = await requireContext();
+  const supabase = await createClient();
+  const allowedOrgIds = await allowedReminderOrgIds();
+  if (allowedOrgIds.length === 0) return { ok: false };
+  const { error } = await supabase
+    .from("reminders")
+    .update({ flagged: input.flagged })
+    .eq("id", input.id)
+    .in("organization_id", allowedOrgIds);
+  if (error) return { ok: false };
+  await logAuditEvent({
+    userId: ctx.profile.id,
+    organizationId: ctx.organization.id,
+    action: "reminder.updated",
+    resourceType: "reminder",
+    resourceId: input.id,
+    metadata: { flagged: input.flagged },
+  });
+  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/calendar");
+  return { ok: true };
+}
+
 export async function confirmReminder(formData: FormData): Promise<void> {
   const id = String(formData.get("id") ?? "");
   if (!id) return;

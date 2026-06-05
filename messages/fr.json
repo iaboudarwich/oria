@@ -1169,7 +1169,9 @@
     "empty_headline": "Suivez votre valeur nette",
     "empty_desc": "Ajoutez ce que vous possédez et devez, et Oria tient un total avec un instantané quotidien.",
     "other_currencies": "plus {list}",
-    "footnote": "La valeur nette est construite à partir de ce que vous ajoutez ici. La liaison bancaire viendra plus tard."
+    "footnote": "La valeur nette est construite à partir de ce que vous ajoutez ici. La liaison bancaire viendra plus tard.",
+    "lens_week": "1 semaine",
+    "lens_month": "1 mois"
   },
   "trackablesUi": {
     "add": "Ajouter un abonnement ou un objectif",
@@ -1247,5 +1249,20 @@
     "net_worth_label": "sur vos comptes",
     "net_worth_tap": "Touchez pour voir le détail.",
     "net_worth_insight": "{assets} d’actifs, {debts} de dettes."
+  },
+  "agenda": {
+    "title": "Aujourd’hui",
+    "open_calendar": "Ouvrir le calendrier",
+    "empty": "Rien ici. Une journée tranquille.",
+    "now": "Maintenant",
+    "flag": "Marquer",
+    "unflag": "Démarquer",
+    "view_today": "Aujourd’hui",
+    "view_overdue": "En retard",
+    "view_this_week": "Cette semaine",
+    "view_flagged": "Marqués",
+    "bucket_morning": "Matin",
+    "bucket_afternoon": "Après-midi",
+    "bucket_evening": "Soir"
   }
 }

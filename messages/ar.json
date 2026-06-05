@@ -1169,7 +1169,9 @@
     "empty_headline": "تابع صافي ثروتك",
     "empty_desc": "أضف ما تملكه وما عليك، وتحتفظ أوريا بإجمالي متجدد مع لقطة يومية.",
     "other_currencies": "بالإضافة إلى {list}",
-    "footnote": "يُبنى صافي الثروة مما تضيفه هنا. الربط المصرفي سيأتي لاحقًا."
+    "footnote": "يُبنى صافي الثروة مما تضيفه هنا. الربط المصرفي سيأتي لاحقًا.",
+    "lens_week": "أسبوع",
+    "lens_month": "شهر"
   },
   "trackablesUi": {
     "add": "إضافة اشتراك أو هدف",
@@ -1247,5 +1249,20 @@
     "net_worth_label": "عبر حساباتك",
     "net_worth_tap": "اضغط لرؤية التفاصيل.",
     "net_worth_insight": "{assets} أصول، {debts} ديون."
+  },
+  "agenda": {
+    "title": "اليوم",
+    "open_calendar": "فتح التقويم",
+    "empty": "لا شيء هنا. يوم هادئ.",
+    "now": "الآن",
+    "flag": "تمييز",
+    "unflag": "إلغاء التمييز",
+    "view_today": "اليوم",
+    "view_overdue": "متأخرة",
+    "view_this_week": "هذا الأسبوع",
+    "view_flagged": "المميَّزة",
+    "bucket_morning": "الصباح",
+    "bucket_afternoon": "بعد الظهر",
+    "bucket_evening": "المساء"
   }
 }

@@ -1169,7 +1169,9 @@
     "empty_headline": "Track your net worth",
     "empty_desc": "Add what you own and owe, and Oria keeps a running total with a daily snapshot.",
     "other_currencies": "plus {list}",
-    "footnote": "Net worth is built from what you add here. Bank linking comes later."
+    "footnote": "Net worth is built from what you add here. Bank linking comes later.",
+    "lens_week": "1 week",
+    "lens_month": "1 month"
   },
   "trackablesUi": {
     "add": "Add a subscription or goal",
@@ -1247,5 +1249,20 @@
     "net_worth_label": "across your accounts",
     "net_worth_tap": "Tap to see what is behind it.",
     "net_worth_insight": "{assets} in assets, {debts} in debts."
+  },
+  "agenda": {
+    "title": "Today",
+    "open_calendar": "Open calendar",
+    "empty": "Nothing here. A calm day.",
+    "now": "Now",
+    "flag": "Flag",
+    "unflag": "Unflag",
+    "view_today": "Today",
+    "view_overdue": "Overdue",
+    "view_this_week": "This week",
+    "view_flagged": "Flagged",
+    "bucket_morning": "Morning",
+    "bucket_afternoon": "Afternoon",
+    "bucket_evening": "Evening"
   }
 }

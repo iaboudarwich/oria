@@ -51,6 +51,7 @@ import {
   Sun,
   Tag,
   Trash2,
+  Flag,
   Upload,
   User,
   Users,
@@ -169,6 +170,7 @@ export const GiftIcon = makeIcon(Gift, "GiftIcon", 16);
 export const PulseIcon = makeIcon(Activity, "PulseIcon", 14);
 export const MicIcon = makeIcon(Mic, "MicIcon", 14);
 export const SpeakerIcon = makeIcon(Volume2, "SpeakerIcon", 14);
+export const FlagIcon = makeIcon(Flag, "FlagIcon", 14);
 export const ChatIcon = makeIcon(MessageCircle, "ChatIcon", 14);
 export const StarIcon = makeIcon(Star, "StarIcon", 16);
 export const CameraIcon = makeIcon(Camera, "CameraIcon", 16);
