@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { buildAuthUrl, isWhoopOAuthConfigured } from "@/lib/whoop/oauth";
 import { signWhoopState } from "@/lib/whoop/oauth-state";
 import { isTokenCryptoConfigured } from "@/lib/security/token-crypto";
+import { recordSystemEvent } from "@/lib/data/system-events";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -31,7 +32,29 @@ export async function GET() {
     return NextResponse.redirect(new URL("/login", base));
   }
 
-  if (!isWhoopOAuthConfigured() || !isTokenCryptoConfigured()) {
+  // The start step had no diagnostic before, so a missing-config failure here
+  // redirected to ?whoop=error with NO trace in system_events (which is exactly
+  // why a real failed attempt left no row). Record the precise reason so the
+  // failing config is legible, mirroring the callback's per-step diag. We log
+  // PRESENCE booleans only, NEVER the secret values.
+  const oauthOk = isWhoopOAuthConfigured();
+  const cryptoOk = isTokenCryptoConfigured();
+  if (!oauthOk || !cryptoOk) {
+    const step = !oauthOk ? "oauth_unconfigured" : "token_crypto_unconfigured";
+    const context = {
+      step,
+      whoop_client_id: !!process.env.WHOOP_CLIENT_ID,
+      whoop_client_secret: !!process.env.WHOOP_CLIENT_SECRET,
+      token_crypto: cryptoOk,
+    };
+    console.error("[whoop-connect-failed]", step, context);
+    await recordSystemEvent({
+      kind: "whoop.connect_failed",
+      severity: "warn",
+      message: `WHOOP connect failed at: ${step}`,
+      context,
+      actorId: user.id,
+    });
     return NextResponse.redirect(new URL("/dashboard/health?whoop=error", base));
   }
 
