@@ -2,6 +2,7 @@ import "server-only";
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import type { Artifact, ArtifactType } from "@/lib/ai/artifact";
 
 export type Conversation = {
   id: string;
@@ -19,6 +20,8 @@ export type Message = {
   conversation_id: string;
   role: "user" | "assistant";
   content: string;
+  artifact_type: ArtifactType | null;
+  artifact: Artifact | null;
   created_at: string;
 };
 
@@ -58,6 +61,7 @@ export async function addMessage(input: {
   conversationId: string;
   role: "user" | "assistant";
   content: string;
+  artifact?: Artifact | null;
 }): Promise<void> {
   try {
     const admin = createAdminClient();
@@ -65,6 +69,8 @@ export async function addMessage(input: {
       conversation_id: input.conversationId,
       role: input.role,
       content: input.content,
+      artifact_type: input.artifact?.type ?? null,
+      artifact: input.artifact ?? null,
     });
   } catch {
     // Best-effort

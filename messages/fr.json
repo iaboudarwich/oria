@@ -1178,5 +1178,15 @@
     "count": "Compter",
     "exclude": "Exclure",
     "remove": "Retirer"
+  },
+  "smartPaste": {
+    "heading": "Collez quelque chose",
+    "placeholder": "Collez un e-mail de vol, un reçu, une confirmation, et Oria le classera.",
+    "reading": "Lecture de ce que vous avez collé…",
+    "offer": "On dirait quelque chose à garder. Ajouter à {section} ?",
+    "offer_typed": "On dirait un {type}. Ajouter à {section} ?",
+    "add": "Ajouter à {section}",
+    "dismiss": "Pas maintenant",
+    "filed": "Ajouté à {section}."
   }
 }

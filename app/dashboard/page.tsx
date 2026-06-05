@@ -3,6 +3,7 @@ import { Topbar } from "@/components/dashboard/topbar";
 import { EmptyState } from "@/components/ui/empty-state";
 import { UploadIcon } from "@/components/ui/icon";
 import { DropzoneCompact } from "@/components/upload/dropzone-compact";
+import { SmartPaste } from "@/components/paste/smart-paste";
 import { SearchHero } from "@/components/dashboard/search-hero";
 import { TodayPulse } from "@/components/dashboard/today-pulse";
 import { SectionsGrid } from "@/components/dashboard/sections-grid";
@@ -152,6 +153,8 @@ export default async function DashboardHome() {
         ) : null}
 
         <AddRow />
+
+        <SmartPaste />
 
         <TodayPulse activeSpaceId={ctx?.organization.id ?? ""} />
 

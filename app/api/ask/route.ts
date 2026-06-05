@@ -32,6 +32,11 @@ import {
 } from "@/lib/ai/personalization";
 import { currentNetWorth } from "@/lib/data/net-worth";
 import { buildFinanceContextBlock } from "@/lib/ai/finance-context";
+import {
+  shouldAttemptArtifact,
+  generateArtifact,
+  type Artifact,
+} from "@/lib/ai/artifact";
 import { sectionLabel } from "@/lib/sections-meta";
 import type { SpaceContext } from "@/lib/ai/agent";
 import type { SectionScope } from "@/lib/data/section-scope";
@@ -378,17 +383,32 @@ export async function POST(request: Request) {
           writeEvent(controller, { type: "reasoning", text: thinking });
         }
 
+        // Live artifact: when the answer reads better as a small visual (a
+        // headline number, a breakdown, a list), an infra pass structures the
+        // answer Oria already wrote into a chart/table/checklist/stat card. A
+        // cheap deterministic gate keeps simple lookups on the plain-text path.
+        let artifact: Artifact | null = null;
+        if (fullAnswer && shouldAttemptArtifact(query, fullAnswer)) {
+          artifact = await generateArtifact({
+            userId: ctx.profile.id,
+            query,
+            answer: fullAnswer,
+          });
+          if (artifact) writeEvent(controller, { type: "artifact", artifact });
+        }
+
         // Include conversation_id in done frame so the client can
         // update its URL or state without an extra round-trip.
         writeEvent(controller, { type: "done", conversationId });
         controller.close();
 
-        // Persist the assistant's full response.
+        // Persist the assistant's full response (with its artifact, if any).
         if (conversationId && fullAnswer) {
           void addMessage({
             conversationId,
             role: "assistant",
             content: fullAnswer,
+            artifact,
           });
         }
 

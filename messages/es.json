@@ -1178,5 +1178,15 @@
     "count": "Contar",
     "exclude": "Excluir",
     "remove": "Quitar"
+  },
+  "smartPaste": {
+    "heading": "Pega algo",
+    "placeholder": "Pega un correo de vuelo, un recibo, una confirmación, y Oria lo archivará.",
+    "reading": "Leyendo lo que pegaste…",
+    "offer": "Parece algo para guardar. ¿Añadir a {section}?",
+    "offer_typed": "Parece un {type}. ¿Añadir a {section}?",
+    "add": "Añadir a {section}",
+    "dismiss": "Ahora no",
+    "filed": "Añadido a {section}."
   }
 }

@@ -1178,5 +1178,15 @@
     "count": "Count",
     "exclude": "Exclude",
     "remove": "Remove"
+  },
+  "smartPaste": {
+    "heading": "Paste something",
+    "placeholder": "Paste a flight email, a receipt, a confirmation, and Oria will file it.",
+    "reading": "Reading what you pasted…",
+    "offer": "Looks like something to keep. Add to {section}?",
+    "offer_typed": "Looks like a {type}. Add to {section}?",
+    "add": "Add to {section}",
+    "dismiss": "Not now",
+    "filed": "Added to {section}."
   }
 }

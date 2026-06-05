@@ -9,6 +9,8 @@ import { useLocale, useTranslations } from "next-intl";
 import { PatchPreview } from "@/components/onboarding/patch-preview";
 import { reshapeGeneratePatch, reshapeExecutePatch } from "@/app/dashboard/reshape/actions";
 import { EMPTY_USER_CONTEXT, type PlanPatch } from "@/lib/onboarding/types";
+import { MessageArtifact } from "./message-artifact";
+import type { Artifact } from "@/lib/ai/artifact";
 import type { Locale } from "@/i18n/config";
 
 /** One attached image, carried both for display (dataUrl) and for the request
@@ -45,6 +47,8 @@ type Turn = {
   patch?: PlanPatch | null;
   /** The reshape patch was applied. */
   setupApplied?: boolean;
+  /** A live artifact (chart/table/checklist/stat card) rendered below the answer. */
+  artifact?: Artifact | null;
 };
 
 export type ReasoningMode = "auto" | "manual" | "always" | "never";
@@ -282,6 +286,7 @@ export function AskChat({
                 | { type: "reasoning_offer" }
                 | { type: "reasoning"; text: string }
                 | { type: "setup_intent"; query: string; hasImage?: boolean }
+                | { type: "artifact"; artifact: Artifact }
                 | { type: "done"; conversationId?: string | null }
                 | { type: "error"; code: string };
               if (evt.type === "sources") {
@@ -297,6 +302,8 @@ export function AskChat({
                 updateTurn(id, (t) => ({ ...t, reasoningOffered: true }));
               } else if (evt.type === "reasoning") {
                 updateTurn(id, (t) => ({ ...t, reasoning: evt.text }));
+              } else if (evt.type === "artifact") {
+                updateTurn(id, (t) => ({ ...t, artifact: evt.artifact }));
               } else if (evt.type === "delta") {
                 updateTurn(id, (t) => ({ ...t, answer: t.answer + evt.text }));
               } else if (evt.type === "done") {
@@ -755,6 +762,7 @@ function TurnView({
         ) : (
           <AnswerText answer={turn.answer} sources={turn.sources} />
         )}
+        {turn.artifact ? <MessageArtifact artifact={turn.artifact} /> : null}
       </div>
 
       {/* Offer pill: classifier flagged this as analytical and it was answered

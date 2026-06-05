@@ -145,6 +145,8 @@ export type AuditAction =
   | "trackable.created"
   | "trackable.updated"
   | "trackable.archived"
+  // Smart paste (Round 19)
+  | "paste.filed"
   // Spaces
   | "space.deleted"
   // Trusted devices (Round 16.7)
