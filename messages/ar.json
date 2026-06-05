@@ -1010,6 +1010,8 @@
     "whoop_connected": "WHOOP متصل",
     "whoop_updated": "آخر تحديث {time}",
     "whoop_waiting": "بانتظار أول تحديث",
+    "whoop_connect_ok": "تم ربط WHOOP. بياناتك الأحدث في الطريق.",
+    "whoop_connect_failed": "تعذّر ربط WHOOP. حاول مرة أخرى.",
     "disconnect": "فصل",
     "disconnect_confirm": "اضغط مرة أخرى للتأكيد",
     "disconnecting": "جارٍ الفصل",

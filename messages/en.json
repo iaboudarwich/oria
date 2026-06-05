@@ -1010,6 +1010,8 @@
     "whoop_connected": "WHOOP connected",
     "whoop_updated": "Last updated {time}",
     "whoop_waiting": "Waiting for the first update",
+    "whoop_connect_ok": "WHOOP is connected. Your latest data is on the way.",
+    "whoop_connect_failed": "We couldn't connect WHOOP. Please try again.",
     "disconnect": "Disconnect",
     "disconnect_confirm": "Tap again to confirm",
     "disconnecting": "Disconnecting",

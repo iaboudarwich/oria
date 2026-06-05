@@ -50,6 +50,7 @@ export default async function HealthPage({ searchParams }: Props) {
   );
   const tabParam = typeof sp.tab === "string" ? sp.tab : undefined;
   const htype = typeof sp.htype === "string" ? sp.htype : undefined;
+  const whoopOutcome = sp.whoop === "connected" ? "connected" : sp.whoop === "error" ? "error" : null;
   const active = isHealthTab(tabParam) ? tabParam : "body";
 
   const ctx = await requireContext();
@@ -118,6 +119,18 @@ export default async function HealthPage({ searchParams }: Props) {
     <>
       <Topbar title={t("title")} />
       <div className="animate-fade-up">
+        {whoopOutcome ? (
+          <div
+            role="status"
+            className={`mb-4 rounded-xl border px-4 py-3 text-[13px] ${
+              whoopOutcome === "connected"
+                ? "border-sage/40 bg-sage/10 text-ink"
+                : "border-claret/40 bg-claret/10 text-ink"
+            }`}
+          >
+            {whoopOutcome === "connected" ? t("whoop_connect_ok") : t("whoop_connect_failed")}
+          </div>
+        ) : null}
         <HealthTabs active={active} />
         {body}
       </div>

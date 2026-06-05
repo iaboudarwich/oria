@@ -5,7 +5,6 @@ import { listCloudConnectionsByService } from "@/lib/google/cloud-connections";
 import { isGmailOAuthConfigured } from "@/lib/integrations/gmail/oauth";
 import { isGoogleOAuthConfigured } from "@/lib/google/oauth";
 import { isMicrosoftOAuthConfigured } from "@/lib/microsoft/oauth";
-import { isWhoopOAuthConfigured } from "@/lib/whoop/oauth";
 import { listWhoopConnections } from "@/lib/whoop/connections";
 import { isTokenCryptoConfigured } from "@/lib/security/token-crypto";
 import { ConnectionsPanel } from "./connections-panel";
@@ -41,7 +40,6 @@ export async function ConnectionsZones({ userId, notice }: { userId: string; not
   const gmailOk = isGmailOAuthConfigured() && crypto;
   const googleOk = isGoogleOAuthConfigured() && crypto;
   const msOk = isMicrosoftOAuthConfigured() && crypto;
-  const whoopOk = isWhoopOAuthConfigured() && crypto;
 
   const [gmail, outlook, cal, drive, ocal, onedrive, whoop, ackAt] = await Promise.all([
     listGmailConnections(userId),
@@ -67,7 +65,11 @@ export async function ConnectionsZones({ userId, notice }: { userId: string; not
     { id: "outlook", name: "Outlook", descKey: "outlook_desc", connected: has(outlook), ok: msOk, href: "/api/oauth/microsoft/connect?service=mail" },
     { id: "ocal", name: "Outlook Calendar", descKey: "ocal_desc", connected: has(ocal), ok: msOk, href: "/api/oauth/microsoft/connect?service=calendar" },
     { id: "onedrive", name: "OneDrive", descKey: "onedrive_desc", connected: has(onedrive), ok: msOk, href: "/api/oauth/microsoft/connect?service=onedrive" },
-    { id: "whoop", name: "WHOOP", descKey: "whoop_desc", connected: has(whoop), ok: whoopOk, href: "/api/oauth/whoop/start" },
+    // WHOOP is a live Connect everywhere, same flow as the Health surface. The
+    // start route handles a config gap gracefully (plain message), so we never
+    // show it as "Soon". Health data is the user's own (user_id-scoped, never
+    // shared into a circle or work space), so no per-space gating is needed.
+    { id: "whoop", name: "WHOOP", descKey: "whoop_desc", connected: has(whoop), ok: true, href: "/api/oauth/whoop/start" },
   ];
 
   const real: AvailableItem[] = candidates
