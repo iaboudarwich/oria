@@ -5,6 +5,8 @@ import { getCurrentContext } from "@/lib/data/organizations";
 import { isAnthropicConfigured } from "@/lib/ai/anthropic";
 import { retrieveForQuery } from "@/lib/ai/retrieve";
 import { streamAnswer } from "@/lib/ai/agent";
+import { classifyVoiceReminder } from "@/lib/ai/voice-action";
+import { actionNeedsClarification } from "@/lib/actions/write-actions";
 import { rateLimit, RATE_PRESETS } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
@@ -45,6 +47,25 @@ export async function POST(request: Request) {
 
   try {
     const tz = (await cookies()).get("oria_tz")?.value ?? null;
+
+    // Round 21: voice can ACT. First check for an explicit reminder command. If
+    // it is one and complete, return the proposal (the client confirms, then
+    // executes through the rails). If it is a reminder but missing a time, ask
+    // rather than guess. Otherwise, answer normally.
+    const zone = tz || "UTC";
+    const localDate = new Intl.DateTimeFormat("en-CA", {
+      timeZone: zone,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(new Date());
+    const action = await classifyVoiceReminder(ctx.profile.id, transcript, localDate, zone);
+    if (action) {
+      const clarify = actionNeedsClarification(action);
+      if (clarify) return NextResponse.json({ kind: "clarify", reason: clarify });
+      return NextResponse.json({ kind: "action", action });
+    }
+
     const sources = await retrieveForQuery(transcript, {});
     let answer = "";
     for await (const delta of streamAnswer({
@@ -58,7 +79,7 @@ export async function POST(request: Request) {
     })) {
       answer += delta;
     }
-    return NextResponse.json({ answer: answer.trim() });
+    return NextResponse.json({ kind: "answer", answer: answer.trim() });
   } catch (e) {
     Sentry.captureException(e, { tags: { surface: "voice" } });
     return NextResponse.json({ error: "stream_failed" }, { status: 500 });

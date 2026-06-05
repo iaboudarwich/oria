@@ -1264,5 +1264,18 @@
     "bucket_morning": "Morning",
     "bucket_afternoon": "Afternoon",
     "bucket_evening": "Evening"
+  },
+  "voiceAct": {
+    "confirm_reminder": "Set a reminder for {when}: {title}?",
+    "confirm_generic": "Go ahead with that?",
+    "confirm_yes": "Yes, do it",
+    "confirm_no": "Cancel",
+    "clarify_missing_when": "What time should I set it for?",
+    "clarify_missing_title": "What should I remind you about?",
+    "done": "Done. You can undo for a minute.",
+    "failed": "Sorry, I could not do that. Try again.",
+    "cancelled": "Okay, I left it as it was.",
+    "undo": "Undo",
+    "undone": "Reverted."
   }
 }

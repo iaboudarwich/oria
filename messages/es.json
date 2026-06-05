@@ -1264,5 +1264,18 @@
     "bucket_morning": "Mañana",
     "bucket_afternoon": "Tarde",
     "bucket_evening": "Noche"
+  },
+  "voiceAct": {
+    "confirm_reminder": "¿Crear un recordatorio para {when}: {title}?",
+    "confirm_generic": "¿Seguimos?",
+    "confirm_yes": "Sí, hazlo",
+    "confirm_no": "Cancelar",
+    "clarify_missing_when": "¿Para qué hora lo programo?",
+    "clarify_missing_title": "¿De qué te recuerdo?",
+    "done": "Hecho. Puedes deshacer durante un minuto.",
+    "failed": "Lo siento, no pude hacerlo. Inténtalo de nuevo.",
+    "cancelled": "De acuerdo, lo dejé como estaba.",
+    "undo": "Deshacer",
+    "undone": "Deshecho."
   }
 }

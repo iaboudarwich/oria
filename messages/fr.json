@@ -1264,5 +1264,18 @@
     "bucket_morning": "Matin",
     "bucket_afternoon": "Après-midi",
     "bucket_evening": "Soir"
+  },
+  "voiceAct": {
+    "confirm_reminder": "Définir un rappel pour {when} : {title} ?",
+    "confirm_generic": "On y va ?",
+    "confirm_yes": "Oui, vas-y",
+    "confirm_no": "Annuler",
+    "clarify_missing_when": "À quelle heure dois-je le programmer ?",
+    "clarify_missing_title": "De quoi dois-je vous rappeler ?",
+    "done": "C’est fait. Vous pouvez annuler pendant une minute.",
+    "failed": "Désolé, je n’ai pas pu le faire. Réessayez.",
+    "cancelled": "D’accord, je n’ai rien changé.",
+    "undo": "Annuler",
+    "undone": "Annulé."
   }
 }

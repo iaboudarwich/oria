@@ -1264,5 +1264,18 @@
     "bucket_morning": "الصباح",
     "bucket_afternoon": "بعد الظهر",
     "bucket_evening": "المساء"
+  },
+  "voiceAct": {
+    "confirm_reminder": "ضبط تذكير في {when}: {title}؟",
+    "confirm_generic": "أتابع؟",
+    "confirm_yes": "نعم، نفّذ",
+    "confirm_no": "إلغاء",
+    "clarify_missing_when": "في أي وقت أضبطه؟",
+    "clarify_missing_title": "بِمَ أُذكّرك؟",
+    "done": "تم. يمكنك التراجع خلال دقيقة.",
+    "failed": "عذرًا، لم أستطع تنفيذ ذلك. حاول مرة أخرى.",
+    "cancelled": "حسنًا، تركته كما هو.",
+    "undo": "تراجع",
+    "undone": "تم التراجع."
   }
 }

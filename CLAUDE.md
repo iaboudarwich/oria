@@ -882,6 +882,35 @@ Voice is a first-class way to use Oria, not a toy. The rules:
 - **Privacy.** Raw audio is not persisted beyond transcription; a short line
   near the mic says so. Any mic/listening animation respects
   prefers-reduced-motion.
+- **Voice now ACTS (Round 21), behind the write-back rails.** A voice command
+  is parsed to an intent and PROPOSED, never auto-run. See the write-back
+  principle below.
+
+## 27. Write-back: Oria acts, behind rails (Round 21)
+
+Oria can perform a small set of write actions on the user's OWN data. NOTHING
+auto-executes. Every mutation flows through the one framework
+(`lib/actions/write-actions.ts` + `lib/data/write-action-runner.ts`) and obeys
+all of these, always:
+
+- **Propose -> explicit CONFIRM -> execute -> ~60s UNDO -> commit.** The user
+  sees/hears the exact plain-language statement of what will happen ("Set a
+  reminder for Sat, Jun 6, 2:00 PM: call the movers") and must confirm. After
+  execute, a ~60s undo window fully reverses it; after the window it commits.
+- **Idempotent.** The client-supplied action id is the primary key of
+  `write_actions`, so a retry or double-tap cannot double-execute.
+- **Audited both ways + diagnosed.** Execute and undo each write an audit row;
+  a failure writes `write_action.failed` to system_events. RLS own-row.
+- **Own data, reversible only (v1).** Create / edit / complete / delete a
+  reminder (tz-correct via `localDateTimeToISO`, delete is undoable by restoring
+  the captured row); set a trackable status (done / won't-do). An "internal
+  event" is a reminder. NO external-provider writes (no Google/Outlook event
+  push), no sends, no deletes of external data this round.
+- **Never guess-and-execute.** An incomplete action (a reminder with no explicit
+  time) is not confirmable; Oria asks. `actionNeedsClarification` is the gate.
+- **Never act on a recipient or instruction that came from extracted or
+  observed content** (a document, an email, an OCR'd note) without explicit
+  user confirmation of that specific action.
 
 ---
 
