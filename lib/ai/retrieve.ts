@@ -1,5 +1,6 @@
 import "server-only";
 
+import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import {
   isAccountOwnerInPersonal,
@@ -630,22 +631,20 @@ export async function retrieveForQuery(
   }
 
   // -- Reminders -------------------------------------------------------------
-  const reminderFilter = keywords
-    .map((k) => `title.ilike.*${k.replace(/[%,]/g, "")}*`)
-    .join(",");
-  let remindersQ = supabase
-    .from("reminders")
-    .select("id, title, due_at, upload_id, organization_id, done, created_at")
-    .in("organization_id", allowedOrgIds);
-  if (keywords.length > 0) remindersQ = remindersQ.or(reminderFilter);
-  if (scope) {
-    // Reminders aren't sectioned today. When scoped, the safest behaviour
-    // is to skip them entirely, the section-scoped agent should answer
-    // only from section-scoped sources.
-    remindersQ = remindersQ.eq("id", "00000000-0000-0000-0000-000000000000");
-  }
-  const remindersRes = await remindersQ.limit(20);
-
+  // Ask must see the SAME live reminders the Calendar shows, from the same
+  // source and scope (allowedOrgIds). Two pulls, merged:
+  //   (a) the live agenda: every OPEN reminder with a due date, soonest first,
+  //       included regardless of the query's words so "what's my next reminder"
+  //       surfaces it (the old keyword-only filter hid reminders whose title
+  //       didn't lexically match the question);
+  //   (b) keyword-matched reminders of any status, so targeted questions like
+  //       "is the dentist reminder done?" still work.
+  // Reminders aren't sectioned, so a section-scoped agent skips them entirely.
+  // Render due times in the user's timezone (oria_tz) so Ask reads the same
+  // clock time the Calendar shows.
+  const reminderTz = (await cookies()).get("oria_tz")?.value ?? null;
+  const REMINDER_COLS =
+    "id, title, due_at, upload_id, organization_id, done, created_at";
   type ReminderRow = {
     id: string;
     title: string;
@@ -655,7 +654,40 @@ export async function retrieveForQuery(
     done: boolean;
     created_at: string;
   };
-  const reminders = (remindersRes.data ?? []) as ReminderRow[];
+  let reminders: ReminderRow[] = [];
+  if (!scope) {
+    const upcomingP = supabase
+      .from("reminders")
+      .select(REMINDER_COLS)
+      .in("organization_id", allowedOrgIds)
+      .eq("done", false)
+      .not("due_at", "is", null)
+      .order("due_at", { ascending: true })
+      .limit(15);
+    const reminderFilter = keywords
+      .map((k) => `title.ilike.*${k.replace(/[%,]/g, "")}*`)
+      .join(",");
+    const matchedP =
+      keywords.length > 0
+        ? supabase
+            .from("reminders")
+            .select(REMINDER_COLS)
+            .in("organization_id", allowedOrgIds)
+            .or(reminderFilter)
+            .limit(20)
+        : Promise.resolve({ data: [] as ReminderRow[] });
+    const [upcomingRes, matchedRes] = await Promise.all([upcomingP, matchedP]);
+    const byId = new Map<string, ReminderRow>();
+    for (const r of [
+      ...((upcomingRes.data ?? []) as ReminderRow[]),
+      ...((matchedRes.data ?? []) as ReminderRow[]),
+    ]) {
+      byId.set(r.id, r);
+    }
+    reminders = [...byId.values()].sort((a, b) =>
+      (a.due_at ?? "9999").localeCompare(b.due_at ?? "9999"),
+    );
+  }
 
   // -- Structured extraction for matched uploads -----------------------------
   // The extractor already pulled clean fields (flight number, due date,
@@ -801,17 +833,22 @@ export async function retrieveForQuery(
     const haystack = r.title.toLowerCase();
     let score = 0;
     for (const kw of keywords) if (haystack.includes(kw)) score += kw.length;
-    if (score === 0) continue;
+    // An OPEN reminder with a due date is part of the live agenda: always
+    // include it (baseline score) so general questions like "what's my next
+    // reminder" surface it even when no keyword matched its title. Done /
+    // dateless reminders still need a keyword hit to appear.
+    const isLiveAgenda = !r.done && !!r.due_at;
+    if (score === 0 && !isLiveAgenda) continue;
     const space = spaceById.get(r.organization_id);
     scored.push({
-      score,
+      score: score === 0 ? 1 : score,
       src: {
         kind: "reminder",
         title: r.title,
         snippet: r.done
           ? "Done"
           : r.due_at
-            ? `Due ${friendlyDate(r.due_at)}`
+            ? `Due ${friendlyDateTime(r.due_at, reminderTz)}`
             : "No date set",
         href: r.upload_id
           ? `/dashboard/uploads/${r.upload_id}`
@@ -820,7 +857,7 @@ export async function retrieveForQuery(
         meta: {
           section_label: null,
           space_name: space?.name ?? ctx.organization.name,
-          date_label: r.due_at ? friendlyDate(r.due_at) : null,
+          date_label: r.due_at ? friendlyDateTime(r.due_at, reminderTz) : null,
         },
       },
     });
@@ -1167,6 +1204,21 @@ function friendlyDate(iso: string): string {
     month: "short",
     day: "numeric",
     year: "numeric",
+  });
+}
+
+/** Date + time, rendered in the user's timezone so Ask states the same clock
+ *  time the Calendar shows (reminders are stored as real instants). */
+function friendlyDateTime(iso: string, tz?: string | null): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleString(undefined, {
+    timeZone: tz && tz !== "" ? tz : undefined,
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
   });
 }
 
