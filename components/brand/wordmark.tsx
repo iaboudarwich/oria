@@ -16,7 +16,14 @@ type WordmarkProps = {
  * contexts use the "O" monogram instead (see scripts/generate-icons.mjs).
  *
  * Sizing is by height: pass `className` (e.g. `h-6`) to override the default.
+ *
+ * Weight: the committed path is the Newsreader 400 outline, which reads thin at
+ * sidebar size (~20px). We thicken it toward the heavier feel of the app logo
+ * with a matching currentColor stroke (no second font in the bundle). The
+ * stroke is in the 1000-unit em space of the path, so it scales with the mark;
+ * STROKE_WEIGHT is the one knob (≈1% of em = "a touch heavier").
  */
+const STROKE_WEIGHT = 11;
 export function Wordmark({
   href = "/",
   className = "",
@@ -36,7 +43,13 @@ export function Wordmark({
       aria-hidden={named ? undefined : true}
       className={`h-5 w-auto ${color} ${className}`}
     >
-      <path d={ORIA_PATH} />
+      <path
+        d={ORIA_PATH}
+        stroke="currentColor"
+        strokeWidth={STROKE_WEIGHT}
+        strokeLinejoin="round"
+        strokeLinecap="round"
+      />
     </svg>
   );
 
