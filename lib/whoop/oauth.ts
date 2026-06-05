@@ -57,20 +57,42 @@ function expiryIso(expiresInSeconds: number): string {
   return new Date(Date.now() + Math.max(0, expiresInSeconds - 30) * 1000).toISOString();
 }
 
-export async function exchangeCodeForTokens(code: string): Promise<WhoopTokenResponse> {
-  const res = await fetch(TOKEN_ENDPOINT, {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({
-      code,
-      grant_type: "authorization_code",
-      client_id: process.env.WHOOP_CLIENT_ID ?? "",
-      client_secret: process.env.WHOOP_CLIENT_SECRET ?? "",
-      redirect_uri: redirectUri(),
-    }),
-  });
+export type TokenExchangeResult =
+  | { ok: true; tokens: WhoopTokenResponse }
+  | { ok: false; status: number; body: string };
+
+/**
+ * Exchange the authorization code for tokens. Returns a result rather than
+ * throwing so the callback can log the precise failure (HTTP status + WHOOP's
+ * error body, e.g. invalid_client on a stale secret, redirect_uri_mismatch).
+ * The body is WHOOP's RESPONSE only and carries no secret. The redirect_uri here
+ * is the same canonical redirectUri() used to build the authorize URL.
+ */
+export async function exchangeCodeForTokens(code: string): Promise<TokenExchangeResult> {
+  let res: Response;
+  try {
+    res = await fetch(TOKEN_ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        code,
+        grant_type: "authorization_code",
+        client_id: process.env.WHOOP_CLIENT_ID ?? "",
+        client_secret: process.env.WHOOP_CLIENT_SECRET ?? "",
+        redirect_uri: redirectUri(),
+      }),
+    });
+  } catch (e) {
+    return { ok: false, status: 0, body: `network: ${(e as Error).message}` };
+  }
   if (!res.ok) {
-    throw new Error(`Token exchange failed (${res.status})`);
+    let body = "";
+    try {
+      body = (await res.text()).slice(0, 300);
+    } catch {
+      body = "";
+    }
+    return { ok: false, status: res.status, body };
   }
   const data = (await res.json()) as {
     access_token: string;
@@ -79,10 +101,13 @@ export async function exchangeCodeForTokens(code: string): Promise<WhoopTokenRes
     scope?: string;
   };
   return {
-    accessToken: data.access_token,
-    refreshToken: data.refresh_token ?? null,
-    expiresAt: expiryIso(data.expires_in),
-    scopes: data.scope ? data.scope.split(" ") : WHOOP_SCOPES,
+    ok: true,
+    tokens: {
+      accessToken: data.access_token,
+      refreshToken: data.refresh_token ?? null,
+      expiresAt: expiryIso(data.expires_in),
+      scopes: data.scope ? data.scope.split(" ") : WHOOP_SCOPES,
+    },
   };
 }
 
@@ -122,21 +147,35 @@ export async function refreshAccessToken(
 
 export type WhoopProfile = { whoopUserId: string; email: string | null };
 
-export async function fetchProfile(accessToken: string): Promise<WhoopProfile | null> {
+export type ProfileFetchResult =
+  | { ok: true; profile: WhoopProfile }
+  | { ok: false; status: number; body: string };
+
+/** Fetch the WHOOP profile. Returns a result so the callback can log a failed
+ *  profile/scope fetch (e.g. a missing read:profile scope = 401/403). */
+export async function fetchProfile(accessToken: string): Promise<ProfileFetchResult> {
+  let res: Response;
   try {
-    const res = await fetch(`${API_BASE}/v2/user/profile/basic`, {
+    res = await fetch(`${API_BASE}/v2/user/profile/basic`, {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
-    if (!res.ok) return null;
-    const data = (await res.json()) as {
-      user_id?: number | string;
-      email?: string;
-    };
-    if (data.user_id === undefined || data.user_id === null) return null;
-    return { whoopUserId: String(data.user_id), email: data.email ?? null };
-  } catch {
-    return null;
+  } catch (e) {
+    return { ok: false, status: 0, body: `network: ${(e as Error).message}` };
   }
+  if (!res.ok) {
+    let body = "";
+    try {
+      body = (await res.text()).slice(0, 200);
+    } catch {
+      body = "";
+    }
+    return { ok: false, status: res.status, body };
+  }
+  const data = (await res.json()) as { user_id?: number | string; email?: string };
+  if (data.user_id === undefined || data.user_id === null) {
+    return { ok: false, status: res.status, body: "no user_id in profile" };
+  }
+  return { ok: true, profile: { whoopUserId: String(data.user_id), email: data.email ?? null } };
 }
 
 /**
