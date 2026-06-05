@@ -161,7 +161,7 @@ export async function healthSummary(orgId: string): Promise<SummaryData | null> 
       headline,
       metrics,
       badges,
-      cta: { label: "View timeline", href: "/dashboard/sections/health?view=timeline" },
+      cta: { label: "View timeline", href: "/dashboard/health?tab=vitals" },
     };
   } catch {
     return null;

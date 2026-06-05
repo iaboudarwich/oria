@@ -94,7 +94,7 @@ const HIGH_LEAK_SURFACES = [
   "/dashboard/calendar",
   "/dashboard/reminders",
   "/dashboard/timeline",
-  "/dashboard/diet",
+  "/dashboard/health",
   "/dashboard/bills",
   "/dashboard/sections",
   "/dashboard/work",

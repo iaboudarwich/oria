@@ -240,7 +240,7 @@ async function detectDietTrend(
     id: `diet-protein-${delta > 0 ? "up" : "down"}-${pct}`,
     kind: "diet.protein",
     message: `Protein intake is ${pct}% ${word} this week than last.`,
-    href: "/dashboard/diet",
+    href: "/dashboard/health?tab=diet",
   };
 }
 

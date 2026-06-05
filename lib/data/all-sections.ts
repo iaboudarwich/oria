@@ -127,7 +127,8 @@ export async function listAllSections(
     merged.push({
       ref: { kind: "builtin", key },
       name: s?.custom_label?.trim() || BUILTIN_LABELS[key],
-      href: `/dashboard/sections/${key}`,
+      // Health is now the unified surface (Round 17), not a generic section page.
+      href: key === "health" ? "/dashboard/health" : `/dashboard/sections/${key}`,
       sort_order: s?.sort_order ?? idx * 10,
       hidden: s?.hidden ?? false,
     });

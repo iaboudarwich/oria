@@ -104,7 +104,7 @@ function readScope(formData: FormData): SectionScope | null {
 
 function revalidatePathForScope(scope: SectionScope): void {
   if (scope.kind === "smart") {
-    revalidatePath(scope.key === "diet" ? "/dashboard/diet" : "/dashboard/bills");
+    revalidatePath(scope.key === "diet" ? "/dashboard/health" : "/dashboard/bills");
     return;
   }
   revalidatePath(`/dashboard/sections/${scope.key}`);

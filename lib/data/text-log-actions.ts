@@ -245,7 +245,7 @@ export async function logFromText(
   // Reflect new records in the active surfaces.
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/inbox");
-  revalidatePath("/dashboard/diet");
+  revalidatePath("/dashboard/health");
   revalidatePath("/dashboard/bills");
   revalidatePath("/dashboard/calendar");
   revalidatePath("/dashboard/reminders");

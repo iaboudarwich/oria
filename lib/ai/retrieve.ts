@@ -346,7 +346,7 @@ export async function retrieveForQuery(
           href:
             scope.kind === "smart"
               ? scope.key === "diet"
-                ? "/dashboard/diet"
+                ? "/dashboard/health?tab=diet"
                 : "/dashboard/bills"
               : `/dashboard/sections/${scope.key}`,
           processing_state: "ready",

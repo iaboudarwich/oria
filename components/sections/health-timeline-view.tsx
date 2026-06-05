@@ -59,7 +59,7 @@ export async function HealthTimelineView({
   const active = filter && categories.includes(filter) ? filter : "All";
   const shown = active === "All" ? withCat : withCat.filter((r) => r.cat === active);
 
-  const base = "/dashboard/sections/health?view=timeline";
+  const base = "/dashboard/health?tab=vitals";
   const tabs = ["All", ...categories];
 
   return (

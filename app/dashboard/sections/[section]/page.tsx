@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { Topbar } from "@/components/dashboard/topbar";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -28,7 +28,6 @@ import { summaryForSection } from "@/lib/sections/summaries";
 import { SectionSummaryCard } from "@/components/sections/section-summary-card";
 import { SectionViewTabs } from "@/components/sections/section-view-tabs";
 import { TripsView } from "@/components/sections/trips-view";
-import { HealthTimelineView } from "@/components/sections/health-timeline-view";
 import { recordBehaviorSignal } from "@/lib/data/behavior-signals";
 import { listCloudFilesForSection } from "@/lib/google/cloud-files";
 import { listCloudConnectionsByService } from "@/lib/google/cloud-connections";
@@ -118,7 +117,6 @@ export default async function SectionPage({ params, searchParams }: Props) {
     searchParams ?? Promise.resolve({})
   );
   const viewParam = typeof sp.view === "string" ? sp.view : null;
-  const htype = typeof sp.htype === "string" ? sp.htype : undefined;
   const t = await getTranslations("empty");
 
   // Special: "review". uploads Oria couldn't confidently classify.
@@ -214,6 +212,8 @@ export default async function SectionPage({ params, searchParams }: Props) {
   // Built-in section.
   if (!BUILTIN_SECTIONS.includes(section as Section)) notFound();
   const sec = section as Section;
+  // Health is the unified surface now (Round 17); send any old link there.
+  if (sec === "health") redirect("/dashboard/health");
   const meta = SECTION_META[sec];
 
   const [entries, summary, cloud] = await Promise.all([
@@ -223,24 +223,15 @@ export default async function SectionPage({ params, searchParams }: Props) {
   ]);
   const thumbs = await thumbsForEntries(entries);
 
-  // Intelligence view: Travel defaults to Trips, Health to Timeline. The
-  // primary content tab is the default (the bare URL); Files is the secondary
-  // tab. (Round 14 F4: most-used tab first, file/document tabs are secondary.)
-  const intel =
-    sec === "travel" ? "trips" : sec === "health" ? "timeline" : null;
+  // Intelligence view: Travel defaults to Trips. The primary content tab is the
+  // default (the bare URL); Files is the secondary tab. (Round 14 F4: most-used
+  // tab first, file/document tabs are secondary.) Health moved to its own
+  // unified surface in Round 17 and is redirected above.
+  const intel = sec === "travel" ? "trips" : null;
   const activeView = !intel ? "files" : viewParam === "files" ? "files" : intel;
   const viewTabs = intel
     ? [
-        {
-          key: intel,
-          label: intel === "trips" ? "Trips" : "Timeline",
-          href: `/dashboard/sections/${sec}`,
-        },
-        // Diet folded into Health as a sub-area (Round 14 F3). The Diet meal
-        // tracker lives at /dashboard/diet and is reached as a Health tab.
-        ...(sec === "health"
-          ? [{ key: "diet", label: "Diet", href: "/dashboard/diet" }]
-          : []),
+        { key: intel, label: "Trips", href: `/dashboard/sections/${sec}` },
         { key: "files", label: "Files", href: `/dashboard/sections/${sec}?view=files` },
       ]
     : null;
@@ -277,8 +268,6 @@ export default async function SectionPage({ params, searchParams }: Props) {
     >
       {activeView === "trips" ? (
         <TripsView orgId={orgId} />
-      ) : activeView === "timeline" ? (
-        <HealthTimelineView orgId={orgId} filter={htype} />
       ) : entries.length === 0 ? (
         <EmptyState compact headline={t("section_headline", { name: meta.label })} />
       ) : (
