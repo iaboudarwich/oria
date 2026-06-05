@@ -1,24 +1,17 @@
-import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { Topbar } from "@/components/dashboard/topbar";
 import { EmptyState } from "@/components/ui/empty-state";
 import { UploadIcon } from "@/components/ui/icon";
 import { DropzoneCompact } from "@/components/upload/dropzone-compact";
-import { Thumbnail } from "@/components/upload/thumbnail";
 import { SearchHero } from "@/components/dashboard/search-hero";
 import { TodayPulse } from "@/components/dashboard/today-pulse";
 import { SectionsGrid } from "@/components/dashboard/sections-grid";
 import { getCurrentContext } from "@/lib/data/organizations";
 import {
   countUploadsBySection,
-  getSignedUrlMap,
   listUploadsWithUploader,
-  type UploadWithUploader,
 } from "@/lib/data/uploads";
 import { listAllSections } from "@/lib/data/all-sections";
-import { displayActor } from "@/lib/data/timeline";
-import { sectionLabel } from "@/lib/sections-meta";
-import { relativeTime } from "@/lib/utils";
 import { computeUserInsights } from "@/lib/data/insights";
 import { readDismissedInsightIds } from "@/lib/data/insights-dismiss";
 import { InsightsCard } from "@/components/dashboard/insights-card";
@@ -41,7 +34,6 @@ import { ContextSurface } from "@/components/dashboard/context/context-surface";
 import { loadHealthToday } from "@/lib/daily/health-today";
 import { ritualsDoneToday } from "@/lib/data/rituals";
 import { HealthStatCard } from "@/components/dashboard/health-stat-card";
-import type { Section } from "@/lib/supabase/types";
 
 export default async function DashboardHome() {
   const t = await getTranslations("empty");
@@ -79,13 +71,10 @@ export default async function DashboardHome() {
       ? listUpcomingEvents(ctx.profile.id, ctx.organization.id, 48)
       : Promise.resolve([]);
   const uploads = await uploadsP;
-  const [sectionCounts, allSections, thumbs, rawInsights, dismissed, suggestion] =
+  const [sectionCounts, allSections, rawInsights, dismissed, suggestion] =
     await Promise.all([
       sectionCountsP,
       allSectionsP,
-      getSignedUrlMap(
-        uploads.map((u) => ({ id: u.id, storage_path: u.storage_path })),
-      ),
       insightsP,
       dismissedP,
       suggestionP,
@@ -170,6 +159,9 @@ export default async function DashboardHome() {
 
         {suggestion ? <SectionSuggestionBanner suggestion={suggestion} /> : null}
 
+        {/* First-run capture nudge only. The raw "Recent" uploads feed lives on
+            the Uploads tab; the home stays the day (briefing + capture + the
+            day's real schedule + stats), not an uploads feed. */}
         {isEmpty ? (
           <EmptyState
             icon={<UploadIcon size={22} />}
@@ -177,9 +169,7 @@ export default async function DashboardHome() {
             description={t("home_desc")}
             cta={{ label: t("home_cta"), href: "/dashboard/inbox" }}
           />
-        ) : (
-          <Recent uploads={uploads} thumbs={thumbs} />
-        )}
+        ) : null}
 
         <SectionsGrid sections={allSections} counts={sectionCounts} />
       </div>
@@ -202,53 +192,4 @@ export default async function DashboardHome() {
 
 function AddRow() {
   return <DropzoneCompact />;
-}
-
-function Recent({
-  uploads,
-  thumbs,
-}: {
-  uploads: UploadWithUploader[];
-  thumbs: Map<string, string>;
-}) {
-  return (
-    <section>
-      <div className="mb-3 flex items-center justify-between px-1">
-        <h2 className="text-[13px] font-medium text-ink-muted">Recent</h2>
-        <Link
-          href="/dashboard/timeline"
-          className="text-[12px] text-ink-faint hover:text-ink transition-base"
-        >
-          Timeline
-        </Link>
-      </div>
-      <ul className="space-y-0.5">
-        {uploads.map((u) => (
-          <li key={u.id}>
-            <Link
-              href={`/dashboard/uploads/${u.id}`}
-              className="flex items-center gap-3 rounded-lg px-3 py-2 transition-base hover:bg-surface-raised"
-            >
-              <Thumbnail
-                mime={u.mime_type}
-                imageUrl={thumbs.get(u.id) ?? null}
-                filename={u.filename}
-                size={32}
-              />
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-[13.5px] text-ink">
-                  {u.title ?? u.filename}
-                </p>
-                <p className="truncate text-[11.5px] text-ink-faint">
-                  {displayActor(u.uploader)} ·{" "}
-                  {sectionLabel(u.section as Section | null)} ·{" "}
-                  {relativeTime(u.created_at)}
-                </p>
-              </div>
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </section>
-  );
 }
