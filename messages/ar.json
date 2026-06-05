@@ -1228,5 +1228,24 @@
     "replay": "تشغيل مرة أخرى",
     "speaking": "جارٍ التحدث...",
     "privacy": "يُرسَل تسجيلك لتحويل الكلام إلى نص ثم يُحذف. تُقرأ الإجابات بصوت مسموع وتظهر كنص. تجيب أوريا بالصوت الآن؛ وتنفيذ المهام بالصوت سيأتي لاحقًا."
+  },
+  "dashboardCards": {
+    "title": "يومك",
+    "customize": "تخصيص",
+    "done": "تم",
+    "move_up": "تحريك لأعلى",
+    "move_down": "تحريك لأسفل",
+    "show": "إظهار",
+    "hide": "إخفاء",
+    "card_context": "نظرة عامة",
+    "card_health": "الصحة",
+    "card_net_worth": "صافي الثروة",
+    "card_agenda": "الأجندة",
+    "card_spend": "الإنفاق",
+    "card_subscriptions": "الاشتراكات",
+    "net_worth_eyebrow": "صافي الثروة",
+    "net_worth_label": "عبر حساباتك",
+    "net_worth_tap": "اضغط لرؤية التفاصيل.",
+    "net_worth_insight": "{assets} أصول، {debts} ديون."
   }
 }

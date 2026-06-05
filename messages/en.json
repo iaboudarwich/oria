@@ -1228,5 +1228,24 @@
     "replay": "Play again",
     "speaking": "Speaking...",
     "privacy": "Your recording is sent to turn speech into text, then discarded. Answers play aloud and show as text. Oria answers by voice for now; acting by voice comes later."
+  },
+  "dashboardCards": {
+    "title": "Your day",
+    "customize": "Customize",
+    "done": "Done",
+    "move_up": "Move up",
+    "move_down": "Move down",
+    "show": "Show",
+    "hide": "Hide",
+    "card_context": "Overview",
+    "card_health": "Health",
+    "card_net_worth": "Net worth",
+    "card_agenda": "Agenda",
+    "card_spend": "Spending",
+    "card_subscriptions": "Subscriptions",
+    "net_worth_eyebrow": "Net worth",
+    "net_worth_label": "across your accounts",
+    "net_worth_tap": "Tap to see what is behind it.",
+    "net_worth_insight": "{assets} in assets, {debts} in debts."
   }
 }

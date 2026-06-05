@@ -36,6 +36,12 @@ import { ContextSurface } from "@/components/dashboard/context/context-surface";
 import { loadHealthToday } from "@/lib/daily/health-today";
 import { ritualsDoneToday } from "@/lib/data/rituals";
 import { HealthStatCard } from "@/components/dashboard/health-stat-card";
+import { currentNetWorth } from "@/lib/data/net-worth";
+import { getDashboardCardPrefs } from "@/lib/data/dashboard-cards";
+import { DashboardCards } from "@/components/dashboard/dashboard-cards";
+import { NetWorthMiniCard } from "@/components/dashboard/net-worth-mini-card";
+import { defaultStatCards, resolveStatCards, type StatCardKey } from "@/lib/daily/stat-cards";
+import type { ReactNode } from "react";
 
 export default async function DashboardHome() {
   const t = await getTranslations("empty");
@@ -95,14 +101,34 @@ export default async function DashboardHome() {
     cookieStore.get(getOriaTzCookieName())?.value ||
     ((ctx?.profile as Record<string, unknown> | undefined)?.timezone as string | undefined) ||
     null;
-  const [contextSurface, dailyLoop, healthToday, ritualsToday] = ctx
+  const [contextSurface, dailyLoop, healthToday, ritualsToday, netWorth, cardPrefs] = ctx
     ? await Promise.all([
         loadContextSurface(ctx.organization.id, ctx.organization, now),
         loadDailyLoop(ctx.profile.id, ctx.organization.id, tz, now),
         loadHealthToday(ctx.profile.id, ctx.organization.id, tz, now),
         ritualsDoneToday(),
+        currentNetWorth(),
+        getDashboardCardPrefs(ctx.profile.id),
       ])
-    : [null, null, null, null];
+    : [null, null, null, null, null, []];
+
+  // Today daily-stats: the tailored, per-archetype card set, narrowed to what
+  // the user actually has, then ordered by their saved prefs (Round: surfaces).
+  const cardNodes: Partial<Record<StatCardKey, ReactNode>> = {};
+  if (contextSurface) cardNodes.context = <ContextSurface surface={contextSurface} />;
+  if (healthToday || ritualsToday)
+    cardNodes.health = <HealthStatCard data={healthToday} rituals={ritualsToday} />;
+  if (netWorth && netWorth.totalAssets > 0)
+    cardNodes.net_worth = <NetWorthMiniCard nw={netWorth} />;
+  const cardSignals = {
+    archetype: contextSurface?.archetype ?? ("personal" as const),
+    hasHealth: !!healthToday,
+    hasRituals: !!ritualsToday,
+    hasFinance: !!netWorth && netWorth.totalAssets > 0,
+    hasBills: false,
+  };
+  const availableCards = defaultStatCards(cardSignals).filter((k) => cardNodes[k]);
+  const resolvedCards = resolveStatCards(availableCards, cardPrefs ?? []);
 
   const isEmpty = uploads.length === 0;
 
@@ -143,10 +169,8 @@ export default async function DashboardHome() {
 
         <VoiceChat />
 
-        {contextSurface ? <ContextSurface surface={contextSurface} /> : null}
-
-        {healthToday || ritualsToday ? (
-          <HealthStatCard data={healthToday} rituals={ritualsToday} />
+        {ctx && resolvedCards.length > 0 ? (
+          <DashboardCards initial={resolvedCards} nodes={cardNodes} />
         ) : null}
 
         <QuickActions />

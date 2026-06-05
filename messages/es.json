@@ -1228,5 +1228,24 @@
     "replay": "Reproducir de nuevo",
     "speaking": "Hablando...",
     "privacy": "Tu grabación se envía para convertir el habla en texto y luego se descarta. Las respuestas se reproducen en voz alta y se muestran como texto. Por ahora Oria responde por voz; actuar por voz llegará más adelante."
+  },
+  "dashboardCards": {
+    "title": "Tu día",
+    "customize": "Personalizar",
+    "done": "Listo",
+    "move_up": "Subir",
+    "move_down": "Bajar",
+    "show": "Mostrar",
+    "hide": "Ocultar",
+    "card_context": "Resumen",
+    "card_health": "Salud",
+    "card_net_worth": "Patrimonio neto",
+    "card_agenda": "Agenda",
+    "card_spend": "Gastos",
+    "card_subscriptions": "Suscripciones",
+    "net_worth_eyebrow": "Patrimonio neto",
+    "net_worth_label": "en tus cuentas",
+    "net_worth_tap": "Toca para ver el detalle.",
+    "net_worth_insight": "{assets} en activos, {debts} en deudas."
   }
 }

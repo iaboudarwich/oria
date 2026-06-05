@@ -1228,5 +1228,24 @@
     "replay": "Réécouter",
     "speaking": "Lecture...",
     "privacy": "Votre enregistrement est envoyé pour être transcrit, puis supprimé. Les réponses sont lues à voix haute et affichées en texte. Oria répond par la voix pour l’instant ; agir par la voix viendra plus tard."
+  },
+  "dashboardCards": {
+    "title": "Votre journée",
+    "customize": "Personnaliser",
+    "done": "Terminé",
+    "move_up": "Monter",
+    "move_down": "Descendre",
+    "show": "Afficher",
+    "hide": "Masquer",
+    "card_context": "Aperçu",
+    "card_health": "Santé",
+    "card_net_worth": "Valeur nette",
+    "card_agenda": "Agenda",
+    "card_spend": "Dépenses",
+    "card_subscriptions": "Abonnements",
+    "net_worth_eyebrow": "Valeur nette",
+    "net_worth_label": "sur vos comptes",
+    "net_worth_tap": "Touchez pour voir le détail.",
+    "net_worth_insight": "{assets} d’actifs, {debts} de dettes."
   }
 }
