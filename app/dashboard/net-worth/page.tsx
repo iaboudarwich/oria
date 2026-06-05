@@ -5,7 +5,8 @@ import { WalletIcon } from "@/components/ui/icon";
 import { GlassCard } from "@/components/ui/glass-card";
 import { HeroNumber } from "@/components/ui/hero-number";
 import { Eyebrow } from "@/components/ui/eyebrow";
-import { AllocationDonut } from "@/components/finance/allocation-donut";
+import { AllocationDonut, KIND_LABEL, colorForKind } from "@/components/finance/allocation-donut";
+import { CardStack, CardStackItem } from "@/components/ui/card-stack";
 import { NetWorthChart, type NetWorthPoint } from "@/components/finance/net-worth-chart";
 import { ManualAssetsPanel } from "@/components/finance/manual-assets-panel";
 import {
@@ -109,6 +110,32 @@ export default async function NetWorthPage() {
                     centerLabel={t("assets")}
                     ariaLabel={t("allocation_aria")}
                   />
+                </div>
+                {/* Swipeable card-stack of the holdings, sibling objects you can
+                    swipe between (Round: surfaces). */}
+                <div className="mt-4">
+                  <CardStack ariaLabel={t("allocation")}>
+                    {slices.map((s) => (
+                      <CardStackItem key={s.kind} className="w-[55%] sm:w-[180px]">
+                        <div className="h-full rounded-2xl border border-line bg-surface p-4">
+                          <span className="flex items-center gap-2">
+                            <span
+                              aria-hidden
+                              className="inline-block h-2.5 w-2.5 rounded-sm"
+                              style={{ background: colorForKind(s.kind) }}
+                            />
+                            <span className="text-eyebrow">{KIND_LABEL[s.kind]}</span>
+                          </span>
+                          <p className="mt-2 text-[19px] font-semibold tabular-nums text-ink">
+                            {money(s.value, nw.currency)}
+                          </p>
+                          <p className="text-[12px] text-ink-faint tabular-nums">
+                            {Math.round(s.share * 100)}%
+                          </p>
+                        </div>
+                      </CardStackItem>
+                    ))}
+                  </CardStack>
                 </div>
               </GlassCard>
             ) : null}

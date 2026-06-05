@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { Eyebrow } from "@/components/ui/eyebrow";
-import { HeroNumber } from "@/components/ui/hero-number";
+import { ScoreRing } from "@/components/ui/score-ring";
 import { ArrowRightIcon } from "@/components/ui/icon";
 import { netBalance } from "@/lib/health/compute";
 import type { HealthToday } from "@/lib/daily/health-today";
@@ -22,6 +22,7 @@ export async function HealthStatCard({
   if (!data && !rituals) return null;
 
   const usesRecovery = data?.recoveryPct != null;
+  const score = usesRecovery ? data!.recoveryPct! : data?.sleepPct ?? null;
   const hero = usesRecovery
     ? t("today_recovery", { n: data!.recoveryPct! })
     : data?.sleepPct != null
@@ -50,17 +51,23 @@ export async function HealthStatCard({
           <ArrowRightIcon size={14} />
         </span>
       </div>
-      {hero ? <HeroNumber className="mt-1" value={hero} /> : null}
-      {balance ? (
-        <p className="mt-2 text-[13px] text-ink-muted tabular-nums">
-          {t("balance_title")}: {balance}
-        </p>
-      ) : null}
-      {rituals ? (
-        <p className="mt-1 text-[13px] text-ink-muted tabular-nums">
-          {t("today_rituals", { done: rituals.done, total: rituals.total })}
-        </p>
-      ) : null}
+      <div className="mt-2 flex items-center gap-4">
+        {score != null ? <ScoreRing score={score} size={68} /> : null}
+        <div className="min-w-0 space-y-1">
+          {/* Insight first (the words), the dial is the evidence beside it. */}
+          {hero ? <p className="text-[14px] text-ink">{hero}</p> : null}
+          {balance ? (
+            <p className="text-[13px] text-ink-muted tabular-nums">
+              {t("balance_title")}: {balance}
+            </p>
+          ) : null}
+          {rituals ? (
+            <p className="text-[13px] text-ink-muted tabular-nums">
+              {t("today_rituals", { done: rituals.done, total: rituals.total })}
+            </p>
+          ) : null}
+        </div>
+      </div>
     </Link>
   );
 }

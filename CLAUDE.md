@@ -885,4 +885,40 @@ Voice is a first-class way to use Oria, not a toy. The rules:
 
 ---
 
+## 26. Insight-led surfaces (Round: surface design)
+
+Every data surface (Health, Finance, Today) is built from one shared kit, so
+they read as one product, not one-off screens. The rules:
+
+- **Insight, then evidence, then detail.** A plain-language insight line on top
+  (what it means, in human words, never jargon), then the evidence (a number,
+  a ring, a chart), then the raw detail collapsed one tap away. This is the
+  `InsightCard` (`components/ui/insight-card.tsx`); the WHOOP "Voice of WHOOP"
+  ordering is the house style.
+- **Headline object, then contributors, then trend.** Lead with the headline
+  number/object (a recovery `ScoreRing`, a net worth figure, an account
+  balance), tap to the contributors, and let a 1 week / 1 month `TrendChart`
+  toggle (which reuses `ContextChart`) show the trajectory. Don't open on a
+  wall of sub-metrics.
+- **One meaning per color.** All status color goes through
+  `lib/ui/status-color.ts` (good=success, warn=warning, bad=claret, info=brand,
+  neutral=ink-faint). An accent never means two different things across surfaces.
+- **Merge what users mentally connect.** Pull siblings into one view (accounts
+  into net worth, the day's events + reminders into one agenda) rather than
+  scattering them. "Link third-party accounts into one view."
+- **Swipe between siblings.** Sibling objects (accounts, cards, metrics) live in
+  a `CardStack` (`components/ui/card-stack.tsx`, CSS scroll-snap), with
+  expand-in-place detail (the Accordion) and a Sheet for per-card actions.
+- **Saved-list views over a flat model.** Smart-List views (Today / Overdue /
+  Flagged / This week) are pure filters (`lib/views/saved-views.ts`) over the
+  existing flat reminder/event model. A view SURFACES items, it never owns them;
+  no new table per view.
+- **Tailored, user-owned dashboard.** The Today daily-stats are tailored per
+  archetype (`lib/daily/stat-cards.ts`, defaults from the 14.9 resolver), show
+  only cards with data behind them, and the user reorders / hides them
+  (persisted in `user_preferences.dashboard_cards`). Build the kit once, reuse
+  it everywhere; add no new dep for a one-off.
+
+---
+
 End of brief. Update this file when a principle changes, not when code changes.
