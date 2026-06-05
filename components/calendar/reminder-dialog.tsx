@@ -7,6 +7,7 @@ import { CloseIcon } from "@/components/ui/icon";
 import { MicButton } from "@/components/ui/mic-button";
 import { AutoGrowTextarea } from "@/components/ui/auto-grow-textarea";
 import { createReminder, updateReminder } from "@/lib/data/reminder-actions";
+import { useFocusNext } from "@/lib/hooks/use-focus-next";
 import type { Locale } from "@/i18n/config";
 
 export type ReminderInitial = {
@@ -50,6 +51,8 @@ export function ReminderFormModal({
   const [pending, startTransition] = useTransition();
   const [status, setStatus] = useState<"idle" | "saved" | "error" | "notime">("idle");
   const isEdit = mode === "edit";
+  // On open, bring the form into view and put focus in the title field.
+  const titleRef = useFocusNext<HTMLTextAreaElement>(true);
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -123,11 +126,11 @@ export function ReminderFormModal({
             </label>
             <div className="relative">
               <AutoGrowTextarea
+                ref={titleRef}
                 name="title"
                 value={title}
                 onChange={setTitle}
                 required
-                autoFocus
                 minRows={1}
                 maxRows={3}
                 placeholder={t("rd_what")}

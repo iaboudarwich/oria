@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { acknowledgeConnectPrivacy } from "@/lib/data/connect-privacy-actions";
+import { useFocusNext } from "@/lib/hooks/use-focus-next";
 import { CheckIcon, CloseIcon } from "@/components/ui/icon";
 
 /**
@@ -28,6 +29,9 @@ export function ConnectButton({
   const [open, setOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [pending, startTransition] = useTransition();
+  // Focus the primary "Continue" as each step appears, so it is never offscreen.
+  const confirmContinueRef = useFocusNext<HTMLButtonElement>(confirmOpen, { enabled: confirmOpen });
+  const privacyContinueRef = useFocusNext<HTMLButtonElement>(open, { enabled: open });
 
   function onClick(e: React.MouseEvent<HTMLAnchorElement>) {
     e.preventDefault();
@@ -92,6 +96,7 @@ export function ConnectButton({
                 {confirm.cancelLabel}
               </button>
               <button
+                ref={confirmContinueRef}
                 type="button"
                 onClick={go}
                 className="inline-flex h-9 items-center rounded-lg bg-ink px-3 text-[12.5px] font-medium text-surface transition-base hover:bg-ink-soft"
@@ -172,6 +177,7 @@ export function ConnectButton({
                 {t("cancel")}
               </button>
               <button
+                ref={privacyContinueRef}
                 type="button"
                 onClick={proceed}
                 disabled={pending}
