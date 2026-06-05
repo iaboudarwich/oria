@@ -53,6 +53,13 @@
     "rd_added": "Rappel ajouté. Il est maintenant sur votre calendrier.",
     "rd_error": "Nous n'avons pas pu enregistrer le rappel. Veuillez réessayer.",
     "rd_need_time": "Veuillez choisir une heure pour le rappel.",
+    "rd_edit_title": "Modifier le rappel",
+    "rd_update": "Enregistrer",
+    "rd_updated": "Rappel mis à jour.",
+    "ra_edit": "Modifier",
+    "ra_delete": "Supprimer",
+    "ra_delete_confirm": "Supprimer ?",
+    "ra_keep": "Garder",
     "adding_to": "Ajout à {space}"
   },
   "bills": {

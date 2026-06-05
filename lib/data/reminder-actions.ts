@@ -16,16 +16,15 @@ function parseDueDate(raw: string | null): string | null {
   return d.toISOString();
 }
 
-export async function createReminder(formData: FormData): Promise<void> {
-  const title = String(formData.get("title") ?? "").trim();
-  if (!title) return;
-
-  // The reminder's due time is the user's chosen date + time, interpreted in
-  // THEIR local timezone (the oria_tz cookie set on every dashboard visit), so
-  // 2pm means 2pm to them, never re-zoned through the server clock. We never
-  // silently default a missing time to "now" or start-of-day: a date without a
-  // usable time is refused (the forms make time required). A precise `due_at`
-  // instant from a caller that already computed one is honored as-is.
+/**
+ * The due instant from a reminder form. The user's date + time is interpreted
+ * in THEIR timezone (the oria_tz cookie), so 2pm means 2pm to them, never
+ * re-zoned through the server clock. There is NO silent fallback to now / 9am /
+ * midnight: a date with no usable time throws so the caller refuses rather than
+ * guess. A precise `due_at` instant from a caller is honored as-is. Shared by
+ * create + update so edited times follow the exact same corrected logic.
+ */
+async function resolveDueAtFromForm(formData: FormData): Promise<string | null> {
   const date = String(formData.get("date") ?? "").trim();
   const time = String(formData.get("time") ?? "").trim();
   const dueAtRaw = String(formData.get("due_at") ?? "").trim();
@@ -36,11 +35,17 @@ export async function createReminder(formData: FormData): Promise<void> {
     const tz = (await cookies()).get(getOriaTzCookieName())?.value ?? null;
     due_at = localDateTimeToISO(date, time, tz);
   }
-  // A date (or due_at) was given but produced no valid instant -> the time was
-  // empty or malformed. Refuse rather than guess.
   if ((date || dueAtRaw) && !due_at) {
     throw new Error("A reminder needs a date and time.");
   }
+  return due_at;
+}
+
+export async function createReminder(formData: FormData): Promise<void> {
+  const title = String(formData.get("title") ?? "").trim();
+  if (!title) return;
+
+  const due_at = await resolveDueAtFromForm(formData);
 
   const upload_id_raw = String(formData.get("upload_id") ?? "").trim();
   const upload_id = upload_id_raw || null;
@@ -80,11 +85,54 @@ export async function createReminder(formData: FormData): Promise<void> {
     .eq("created_by", ctx.profile.id);
   if ((reminderCount ?? 0) === 1) trackEvent("first_reminder_created");
 
-  // Narrow scope: calendar is the only surface that lists reminders.
-  // Hitting "/dashboard" used to invalidate the entire layout (sidebar
-  // chrome, sections list, etc.) which made the action feel heavy.
+  // Reflect on the Calendar agenda AND the Today home (its agenda reads the
+  // same reminders), plus the source upload's detail.
   revalidatePath("/dashboard/calendar");
+  revalidatePath("/dashboard");
   if (upload_id) revalidatePath(`/dashboard/uploads/${upload_id}`);
+}
+
+/**
+ * Edit a reminder: title, notes, and the due date+time (recomputed with the
+ * same timezone-correct, no-fallback logic as create). Scope-guarded to the
+ * user's spaces and audited. Reflects on Today, the Calendar agenda, and the
+ * source upload's detail.
+ */
+export async function updateReminder(formData: FormData): Promise<void> {
+  const id = String(formData.get("id") ?? "").trim();
+  if (!id) return;
+  const title = String(formData.get("title") ?? "").trim();
+  if (!title) return;
+  const notes = String(formData.get("notes") ?? "").trim().slice(0, 2000) || null;
+  const due_at = await resolveDueAtFromForm(formData);
+
+  const ctx = await requireContext();
+  const supabase = await createClient();
+  const allowedOrgIds = await allowedReminderOrgIds();
+  if (allowedOrgIds.length === 0) return;
+
+  const { data: row } = await supabase
+    .from("reminders")
+    .update({ title, notes, due_at })
+    .eq("id", id)
+    .in("organization_id", allowedOrgIds)
+    .select("organization_id, upload_id")
+    .maybeSingle();
+
+  await logAuditEvent({
+    userId: ctx.profile.id,
+    organizationId:
+      (row as { organization_id?: string } | null)?.organization_id ??
+      ctx.organization.id,
+    action: "reminder.updated",
+    resourceType: "reminder",
+    resourceId: id,
+  });
+
+  revalidatePath("/dashboard/calendar");
+  revalidatePath("/dashboard");
+  const up = (row as { upload_id?: string | null } | null)?.upload_id;
+  if (up) revalidatePath(`/dashboard/uploads/${up}`);
 }
 
 /**
@@ -120,6 +168,7 @@ export async function toggleReminderDone(formData: FormData): Promise<void> {
     .in("organization_id", allowedOrgIds);
 
   revalidatePath("/dashboard/calendar");
+  revalidatePath("/dashboard");
 }
 
 export async function deleteReminder(formData: FormData): Promise<void> {
@@ -174,6 +223,9 @@ export async function deleteReminder(formData: FormData): Promise<void> {
   }
 
   revalidatePath("/dashboard/calendar");
+  revalidatePath("/dashboard");
+  const up = (before as { upload_id?: string | null } | null)?.upload_id;
+  if (up) revalidatePath(`/dashboard/uploads/${up}`);
 }
 
 export async function confirmReminder(formData: FormData): Promise<void> {

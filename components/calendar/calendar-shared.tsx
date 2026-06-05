@@ -11,11 +11,8 @@ import {
   SparkIcon,
   WalletIcon,
 } from "@/components/ui/icon";
-import {
-  confirmReminder,
-  deleteReminder,
-} from "@/lib/data/reminder-actions";
 import { ReminderCheckbox } from "./reminder-checkbox";
+import { ReminderActions } from "./reminder-actions";
 import { parseEventWhen } from "@/lib/utils/event-when";
 import type {
   CalendarCategory,
@@ -297,32 +294,17 @@ export function CalendarRow({
         </div>
       </div>
 
-      {/* Hover actions: only for reminders. Items have no Keep/Delete here.
-       * To remove them, the user deletes the underlying upload. */}
+      {/* Edit + delete (and Keep for suggestions). Reminders only: items are
+       * removed by deleting the underlying upload. Always visible so it works
+       * on touch, not hover-only. */}
       {isReminder ? (
-        <div className="flex shrink-0 items-center gap-2 opacity-0 transition-opacity duration-150 group-hover:opacity-100 focus-within:opacity-100">
-          {suggested ? (
-            <form action={confirmReminder}>
-              <input type="hidden" name="id" value={rawId} />
-              <button
-                type="submit"
-                className="text-[11.5px] text-ink-muted hover:text-ink transition-base"
-              >
-                Keep
-              </button>
-            </form>
-          ) : null}
-          <form action={deleteReminder}>
-            <input type="hidden" name="id" value={rawId} />
-            <button
-              type="submit"
-              className="text-[11.5px] text-ink-faint hover:text-claret transition-base"
-              aria-label="Delete reminder"
-            >
-              Delete
-            </button>
-          </form>
-        </div>
+        <ReminderActions
+          id={rawId}
+          title={e.title}
+          notes={e.notes}
+          dueAtISO={e.due_at}
+          suggested={suggested}
+        />
       ) : null}
     </li>
   );
