@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useCallback, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { CloseIcon } from "@/components/ui/icon";
 import { MicButton } from "@/components/ui/mic-button";
 import { AutoGrowTextarea } from "@/components/ui/auto-grow-textarea";
+import { Sheet } from "@/components/ui/sheet";
 import { createReminder, updateReminder } from "@/lib/data/reminder-actions";
 import { useFocusNext } from "@/lib/hooks/use-focus-next";
 import type { Locale } from "@/i18n/config";
@@ -54,12 +54,13 @@ export function ReminderFormModal({
   // On open, bring the form into view and put focus in the title field.
   const titleRef = useFocusNext<HTMLTextAreaElement>(true);
 
-  useEffect(() => {
-    function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape" && !pending) onClose();
-    }
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
+  // The form lives in a bottom Sheet (vaul). Keep it mounted while it animates
+  // out: close requests flip sheetOpen, then onClose unmounts after the slide.
+  const [sheetOpen, setSheetOpen] = useState(true);
+  const requestClose = useCallback(() => {
+    if (pending) return;
+    setSheetOpen(false);
+    window.setTimeout(onClose, 220);
   }, [pending, onClose]);
 
   function onSubmit(formData: FormData) {
@@ -76,7 +77,7 @@ export function ReminderFormModal({
         else await createReminder(formData);
         setStatus("saved");
         router.refresh();
-        window.setTimeout(onClose, 1000);
+        window.setTimeout(requestClose, 800);
       } catch {
         setStatus("error");
       }
@@ -84,38 +85,14 @@ export function ReminderFormModal({
   }
 
   return (
-    <div
-      className="fixed inset-0 z-[60] flex items-end justify-center bg-ink/40 p-4 backdrop-blur-sm animate-fade-in sm:items-center"
-      role="dialog"
-      aria-modal="true"
-      aria-label={isEdit ? t("rd_edit_title") : t("rd_title")}
-      onClick={() => !pending && onClose()}
+    <Sheet
+      open={sheetOpen}
+      onOpenChange={(o) => {
+        if (!o) requestClose();
+      }}
+      title={isEdit ? t("rd_edit_title") : t("rd_title")}
+      description={!isEdit && scopeName ? t("adding_to", { space: scopeName }) : null}
     >
-      <div
-        className="w-full max-w-md rounded-2xl border border-line bg-surface-floating p-5 shadow-raised animate-fade-up"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="mb-4 flex items-start justify-between gap-3">
-          <div>
-            <h2 className="text-[15px] font-semibold text-ink">
-              {isEdit ? t("rd_edit_title") : t("rd_title")}
-            </h2>
-            {!isEdit && scopeName ? (
-              <p className="mt-0.5 text-[11.5px] text-ink-faint">
-                {t("adding_to", { space: scopeName })}
-              </p>
-            ) : null}
-          </div>
-          <button
-            type="button"
-            onClick={() => !pending && onClose()}
-            aria-label={t("rd_cancel")}
-            className="shrink-0 text-ink-faint transition-base hover:text-ink"
-          >
-            <CloseIcon size={16} />
-          </button>
-        </div>
-
         <form action={onSubmit} className="space-y-3">
           {isEdit && initial ? (
             <input type="hidden" name="id" value={initial.id} />
@@ -210,7 +187,7 @@ export function ReminderFormModal({
           <div className="flex items-center justify-end gap-2 pt-1">
             <button
               type="button"
-              onClick={() => !pending && onClose()}
+              onClick={requestClose}
               className="inline-flex h-9 items-center rounded-lg px-3 text-[12.5px] text-ink-muted transition-base hover:text-ink"
             >
               {t("rd_cancel")}
@@ -224,8 +201,7 @@ export function ReminderFormModal({
             </button>
           </div>
         </form>
-      </div>
-    </div>
+    </Sheet>
   );
 }
 

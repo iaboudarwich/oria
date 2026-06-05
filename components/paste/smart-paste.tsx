@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
+import { useOptimistic, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { AutoGrowTextarea } from "@/components/ui/auto-grow-textarea";
@@ -28,6 +28,12 @@ export function SmartPaste() {
   const [checking, setChecking] = useState(false);
   const [offer, setOffer] = useState<Offer | null>(null);
   const [filed, setFiled] = useState<string | null>(null);
+  // Instant "Added to X" the moment the user taps, reconciled in the background
+  // (React 19 useOptimistic). Reverts automatically if the save fails.
+  const [optimisticFiled, showOptimisticFiled] = useOptimistic<string | null, string>(
+    null,
+    (_, msg) => msg,
+  );
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const reqId = useRef(0);
@@ -62,10 +68,12 @@ export function SmartPaste() {
     const timezone =
       typeof Intl !== "undefined" ? Intl.DateTimeFormat().resolvedOptions().timeZone : "UTC";
     const nowISO = new Date().toISOString();
+    const confirmation = t("filed", { section: offer.sectionLabel });
     startTransition(async () => {
+      showOptimisticFiled(confirmation); // reflect immediately
       const res = await confirmPaste({ text: text.trim(), section: offer.section, timezone, nowISO });
       if (res.ok) {
-        setFiled(t("filed", { section: offer.sectionLabel }));
+        setFiled(confirmation);
         setOffer(null);
         setText("");
         router.refresh();
@@ -123,7 +131,9 @@ export function SmartPaste() {
           </div>
         ) : null}
 
-        {filed ? <p className="px-1 text-[12px] text-ink-muted">{filed}</p> : null}
+        {(optimisticFiled ?? filed) ? (
+          <p className="px-1 text-[12px] text-ink-muted">{optimisticFiled ?? filed}</p>
+        ) : null}
         {error ? <p className="px-1 text-[12px] text-claret">{error}</p> : null}
       </div>
     </section>
