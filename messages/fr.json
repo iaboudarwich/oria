@@ -1217,5 +1217,16 @@
     "note_ph": "Tapez ou collez n’importe quoi. Oria le classe.",
     "upload": "Importer un fichier",
     "reminder": "Ajouter un rappel"
+  },
+  "voiceChat": {
+    "title": "Parler à Oria",
+    "subtitle": "Touchez et demandez. Oria répond à voix haute.",
+    "you": "Vous",
+    "oria": "Oria",
+    "thinking": "Oria réfléchit...",
+    "error": "Désolé, cela n’a pas fonctionné. Réessayez.",
+    "replay": "Réécouter",
+    "speaking": "Lecture...",
+    "privacy": "Votre enregistrement est envoyé pour être transcrit, puis supprimé. Les réponses sont lues à voix haute et affichées en texte. Oria répond par la voix pour l’instant ; agir par la voix viendra plus tard."
   }
 }

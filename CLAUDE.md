@@ -853,4 +853,36 @@ reserved for the Round 19.5 voice button.
 
 ---
 
+## 25. Voice assistant (Round 19.5)
+
+Voice is a first-class way to use Oria, not a toy. The rules:
+
+- **v1 ANSWERS by voice; it does not act.** "Tap Oria and talk" on the Today
+  home: press-to-talk (tap to start, tap or release to stop), no wake word
+  (post-launch). Acting by voice (setting reminders, write-back) lands in
+  Round 21, and when it does it carries confirmation + undo, like every other
+  write-back. Until then, if the user asks Oria to DO something, it says plainly
+  that doing things by voice is coming soon and points to the manual control;
+  it never silently performs or pretends to.
+- **One STT path.** Speech-to-text reuses the existing Whisper pipeline
+  (`components/ui/mic-button.tsx` -> `/api/transcribe`). Never add a second STT.
+- **Speech-out is a fallback chain, never a dead mic.** Cloud TTS (OpenAI
+  `tts-1`, `/api/voice/tts`) on the SAME `OPENAI_API_KEY` Whisper uses (no new
+  provider/account/env) -> browser `SpeechSynthesis` -> text-only, and the
+  text-only fall-through records `voice.tts_unavailable` so a silent voice
+  surface is never invisible (the WHOOP "no invisible failures" rule).
+- **Answer text is ALWAYS shown alongside the audio** (accessibility, noisy
+  rooms, read-along), and the transcript of what Oria heard is shown too, so it
+  is never audio-only.
+- **Voice answers reuse the Ask data path** (`retrieveForQuery` + `streamAnswer`
+  with `voice: true`, `/api/voice/ask`), so the spoken answer reads the same
+  live schedule / bills / reminders / items / health Ask does. They are SHORT
+  and spoken-style (one or two sentences), generated with a voice phrasing, not
+  a wall of text read aloud.
+- **Privacy.** Raw audio is not persisted beyond transcription; a short line
+  near the mic says so. Any mic/listening animation respects
+  prefers-reduced-motion.
+
+---
+
 End of brief. Update this file when a principle changes, not when code changes.

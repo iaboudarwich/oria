@@ -54,6 +54,7 @@ import {
   Upload,
   User,
   Users,
+  Volume2,
   Wallet,
   X,
 } from "lucide-react";
@@ -167,6 +168,7 @@ export const PersonIcon = makeIcon(User, "PersonIcon", 16);
 export const GiftIcon = makeIcon(Gift, "GiftIcon", 16);
 export const PulseIcon = makeIcon(Activity, "PulseIcon", 14);
 export const MicIcon = makeIcon(Mic, "MicIcon", 14);
+export const SpeakerIcon = makeIcon(Volume2, "SpeakerIcon", 14);
 export const ChatIcon = makeIcon(MessageCircle, "ChatIcon", 14);
 export const StarIcon = makeIcon(Star, "StarIcon", 16);
 export const CameraIcon = makeIcon(Camera, "CameraIcon", 16);

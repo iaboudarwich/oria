@@ -1217,5 +1217,16 @@
     "note_ph": "Escribe o pega lo que sea. Oria lo archiva.",
     "upload": "Subir un archivo",
     "reminder": "Añadir un recordatorio"
+  },
+  "voiceChat": {
+    "title": "Habla con Oria",
+    "subtitle": "Toca y pregunta. Oria responde en voz alta.",
+    "you": "Tú",
+    "oria": "Oria",
+    "thinking": "Oria está pensando...",
+    "error": "Lo sentimos, no funcionó. Inténtalo de nuevo.",
+    "replay": "Reproducir de nuevo",
+    "speaking": "Hablando...",
+    "privacy": "Tu grabación se envía para convertir el habla en texto y luego se descarta. Las respuestas se reproducen en voz alta y se muestran como texto. Por ahora Oria responde por voz; actuar por voz llegará más adelante."
   }
 }

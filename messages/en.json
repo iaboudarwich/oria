@@ -1217,5 +1217,16 @@
     "note_ph": "Type or paste anything. Oria files it.",
     "upload": "Upload a file",
     "reminder": "Add a reminder"
+  },
+  "voiceChat": {
+    "title": "Talk to Oria",
+    "subtitle": "Tap and ask. Oria answers out loud.",
+    "you": "You",
+    "oria": "Oria",
+    "thinking": "Oria is thinking...",
+    "error": "Sorry, that did not work. Try again.",
+    "replay": "Play again",
+    "speaking": "Speaking...",
+    "privacy": "Your recording is sent to turn speech into text, then discarded. Answers play aloud and show as text. Oria answers by voice for now; acting by voice comes later."
   }
 }

@@ -66,6 +66,11 @@ EXAMPLE for a roll-up ("how much did I spend"):
 /** The full Ask base prompt: shared voice first, then Ask's content rules. */
 const BASE_RULES = `${VOICE_RULES}\n\n${ASK_CONTENT_RULES}`;
 
+// Voice mode addendum (Round 19.5). Appended when the answer will be SPOKEN
+// out loud, so it stays short and conversational, and so v1 declines to act.
+const VOICE_ADDENDUM = `VOICE MODE: You are being heard OUT LOUD, not read. Reply in ONE or TWO short, conversational sentences, the way a person would actually say it. No lists, no markdown, no bracket citations, no preamble. Lead with the answer. If there is nothing to report, say so warmly in one sentence.
+If the user asks you to DO something (set, change, or delete a reminder; send a message; add a calendar event; change a setting; export or share), do NOT do it this round. In one sentence, say you can answer by voice now and that doing things by voice is coming soon, and if it is obvious name where they can do it themselves (for example, "you can add that on the Calendar"). Never claim you did it.`;
+
 // ── Prompt-injection defence ──────────────────────────────────────────────────
 // Source documents are user-uploaded and untrusted. Any text inside a
 // <source_content> block must be treated as DATA ONLY, never as instructions.
@@ -202,6 +207,8 @@ export async function* streamAnswer(input: {
   onThinking?: (text: string) => void;
   /** Inline images (base64) attached to this question, for a multimodal ask. */
   images?: { mimeType: string; dataBase64: string }[];
+  /** Spoken answer: short, conversational, declines to act (Round 19.5). */
+  voice?: boolean;
 }): AsyncGenerator<string, void, unknown> {
   // Conversation surface: routed through the user's connected AI when active,
   // else Oria's default, with silent fallback (streamConversation).
@@ -234,12 +241,13 @@ export async function* streamAnswer(input: {
 
   const userMessage = `${dateHeader}\n\nSOURCES\n${sourceBlock}\n\nQUESTION\n${input.query}`;
 
-  const system = buildAskSystemPrompt(
+  let system = buildAskSystemPrompt(
     input.scope ?? null,
     input.spaceContext ?? null,
     input.personalContext ?? null,
     input.financeContext ?? null,
   );
+  if (input.voice) system = `${system}\n\n${VOICE_ADDENDUM}`;
 
   // When images are attached, the final user turn becomes a multimodal content
   // array: the text block first, then each inline image. Text-only questions
@@ -278,8 +286,9 @@ export async function* streamAnswer(input: {
       messages,
       options: {
         tier,
-        // Reasoning answers can run longer; give the final text more room.
-        maxTokens: tier === "reasoning" ? 1500 : 800,
+        // Reasoning answers can run longer; give the final text more room. A
+        // spoken answer is capped low so it stays a sentence or two.
+        maxTokens: input.voice ? 200 : tier === "reasoning" ? 1500 : 800,
         onUsage: (u) => {
           usedModel = u.model;
           usage = u.tokens;
