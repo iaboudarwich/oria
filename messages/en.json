@@ -82,7 +82,11 @@
     "ocal_desc": "Sync events from Outlook Calendar.",
     "onedrive_desc": "Index documents from OneDrive.",
     "banking_desc": "Track accounts and transactions.",
-    "whoop_desc": "Sleep, recovery, and strain."
+    "whoop_desc": "Sleep, recovery, and strain.",
+    "notice_admin_consent_title": "Your work or school account needs admin approval",
+    "notice_admin_consent_body": "A Microsoft work or school account needs an admin to approve Oria first. You can connect a personal Microsoft account instead, using the Outlook button below.",
+    "notice_outlook_failed": "Oria could not connect that Microsoft account. Please try again.",
+    "notice_outlook_unavailable": "Connecting Microsoft accounts is not available right now. Please try again later."
   },
   "settings_help": {
     "response_length": "How long Oria's answers run by default. Short for quick facts, long for detail.",

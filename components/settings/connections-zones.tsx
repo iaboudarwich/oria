@@ -108,6 +108,25 @@ export async function ConnectionsZones({
 
   return (
     <div className="space-y-12">
+      {/* Connect-outcome banner. The managed-tenant case (a Microsoft work or
+          school account that needs admin approval) gets a prominent plain
+          message + the personal-account path; raw Microsoft errors are never
+          shown. */}
+      {notice === "outlook_admin_consent" ? (
+        <div className="rounded-2xl border border-warning/40 bg-warning-soft px-4 py-3">
+          <p className="text-[13.5px] font-semibold text-ink">{t("notice_admin_consent_title")}</p>
+          <p className="mt-1 text-[12.5px] text-ink-muted">{t("notice_admin_consent_body")}</p>
+        </div>
+      ) : notice === "outlook_failed" ? (
+        <p className="rounded-xl border border-line bg-surface px-3 py-2 text-[12.5px] text-ink-muted">
+          {t("notice_outlook_failed")}
+        </p>
+      ) : notice === "outlook_unavailable" ? (
+        <p className="rounded-xl border border-line bg-surface px-3 py-2 text-[12.5px] text-ink-muted">
+          {t("notice_outlook_unavailable")}
+        </p>
+      ) : null}
+
       <section className="space-y-4">
         <p className="text-eyebrow">{t("connected")}</p>
         {anyConnected ? (

@@ -82,7 +82,11 @@
     "ocal_desc": "Synchronise les événements d'Outlook Calendar.",
     "onedrive_desc": "Indexe les documents de OneDrive.",
     "banking_desc": "Suivez comptes et transactions.",
-    "whoop_desc": "Sommeil, récupération et effort."
+    "whoop_desc": "Sommeil, récupération et effort.",
+    "notice_admin_consent_title": "Votre compte professionnel ou scolaire nécessite l’approbation d’un administrateur",
+    "notice_admin_consent_body": "Un compte Microsoft professionnel ou scolaire nécessite qu’un administrateur approuve Oria au préalable. Vous pouvez connecter un compte Microsoft personnel à la place, avec le bouton Outlook ci-dessous.",
+    "notice_outlook_failed": "Oria n’a pas pu connecter ce compte Microsoft. Veuillez réessayer.",
+    "notice_outlook_unavailable": "La connexion de comptes Microsoft n’est pas disponible pour le moment. Veuillez réessayer plus tard."
   },
   "settings_help": {
     "response_length": "La longueur par défaut des réponses d'Oria. Courte pour l'essentiel, longue pour le détail.",

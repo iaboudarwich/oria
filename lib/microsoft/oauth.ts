@@ -15,13 +15,26 @@ const GRAPH_ME = "https://graph.microsoft.com/v1.0/me";
 
 export type MicrosoftService = "mail" | "onedrive" | "calendar";
 
-const BASE_SCOPES = ["openid", "email", "profile", "offline_access"];
+// Minimal delegated scopes. offline_access yields a refresh token; User.Read
+// lets Graph /me resolve the account email. Kept lean to reduce the admin
+// consent a managed (work/school) tenant would require.
+const BASE_SCOPES = ["openid", "profile", "offline_access", "User.Read"];
 
 const SERVICE_SCOPES: Record<MicrosoftService, string[]> = {
   mail: ["Mail.Read"],
   onedrive: ["Files.Read"],
   calendar: ["Calendars.Read"],
 };
+
+/** Client credentials. The deploy env sets MS_CLIENT_ID / MS_CLIENT_SECRET;
+ *  the older MICROSOFT_CLIENT_ID / MICROSOFT_CLIENT_SECRET names still work so a
+ *  rename can never silently unconfigure the connector (the WHOOP lesson). */
+function msClientId(): string {
+  return process.env.MS_CLIENT_ID ?? process.env.MICROSOFT_CLIENT_ID ?? "";
+}
+function msClientSecret(): string {
+  return process.env.MS_CLIENT_SECRET ?? process.env.MICROSOFT_CLIENT_SECRET ?? "";
+}
 
 export function scopesForService(service: MicrosoftService): string[] {
   return [...BASE_SCOPES, ...SERVICE_SCOPES[service]];
@@ -45,7 +58,7 @@ export function microsoftRedirectUri(): string {
 }
 
 export function isMicrosoftOAuthConfigured(): boolean {
-  return !!process.env.MICROSOFT_CLIENT_ID && !!process.env.MICROSOFT_CLIENT_SECRET;
+  return !!msClientId() && !!msClientSecret();
 }
 
 /**
@@ -59,7 +72,7 @@ export function buildMicrosoftAuthUrl(input: {
   loginHint?: string | null;
 }): string {
   const params = new URLSearchParams({
-    client_id: process.env.MICROSOFT_CLIENT_ID ?? "",
+    client_id: msClientId(),
     response_type: "code",
     redirect_uri: microsoftRedirectUri(),
     response_mode: "query",
@@ -86,14 +99,22 @@ async function tokenRequest(body: Record<string, string>): Promise<MicrosoftToke
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({
-      client_id: process.env.MICROSOFT_CLIENT_ID ?? "",
-      client_secret: process.env.MICROSOFT_CLIENT_SECRET ?? "",
+      client_id: msClientId(),
+      client_secret: msClientSecret(),
       redirect_uri: microsoftRedirectUri(),
       ...body,
     }),
   });
   if (!res.ok) {
-    throw new Error(`Microsoft token request failed (${res.status})`);
+    let detail = "";
+    try {
+      detail = (await res.text()).slice(0, 300);
+    } catch {
+      detail = "";
+    }
+    // Carry the status + Microsoft's response body (an AADSTS code, never a
+    // secret) so the callback can log the precise token-exchange failure.
+    throw new Error(`Microsoft token request failed (${res.status}): ${detail}`);
   }
   const data = (await res.json()) as {
     access_token: string;

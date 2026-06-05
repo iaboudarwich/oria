@@ -82,7 +82,11 @@
     "ocal_desc": "مزامنة الأحداث من تقويم Outlook.",
     "onedrive_desc": "فهرسة المستندات من OneDrive.",
     "banking_desc": "تتبع الحسابات والمعاملات.",
-    "whoop_desc": "النوم والتعافي والجهد."
+    "whoop_desc": "النوم والتعافي والجهد.",
+    "notice_admin_consent_title": "يحتاج حساب العمل أو المدرسة إلى موافقة المسؤول",
+    "notice_admin_consent_body": "يحتاج حساب Microsoft للعمل أو المدرسة إلى موافقة مسؤول على أوريا أولًا. يمكنك ربط حساب Microsoft شخصي بدلًا من ذلك، باستخدام زر Outlook أدناه.",
+    "notice_outlook_failed": "تعذّر على أوريا ربط حساب Microsoft هذا. حاول مرة أخرى.",
+    "notice_outlook_unavailable": "ربط حسابات Microsoft غير متاح الآن. حاول مرة أخرى لاحقًا."
   },
   "settings_help": {
     "response_length": "الطول الافتراضي لإجابات Oria. قصيرة للمعلومات السريعة، طويلة للتفاصيل.",

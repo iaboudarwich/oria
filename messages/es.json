@@ -82,7 +82,11 @@
     "ocal_desc": "Sincroniza eventos de Outlook Calendar.",
     "onedrive_desc": "Indexa documentos de OneDrive.",
     "banking_desc": "Sigue cuentas y transacciones.",
-    "whoop_desc": "Sueño, recuperación y esfuerzo."
+    "whoop_desc": "Sueño, recuperación y esfuerzo.",
+    "notice_admin_consent_title": "Tu cuenta de trabajo o escuela necesita la aprobación de un administrador",
+    "notice_admin_consent_body": "Una cuenta de Microsoft de trabajo o escuela necesita que un administrador apruebe Oria primero. Puedes conectar una cuenta personal de Microsoft en su lugar, con el botón de Outlook de abajo.",
+    "notice_outlook_failed": "Oria no pudo conectar esa cuenta de Microsoft. Inténtalo de nuevo.",
+    "notice_outlook_unavailable": "La conexión de cuentas de Microsoft no está disponible ahora. Inténtalo más tarde."
   },
   "settings_help": {
     "response_length": "La longitud predeterminada de las respuestas de Oria. Corta para datos rápidos, larga para detalle.",
