@@ -1286,5 +1286,26 @@
     "make_private": "جعله خاصًا",
     "share_to": "المشاركة مع {circle}",
     "changed": "تم تحديث من يمكنه رؤيته."
+  },
+  "home": {
+    "morning": "صباح الخير، {name}",
+    "afternoon": "مساء الخير، {name}",
+    "evening": "مساء الخير، {name}",
+    "morning_plain": "صباح الخير",
+    "afternoon_plain": "مساء الخير",
+    "evening_plain": "مساء الخير",
+    "everything": "كل شيء في مكان واحد",
+    "talk_title": "تحدّث إلى Oria",
+    "talk_sub": "اسأل أي شيء، أو قله بصوتك",
+    "spaces_all": "كل المساحات"
+  },
+  "captureBar": {
+    "placeholder": "اكتب أو الصق أو أفلت أي شيء…",
+    "attach": "إرفاق ملف",
+    "send": "إرسال",
+    "adding": "جارٍ الإضافة…",
+    "added": "تمت الإضافة",
+    "drop_here": "أفلت للإضافة",
+    "failed": "تعذّر الرفع. حاول مرة أخرى."
   }
 }

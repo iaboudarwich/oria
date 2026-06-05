@@ -1,14 +1,13 @@
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { Topbar } from "@/components/dashboard/topbar";
 import { EmptyState } from "@/components/ui/empty-state";
 import { UploadIcon } from "@/components/ui/icon";
-import { DropzoneCompact } from "@/components/upload/dropzone-compact";
-import { SmartPaste } from "@/components/paste/smart-paste";
-import { VoiceChat } from "@/components/voice/voice-chat";
-import { SearchHero } from "@/components/dashboard/search-hero";
+import { CaptureBar } from "@/components/dashboard/capture-bar";
+import { SpaceChips, type SpaceChip } from "@/components/dashboard/space-chips";
+import { TalkCube } from "@/components/dashboard/talk-cube";
 import { TodayPulse } from "@/components/dashboard/today-pulse";
 import { SectionsGrid } from "@/components/dashboard/sections-grid";
-import { getCurrentContext } from "@/lib/data/organizations";
+import { getCurrentContext, listUserSpaces } from "@/lib/data/organizations";
 import {
   countUploadsBySection,
   listUploadsWithUploader,
@@ -24,11 +23,10 @@ import { TwoFactorPrompt } from "@/components/dashboard/two-factor-prompt";
 import { Hint } from "@/components/onboarding/hint";
 import { getSeenHintKeys } from "@/lib/data/onboarding";
 import { OnboardingRepromptBanner } from "@/components/dashboard/onboarding-reprompt-banner";
-import { QuickActions } from "@/components/dashboard/quick-actions";
 import { listUpcomingEvents } from "@/lib/google/calendar";
 import { UpcomingEventsStrip } from "@/components/cloud/upcoming-events-strip";
 import { cookies } from "next/headers";
-import { getOriaTzCookieName } from "@/lib/utils/tz";
+import { getOriaTzCookieName, getLocalParts } from "@/lib/utils/tz";
 import { loadDailyLoop } from "@/lib/daily/today-data";
 import { DailyLoop } from "@/components/dashboard/daily/daily-loop";
 import { loadContextSurface } from "@/lib/daily/context-surface";
@@ -45,10 +43,9 @@ import type { ReactNode } from "react";
 
 export default async function DashboardHome() {
   const t = await getTranslations("empty");
+  const th = await getTranslations("home");
+  const locale = await getLocale();
   const ctx = await getCurrentContext();
-  const greeting = ctx?.profile.full_name
-    ? `Hi, ${ctx.profile.full_name.split(" ")[0]}`
-    : "Hi";
 
   // Onboarding hints. evaluated server-side to avoid flash.
   const seenHints = await getSeenHintKeys();
@@ -101,6 +98,39 @@ export default async function DashboardHome() {
     cookieStore.get(getOriaTzCookieName())?.value ||
     ((ctx?.profile as Record<string, unknown> | undefined)?.timezone as string | undefined) ||
     null;
+
+  // Greeting: part-of-day from the user's local hour, in their language; the
+  // serif (Fraunces) renders it via the Topbar title. Subtitle = today's date
+  // (their timezone + locale) + the calm tagline.
+  const localHour = getLocalParts(now, tz).hour;
+  const partKey = (
+    localHour < 12 ? "morning" : localHour < 18 ? "afternoon" : "evening"
+  ) as "morning";
+  const firstName = ctx?.profile.full_name?.trim().split(/\s+/)[0] ?? null;
+  const greeting = firstName
+    ? th(partKey, { name: firstName })
+    : th(`${partKey}_plain` as "morning_plain");
+  const dateStr = now.toLocaleDateString(locale, {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    timeZone: tz || undefined,
+  });
+  const greetingSubtitle = `${dateStr} · ${th("everything")}`;
+
+  // Per-space switch chips (a re-lay-out of the sidebar SpaceSwitcher).
+  const spaces = ctx ? await listUserSpaces() : [];
+  const spaceChips: SpaceChip[] = spaces.map((s) => ({
+    id: s.organization.id,
+    kind: s.organization.kind,
+    label:
+      s.organization.kind === "personal"
+        ? "Personal"
+        : s.organization.kind === "office"
+          ? s.organization.name.replace(/workspace/gi, "Work")
+          : s.organization.name,
+  }));
+
   const [contextSurface, dailyLoop, healthToday, ritualsToday, netWorth, cardPrefs] = ctx
     ? await Promise.all([
         loadContextSurface(ctx.organization.id, ctx.organization, now),
@@ -145,11 +175,11 @@ export default async function DashboardHome() {
 
   return (
     <>
-      <Topbar title={greeting} />
+      <Topbar title={greeting} subtitle={greetingSubtitle} />
 
       {ctx ? <TwoFactorPrompt enrolled={!!mfaEnrolledAt} /> : null}
 
-      <div className="space-y-7 animate-fade-up">
+      <div className="space-y-6 animate-fade-up">
         {upcomingEvents.length > 0 ? (
           <UpcomingEventsStrip
             events={upcomingEvents.map((e) => ({
@@ -165,24 +195,30 @@ export default async function DashboardHome() {
           />
         ) : null}
         {showReprompt && ctx && <OnboardingRepromptBanner />}
-        <SearchHero />
 
-        <VoiceChat />
+        {/* ONE capture entry: type -> Ask, paste -> file, drop/attach -> upload,
+            mic -> voice. Replaces the old separate search / voice / paste /
+            dropzone stack. */}
+        <CaptureBar />
 
+        {spaceChips.length > 1 ? (
+          <SpaceChips spaces={spaceChips} activeId={ctx?.organization.id ?? ""} />
+        ) : null}
+
+        {/* "Your day": the tailored per-archetype tile grid (dials, rings,
+            sparklines), reorderable + show/hide via Customize. */}
         {ctx && resolvedCards.length > 0 ? (
           <DashboardCards initial={resolvedCards} nodes={cardNodes} />
         ) : null}
 
-        <QuickActions />
+        <TalkCube />
 
+        {/* Morning briefing. */}
         {dailyLoop && ctx ? (
           <DailyLoop data={dailyLoop} organizationId={ctx.organization.id} />
         ) : null}
 
-        <AddRow />
-
-        <SmartPaste />
-
+        {/* The day's real, time-bound agenda (reminders + connected events). */}
         <TodayPulse activeSpaceId={ctx?.organization.id ?? ""} tz={tz} />
 
         <InsightsCard insights={insights} />
@@ -218,8 +254,4 @@ export default async function DashboardHome() {
       />
     </>
   );
-}
-
-function AddRow() {
-  return <DropzoneCompact />;
 }

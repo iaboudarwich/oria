@@ -137,6 +137,9 @@ type AskChatProps = {
   spaceName?: string | null;
   /** The user's reasoning preference (controls the offer + button). */
   reasoningMode?: ReasoningMode;
+  /** Seed the composer (e.g. a question typed in the home capture bar and
+   *  handed off via ?q=). Pre-fills the input; the user still presses send. */
+  initialInput?: string;
 };
 
 /**
@@ -151,9 +154,10 @@ export function AskChat({
   recentQuestions = [],
   spaceName = null,
   reasoningMode = "auto",
+  initialInput = "",
 }: AskChatProps = {}) {
   const tr = useTranslations("ask");
-  const [input, setInput] = useState("");
+  const [input, setInput] = useState(initialInput);
   const [turns, setTurns] = useState<Turn[]>([]);
   const [busy, setBusy] = useState(false);
   const [crossSpace, setCrossSpace] = useState(false);

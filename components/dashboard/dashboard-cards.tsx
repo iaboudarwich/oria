@@ -102,12 +102,20 @@ export function DashboardCards({
           ))}
         </ul>
       ) : (
-        <div className="space-y-4">
+        // A WHOOP-style tile grid: the rich, layout-heavy cards (the per-context
+        // overview, the agenda, health) stay full width; the compact metric
+        // tiles (net worth, spend, subscriptions) pair up two-per-row on sm+.
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {visible.map((p) => (
-            <div key={p.key}>{nodes[p.key]}</div>
+            <div key={p.key} className={WIDE_CARDS.has(p.key) ? "sm:col-span-2" : ""}>
+              {nodes[p.key]}
+            </div>
           ))}
         </div>
       )}
     </section>
   );
 }
+
+/** Cards whose internal layout wants the full width; the rest pair up. */
+const WIDE_CARDS = new Set<StatCardKey>(["context", "agenda", "health"]);

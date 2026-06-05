@@ -1286,5 +1286,26 @@
     "make_private": "Make private",
     "share_to": "Share with {circle}",
     "changed": "Updated who can see this."
+  },
+  "home": {
+    "morning": "Good morning, {name}",
+    "afternoon": "Good afternoon, {name}",
+    "evening": "Good evening, {name}",
+    "morning_plain": "Good morning",
+    "afternoon_plain": "Good afternoon",
+    "evening_plain": "Good evening",
+    "everything": "everything in one place",
+    "talk_title": "Talk to Oria",
+    "talk_sub": "Ask anything, or just say it out loud",
+    "spaces_all": "All spaces"
+  },
+  "captureBar": {
+    "placeholder": "Type, paste, or drop anything…",
+    "attach": "Attach a file",
+    "send": "Send",
+    "adding": "Adding…",
+    "added": "Added",
+    "drop_here": "Drop to add",
+    "failed": "That did not upload. Try again."
   }
 }

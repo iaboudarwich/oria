@@ -1286,5 +1286,26 @@
     "make_private": "Rendre privé",
     "share_to": "Partager avec {circle}",
     "changed": "Qui peut le voir a été mis à jour."
+  },
+  "home": {
+    "morning": "Bonjour, {name}",
+    "afternoon": "Bon après-midi, {name}",
+    "evening": "Bonsoir, {name}",
+    "morning_plain": "Bonjour",
+    "afternoon_plain": "Bon après-midi",
+    "evening_plain": "Bonsoir",
+    "everything": "tout au même endroit",
+    "talk_title": "Parler à Oria",
+    "talk_sub": "Demandez n'importe quoi, ou dites-le à voix haute",
+    "spaces_all": "Tous les espaces"
+  },
+  "captureBar": {
+    "placeholder": "Écrivez, collez ou déposez n'importe quoi…",
+    "attach": "Joindre un fichier",
+    "send": "Envoyer",
+    "adding": "Ajout…",
+    "added": "Ajouté",
+    "drop_here": "Déposez pour ajouter",
+    "failed": "L'envoi a échoué. Réessayez."
   }
 }

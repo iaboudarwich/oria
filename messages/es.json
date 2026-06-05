@@ -1286,5 +1286,26 @@
     "make_private": "Hacer privado",
     "share_to": "Compartir con {circle}",
     "changed": "Se actualizó quién puede verlo."
+  },
+  "home": {
+    "morning": "Buenos días, {name}",
+    "afternoon": "Buenas tardes, {name}",
+    "evening": "Buenas noches, {name}",
+    "morning_plain": "Buenos días",
+    "afternoon_plain": "Buenas tardes",
+    "evening_plain": "Buenas noches",
+    "everything": "todo en un solo lugar",
+    "talk_title": "Habla con Oria",
+    "talk_sub": "Pregunta lo que sea, o dilo en voz alta",
+    "spaces_all": "Todos los espacios"
+  },
+  "captureBar": {
+    "placeholder": "Escribe, pega o suelta cualquier cosa…",
+    "attach": "Adjuntar un archivo",
+    "send": "Enviar",
+    "adding": "Añadiendo…",
+    "added": "Añadido",
+    "drop_here": "Suelta para añadir",
+    "failed": "No se pudo subir. Inténtalo de nuevo."
   }
 }

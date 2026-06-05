@@ -20,7 +20,13 @@ import type { Locale } from "@/i18n/config";
 
 export const metadata = { title: "Ask Oria" };
 
-export default async function AskPage() {
+export default async function AskPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
+  // A question typed in the home capture bar arrives as ?q=; seed the composer.
+  const initialInput = ((await searchParams)?.q ?? "").slice(0, 2000);
   const [ctx, spaces, recentQuestions] = await Promise.all([
     getCurrentContext(),
     listUserSpaces(),
@@ -85,6 +91,7 @@ export default async function AskPage() {
             suggestions={suggestions}
             spaceName={ctx?.organization.name ?? null}
             reasoningMode={reasoningMode}
+            initialInput={initialInput}
           />
           <PoweredBy provider={aiConnection?.provider ?? null} reasoning={reasoningMode === "always"} />
         </div>
