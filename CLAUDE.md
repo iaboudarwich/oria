@@ -708,6 +708,41 @@ record SURVIVES the org's own cascade (`audit_log.organization_id` is itself
 `user_id`. Proof without the UI: `node scripts/verify-workspace-delete.mjs`
 (temp office org + owned rows -> delete -> all gone).
 
+## 21. Low-friction sign-in: trusted devices (Round 16.7)
+
+**Persistent sessions are already handled by `proxy.ts`** (Next 16's middleware):
+it refreshes the Supabase session per page request and writes the rotated
+cookies, and the auth cookies are long-lived, so a returning user lands straight
+in across app closes / browser restarts. Sliding expiry is governed by the
+Supabase dashboard (JWT expiry + refresh-token rotation), not app code.
+
+**Trusted devices** (`lib/auth/trusted-device.ts`, table `trusted_devices`,
+migration 0077). After the second factor passes at sign-in, "Remember this
+device" stores a random secret in the httpOnly `oria_td` cookie and only its
+SHA-256 hash in the DB (the secret never reaches the DB). On later sign-ins, a
+matching non-expired, non-revoked row makes the second-factor gate SKIP. The
+skip is wired into all THREE decision points that gate on AAL2: the password
+action (`lib/auth/actions.ts`), the magic-link callback
+(`app/auth/callback/route.ts`), and the `/login/mfa` page guard. Trust expires
+(`TRUST_DAYS = 90`), is explicit (opt-in checkbox), and is revocable from
+Settings -> Security (`TrustedDevicesPanel` + `revokeTrustedDevice`); revoking
+the current device also clears its cookie. Audited `device.trusted` /
+`device.revoked`. The sign-in step-up is the plain, localized "Confirm it's you"
+(`auth.signin_2fa_*`, en/ar/fr/es), matching the password-reset step-up.
+
+**Not weakened:** the trusted-device cookie ONLY relaxes the LOGIN second-factor
+gate. Password reset (`/auth/reset`), 2FA disable, and session revoke still step
+up / re-auth exactly as before (none consult `isTrustedDevice`).
+
+**Deferred to a clean follow-up (judgment call, large round):**
+- Sensitive-action re-confirm step-up (export everything, delete workspace,
+  in-app password change which has no surface yet). The existing `oria_reauth`
+  HMAC window already protects 2FA-disable + session-revoke; wiring a dedicated
+  "Confirm it's you" re-confirm page to export/delete is the follow-up.
+- Passkeys (Face ID / fingerprint sign-in). Supabase has no simple drop-in
+  WebAuthn factor; a custom WebAuthn register/verify + credential store is a
+  focused piece better not rushed at the end of this round.
+
 ---
 
 End of brief. Update this file when a principle changes, not when code changes.
