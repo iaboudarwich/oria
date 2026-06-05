@@ -38,6 +38,8 @@ import { loadDailyLoop } from "@/lib/daily/today-data";
 import { DailyLoop } from "@/components/dashboard/daily/daily-loop";
 import { loadContextSurface } from "@/lib/daily/context-surface";
 import { ContextSurface } from "@/components/dashboard/context/context-surface";
+import { loadHealthToday } from "@/lib/daily/health-today";
+import { HealthStatCard } from "@/components/dashboard/health-stat-card";
 import type { Section } from "@/lib/supabase/types";
 
 export default async function DashboardHome() {
@@ -101,12 +103,13 @@ export default async function DashboardHome() {
     cookieStore.get(getOriaTzCookieName())?.value ||
     ((ctx?.profile as Record<string, unknown> | undefined)?.timezone as string | undefined) ||
     null;
-  const [contextSurface, dailyLoop] = ctx
+  const [contextSurface, dailyLoop, healthToday] = ctx
     ? await Promise.all([
         loadContextSurface(ctx.organization.id, ctx.organization, now),
         loadDailyLoop(ctx.profile.id, ctx.organization.id, tz, now),
+        loadHealthToday(ctx.profile.id, ctx.organization.id, tz, now),
       ])
-    : [null, null];
+    : [null, null, null];
 
   const isEmpty = uploads.length === 0;
 
@@ -146,6 +149,8 @@ export default async function DashboardHome() {
         <SearchHero />
 
         {contextSurface ? <ContextSurface surface={contextSurface} /> : null}
+
+        {healthToday ? <HealthStatCard data={healthToday} /> : null}
 
         <QuickActions />
 
