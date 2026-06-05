@@ -30,6 +30,8 @@ import {
   buildPersonalizationContext,
   personalContextBlock,
 } from "@/lib/ai/personalization";
+import { currentNetWorth } from "@/lib/data/net-worth";
+import { buildFinanceContextBlock } from "@/lib/ai/finance-context";
 import { sectionLabel } from "@/lib/sections-meta";
 import type { SpaceContext } from "@/lib/ai/agent";
 import type { SectionScope } from "@/lib/data/section-scope";
@@ -272,6 +274,16 @@ export async function POST(request: Request) {
     personalContext = null;
   }
 
+  // Finance context: the user's real net worth, so the 1% spending rule reasons
+  // from a true figure instead of guessing. Org-scoped; skipped when empty.
+  let financeContext: string | null = null;
+  try {
+    const nw = await currentNetWorth();
+    financeContext = buildFinanceContextBlock(nw);
+  } catch {
+    financeContext = null;
+  }
+
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
       try {
@@ -344,6 +356,7 @@ export async function POST(request: Request) {
           nowISO: new Date().toISOString(),
           spaceContext,
           personalContext,
+          financeContext,
           images,
           tier: useReasoning ? "reasoning" : "fast",
           reasoningTrigger,

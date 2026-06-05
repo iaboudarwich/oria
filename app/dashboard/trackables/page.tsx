@@ -5,6 +5,10 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { PulseIcon } from "@/components/ui/icon";
 import { listTrackables, daysUntilRenewal } from "@/lib/data/trackables";
 import type { Trackable } from "@/lib/data/trackables";
+import {
+  AddTrackableForm,
+  TrackableRowActions,
+} from "@/components/trackables/trackable-controls";
 
 export const metadata = { title: "Trackables" };
 export const dynamic = "force-dynamic";
@@ -18,12 +22,15 @@ const CATEGORY_LABELS: Record<string, string> = {
   id_document:   "ID Documents",
   contract:      "Contracts",
   warranty:      "Warranties",
+  goal:          "Goals",
+  wishlist:      "Wishlist",
   other:         "Other",
 };
 
 const CATEGORY_ORDER = [
   "insurance", "lease", "subscription", "membership",
-  "certification", "id_document", "contract", "warranty", "other",
+  "certification", "id_document", "contract", "warranty",
+  "goal", "wishlist", "other",
 ];
 
 function countdownBadge(days: number | null) {
@@ -80,6 +87,9 @@ export default async function TrackablesPage() {
     <>
       <Topbar title="Trackables" />
       <div className="animate-fade-up space-y-8">
+        <div className="flex justify-end px-1">
+          <AddTrackableForm />
+        </div>
         {trackables.length === 0 ? (
           <EmptyState
             icon={<PulseIcon size={22} />}
@@ -99,9 +109,10 @@ export default async function TrackablesPage() {
                   {items.map((t) => {
                     const days = daysUntilRenewal(t.renewal_date);
                     const cost = formatCost(t);
+                    const dimmed = t.status === "wont_do" ? "opacity-55" : "";
                     return (
                       <li key={t.id} className="px-4 py-3 hover:bg-canvas/60 transition-base">
-                        <div className="flex items-start gap-3">
+                        <div className={`flex items-start gap-3 ${dimmed}`}>
                           <div className="min-w-0 flex-1">
                             <div className="flex items-baseline gap-2 flex-wrap">
                               {t.source_upload_id ? (
@@ -135,6 +146,7 @@ export default async function TrackablesPage() {
                           </div>
                           {countdownBadge(days)}
                         </div>
+                        <TrackableRowActions trackable={t} />
                       </li>
                     );
                   })}

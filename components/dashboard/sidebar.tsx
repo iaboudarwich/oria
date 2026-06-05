@@ -83,6 +83,7 @@ const primaryAction: NavSpec = {
 const personalSecondaryNav: NavSpec[] = [
   { key: "uploads", href: "/dashboard/inbox", icon: InboxIcon },
   { key: "calendar", href: "/dashboard/calendar", icon: CalendarIcon },
+  { key: "networth", href: "/dashboard/net-worth", icon: WalletIcon },
   { key: "things", href: "/dashboard/things", icon: BoxIcon },
   { key: "trackables", href: "/dashboard/trackables", icon: CheckIcon },
 ];
@@ -95,6 +96,7 @@ const workSecondaryNav: NavSpec[] = [
   { key: "analysis", href: "/dashboard/work/analysis", icon: ChartIcon },
   { key: "uploads", href: "/dashboard/inbox", icon: InboxIcon },
   { key: "finance", href: "/dashboard/work/finance", icon: WalletIcon },
+  { key: "networth", href: "/dashboard/net-worth", icon: WalletIcon },
   { key: "contracts", href: "/dashboard/work/contracts", icon: ScalesIcon },
   { key: "invoices", href: "/dashboard/work/invoices", icon: DocumentIcon },
   { key: "calendar", href: "/dashboard/calendar", icon: CalendarIcon },

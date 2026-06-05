@@ -3,7 +3,8 @@ import { getAnthropic, getModel } from "@/lib/ai/anthropic";
 
 export type TrackableCategory =
   | "insurance" | "subscription" | "lease" | "membership"
-  | "certification" | "id_document" | "contract" | "warranty" | "other";
+  | "certification" | "id_document" | "contract" | "warranty"
+  | "wishlist" | "goal" | "other";
 
 export type TrackableDetectionResult = {
   is_trackable: boolean;
@@ -29,6 +30,9 @@ export const TRACKABLE_LEAD_DAYS: Record<TrackableCategory, number> = {
   membership:    30,
   warranty:      30,
   subscription:  14,
+  // Wishlist + goal have no renewal date; lead time is unused but kept defined.
+  wishlist:      30,
+  goal:          30,
   other:         30,
 };
 

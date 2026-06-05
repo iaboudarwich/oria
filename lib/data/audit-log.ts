@@ -136,6 +136,15 @@ export type AuditAction =
   // Pattern memory + privacy gate (Round 14.6)
   | "pattern.learned"
   | "privacy.connect_acknowledged"
+  // Net worth + manual holdings (Round 18)
+  | "manual_asset.created"
+  | "manual_asset.updated"
+  | "manual_asset.archived"
+  | "net_worth.snapshot_created"
+  // Trackables (Round 18: manual create + status/insight edits)
+  | "trackable.created"
+  | "trackable.updated"
+  | "trackable.archived"
   // Spaces
   | "space.deleted"
   // Trusted devices (Round 16.7)

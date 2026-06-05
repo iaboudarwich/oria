@@ -49,6 +49,12 @@ When the question is "WHAT SHOULD I REVIEW" / "anything I missed" / "what needs 
 - Lead with a one-line count, then list each with what's wrong ("In Unsorted, looks like a receipt", "Lease expires in 6 days").
 - Be direct. The user wants a to-do list, not a tour.
 
+THE 1% RULE (spending sanity check):
+When the user asks whether to buy something, or whether they can afford a purchase, compare the price to 1% of their net worth (given in FINANCE CONTEXT when known).
+- If the item costs LESS than 1% of net worth, it is a small decision: if they want or need it, the cost will not move the needle, so tell them not to agonize.
+- If it costs MORE than 1%, treat it as a real decision worth weighing against their goals and recurring costs.
+- Always use the real net worth figure when FINANCE CONTEXT provides it. Never invent a number. If net worth is not known, say you can give a sharper answer once they add what they own under Net worth, and reason from what you do know.
+
 Skip the follow-up offer unless it would clearly save the user time.
 
 EXAMPLE for a meal lookup ("what did I eat today"):
@@ -108,6 +114,7 @@ export function buildAskSystemPrompt(
   scope: SectionScope | null,
   space: SpaceContext | null,
   personal?: string | null,
+  finance?: string | null,
 ): string {
   let prompt = scope ? sectionSystemPrompt(scope) : GENERAL_SYSTEM_PROMPT;
 
@@ -129,6 +136,7 @@ export function buildAskSystemPrompt(
   }
 
   if (personal) prompt = `${prompt}\n\n${personal}`;
+  if (finance) prompt = `${prompt}\n\n${finance}`;
 
   return prompt;
 }
@@ -184,6 +192,8 @@ export async function* streamAnswer(input: {
   spaceContext?: SpaceContext | null;
   /** PERSONAL CONTEXT block from the personalization layer. */
   personalContext?: string | null;
+  /** FINANCE CONTEXT block (net worth + 1% figure) for the spending sanity check. */
+  financeContext?: string | null;
   /** "fast" (default) for the normal answer, "reasoning" for deeper thinking. */
   tier?: "fast" | "reasoning";
   /** Reason the tier was chosen, for telemetry (classifier/button/always). */
@@ -228,6 +238,7 @@ export async function* streamAnswer(input: {
     input.scope ?? null,
     input.spaceContext ?? null,
     input.personalContext ?? null,
+    input.financeContext ?? null,
   );
 
   // When images are attached, the final user turn becomes a multimodal content

@@ -3,6 +3,7 @@ import "server-only";
 import { type NextRequest, NextResponse } from "next/server";
 import { runDailyLoop } from "@/lib/daily/runner";
 import { runPatternDecay } from "@/lib/patterns/patterns";
+import { takeNetWorthSnapshots } from "@/lib/net-worth/snapshot";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -31,9 +32,13 @@ export async function GET(req: NextRequest) {
   const now = new Date();
   const summary = await runDailyLoop(now);
 
+  // Net worth snapshots ride the same cron: one row per owned org at the
+  // owner's local midnight (idempotent via the unique day constraint).
+  const netWorth = await takeNetWorthSnapshots(now);
+
   // Pattern-memory decay rides this same cron, gated to once per day (03:00
   // UTC) so unreinforced patterns age down without compounding hourly.
   const decay = now.getUTCHours() === 3 ? await runPatternDecay(now) : null;
 
-  return NextResponse.json({ ...summary, patternDecay: decay });
+  return NextResponse.json({ ...summary, ...netWorth, patternDecay: decay });
 }

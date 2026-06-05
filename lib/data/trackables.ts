@@ -7,6 +7,10 @@ import type { TrackableCategory } from "@/lib/ai/detect-trackable";
 export type TrackablePeriod =
   | "once" | "monthly" | "quarterly" | "semi_annually" | "annually";
 
+/** Lifecycle: active by default; wont_do retires a goal/wishlist item the user
+ *  decided against (kept, not deleted); done marks it achieved or bought. */
+export type TrackableStatus = "active" | "wont_do" | "done";
+
 export type Trackable = {
   id: string;
   organization_id: string;
@@ -22,6 +26,8 @@ export type Trackable = {
   cost_currency: string | null;
   cost_period: TrackablePeriod | null;
   summary: string | null;
+  status: TrackableStatus;
+  exclude_from_insights: boolean;
   details: Record<string, unknown>;
   created_by: string;
   created_at: string;
