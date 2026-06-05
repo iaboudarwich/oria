@@ -169,7 +169,10 @@ export default async function UploadDetailPage({ params }: Props) {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3 animate-fade-up">
-        <div className="lg:col-span-2">
+        {/* Shared-element target: the inbox row thumbnail morphs into this
+            preview during the View Transition (Round 16.9 Part 1). Only one
+            detail renders at a time, so the name is safe to reserve here. */}
+        <div className="lg:col-span-2" style={{ viewTransitionName: "upload-hero" }}>
           <Preview
             url={signedUrl}
             mime={upload.mime_type}

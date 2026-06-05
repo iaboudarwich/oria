@@ -36,6 +36,13 @@ const nextConfig: NextConfig = {
   // sitting in the corner.
   devIndicators: false,
   experimental: {
+    // Wrap App Router soft navigations in document.startViewTransition so the
+    // root view-transition CSS (app/globals.css) animates client-side route
+    // changes, not just full document loads. Progressive enhancement: browsers
+    // without the API navigate instantly, and the CSS is gated behind
+    // prefers-reduced-motion: no-preference, so reduced-motion users get an
+    // instant swap too. CSS-driven, no animation library (Round 16.9 Part 1).
+    viewTransition: true,
     serverActions: {
       // Headroom above the in-app per-file cap (see lib/data/upload-actions.ts).
       // Uploads larger than this never reach the Server Action; the user gets

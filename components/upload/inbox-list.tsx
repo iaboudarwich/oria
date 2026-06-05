@@ -97,13 +97,23 @@ export function InboxList({
               <Link
                 href={`/dashboard/uploads/${it.id}`}
                 className="flex min-w-0 flex-1 items-center gap-3"
+                onClick={(e) => {
+                  // Shared-element morph: name only the row being opened, so
+                  // exactly one old + one new element carry "upload-hero" during
+                  // the transition. Progressive enhancement; no-op where View
+                  // Transitions are unsupported.
+                  const thumb = e.currentTarget.querySelector<HTMLElement>("[data-vt-thumb]");
+                  if (thumb) thumb.style.viewTransitionName = "upload-hero";
+                }}
               >
-                <Thumbnail
-                  mime={it.mime_type}
-                  imageUrl={thumbs.get(it.id) ?? null}
-                  filename={it.filename}
-                  size={28}
-                />
+                <span data-vt-thumb className="inline-flex shrink-0">
+                  <Thumbnail
+                    mime={it.mime_type}
+                    imageUrl={thumbs.get(it.id) ?? null}
+                    filename={it.filename}
+                    size={28}
+                  />
+                </span>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-[13px] text-ink">
                     {it.title ?? it.filename}
