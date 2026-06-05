@@ -783,4 +783,35 @@ today" line shows on the Today health card when rituals are scheduled.
 
 ---
 
+## 23. Today home + reminder correctness
+
+**Today is the day, not an uploads feed.** The home is: the briefing (daily
+loop), the capture box (search + dropzone), the day's REAL time-bound items, and
+tailored daily stats (context surface, health/rituals). It is NEVER a raw
+"Recent uploads" list. The day's agenda (`components/dashboard/today-pulse.tsx`)
+shows ONLY genuine scheduled/due items: reminders the user set and events from a
+connected calendar (`CalendarEntry.kind` of `reminder` or `event`). An extracted
+`item` entry (a memory_item that merely carries an incidental `occurred_at`, e.g.
+a product photo, a receipt, a contact) must NEVER enter the agenda; those live on
+the full Calendar. The raw recent-uploads list lives on the Uploads tab
+(`/dashboard/inbox`), not the home.
+
+**Reminder time is the user's chosen local time, never silently defaulted.**
+`createReminder` builds `due_at` from the user's date + time interpreted in THEIR
+timezone (the `oria_tz` cookie, via `localDateTimeToISO` in `lib/utils/tz.ts`),
+not the server clock, and there is NO fallback to "now" or a 9am/midnight
+default: a date with no usable time is refused (the Add-reminder forms make time
+required, and the action throws rather than guess). Reminders are stored as real
+UTC instants and rendered in the viewer's local zone, so Today, the Calendar
+agenda, and the upload detail view all show the same time.
+
+**Today, Calendar, and Ask read reminders from one source.** Ask retrieves the
+live open/overdue reminders from the same table and scope (`allowedOrgIds`) the
+Calendar uses, ALWAYS (not gated by query keywords), so "what's my next
+reminder" surfaces the same reminder the Calendar shows, at the same time
+(`lib/ai/retrieve.ts`). A section-scoped Ask still skips reminders (they are not
+sectioned).
+
+---
+
 End of brief. Update this file when a principle changes, not when code changes.
