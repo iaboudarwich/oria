@@ -4,6 +4,11 @@ export function Skeleton({ className = "", style }: { className?: string; style?
   return <div className={`skeleton ${className}`} style={style} aria-hidden />;
 }
 
+/** A circular dial placeholder (mirrors a ScoreRing so dials don't shift in). */
+export function SkeletonRing({ size = 78 }: { size?: number }) {
+  return <Skeleton className="shrink-0 rounded-full" style={{ width: size, height: size }} />;
+}
+
 export function SkeletonList({ rows = 4 }: { rows?: number }) {
   return (
     <div className="space-y-2">

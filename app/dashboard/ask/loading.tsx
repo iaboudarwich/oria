@@ -1,5 +1,5 @@
-import { PageSkeleton } from "@/components/dashboard/page-skeleton";
+import { AskSkeleton } from "@/components/dashboard/surface-skeletons";
 
 export default function Loading() {
-  return <PageSkeleton rows={3} />;
+  return <AskSkeleton />;
 }
