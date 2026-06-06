@@ -1300,7 +1300,8 @@
     "view_flagged": "Marcados",
     "bucket_morning": "Mañana",
     "bucket_afternoon": "Tarde",
-    "bucket_evening": "Noche"
+    "bucket_evening": "Noche",
+    "flag_failed": "No se pudo actualizar la marca. Inténtalo de nuevo."
   },
   "voiceAct": {
     "confirm_reminder": "¿Crear un recordatorio para {when}: {title}?",

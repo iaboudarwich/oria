@@ -1300,7 +1300,8 @@
     "view_flagged": "Flagged",
     "bucket_morning": "Morning",
     "bucket_afternoon": "Afternoon",
-    "bucket_evening": "Evening"
+    "bucket_evening": "Evening",
+    "flag_failed": "Could not update the flag. Try again."
   },
   "voiceAct": {
     "confirm_reminder": "Set a reminder for {when}: {title}?",

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { AutoGrowTextarea } from "@/components/ui/auto-grow-textarea";
 import { MicButton } from "@/components/ui/mic-button";
+import { Tooltip } from "@/components/ui/tooltip";
 import { PaperclipIcon, SendIcon } from "@/components/ui/icon";
 import { uploadFile } from "@/lib/data/upload-actions";
 import { confirmPaste } from "@/lib/data/paste-actions";
@@ -182,28 +183,32 @@ export function CaptureBar() {
             e.target.value = "";
           }}
         />
-        <button
-          type="button"
-          onClick={() => inputRef.current?.click()}
-          aria-label={t("attach")}
-          className="transition-base flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-line bg-surface-3 text-ink-muted hover:text-ink"
-        >
-          <PaperclipIcon size={17} />
-        </button>
+        <Tooltip label={t("attach")}>
+          <button
+            type="button"
+            onClick={() => inputRef.current?.click()}
+            aria-label={t("attach")}
+            className="transition-base flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-line bg-surface-3 text-ink-muted hover:text-ink"
+          >
+            <PaperclipIcon size={17} />
+          </button>
+        </Tooltip>
         <MicButton
           size="md"
           onTranscribed={(tx) => setText((p) => (p ? `${p} ${tx}` : tx))}
           targetLanguage={locale}
         />
-        <button
-          type="button"
-          onClick={submit}
-          aria-label={t("send")}
-          disabled={!text.trim() || !!offer}
-          className="transition-base flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand text-accent-ink disabled:opacity-40"
-        >
-          <SendIcon size={17} />
-        </button>
+        <Tooltip label={t("send")}>
+          <button
+            type="button"
+            onClick={submit}
+            aria-label={t("send")}
+            disabled={!text.trim() || !!offer}
+            className="transition-base flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand text-accent-ink disabled:opacity-40"
+          >
+            <SendIcon size={17} />
+          </button>
+        </Tooltip>
       </div>
 
       {checking ? (

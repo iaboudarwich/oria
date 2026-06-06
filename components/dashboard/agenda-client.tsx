@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useOptimistic, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { ClockIcon, FlagIcon } from "@/components/ui/icon";
+import { Tooltip } from "@/components/ui/tooltip";
 import { setReminderFlagged } from "@/lib/data/reminder-actions";
 import {
   filterSavedView,
@@ -47,17 +48,36 @@ export function AgendaClient({
   const router = useRouter();
   const [view, setView] = useState<SavedViewKey>("today");
   const [pending, startTransition] = useTransition();
+  const [flagError, setFlagError] = useState(false);
 
-  const counts = savedViewCounts(items, nowISO, tz);
-  const shown = filterSavedView(items, view, nowISO, tz);
+  // Optimistic flag: the star flips the instant you click; the server confirms
+  // in the background. If it fails, useOptimistic reverts to the server truth
+  // (we don't refresh on failure) and a brief error shows. Flagging is a safe,
+  // own-data toggle, so no confirm step.
+  const [optItems, addFlag] = useOptimistic(
+    items,
+    (state, patch: { id: string; flagged: boolean }) =>
+      state.map((i) => (i.id === patch.id ? { ...i, flagged: patch.flagged } : i)),
+  );
+
+  const counts = savedViewCounts(optItems, nowISO, tz);
+  const shown = filterSavedView(optItems, view, nowISO, tz);
   const nowHour = getLocalParts(new Date(nowISO), tz).hour;
   const currentBucket = bucketForHour(nowHour);
 
   function toggleFlag(it: AgendaItem) {
     if (!it.reminderId) return;
+    setFlagError(false);
     startTransition(async () => {
-      await setReminderFlagged({ id: it.reminderId!, flagged: !it.flagged });
-      router.refresh();
+      addFlag({ id: it.id, flagged: !it.flagged });
+      const res = await setReminderFlagged({ id: it.reminderId!, flagged: !it.flagged });
+      if (res.ok) {
+        router.refresh();
+      } else {
+        // Leave the base unchanged so the optimistic flip reverts on settle.
+        setFlagError(true);
+        window.setTimeout(() => setFlagError(false), 3000);
+      }
     });
   }
 
@@ -81,16 +101,18 @@ export function AgendaClient({
           </span>
         </Link>
         {it.reminderId ? (
-          <button
-            type="button"
-            disabled={pending}
-            onClick={() => toggleFlag(it)}
-            aria-label={it.flagged ? t("unflag") : t("flag")}
-            aria-pressed={it.flagged}
-            className={`transition-base shrink-0 ${it.flagged ? "text-warning" : "text-ink-faint hover:text-ink"}`}
-          >
-            <FlagIcon size={13} />
-          </button>
+          <Tooltip label={it.flagged ? t("unflag") : t("flag")}>
+            <button
+              type="button"
+              disabled={pending}
+              onClick={() => toggleFlag(it)}
+              aria-label={it.flagged ? t("unflag") : t("flag")}
+              aria-pressed={it.flagged}
+              className={`transition-base shrink-0 ${it.flagged ? "text-warning" : "text-ink-faint hover:text-ink"}`}
+            >
+              <FlagIcon size={13} />
+            </button>
+          </Tooltip>
         ) : null}
       </div>
     </li>
@@ -107,6 +129,12 @@ export function AgendaClient({
           {t("open_calendar")}
         </Link>
       </div>
+
+      {flagError ? (
+        <p role="status" className="mb-2 px-1 text-[12px] text-down">
+          {t("flag_failed")}
+        </p>
+      ) : null}
 
       {/* Saved-view chips */}
       <div className="mb-3 flex flex-wrap gap-1.5">

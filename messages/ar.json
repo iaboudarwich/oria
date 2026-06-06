@@ -1300,7 +1300,8 @@
     "view_flagged": "المميَّزة",
     "bucket_morning": "الصباح",
     "bucket_afternoon": "بعد الظهر",
-    "bucket_evening": "المساء"
+    "bucket_evening": "المساء",
+    "flag_failed": "تعذّر تحديث العلامة. حاول مرة أخرى."
   },
   "voiceAct": {
     "confirm_reminder": "ضبط تذكير في {when}: {title}؟",

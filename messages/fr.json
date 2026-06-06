@@ -1300,7 +1300,8 @@
     "view_flagged": "Marqués",
     "bucket_morning": "Matin",
     "bucket_afternoon": "Après-midi",
-    "bucket_evening": "Soir"
+    "bucket_evening": "Soir",
+    "flag_failed": "Impossible de mettre à jour le marqueur. Réessayez."
   },
   "voiceAct": {
     "confirm_reminder": "Définir un rappel pour {when} : {title} ?",
