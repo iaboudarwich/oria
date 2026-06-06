@@ -9,6 +9,8 @@ import { ServiceWorkerRegister } from "@/components/pwa/sw-register";
 import { InstallPrompt } from "@/components/pwa/install-prompt";
 import { Analytics } from "@vercel/analytics/next";
 import { versionedIcon } from "@/lib/brand/icon-version";
+import { readAccent } from "@/lib/data/appearance-prefs";
+import { accentStyleCss } from "@/lib/appearance/accent";
 import "./globals.css";
 
 // UI + numbers. Hanken Grotesk has clean tabular figures (see globals.css).
@@ -80,6 +82,12 @@ export default async function RootLayout({
   const messages = await getMessages();
   const dir = isRtl(locale as Locale) ? "rtl" : "ltr";
 
+  // Accent (brand highlight) is injected from the per-user cookie as the FIRST
+  // thing in <body>, after the globals stylesheet, so it overrides the default
+  // --brand for both themes before paint (no flash), app-wide. Only brand vars;
+  // the semantic data colors are never touched here.
+  const accent = await readAccent();
+
   return (
     <html
       lang={locale}
@@ -88,6 +96,7 @@ export default async function RootLayout({
       className={`${hanken.variable} ${fraunces.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
       <body className="min-h-full bg-canvas text-ink">
+        <style id="oria-accent" dangerouslySetInnerHTML={{ __html: accentStyleCss(accent) }} />
         <ThemeProvider>
           <NextIntlClientProvider messages={messages}>
             <NavigationBreadcrumbs />

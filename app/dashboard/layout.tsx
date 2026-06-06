@@ -33,6 +33,7 @@ import { isCurrentUserAdmin } from "@/lib/data/admin";
 import { resolveThingsLabel } from "@/lib/data/things-label";
 import { dedupeSidebarSections } from "@/lib/sidebar/dedupe-sections";
 import { resolveSpaceTheme, themeCssVars } from "@/lib/data/space-theme";
+import { isHex6 } from "@/lib/appearance/accent";
 import { VersionWatcher } from "@/components/system/version-watcher";
 import { readMfaEnrolledAt } from "@/lib/auth/mfa";
 import { MfaBanner } from "@/components/dashboard/mfa-banner";
@@ -214,7 +215,15 @@ export default async function DashboardLayout({ children }: { children: ReactNod
   // Per-space theme: override the brand/shadow CSS vars on the dashboard
   // subtree so the whole UI adopts the active space's accent without any
   // client re-render (pure CSS cascade).
-  const themeVars = themeCssVars(resolveSpaceTheme(ctx.organization));
+  // The per-user accent (root layout, from the cookie) is the app-wide brand
+  // highlight. A space only overrides --brand when it set an EXPLICIT accent of
+  // its own (a circle/workspace identity); otherwise we leave the brand vars
+  // alone so the user's chosen accent shows through, instead of the old
+  // per-area default (which would mask the v3 mint / the user's pick).
+  const hasSpaceAccent = isHex6(ctx.organization.accent_color);
+  const themeVars = hasSpaceAccent
+    ? themeCssVars(resolveSpaceTheme(ctx.organization))
+    : {};
 
   return (
     <div

@@ -12,6 +12,17 @@
  * utilities scale together without breaking layout.
  */
 
+export const THEME_VALUES = ["dark", "light", "system"] as const;
+export type ThemePref = (typeof THEME_VALUES)[number];
+export const DEFAULT_THEME: ThemePref = "dark";
+
+/** Coerce any value to a valid theme preference, falling back to dark. */
+export function coerceTheme(v: unknown): ThemePref {
+  return (THEME_VALUES as readonly string[]).includes(v as string)
+    ? (v as ThemePref)
+    : DEFAULT_THEME;
+}
+
 export const DENSITY_VALUES = ["comfortable", "compact"] as const;
 export type Density = (typeof DENSITY_VALUES)[number];
 export const DEFAULT_DENSITY: Density = "comfortable";

@@ -41,8 +41,10 @@ import { LanguageSwitcher } from "@/components/settings/language-switcher";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { PushToggle } from "@/components/pwa/push-toggle";
 import { AppearancePanel } from "@/components/settings/appearance-panel";
+import { AppearanceControls } from "@/components/settings/appearance-controls";
 import { DisplayPanel } from "@/components/settings/display-panel";
-import { readAppearance } from "@/lib/data/appearance-prefs";
+import { readAppearance, readAccent } from "@/lib/data/appearance-prefs";
+import { DEFAULT_ACCENT } from "@/lib/appearance/accent";
 import { defaultAccentFor } from "@/lib/data/space-theme";
 import { PreferencesPanel } from "@/components/settings/preferences-panel";
 import { LearnedRulesPanel } from "@/components/settings/learned-rules-panel";
@@ -120,6 +122,7 @@ export default async function SettingsPage({
       : null;
   const timelineEnabled = extras.has("timeline");
   const appearance = tab === "appearance" ? await readAppearance() : null;
+  const accentValue = tab === "appearance" ? await readAccent() : DEFAULT_ACCENT;
 
   const visible = sections.filter((s) => !s.hidden);
   const total = sections.length;
@@ -199,6 +202,9 @@ export default async function SettingsPage({
           <div className="space-y-9">
             <section>
               <ScopeBadge tone="account" label={accountBadge} className="mb-3" />
+              <AppearanceControls initialAccent={accentValue} />
+            </section>
+            <section>
               {appearance ? (
                 <DisplayPanel
                   initialFontSize={appearance.fontSize}

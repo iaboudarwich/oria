@@ -10,9 +10,10 @@ import type { ReactNode } from "react";
  * <html> ("dark" or "light"). globals.css carries the dark palette on :root
  * (the default) and overrides to the warm light palette under `.light`.
  *
- * DARK is the product default (the home-target look). Light is an explicit
- * user toggle, not system-driven, so the app reads the same for everyone until
- * they choose otherwise; the choice persists in localStorage (next-themes).
+ * DARK is the product default (the home-target look). The user can choose
+ * Dark / Light / System in Settings -> Appearance; System follows the OS via
+ * prefers-color-scheme. The choice persists in localStorage (next-themes, the
+ * no-flash authority) and is also written to user_preferences for the record.
  * `suppressHydrationWarning` is on <html> in layout.tsx (required for
  * next-themes to avoid a flash of wrong theme).
  */
@@ -22,7 +23,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       attribute="class"
       defaultTheme="dark"
       themes={["dark", "light"]}
-      enableSystem={false}
+      enableSystem
       disableTransitionOnChange={false}
     >
       {children}
