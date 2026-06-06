@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
+import useSWR from "swr";
 
 const POLL_MS = 5 * 60 * 1000; // check every 5 minutes
 const IDLE_MS = 60 * 60 * 1000; // auto-refresh after 60 min idle
@@ -18,8 +19,18 @@ const IDLE_CHECK_MS = 60 * 1000; // re-evaluate the idle condition each minute
  *   the auto-refresh; the toast stays so the user can refresh when ready.
  */
 export function VersionWatcher({ buildVersion }: { buildVersion: string }) {
-  const [updateAvailable, setUpdateAvailable] = useState(false);
   const lastInteractionRef = useRef<number>(0);
+
+  // Standardized on the SWR client cache (Part 2): periodic background refresh
+  // via refreshInterval, deduped + revalidated on focus, instead of a
+  // hand-rolled setInterval. The version key is app-GLOBAL (no user/space
+  // dimension), so it is a plain key, not a scoped one.
+  const { data } = useSWR<{ version?: string } | null>(
+    "/api/version",
+    (url: string) => fetch(url, { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)),
+    { refreshInterval: POLL_MS, revalidateOnFocus: true },
+  );
+  const updateAvailable = !!(data?.version && buildVersion && data.version !== buildVersion);
 
   // Track the last meaningful interaction for the idle calculation.
   useEffect(() => {
@@ -33,29 +44,6 @@ export function VersionWatcher({ buildVersion }: { buildVersion: string }) {
       for (const e of events) window.removeEventListener(e, mark);
     };
   }, []);
-
-  // Poll for a newer deployment.
-  useEffect(() => {
-    let cancelled = false;
-    async function check() {
-      try {
-        const r = await fetch("/api/version", { cache: "no-store" });
-        if (!r.ok) return;
-        const data = (await r.json()) as { version?: string };
-        if (!cancelled && data.version && buildVersion && data.version !== buildVersion) {
-          setUpdateAvailable(true);
-        }
-      } catch {
-        // offline / transient; try again next tick
-      }
-    }
-    void check();
-    const id = window.setInterval(check, POLL_MS);
-    return () => {
-      cancelled = true;
-      window.clearInterval(id);
-    };
-  }, [buildVersion]);
 
   // Idle auto-refresh once an update is available and nothing is in flight.
   useEffect(() => {

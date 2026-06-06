@@ -32,6 +32,7 @@ import { dedupeSidebarSections } from "@/lib/sidebar/dedupe-sections";
 import { resolveSpaceTheme, themeCssVars } from "@/lib/data/space-theme";
 import { isHex6 } from "@/lib/appearance/accent";
 import { VersionWatcher } from "@/components/system/version-watcher";
+import { SwrProvider } from "@/components/providers/swr-provider";
 import { readMfaEnrolledAt } from "@/lib/auth/mfa";
 import { MfaBanner } from "@/components/dashboard/mfa-banner";
 import { BetaDisclaimerModal } from "@/components/dashboard/beta-disclaimer-modal";
@@ -231,43 +232,45 @@ export default async function DashboardLayout({ children }: { children: ReactNod
       <div className="living-bg" aria-hidden />
       <OrgThemeApplier variant={ctx.organization.theme_variant ?? null} />
       <TimezoneCookie />
-      <SidebarShell
-        initialCollapsed={sidebarMode === "collapsed"}
-        initialSectionsOpen={sectionsMode === "open"}
-        initialWidth={sidebarWidth}
-        sidebarProps={sidebarProps}
-      >
-        <MfaBanner ownsAnyWorkspace={ownsAnyWorkspace} mfaEnrolled={mfaEnrolled} />
-        {children}
-      </SidebarShell>
-      <CommandPalette
-        spaces={userSpaces.map((s) => ({
-          id: s.organization.id,
-          name: s.organization.name,
-          kind: s.organization.kind,
-        }))}
-      />
-      <FeatureTour
-        initialOpen={
-          !showReveal &&
-          !!(ctx.profile as unknown as { has_completed_guided_onboarding?: boolean })
-            .has_completed_guided_onboarding &&
-          !seenHints.has("feature_tour")
-        }
-      />
-      {showReveal ? (
-        <OnboardingReveal
-          name={(ctx.profile.full_name ?? ctx.profile.email ?? "").split(" ")[0].split("@")[0]}
-          gmailConnected={gmailConnections.length > 0}
+      <SwrProvider userId={ctx.profile.id} spaceId={ctx.organization.id}>
+        <SidebarShell
+          initialCollapsed={sidebarMode === "collapsed"}
+          initialSectionsOpen={sectionsMode === "open"}
+          initialWidth={sidebarWidth}
+          sidebarProps={sidebarProps}
+        >
+          <MfaBanner ownsAnyWorkspace={ownsAnyWorkspace} mfaEnrolled={mfaEnrolled} />
+          {children}
+        </SidebarShell>
+        <CommandPalette
+          spaces={userSpaces.map((s) => ({
+            id: s.organization.id,
+            name: s.organization.name,
+            kind: s.organization.kind,
+          }))}
         />
-      ) : null}
-      {showBetaDisclaimer ? <BetaDisclaimerModal /> : null}
-      <AiFallbackToast notice={aiNotice} />
-      <VersionWatcher
-        buildVersion={
-          process.env.VERCEL_GIT_COMMIT_SHA ?? process.env.VERCEL_DEPLOYMENT_ID ?? "dev"
-        }
-      />
+        <FeatureTour
+          initialOpen={
+            !showReveal &&
+            !!(ctx.profile as unknown as { has_completed_guided_onboarding?: boolean })
+              .has_completed_guided_onboarding &&
+            !seenHints.has("feature_tour")
+          }
+        />
+        {showReveal ? (
+          <OnboardingReveal
+            name={(ctx.profile.full_name ?? ctx.profile.email ?? "").split(" ")[0].split("@")[0]}
+            gmailConnected={gmailConnections.length > 0}
+          />
+        ) : null}
+        {showBetaDisclaimer ? <BetaDisclaimerModal /> : null}
+        <AiFallbackToast notice={aiNotice} />
+        <VersionWatcher
+          buildVersion={
+            process.env.VERCEL_GIT_COMMIT_SHA ?? process.env.VERCEL_DEPLOYMENT_ID ?? "dev"
+          }
+        />
+      </SwrProvider>
     </div>
   );
 }
