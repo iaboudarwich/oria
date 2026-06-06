@@ -255,8 +255,7 @@ export const ITEM_SCHEMA: Anthropic.Messages.Tool["input_schema"] = {
     },
     occurred_at: {
       type: ["string", "null"],
-      description:
-        "ISO 8601 datetime of the transaction/event, when unambiguous.",
+      description: "ISO 8601 datetime of the transaction/event, when unambiguous.",
     },
     location: { type: ["string", "null"] },
     payment_method: { type: ["string", "null"] },
@@ -274,8 +273,7 @@ export const ITEM_SCHEMA: Anthropic.Messages.Tool["input_schema"] = {
     },
     calories: {
       type: ["number", "null"],
-      description:
-        "Best-effort calorie estimate (kcal). Diet items only. Null when unknown.",
+      description: "Best-effort calorie estimate (kcal). Diet items only. Null when unknown.",
     },
     protein_g: {
       type: ["number", "null"],
@@ -373,9 +371,7 @@ export function getExtractionModel(): string {
   // the next option. `??` would treat "" as a real value and break model
   // selection if a deploy left a stale empty override.
   return (
-    process.env.ANTHROPIC_EXTRACTION_MODEL ||
-    process.env.ANTHROPIC_MODEL ||
-    "claude-sonnet-4-6"
+    process.env.ANTHROPIC_EXTRACTION_MODEL || process.env.ANTHROPIC_MODEL || "claude-sonnet-4-6"
   );
 }
 
@@ -413,9 +409,7 @@ export async function extractFromUpload(input: {
   const mime = input.mimeType ?? "";
 
   const admin = createAdminClient();
-  const { data: blob, error } = await admin.storage
-    .from("uploads")
-    .download(input.storagePath);
+  const { data: blob, error } = await admin.storage.from("uploads").download(input.storagePath);
   if (error || !blob) return { kind: "skipped", reason: "model_error" };
   const buffer = Buffer.from(await blob.arrayBuffer());
 
@@ -457,11 +451,7 @@ export async function extractFromUpload(input: {
         type: "image",
         source: {
           type: "base64",
-          media_type: mime as
-            | "image/png"
-            | "image/jpeg"
-            | "image/gif"
-            | "image/webp",
+          media_type: mime as "image/png" | "image/jpeg" | "image/gif" | "image/webp",
           data: buffer.toString("base64"),
         },
       },
@@ -602,7 +592,11 @@ Call store_extraction.`,
     toolUse.input as Record<string, unknown>,
     response.model,
     preExtracted
-      ? { rawText: preExtracted.text, extractionMethod: preExtracted.method, fileHash: preExtracted.fileHash }
+      ? {
+          rawText: preExtracted.text,
+          extractionMethod: preExtracted.method,
+          fileHash: preExtracted.fileHash,
+        }
       : undefined,
   );
   if (result.items.length === 0) {
@@ -621,16 +615,12 @@ export function normalize(
   opts?: { rawText?: string; extractionMethod?: string; fileHash?: string },
 ): ExtractionResult {
   const source_quality_notes =
-    typeof raw.source_quality_notes === "string"
-      ? raw.source_quality_notes
-      : null;
+    typeof raw.source_quality_notes === "string" ? raw.source_quality_notes : null;
 
   const itemsRaw = Array.isArray(raw.items) ? raw.items : [];
   const items: ExtractedItem[] = itemsRaw
     .map((it) =>
-      it && typeof it === "object"
-        ? normalizeItem(it as Record<string, unknown>)
-        : null,
+      it && typeof it === "object" ? normalizeItem(it as Record<string, unknown>) : null,
     )
     .filter((x): x is ExtractedItem => x !== null);
 
@@ -670,17 +660,13 @@ function normalizeItem(raw: Record<string, unknown>): ExtractedItem | null {
   const raw_text = typeof raw.raw_text === "string" ? raw.raw_text : "";
   const summary = typeof raw.summary === "string" ? raw.summary : null;
   const merchant = typeof raw.merchant === "string" ? raw.merchant : null;
-  const amount_value =
-    typeof raw.amount_value === "string" ? raw.amount_value : null;
-  const amount_currency =
-    typeof raw.amount_currency === "string" ? raw.amount_currency : null;
+  const amount_value = typeof raw.amount_value === "string" ? raw.amount_value : null;
+  const amount_currency = typeof raw.amount_currency === "string" ? raw.amount_currency : null;
   const amount_normalized =
     typeof raw.amount_normalized === "number" ? raw.amount_normalized : null;
-  const occurred_at =
-    typeof raw.occurred_at === "string" ? raw.occurred_at : null;
+  const occurred_at = typeof raw.occurred_at === "string" ? raw.occurred_at : null;
   const location = typeof raw.location === "string" ? raw.location : null;
-  const payment_method =
-    typeof raw.payment_method === "string" ? raw.payment_method : null;
+  const payment_method = typeof raw.payment_method === "string" ? raw.payment_method : null;
   const category = typeof raw.category === "string" ? raw.category : null;
   const items_purchased = Array.isArray(raw.items_purchased)
     ? raw.items_purchased.filter((s): s is string => typeof s === "string")
@@ -693,8 +679,7 @@ function normalizeItem(raw: Record<string, unknown>): ExtractedItem | null {
       ? raw.confidence
       : 0;
   const suggested_section =
-    typeof raw.suggested_section === "string" &&
-    SECTIONS.includes(raw.suggested_section as Section)
+    typeof raw.suggested_section === "string" && SECTIONS.includes(raw.suggested_section as Section)
       ? (raw.suggested_section as Section)
       : null;
 
@@ -706,8 +691,7 @@ function normalizeItem(raw: Record<string, unknown>): ExtractedItem | null {
   const protein_g = typeof raw.protein_g === "number" ? raw.protein_g : null;
   const carbs_g = typeof raw.carbs_g === "number" ? raw.carbs_g : null;
   const fat_g = typeof raw.fat_g === "number" ? raw.fat_g : null;
-  const is_recurring =
-    typeof raw.is_recurring === "boolean" ? raw.is_recurring : null;
+  const is_recurring = typeof raw.is_recurring === "boolean" ? raw.is_recurring : null;
   const recurring_interval =
     typeof raw.recurring_interval === "string" ? raw.recurring_interval : null;
   const direction: "inflow" | "outflow" | null =
@@ -813,4 +797,3 @@ export const AUTO_FILE_CONFIDENCE = 0.6;
 function spreadsheetToText(_buffer: Buffer): string | null {
   return null;
 }
-

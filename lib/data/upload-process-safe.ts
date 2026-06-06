@@ -3,12 +3,7 @@ import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { processUpload } from "./upload-intelligence";
 import { recordSystemEvent } from "./system-events";
-import {
-  createJob,
-  markJobCompleted,
-  markJobFailed,
-  markJobStarted,
-} from "./jobs";
+import { createJob, markJobCompleted, markJobFailed, markJobStarted } from "./jobs";
 
 /**
  * Wrap processUpload so a thrown exception in the background pass
@@ -34,10 +29,7 @@ import {
  * Scope is preserved by the orgId + uploadId we were handed at
  * schedule time.
  */
-export async function runProcessUploadSafely(
-  uploadId: string,
-  orgId: string,
-): Promise<void> {
+export async function runProcessUploadSafely(uploadId: string, orgId: string): Promise<void> {
   const jobId = await createJob({
     organizationId: orgId,
     kind: "upload.extract",
@@ -50,15 +42,11 @@ export async function runProcessUploadSafely(
     await processUpload(uploadId);
     await markJobCompleted(jobId);
   } catch (err) {
-    const message =
-      err instanceof Error ? err.message : "Background processing crashed";
+    const message = err instanceof Error ? err.message : "Background processing crashed";
     await markJobFailed(jobId, message);
     try {
       const supabase = createAdminClient();
-      await supabase
-        .from("uploads")
-        .update({ status: "failed" })
-        .eq("id", uploadId);
+      await supabase.from("uploads").update({ status: "failed" }).eq("id", uploadId);
       await recordSystemEvent({
         kind: "upload.failed",
         severity: "error",

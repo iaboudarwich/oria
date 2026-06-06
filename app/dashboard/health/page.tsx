@@ -3,11 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { Topbar } from "@/components/dashboard/topbar";
 import { requireContext } from "@/lib/data/organizations";
 import { listWhoopConnections } from "@/lib/whoop/connections";
-import {
-  listHealthMetrics,
-  kjToKcal,
-  type HealthMetric,
-} from "@/lib/data/health-data";
+import { listHealthMetrics, kjToKcal, type HealthMetric } from "@/lib/data/health-data";
 import { listDietMeals, sumMacros } from "@/lib/data/smart-sections";
 import { sameDayInTz } from "@/lib/utils/tz";
 import { HealthTabs, isHealthTab } from "@/components/health/health-tabs";
@@ -45,12 +41,12 @@ async function todayIntakeKcal(now: Date, tz: string): Promise<number | null> {
 }
 
 export default async function HealthPage({ searchParams }: Props) {
-  const sp: Record<string, string | string[] | undefined> = await (
-    searchParams ?? Promise.resolve({})
-  );
+  const sp: Record<string, string | string[] | undefined> = await (searchParams ??
+    Promise.resolve({}));
   const tabParam = typeof sp.tab === "string" ? sp.tab : undefined;
   const htype = typeof sp.htype === "string" ? sp.htype : undefined;
-  const whoopOutcome = sp.whoop === "connected" ? "connected" : sp.whoop === "error" ? "error" : null;
+  const whoopOutcome =
+    sp.whoop === "connected" ? "connected" : sp.whoop === "error" ? "error" : null;
   const active = isHealthTab(tabParam) ? tabParam : "body";
 
   const ctx = await requireContext();

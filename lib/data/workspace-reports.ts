@@ -71,9 +71,7 @@ export type WorkspaceReport = {
  * List reports for the active Workspace. Office orgs only; returns []
  * for personal/circle and on any DB error so the page renders cleanly.
  */
-export async function listWorkspaceReports(
-  limit = 20,
-): Promise<WorkspaceReport[]> {
+export async function listWorkspaceReports(limit = 20): Promise<WorkspaceReport[]> {
   const ctx = await requireContext();
   if (ctx.organization.kind !== "office") return [];
 
@@ -88,9 +86,7 @@ export async function listWorkspaceReports(
   return data as WorkspaceReport[];
 }
 
-export async function getWorkspaceReport(
-  id: string,
-): Promise<WorkspaceReport | null> {
+export async function getWorkspaceReport(id: string): Promise<WorkspaceReport | null> {
   const ctx = await requireContext();
   if (ctx.organization.kind !== "office") return null;
 

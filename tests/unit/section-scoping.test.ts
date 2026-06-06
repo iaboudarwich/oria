@@ -15,8 +15,24 @@ const CUSTOM_ROWS = [
   { id: "cs-b", organization_id: ORG_B, name: "Projects", icon: null, created_at: "2026-01-01" },
 ];
 const SETTINGS_ROWS = [
-  { id: "ss-a", organization_id: ORG_A, builtin_section: null, custom_section_id: "cs-a", sort_order: 5, hidden: false, custom_label: null },
-  { id: "ss-b", organization_id: ORG_B, builtin_section: null, custom_section_id: "cs-b", sort_order: 5, hidden: false, custom_label: null },
+  {
+    id: "ss-a",
+    organization_id: ORG_A,
+    builtin_section: null,
+    custom_section_id: "cs-a",
+    sort_order: 5,
+    hidden: false,
+    custom_label: null,
+  },
+  {
+    id: "ss-b",
+    organization_id: ORG_B,
+    builtin_section: null,
+    custom_section_id: "cs-b",
+    sort_order: 5,
+    hidden: false,
+    custom_label: null,
+  },
 ];
 
 let currentOrg = ORG_A;

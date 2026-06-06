@@ -37,12 +37,7 @@ function safeNext(value: string | null | undefined): string {
   return value;
 }
 
-function authError(
-  path: "/login" | "/signup",
-  message: string,
-  email?: string,
-  next?: string,
-) {
+function authError(path: "/login" | "/signup", message: string, email?: string, next?: string) {
   const params = new URLSearchParams({ error: message });
   if (email) params.set("email", email);
   if (next) params.set("next", next);
@@ -75,8 +70,7 @@ export async function signIn(formData: FormData) {
   // device skips the second-factor step (Round 16.7), so everyday returning
   // logins land straight in.
   const aal = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-  const hasSecondFactor =
-    aal.data?.nextLevel === "aal2" && aal.data.currentLevel === "aal1";
+  const hasSecondFactor = aal.data?.nextLevel === "aal2" && aal.data.currentLevel === "aal1";
 
   // Successful password step is logged here whether MFA follows or not;
   // the MFA gate logs its own success/failure on top.
@@ -180,9 +174,7 @@ export async function signInWithMagicLink(formData: FormData) {
  * a plain result object (not a redirect) so the client can run a cooldown
  * timer. Never reveals whether the address is registered.
  */
-export async function resendSignupEmail(
-  email: string,
-): Promise<{ ok: boolean }> {
+export async function resendSignupEmail(email: string): Promise<{ ok: boolean }> {
   const trimmed = email.trim();
   if (!trimmed) return { ok: false };
   const supabase = await createClient();

@@ -65,7 +65,11 @@ check("service worker controls the page", controlled);
 
 // 2. Client navigation works with the SW active.
 const nav = await page.goto(BASE + "/login", { waitUntil: "load" });
-check("navigation works with SW active", !!nav && nav.status() < 400, `/login -> ${nav && nav.status()}`);
+check(
+  "navigation works with SW active",
+  !!nav && nav.status() < 400,
+  `/login -> ${nav && nav.status()}`,
+);
 await page.goto(BASE, { waitUntil: "load" });
 
 // 2b. Installability (Chrome's own criteria; Lighthouse 13 removed the PWA
@@ -105,7 +109,9 @@ check("no /api responses cached", apiCached.length === 0, apiCached.join(", "));
 check(
   "only allow-listed static assets cached",
   offenders.length === 0,
-  offenders.length ? "offenders: " + offenders.join(", ") : `${allCached.length} entries all allow-listed`,
+  offenders.length
+    ? "offenders: " + offenders.join(", ")
+    : `${allCached.length} entries all allow-listed`,
 );
 
 // 4. Push. Headless Chromium has no FCM push service, so we cannot create a
@@ -163,9 +169,7 @@ try {
   const cdp = await context.newCDPSession(page);
   const regId = await new Promise(async (resolve) => {
     cdp.on("ServiceWorker.workerRegistrationUpdated", (e) => {
-      const r = (e.registrations || []).find(
-        (x) => x.scopeURL && x.scopeURL.startsWith(BASE),
-      );
+      const r = (e.registrations || []).find((x) => x.scopeURL && x.scopeURL.startsWith(BASE));
       if (r) resolve(r.registrationId);
     });
     await cdp.send("ServiceWorker.enable");
@@ -177,9 +181,12 @@ try {
       registrationId: regId,
       data: payload,
     });
-    const received = await page.waitForFunction(() => window.__pushReceived === true, null, {
-      timeout: 5000,
-    }).then(() => true).catch(() => false);
+    const received = await page
+      .waitForFunction(() => window.__pushReceived === true, null, {
+        timeout: 5000,
+      })
+      .then(() => true)
+      .catch(() => false);
     check("SW receives push and runs its handler", received);
   } else {
     check("SW receives push and runs its handler", false, "no registrationId");

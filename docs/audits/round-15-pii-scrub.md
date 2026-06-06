@@ -28,7 +28,7 @@ Reviewed all three. Already well-scrubbed; no changes needed:
   labels ("Navigated to /dashboard/calendar"). Contract forbids document/query
   content. No change.
 
-## Server logs (console.* -> Vercel runtime logs)
+## Server logs (console.\* -> Vercel runtime logs)
 
 Swept all 20 `console.*` sites in `app/` + `lib/`. Most are tagged error logs
 that interpolate an error name or a Supabase/infra error object (operational,

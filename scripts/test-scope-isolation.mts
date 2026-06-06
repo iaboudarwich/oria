@@ -58,22 +58,13 @@ const PROFILES: Profile[] = [
         id: "40ba99b8-4a1e-4e91-89f7-26aa34239a46",
         name: "Personal",
         kind: "personal",
-        fingerprints: [
-          "Itinerary.pdf",
-          "IMG_6318",
-          "Nour Abou Darwich Resume",
-        ],
+        fingerprints: ["Itinerary.pdf", "IMG_6318", "Nour Abou Darwich Resume"],
       },
       {
         id: "f3da0540-25bb-4bd3-8eca-2391a92aca6b",
         name: "Catalina Waterfront",
         kind: "office",
-        fingerprints: [
-          "Waterfront",
-          "Catalina Landing",
-          "Stacking Plan",
-          "Variance 2026",
-        ],
+        fingerprints: ["Waterfront", "Catalina Landing", "Stacking Plan", "Variance 2026"],
       },
     ],
   },
@@ -181,10 +172,7 @@ async function checkSurfaces(): Promise<Result> {
           );
           result.byDesign++;
         } else {
-          console.log(
-            `  ✗ ${surface} (${res.status}) PRIVACY LEAK:`,
-            leaks.join(", "),
-          );
+          console.log(`  ✗ ${surface} (${res.status}) PRIVACY LEAK:`, leaks.join(", "));
           result.failures.push(
             `${profile.email} @ ${activeOrg.name} → ${surface}: ${leaks.join("; ")}`,
           );
@@ -201,9 +189,7 @@ async function checkAsk(result: Result): Promise<void> {
   for (const profile of PROFILES) {
     for (const activeOrg of profile.orgs) {
       if (activeOrg.kind !== "office") continue;
-      console.log(
-        `\n--- Ask Oria @ ${activeOrg.name} (must NOT cite cross-org sources) ---`,
-      );
+      console.log(`\n--- Ask Oria @ ${activeOrg.name} (must NOT cite cross-org sources) ---`);
       const cookie = await mintCookie(profile.email, activeOrg.id);
       const askRes = await fetch(SITE + "/api/ask", {
         method: "POST",
@@ -248,8 +234,7 @@ async function checkAsk(result: Result): Promise<void> {
       } else {
         console.log("  ✗ PRIVACY LEAK:");
         for (const l of leaks) console.log("    -", l);
-        for (const l of leaks)
-          result.failures.push(`Ask @ ${activeOrg.name}: ${l}`);
+        for (const l of leaks) result.failures.push(`Ask @ ${activeOrg.name}: ${l}`);
         result.critical++;
       }
     }

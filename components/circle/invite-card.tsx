@@ -9,16 +9,8 @@ import {
   updateInviteAccess,
   type EmailOutcome,
 } from "@/lib/data/circle-actions";
-import {
-  ACCESS_LEVEL_BLURBS,
-  ACCESS_LEVEL_LABELS,
-} from "@/lib/data/access-labels";
-import {
-  CheckIcon,
-  ChevronDownIcon,
-  ChevronUpIcon,
-  CopyIcon,
-} from "@/components/ui/icon";
+import { ACCESS_LEVEL_BLURBS, ACCESS_LEVEL_LABELS } from "@/lib/data/access-labels";
+import { CheckIcon, ChevronDownIcon, ChevronUpIcon, CopyIcon } from "@/components/ui/icon";
 import { InviteResultCard } from "./invite-result-card";
 import { EmailStatusLine } from "./email-status-line";
 import type { AccessLevel, Invite } from "@/lib/supabase/types";
@@ -53,12 +45,8 @@ export function InviteCard({
   const [refreshing, startRefresh] = useTransition();
   const [codeCopied, setCodeCopied] = useState(false);
 
-  const allowedBuiltin = new Set(
-    allowlist.filter((r) => r.kind === "builtin").map((r) => r.key),
-  );
-  const allowedCustom = new Set(
-    allowlist.filter((r) => r.kind === "custom").map((r) => r.key),
-  );
+  const allowedBuiltin = new Set(allowlist.filter((r) => r.kind === "builtin").map((r) => r.key));
+  const allowedCustom = new Set(allowlist.filter((r) => r.kind === "custom").map((r) => r.key));
 
   const display = invite.display_name || invite.email;
   const initials = display
@@ -80,7 +68,7 @@ export function InviteCard({
   return (
     <li className="overflow-hidden rounded-2xl border border-line bg-surface-raised">
       <div className="flex items-center gap-3 px-3.5 py-3">
-        <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-canvas text-ink-soft text-[11.5px] font-semibold">
+        <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-canvas text-[11.5px] font-semibold text-ink-soft">
           {initials}
         </span>
         <div className="min-w-0 flex-1">
@@ -94,8 +82,7 @@ export function InviteCard({
           </p>
           <p className="truncate text-[11.5px] text-ink-faint">
             {invite.display_name ? `${invite.email} · ` : ""}
-            {ACCESS_LEVEL_LABELS[invite.access_level]} · invited{" "}
-            {relativeTime(invite.created_at)}
+            {ACCESS_LEVEL_LABELS[invite.access_level]} · invited {relativeTime(invite.created_at)}
           </p>
         </div>
 
@@ -103,7 +90,7 @@ export function InviteCard({
           type="button"
           onClick={copyCode}
           aria-label="Copy invite code"
-          className={`inline-flex h-8 items-center gap-1.5 rounded-lg border px-2.5 font-mono text-[11.5px] tracking-[0.08em] transition-base ${
+          className={`transition-base inline-flex h-8 items-center gap-1.5 rounded-lg border px-2.5 font-mono text-[11.5px] tracking-[0.08em] ${
             codeCopied
               ? "border-sage/30 bg-sage/10 text-[#3f5240]"
               : "border-line bg-canvas/40 text-ink-soft hover:border-line-strong hover:text-ink"
@@ -125,7 +112,7 @@ export function InviteCard({
           onClick={() => setOpen((v) => !v)}
           aria-expanded={open}
           aria-label={open ? "Hide details" : "Show details"}
-          className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-ink-muted transition-base hover:bg-canvas hover:text-ink"
+          className="transition-base inline-flex h-8 w-8 items-center justify-center rounded-lg text-ink-muted hover:bg-canvas hover:text-ink"
         >
           {open ? <ChevronUpIcon size={14} /> : <ChevronDownIcon size={14} />}
         </button>
@@ -142,10 +129,7 @@ export function InviteCard({
           ) : null}
 
           <div className="mt-3 flex flex-wrap items-center gap-1.5">
-            <SmallButton
-              onClick={() => setEditing((v) => !v)}
-              active={editing}
-            >
+            <SmallButton onClick={() => setEditing((v) => !v)} active={editing}>
               {editing ? "Close" : "Edit access"}
             </SmallButton>
             <SmallButton
@@ -156,8 +140,7 @@ export function InviteCard({
                 startResend(async () => {
                   const result = await resendInvite(fd);
                   if (result.ok) setResendOutcome(result.data.emailOutcome);
-                  else
-                    setResendOutcome({ status: "failed", reason: result.error });
+                  else setResendOutcome({ status: "failed", reason: result.error });
                 });
               }}
             >
@@ -189,7 +172,7 @@ export function InviteCard({
               <input type="hidden" name="id" value={invite.id} />
               <button
                 type="submit"
-                className="inline-flex h-7 items-center rounded-md px-2 text-[11.5px] text-ink-faint transition-base hover:bg-claret/10 hover:text-claret"
+                className="transition-base inline-flex h-7 items-center rounded-md px-2 text-[11.5px] text-ink-faint hover:bg-claret/10 hover:text-claret"
               >
                 Revoke
               </button>
@@ -227,7 +210,7 @@ function SmallButton({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`inline-flex h-7 items-center rounded-md border px-2.5 text-[11.5px] transition-base disabled:opacity-50 ${
+      className={`transition-base inline-flex h-7 items-center rounded-md border px-2.5 text-[11.5px] disabled:opacity-50 ${
         active
           ? "border-line-strong bg-canvas text-ink"
           : "border-line bg-surface text-ink-soft hover:border-line-strong hover:text-ink"
@@ -267,7 +250,7 @@ function EditAccessPanel({
         {(["full", "limited", "assigned"] as AccessLevel[]).map((lvl) => (
           <label
             key={lvl}
-            className="flex cursor-pointer items-start gap-2.5 rounded-lg border border-line bg-canvas/60 px-2.5 py-1.5 transition-base hover:border-line-strong has-[:checked]:border-ink has-[:checked]:bg-canvas"
+            className="transition-base flex cursor-pointer items-start gap-2.5 rounded-lg border border-line bg-canvas/60 px-2.5 py-1.5 hover:border-line-strong has-[:checked]:border-ink has-[:checked]:bg-canvas"
           >
             <input
               type="radio"
@@ -278,12 +261,8 @@ function EditAccessPanel({
               className="mt-0.5 h-3.5 w-3.5 accent-ink"
             />
             <span className="min-w-0">
-              <span className="block text-[12.5px] text-ink">
-                {ACCESS_LEVEL_LABELS[lvl]}
-              </span>
-              <span className="block text-[11px] text-ink-faint">
-                {ACCESS_LEVEL_BLURBS[lvl]}
-              </span>
+              <span className="block text-[12.5px] text-ink">{ACCESS_LEVEL_LABELS[lvl]}</span>
+              <span className="block text-[11px] text-ink-faint">{ACCESS_LEVEL_BLURBS[lvl]}</span>
             </span>
           </label>
         ))}
@@ -307,7 +286,7 @@ function EditAccessPanel({
                 return (
                   <label
                     key={`${s.ref.kind}-${s.ref.key}`}
-                    className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1 transition-base hover:bg-canvas/60 has-[:checked]:bg-canvas"
+                    className="transition-base flex cursor-pointer items-center gap-2 rounded-md px-2 py-1 hover:bg-canvas/60 has-[:checked]:bg-canvas"
                   >
                     <input
                       type="checkbox"
@@ -327,7 +306,7 @@ function EditAccessPanel({
 
       <button
         type="submit"
-        className="inline-flex h-8 items-center rounded-lg bg-ink px-3 text-[12px] text-surface hover:bg-ink-soft transition-base"
+        className="transition-base inline-flex h-8 items-center rounded-lg bg-ink px-3 text-[12px] text-surface hover:bg-ink-soft"
       >
         Save changes
       </button>

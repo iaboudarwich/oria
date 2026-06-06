@@ -27,9 +27,7 @@ export function buildWeekSeries(
     const v = r[field];
     if (typeof v === "number" && !Number.isNaN(v)) byDate.set(r.metric_date, v);
   }
-  const todayStart = new Date(
-    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()),
-  );
+  const todayStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
   const out: Array<{ label: string; value: number }> = [];
   for (let i = 6; i >= 0; i--) {
     const d = new Date(todayStart.getTime() - i * DAY_MS);
@@ -56,9 +54,7 @@ export function buildDaySeries(
     const v = r[field];
     if (typeof v === "number" && !Number.isNaN(v)) byDate.set(r.metric_date, v);
   }
-  const todayStart = new Date(
-    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()),
-  );
+  const todayStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
   const out: Array<{ label: string; value: number }> = [];
   const weekly = days > 7;
   for (let i = days - 1; i >= 0; i--) {
@@ -110,10 +106,7 @@ export function formatSleepDuration(totalMinutes: number | null | undefined): st
  * positive = surplus. Null when either side is missing so the caller can show a
  * graceful partial state instead of a misleading number.
  */
-export function netBalance(
-  intakeKcal: number | null,
-  burnKcal: number | null,
-): number | null {
+export function netBalance(intakeKcal: number | null, burnKcal: number | null): number | null {
   if (intakeKcal === null || burnKcal === null) return null;
   return Math.round(intakeKcal - burnKcal);
 }

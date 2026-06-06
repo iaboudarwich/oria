@@ -43,18 +43,15 @@ export default async function WorkAgentPage() {
       <ReportPoller pending={hasPendingReport} />
 
       <p className="mb-6 max-w-2xl px-1 text-[13px] text-ink-muted">
-        Persistent operational AI for this Workspace. Knows your standing
-        context, reads everything you&apos;ve uploaded here, generates the
-        reports a careful analyst would.
+        Persistent operational AI for this Workspace. Knows your standing context, reads everything
+        you&apos;ve uploaded here, generates the reports a careful analyst would.
       </p>
 
-      <div className="grid gap-6 lg:grid-cols-3 animate-fade-up">
+      <div className="animate-fade-up grid gap-6 lg:grid-cols-3">
         <div className="min-w-0 space-y-6 lg:col-span-2">
           <section className="rounded-2xl border border-line bg-surface-raised p-4">
             <div className="mb-3 flex items-baseline justify-between px-1">
-              <h2 className="text-eyebrow">
-                Chat
-              </h2>
+              <h2 className="text-eyebrow">Chat</h2>
               <span className="text-[11.5px] text-ink-faint">
                 Scoped to {ctx.organization.name}
               </span>
@@ -64,9 +61,7 @@ export default async function WorkAgentPage() {
 
           <section>
             <div className="mb-2 flex items-baseline justify-between px-1">
-              <h2 className="text-eyebrow">
-                Reports
-              </h2>
+              <h2 className="text-eyebrow">Reports</h2>
               <span className="text-[11.5px] text-ink-faint">
                 {reports.length} {reports.length === 1 ? "report" : "reports"}
               </span>
@@ -84,15 +79,13 @@ export default async function WorkAgentPage() {
                   <li key={r.id}>
                     <Link
                       href={`/dashboard/work/agent/reports/${r.id}`}
-                      className="group flex items-start gap-3 rounded-xl border border-line bg-surface-raised px-4 py-3 transition-base hover:border-line-strong hover:bg-canvas/40"
+                      className="group transition-base flex items-start gap-3 rounded-xl border border-line bg-surface-raised px-4 py-3 hover:border-line-strong hover:bg-canvas/40"
                     >
                       <span className="mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-canvas text-ink-soft">
                         <ChartIcon size={14} />
                       </span>
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-[13.5px] text-ink">
-                          {r.title}
-                        </p>
+                        <p className="truncate text-[13.5px] text-ink">{r.title}</p>
                         <p className="mt-0.5 truncate text-[11.5px] text-ink-faint">
                           {r.kind} · {new Date(r.created_at).toLocaleString()}
                         </p>
@@ -138,15 +131,10 @@ function Suggestions() {
   ];
   return (
     <section>
-      <h2 className="mb-2 px-1 text-eyebrow">
-        Suggested
-      </h2>
+      <h2 className="text-eyebrow mb-2 px-1">Suggested</h2>
       <ul className="space-y-1 rounded-2xl border border-line bg-surface-raised p-3">
         {items.map((t, i) => (
-          <li
-            key={i}
-            className="rounded-md px-2 py-1.5 text-[12.5px] text-ink-muted"
-          >
+          <li key={i} className="rounded-md px-2 py-1.5 text-[12.5px] text-ink-muted">
             · {t}
           </li>
         ))}

@@ -30,7 +30,7 @@ export function ReextractButton({ uploadId }: { uploadId: string }) {
       <button
         type="button"
         onClick={() => setConfirming(true)}
-        className="inline-flex h-8 items-center gap-1.5 rounded-md border border-line-strong bg-surface-raised px-3 text-[12px] font-medium text-ink transition-base hover:border-ink-muted"
+        className="transition-base inline-flex h-8 items-center gap-1.5 rounded-md border border-line-strong bg-surface-raised px-3 text-[12px] font-medium text-ink hover:border-ink-muted"
       >
         <RotateIcon size={13} />
         Re-extract
@@ -41,15 +41,14 @@ export function ReextractButton({ uploadId }: { uploadId: string }) {
   return (
     <div className="flex flex-col gap-2 rounded-xl border border-line bg-canvas p-3">
       <p className="text-[12.5px] text-ink-soft">
-        Re-read this document from scratch? This re-runs the AI pipeline and may
-        use tokens.
+        Re-read this document from scratch? This re-runs the AI pipeline and may use tokens.
       </p>
       <div className="flex items-center gap-2">
         <button
           type="button"
           onClick={run}
           disabled={pending}
-          className="inline-flex h-8 items-center rounded-md bg-ink px-3 text-[12px] font-medium text-surface transition-base hover:bg-ink-soft disabled:opacity-50"
+          className="transition-base inline-flex h-8 items-center rounded-md bg-ink px-3 text-[12px] font-medium text-surface hover:bg-ink-soft disabled:opacity-50"
         >
           {pending ? "Starting..." : "Re-extract"}
         </button>
@@ -57,7 +56,7 @@ export function ReextractButton({ uploadId }: { uploadId: string }) {
           type="button"
           onClick={() => setConfirming(false)}
           disabled={pending}
-          className="text-[12px] text-ink-faint transition-base hover:text-ink"
+          className="transition-base text-[12px] text-ink-faint hover:text-ink"
         >
           Cancel
         </button>

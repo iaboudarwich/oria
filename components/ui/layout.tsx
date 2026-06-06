@@ -16,26 +16,64 @@ import type { ElementType, ReactNode } from "react";
 export type Space = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 8 | 10 | 12;
 
 const GAP: Record<Space, string> = {
-  0: "gap-0", 1: "gap-1", 2: "gap-2", 3: "gap-3", 4: "gap-4",
-  5: "gap-5", 6: "gap-6", 8: "gap-8", 10: "gap-10", 12: "gap-12",
+  0: "gap-0",
+  1: "gap-1",
+  2: "gap-2",
+  3: "gap-3",
+  4: "gap-4",
+  5: "gap-5",
+  6: "gap-6",
+  8: "gap-8",
+  10: "gap-10",
+  12: "gap-12",
 };
 const PAD: Record<Space, string> = {
-  0: "p-0", 1: "p-1", 2: "p-2", 3: "p-3", 4: "p-4",
-  5: "p-5", 6: "p-6", 8: "p-8", 10: "p-10", 12: "p-12",
+  0: "p-0",
+  1: "p-1",
+  2: "p-2",
+  3: "p-3",
+  4: "p-4",
+  5: "p-5",
+  6: "p-6",
+  8: "p-8",
+  10: "p-10",
+  12: "p-12",
 };
 const PADX: Record<Space, string> = {
-  0: "px-0", 1: "px-1", 2: "px-2", 3: "px-3", 4: "px-4",
-  5: "px-5", 6: "px-6", 8: "px-8", 10: "px-10", 12: "px-12",
+  0: "px-0",
+  1: "px-1",
+  2: "px-2",
+  3: "px-3",
+  4: "px-4",
+  5: "px-5",
+  6: "px-6",
+  8: "px-8",
+  10: "px-10",
+  12: "px-12",
 };
 const PADY: Record<Space, string> = {
-  0: "py-0", 1: "py-1", 2: "py-2", 3: "py-3", 4: "py-4",
-  5: "py-5", 6: "py-6", 8: "py-8", 10: "py-10", 12: "py-12",
+  0: "py-0",
+  1: "py-1",
+  2: "py-2",
+  3: "py-3",
+  4: "py-4",
+  5: "py-5",
+  6: "py-6",
+  8: "py-8",
+  10: "py-10",
+  12: "py-12",
 };
 const ALIGN: Record<"start" | "center" | "end" | "stretch", string> = {
-  start: "items-start", center: "items-center", end: "items-end", stretch: "items-stretch",
+  start: "items-start",
+  center: "items-center",
+  end: "items-end",
+  stretch: "items-stretch",
 };
 const JUSTIFY: Record<"start" | "center" | "end" | "between", string> = {
-  start: "justify-start", center: "justify-center", end: "justify-end", between: "justify-between",
+  start: "justify-start",
+  center: "justify-center",
+  end: "justify-end",
+  between: "justify-between",
 };
 const COLS: Record<2 | 3 | 4, string> = {
   2: "grid-cols-1 sm:grid-cols-2",
@@ -75,7 +113,13 @@ export function Cluster({
 }: Common & { gap?: Space; align?: keyof typeof ALIGN; justify?: keyof typeof JUSTIFY }) {
   return (
     <Tag
-      className={cx("flex flex-wrap", GAP[gap], ALIGN[align], justify && JUSTIFY[justify], className)}
+      className={cx(
+        "flex flex-wrap",
+        GAP[gap],
+        ALIGN[align],
+        justify && JUSTIFY[justify],
+        className,
+      )}
     >
       {children}
     </Tag>
@@ -104,12 +148,7 @@ export function Inset({
 }: Common & { pad?: Space; x?: Space; y?: Space }) {
   return (
     <Tag
-      className={cx(
-        pad != null && PAD[pad],
-        x != null && PADX[x],
-        y != null && PADY[y],
-        className,
-      )}
+      className={cx(pad != null && PAD[pad], x != null && PADX[x], y != null && PADY[y], className)}
     >
       {children}
     </Tag>

@@ -57,9 +57,7 @@ export type SectionEntry =
  * filtered out here. the source file still lives in the Uploads archive
  * (/dashboard/inbox), it just no longer needs review.
  */
-export async function listReviewUploads(
-  limit = 50,
-): Promise<UploadWithUploader[]> {
+export async function listReviewUploads(limit = 50): Promise<UploadWithUploader[]> {
   const ctx = await requireContext();
   const supabase = await createClient();
 
@@ -102,10 +100,7 @@ async function attachUploaders(uploads: Upload[]): Promise<UploadWithUploader[]>
   const uploaderIds = Array.from(
     new Set(uploads.map((u) => u.uploaded_by).filter((id): id is string => !!id)),
   );
-  const profileMap = new Map<
-    string,
-    Pick<Profile, "id" | "full_name" | "email">
-  >();
+  const profileMap = new Map<string, Pick<Profile, "id" | "full_name" | "email">>();
   if (uploaderIds.length > 0) {
     const { data: profiles } = await supabase
       .from("profiles")
@@ -118,7 +113,7 @@ async function attachUploaders(uploads: Upload[]): Promise<UploadWithUploader[]>
   }
   return uploads.map((u) => ({
     ...u,
-    uploader: u.uploaded_by ? profileMap.get(u.uploaded_by) ?? null : null,
+    uploader: u.uploaded_by ? (profileMap.get(u.uploaded_by) ?? null) : null,
   }));
 }
 
@@ -221,9 +216,7 @@ export async function listSectionEntries(
     // Belt and braces: only count as "orphan" if the parent upload's own
     // section doesn't match this section.
     const parentMatches =
-      ref.kind === "builtin"
-        ? u.section === ref.key
-        : u.custom_section_id === ref.key;
+      ref.kind === "builtin" ? u.section === ref.key : u.custom_section_id === ref.key;
     if (parentMatches) continue;
     orphanItems.push({
       kind: "item",
@@ -255,10 +248,7 @@ export async function listSectionEntries(
   }));
 
   return [...uploadEntries, ...orphanItems]
-    .sort(
-      (a, b) =>
-        new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
-    )
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
     .slice(0, limit);
 }
 

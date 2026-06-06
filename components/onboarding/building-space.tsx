@@ -13,7 +13,10 @@ function usePrefersReducedMotion(): boolean {
       mq.addEventListener("change", onChange);
       return () => mq.removeEventListener("change", onChange);
     },
-    () => typeof window !== "undefined" && !!window.matchMedia && window.matchMedia(REDUCED_QUERY).matches,
+    () =>
+      typeof window !== "undefined" &&
+      !!window.matchMedia &&
+      window.matchMedia(REDUCED_QUERY).matches,
     () => false,
   );
 }
@@ -73,7 +76,7 @@ export function BuildingSpace() {
           return (
             <li key={key} className="flex items-center gap-2.5">
               <span
-                className={`inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[10px] transition-base ${
+                className={`transition-base inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[10px] ${
                   done
                     ? "bg-brand text-surface"
                     : active
@@ -85,7 +88,7 @@ export function BuildingSpace() {
                 {done ? "✓" : ""}
               </span>
               <span
-                className={`text-[13.5px] transition-base ${
+                className={`transition-base text-[13.5px] ${
                   done || active ? "text-ink-soft" : "text-ink-faint"
                 }`}
               >
@@ -100,7 +103,9 @@ export function BuildingSpace() {
       <div className="h-1 w-full overflow-hidden rounded-full bg-line">
         <div
           className="h-full rounded-full bg-brand transition-[width] duration-700 ease-out"
-          style={{ width: `${((Math.min(stage, STAGE_KEYS.length - 1) + 1) / STAGE_KEYS.length) * 100}%` }}
+          style={{
+            width: `${((Math.min(stage, STAGE_KEYS.length - 1) + 1) / STAGE_KEYS.length) * 100}%`,
+          }}
         />
       </div>
     </div>

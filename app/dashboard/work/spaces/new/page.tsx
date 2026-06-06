@@ -26,7 +26,7 @@ export default async function NewWorkSpacePage() {
     <>
       <Topbar title="New Workspace" />
 
-      <div className="mx-auto max-w-xl animate-fade-up">
+      <div className="animate-fade-up mx-auto max-w-xl">
         <p className="mb-7 px-1 text-[13px] text-ink-muted">{t("intro")}</p>
 
         <form action={createWorkSpace} className="space-y-7">
@@ -43,14 +43,21 @@ export default async function NewWorkSpacePage() {
                     defaultChecked={i === 0}
                     className="peer sr-only"
                   />
-                  <span className="flex items-start gap-3 rounded-xl border border-line bg-canvas p-3 transition-base peer-checked:border-ink peer-checked:bg-surface-raised peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-ink hover:border-line-strong">
+                  <span className="transition-base flex items-start gap-3 rounded-xl border border-line bg-canvas p-3 peer-checked:border-ink peer-checked:bg-surface-raised peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-ink hover:border-line-strong">
                     <span className="mt-0.5 text-[16px]">{s.icon}</span>
                     <span>
-                      <span className="block text-[12.5px] font-medium text-ink">{t(s.labelKey)}</span>
-                      <span className="mt-0.5 block text-[11px] text-ink-faint">{t(s.descKey)}</span>
+                      <span className="block text-[12.5px] font-medium text-ink">
+                        {t(s.labelKey)}
+                      </span>
+                      <span className="mt-0.5 block text-[11px] text-ink-faint">
+                        {t(s.descKey)}
+                      </span>
                       <span className="mt-1.5 flex flex-wrap gap-1">
                         {seedSections(s.seedKey).map((sec) => (
-                          <span key={sec.name} className="rounded bg-line px-1.5 py-0.5 text-[10.5px] text-ink-faint">
+                          <span
+                            key={sec.name}
+                            className="rounded bg-line px-1.5 py-0.5 text-[10.5px] text-ink-faint"
+                          >
                             {sec.name}
                           </span>
                         ))}
@@ -62,7 +69,7 @@ export default async function NewWorkSpacePage() {
               {/* Blank option. */}
               <label className="relative cursor-pointer sm:col-span-2">
                 <input type="radio" name="template" value="custom" className="peer sr-only" />
-                <span className="flex items-center gap-3 rounded-xl border border-line bg-canvas px-3 py-2 transition-base peer-checked:border-ink peer-checked:bg-surface-raised hover:border-line-strong">
+                <span className="transition-base flex items-center gap-3 rounded-xl border border-line bg-canvas px-3 py-2 peer-checked:border-ink peer-checked:bg-surface-raised hover:border-line-strong">
                   <span className="text-[14px]">✨</span>
                   <span className="text-[12.5px] text-ink-muted">
                     <span className="font-medium text-ink">{t("blank")}</span> · {t("blank_desc")}
@@ -82,12 +89,15 @@ export default async function NewWorkSpacePage() {
               required
               maxLength={60}
               placeholder={NAME_EXAMPLES[0]}
-              className="block h-11 w-full rounded-xl border border-line-strong bg-surface-raised px-3.5 text-[16px] text-ink placeholder:text-ink-faint outline-none transition-base focus:border-ink"
+              className="transition-base block h-11 w-full rounded-xl border border-line-strong bg-surface-raised px-3.5 text-[16px] text-ink outline-none placeholder:text-ink-faint focus:border-ink"
               autoFocus
             />
             <ul className="mt-2 flex flex-wrap gap-1.5">
               {NAME_EXAMPLES.map((p) => (
-                <li key={p} className="rounded-full border border-line bg-canvas px-2.5 py-0.5 text-[11px] text-ink-muted">
+                <li
+                  key={p}
+                  className="rounded-full border border-line bg-canvas px-2.5 py-0.5 text-[11px] text-ink-muted"
+                >
                   {p}
                 </li>
               ))}
@@ -97,11 +107,14 @@ export default async function NewWorkSpacePage() {
           <div className="flex items-center gap-3 pt-1">
             <button
               type="submit"
-              className="inline-flex h-11 items-center rounded-xl bg-ink px-5 text-[13.5px] text-surface hover:bg-ink-soft transition-base"
+              className="transition-base inline-flex h-11 items-center rounded-xl bg-ink px-5 text-[13.5px] text-surface hover:bg-ink-soft"
             >
               {t("create")}
             </button>
-            <Link href="/dashboard" className="text-[13px] text-ink-muted hover:text-ink transition-base">
+            <Link
+              href="/dashboard"
+              className="transition-base text-[13px] text-ink-muted hover:text-ink"
+            >
               {t("cancel")}
             </Link>
           </div>

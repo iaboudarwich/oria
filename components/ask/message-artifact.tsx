@@ -33,7 +33,7 @@ function StatCard({ a }: { a: Extract<Artifact, { type: "stat_card" }> }) {
   return (
     <Shell>
       <p className="text-eyebrow">{a.label}</p>
-      <p className="mt-1 text-[28px] font-semibold leading-none tracking-tight text-ink tabular-nums">
+      <p className="mt-1 text-[28px] leading-none font-semibold tracking-tight text-ink tabular-nums">
         {a.value}
       </p>
       {a.sublabel ? <p className="mt-1.5 text-[12.5px] text-ink-muted">{a.sublabel}</p> : null}
@@ -60,34 +60,34 @@ function ChartCard({ a }: { a: Extract<Artifact, { type: "chart" }> }) {
         aria-label={a.caption ?? "chart"}
         preserveAspectRatio="none"
       >
-        {a.chartKind === "bar"
-          ? a.points.map((p, i) => {
-              const h = ((p.value - min) / span) * (H - PAD * 2);
-              const x = PAD + i * stepX + stepX * 0.18;
-              return (
-                <rect
-                  key={i}
-                  x={x}
-                  y={H - PAD - h}
-                  width={stepX * 0.64}
-                  height={Math.max(1, h)}
-                  rx={2}
-                  style={{ fill: "var(--brand)", opacity: 0.85 }}
-                />
-              );
-            })
-          : (
-              <polyline
-                points={a.points
-                  .map((p, i) => `${PAD + i * stepX + stepX / 2},${y(p.value)}`)
-                  .join(" ")}
-                fill="none"
-                style={{ stroke: "var(--brand)" }}
-                strokeWidth={2.5}
-                strokeLinejoin="round"
-                strokeLinecap="round"
+        {a.chartKind === "bar" ? (
+          a.points.map((p, i) => {
+            const h = ((p.value - min) / span) * (H - PAD * 2);
+            const x = PAD + i * stepX + stepX * 0.18;
+            return (
+              <rect
+                key={i}
+                x={x}
+                y={H - PAD - h}
+                width={stepX * 0.64}
+                height={Math.max(1, h)}
+                rx={2}
+                style={{ fill: "var(--brand)", opacity: 0.85 }}
               />
-            )}
+            );
+          })
+        ) : (
+          <polyline
+            points={a.points
+              .map((p, i) => `${PAD + i * stepX + stepX / 2},${y(p.value)}`)
+              .join(" ")}
+            fill="none"
+            style={{ stroke: "var(--brand)" }}
+            strokeWidth={2.5}
+            strokeLinejoin="round"
+            strokeLinecap="round"
+          />
+        )}
       </svg>
       <div aria-hidden className="mt-1 flex" style={{ paddingInline: `${(PAD / W) * 100}%` }}>
         {a.points.map((p, i) => (
@@ -112,7 +112,7 @@ function TableCard({ a }: { a: Extract<Artifact, { type: "table" }> }) {
           <thead>
             <tr className="border-b border-line">
               {a.columns.map((c, i) => (
-                <th key={i} className="px-2 py-1.5 text-start text-eyebrow text-ink-muted">
+                <th key={i} className="text-eyebrow px-2 py-1.5 text-start text-ink-muted">
                   {c}
                 </th>
               ))}
@@ -142,7 +142,7 @@ function ChecklistCard({ a }: { a: Extract<Artifact, { type: "checklist" }> }) {
   );
   return (
     <Shell>
-      {a.title ? <p className="mb-2 text-eyebrow">{a.title}</p> : null}
+      {a.title ? <p className="text-eyebrow mb-2">{a.title}</p> : null}
       <ul className="space-y-1.5">
         {a.items.map((it, i) => {
           const on = checked.has(i);
@@ -170,7 +170,9 @@ function ChecklistCard({ a }: { a: Extract<Artifact, { type: "checklist" }> }) {
                 >
                   ✓
                 </span>
-                <span className={`text-[13.5px] ${on ? "text-ink-faint line-through" : "text-ink-soft"}`}>
+                <span
+                  className={`text-[13.5px] ${on ? "text-ink-faint line-through" : "text-ink-soft"}`}
+                >
                   {it.text}
                 </span>
               </button>

@@ -26,30 +26,46 @@ describe("default scope", () => {
 
 describe("canViewItem (the RLS mirror, cross-circle isolation)", () => {
   it("a member of circle A sees circle A items", () => {
-    expect(canViewItem({ itemOrgId: CIRCLE_A, viewerId: MEMBER, viewerOrgIds: memberOrgIds })).toBe(true);
+    expect(canViewItem({ itemOrgId: CIRCLE_A, viewerId: MEMBER, viewerOrgIds: memberOrgIds })).toBe(
+      true,
+    );
   });
 
   it("a member of circle A CANNOT see circle B items", () => {
-    expect(canViewItem({ itemOrgId: CIRCLE_B, viewerId: MEMBER, viewerOrgIds: memberOrgIds })).toBe(false);
+    expect(canViewItem({ itemOrgId: CIRCLE_B, viewerId: MEMBER, viewerOrgIds: memberOrgIds })).toBe(
+      false,
+    );
   });
 
   it("a member CANNOT see the owner's PRIVATE items", () => {
-    expect(canViewItem({ itemOrgId: PERSONAL, viewerId: MEMBER, viewerOrgIds: memberOrgIds })).toBe(false);
+    expect(canViewItem({ itemOrgId: PERSONAL, viewerId: MEMBER, viewerOrgIds: memberOrgIds })).toBe(
+      false,
+    );
   });
 
   it("the owner sees the UNION of personal + every circle", () => {
-    expect(canViewItem({ itemOrgId: PERSONAL, viewerId: OWNER, viewerOrgIds: ownerOrgIds })).toBe(true);
-    expect(canViewItem({ itemOrgId: CIRCLE_A, viewerId: OWNER, viewerOrgIds: ownerOrgIds })).toBe(true);
-    expect(canViewItem({ itemOrgId: CIRCLE_B, viewerId: OWNER, viewerOrgIds: ownerOrgIds })).toBe(true);
+    expect(canViewItem({ itemOrgId: PERSONAL, viewerId: OWNER, viewerOrgIds: ownerOrgIds })).toBe(
+      true,
+    );
+    expect(canViewItem({ itemOrgId: CIRCLE_A, viewerId: OWNER, viewerOrgIds: ownerOrgIds })).toBe(
+      true,
+    );
+    expect(canViewItem({ itemOrgId: CIRCLE_B, viewerId: OWNER, viewerOrgIds: ownerOrgIds })).toBe(
+      true,
+    );
   });
 
   it("a creator always sees their own item even if not a current member", () => {
-    expect(canViewItem({ itemOrgId: CIRCLE_A, createdBy: MEMBER, viewerId: MEMBER, viewerOrgIds: [] })).toBe(true);
+    expect(
+      canViewItem({ itemOrgId: CIRCLE_A, createdBy: MEMBER, viewerId: MEMBER, viewerOrgIds: [] }),
+    ).toBe(true);
   });
 
   it("a REMOVED member immediately loses access (orgIds no longer include the circle)", () => {
     const removedOrgIds: string[] = []; // membership revoked
-    expect(canViewItem({ itemOrgId: CIRCLE_A, viewerId: MEMBER, viewerOrgIds: removedOrgIds })).toBe(false);
+    expect(
+      canViewItem({ itemOrgId: CIRCLE_A, viewerId: MEMBER, viewerOrgIds: removedOrgIds }),
+    ).toBe(false);
   });
 });
 
@@ -75,8 +91,13 @@ describe("orphan rule on circle delete", () => {
 describe("scope label", () => {
   it("maps to the plain-language key", () => {
     expect(scopeLabelKey({ kind: "private" })).toBe("scope_private");
-    expect(scopeLabelKey({ kind: "circle", circleId: CIRCLE_A, circleName: "Family", circleColor: null })).toBe(
-      "scope_circle",
-    );
+    expect(
+      scopeLabelKey({
+        kind: "circle",
+        circleId: CIRCLE_A,
+        circleName: "Family",
+        circleColor: null,
+      }),
+    ).toBe("scope_circle");
   });
 });

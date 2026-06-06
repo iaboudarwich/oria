@@ -116,7 +116,7 @@ export function GmailConnectionCard({
             type="button"
             onClick={scan}
             disabled={pending}
-            className="inline-flex h-8 items-center rounded-lg border border-line-strong px-3 text-[12px] font-medium text-ink transition-base hover:bg-surface disabled:opacity-50"
+            className="transition-base inline-flex h-8 items-center rounded-lg border border-line-strong px-3 text-[12px] font-medium text-ink hover:bg-surface disabled:opacity-50"
           >
             {t("scan")}
           </button>
@@ -124,7 +124,7 @@ export function GmailConnectionCard({
             type="button"
             onClick={togglePause}
             disabled={pending}
-            className="inline-flex h-8 items-center rounded-lg border border-line-strong px-3 text-[12px] font-medium text-ink transition-base hover:bg-surface disabled:opacity-50"
+            className="transition-base inline-flex h-8 items-center rounded-lg border border-line-strong px-3 text-[12px] font-medium text-ink hover:bg-surface disabled:opacity-50"
           >
             {connection.status === "paused" ? t("resume") : t("pause")}
           </button>
@@ -132,7 +132,7 @@ export function GmailConnectionCard({
             type="button"
             onClick={() => setDisconnectOpen(true)}
             disabled={pending}
-            className="inline-flex h-8 items-center rounded-lg border border-line-strong px-3 text-[12px] font-medium text-claret transition-base hover:bg-claret/5 disabled:opacity-50"
+            className="transition-base inline-flex h-8 items-center rounded-lg border border-line-strong px-3 text-[12px] font-medium text-claret hover:bg-claret/5 disabled:opacity-50"
           >
             {t("disconnect")}
           </button>
@@ -151,13 +151,13 @@ export function GmailConnectionCard({
           <div
             aria-hidden
             onClick={() => !pending && setDisconnectOpen(false)}
-            className="absolute inset-0 bg-ink/40 backdrop-blur-sm animate-fade-in"
+            className="animate-fade-in absolute inset-0 bg-ink/40 backdrop-blur-sm"
           />
-          <div className="relative z-[121] w-full max-w-md rounded-2xl border border-line bg-surface-raised p-6 shadow-xl animate-scale-in">
+          <div className="animate-scale-in relative z-[121] w-full max-w-md rounded-2xl border border-line bg-surface-raised p-6 shadow-xl">
             <h2 id={`gmail-disconnect-${connection.id}`} className="text-title text-ink">
               {t("disconnect_title")}
             </h2>
-            <p className="mt-3 text-body text-ink-soft">
+            <p className="text-body mt-3 text-ink-soft">
               {t("disconnect_body_one", { email: connection.email })}
             </p>
             <div className="mt-5 space-y-2.5">
@@ -165,7 +165,7 @@ export function GmailConnectionCard({
                 type="button"
                 onClick={() => disconnect(false)}
                 disabled={pending}
-                className="w-full rounded-xl border border-line-strong px-4 py-3 text-left transition-base hover:bg-surface disabled:opacity-50"
+                className="transition-base w-full rounded-xl border border-line-strong px-4 py-3 text-left hover:bg-surface disabled:opacity-50"
               >
                 <span className="block text-[13.5px] font-medium text-ink">
                   {t("disconnect_keep")}
@@ -178,7 +178,7 @@ export function GmailConnectionCard({
                 type="button"
                 onClick={() => disconnect(true)}
                 disabled={pending}
-                className="w-full rounded-xl border border-claret/30 px-4 py-3 text-left transition-base hover:bg-claret/5 disabled:opacity-50"
+                className="transition-base w-full rounded-xl border border-claret/30 px-4 py-3 text-left hover:bg-claret/5 disabled:opacity-50"
               >
                 <span className="block text-[13.5px] font-medium text-claret">
                   {t("disconnect_delete")}
@@ -193,7 +193,7 @@ export function GmailConnectionCard({
                 type="button"
                 onClick={() => setDisconnectOpen(false)}
                 disabled={pending}
-                className="text-[12.5px] text-ink-faint transition-base hover:text-ink disabled:opacity-50"
+                className="transition-base text-[12.5px] text-ink-faint hover:text-ink disabled:opacity-50"
               >
                 {pending ? t("disconnecting") : t("consent_cancel")}
               </button>

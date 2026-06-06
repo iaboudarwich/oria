@@ -4,12 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
 import { trackEvent } from "@/lib/analytics";
 
-export type TemplateKey =
-  | "personal"
-  | "investor"
-  | "business"
-  | "family_office"
-  | "custom";
+export type TemplateKey = "personal" | "investor" | "business" | "family_office" | "custom";
 
 export type SectionSeed = {
   name: string;
@@ -36,10 +31,10 @@ export const WORKSPACE_TEMPLATES: WorkspaceTemplate[] = [
     section_seeds: [
       // Diet folded into Health (Round 14 F3): no standalone Diet seed; the
       // Diet meal tracker is a sub-area of Health.
-      { name: "Bills",    icon: "wallet",  sort_order: 0 },
-      { name: "Health",   icon: "health",  sort_order: 10 },
-      { name: "Travel",   icon: "travel",  sort_order: 20 },
-      { name: "Personal", icon: "person",  sort_order: 30 },
+      { name: "Bills", icon: "wallet", sort_order: 0 },
+      { name: "Health", icon: "health", sort_order: 10 },
+      { name: "Travel", icon: "travel", sort_order: 20 },
+      { name: "Personal", icon: "person", sort_order: 30 },
     ],
   },
   {
@@ -49,10 +44,10 @@ export const WORKSPACE_TEMPLATES: WorkspaceTemplate[] = [
     icon: "chart",
     delegation_prominent: true,
     section_seeds: [
-      { name: "Funds",     icon: "wallet", sort_order: 0 },
-      { name: "Deals",     icon: "scales", sort_order: 10 },
+      { name: "Funds", icon: "wallet", sort_order: 0 },
+      { name: "Deals", icon: "scales", sort_order: 10 },
       { name: "Diligence", icon: "search", sort_order: 20 },
-      { name: "Reports",   icon: "chart",  sort_order: 30 },
+      { name: "Reports", icon: "chart", sort_order: 30 },
     ],
   },
   {
@@ -62,11 +57,11 @@ export const WORKSPACE_TEMPLATES: WorkspaceTemplate[] = [
     icon: "staff",
     delegation_prominent: true,
     section_seeds: [
-      { name: "Expenses",   icon: "wallet", sort_order: 0 },
-      { name: "Contracts",  icon: "scales", sort_order: 10 },
-      { name: "Vendors",    icon: "tag",    sort_order: 20 },
-      { name: "Compliance", icon: "lock",   sort_order: 30 },
-      { name: "Employees",  icon: "staff",  sort_order: 40 },
+      { name: "Expenses", icon: "wallet", sort_order: 0 },
+      { name: "Contracts", icon: "scales", sort_order: 10 },
+      { name: "Vendors", icon: "tag", sort_order: 20 },
+      { name: "Compliance", icon: "lock", sort_order: 30 },
+      { name: "Employees", icon: "staff", sort_order: 40 },
     ],
   },
   {
@@ -76,11 +71,11 @@ export const WORKSPACE_TEMPLATES: WorkspaceTemplate[] = [
     icon: "properties",
     delegation_prominent: true,
     section_seeds: [
-      { name: "Properties",  icon: "home",    sort_order: 0 },
-      { name: "Investments", icon: "chart",   sort_order: 10 },
-      { name: "Insurance",   icon: "wallet",  sort_order: 20 },
-      { name: "Tax",         icon: "scales",  sort_order: 30 },
-      { name: "Travel",      icon: "travel",  sort_order: 40 },
+      { name: "Properties", icon: "home", sort_order: 0 },
+      { name: "Investments", icon: "chart", sort_order: 10 },
+      { name: "Insurance", icon: "wallet", sort_order: 20 },
+      { name: "Tax", icon: "scales", sort_order: 30 },
+      { name: "Travel", icon: "travel", sort_order: 40 },
     ],
   },
   {
@@ -123,9 +118,7 @@ export type ApplyTemplatesResult = {
  *
  * Exported for unit testing without touching the DB.
  */
-export function mergeTemplatesForApply(
-  templateKeys: TemplateKey[],
-): {
+export function mergeTemplatesForApply(templateKeys: TemplateKey[]): {
   sections: SectionSeed[];
   entityTypes: EntityTypeSeed[];
   delegationProminent: boolean;
@@ -178,9 +171,7 @@ type StoredTemplateKey = "investor" | "custom";
  * retired abstract seed, multi-selection, skip, or custom) collapses to
  * `custom`. Seeding is unaffected. only the persisted vocabulary is narrowed.
  */
-export function resolveStoredTemplateKey(
-  templateKeys: TemplateKey[],
-): StoredTemplateKey {
+export function resolveStoredTemplateKey(templateKeys: TemplateKey[]): StoredTemplateKey {
   const real = templateKeys.filter((k) => k !== "custom");
   // A single non-retired pick ('investor') is stamped; anything else (a lone
   // retired seed, multiple picks, or skip) collapses to custom.
@@ -211,8 +202,7 @@ export async function applyTemplates(
   if (!org) return null;
   if ((org as { template_key?: string | null }).template_key) return null;
 
-  const { sections, entityTypes, delegationProminent } =
-    mergeTemplatesForApply(templateKeys);
+  const { sections, entityTypes, delegationProminent } = mergeTemplatesForApply(templateKeys);
   const storedKey = resolveStoredTemplateKey(templateKeys);
 
   // Create seeded custom sections one-by-one so the unique(org_id,name)
@@ -232,21 +222,19 @@ export async function applyTemplates(
 
   // Seed merged entity types.
   for (const et of entityTypes) {
-    await admin
-      .from("entity_types")
-      .upsert(
-        {
-          organization_id: organizationId,
-          key: et.key,
-          label_singular: et.label_singular,
-          label_plural: et.label_plural,
-          icon: et.icon ?? null,
-          field_schema: et.field_schema,
-          is_seeded: true,
-          created_by: null,
-        },
-        { onConflict: "organization_id,key" },
-      );
+    await admin.from("entity_types").upsert(
+      {
+        organization_id: organizationId,
+        key: et.key,
+        label_singular: et.label_singular,
+        label_plural: et.label_plural,
+        icon: et.icon ?? null,
+        field_schema: et.field_schema,
+        is_seeded: true,
+        created_by: null,
+      },
+      { onConflict: "organization_id,key" },
+    );
   }
 
   // Personal spaces should not surface the estate-oriented builtin
@@ -274,10 +262,7 @@ export async function applyTemplates(
     }
   }
 
-  await admin
-    .from("organizations")
-    .update({ template_key: storedKey })
-    .eq("id", organizationId);
+  await admin.from("organizations").update({ template_key: storedKey }).eq("id", organizationId);
 
   trackEvent("workspace_template_selected", { template: storedKey });
   revalidatePath("/dashboard", "layout");
@@ -309,36 +294,42 @@ type EntityTypeSeed = {
   label_singular: string;
   label_plural: string;
   icon?: string;
-  field_schema: Array<{ key: string; label: string; type: string; required?: boolean; options?: string[] }>;
+  field_schema: Array<{
+    key: string;
+    label: string;
+    type: string;
+    required?: boolean;
+    options?: string[];
+  }>;
 };
 
 const VEHICLE_FIELDS: EntityTypeSeed["field_schema"] = [
-  { key: "make",           label: "Make",          type: "text" },
-  { key: "model",          label: "Model",         type: "text" },
-  { key: "year",           label: "Year",          type: "number" },
-  { key: "vin",            label: "VIN",           type: "text" },
-  { key: "license_plate",  label: "License plate", type: "text" },
-  { key: "color",          label: "Color",         type: "text" },
-  { key: "purchase_date",  label: "Purchase date", type: "date" },
-  { key: "purchase_price", label: "Purchase price",type: "currency" },
+  { key: "make", label: "Make", type: "text" },
+  { key: "model", label: "Model", type: "text" },
+  { key: "year", label: "Year", type: "number" },
+  { key: "vin", label: "VIN", type: "text" },
+  { key: "license_plate", label: "License plate", type: "text" },
+  { key: "color", label: "Color", type: "text" },
+  { key: "purchase_date", label: "Purchase date", type: "date" },
+  { key: "purchase_price", label: "Purchase price", type: "currency" },
 ];
 
 const PROPERTY_FIELDS: EntityTypeSeed["field_schema"] = [
-  { key: "address",         label: "Address",       type: "text", required: true },
-  { key: "beds",            label: "Beds",          type: "number" },
-  { key: "baths",           label: "Baths",         type: "number" },
-  { key: "square_feet",     label: "Square feet",   type: "number" },
-  { key: "year_built",      label: "Year built",    type: "number" },
-  { key: "purchase_date",   label: "Purchase date", type: "date" },
-  { key: "purchase_price",  label: "Purchase price",type: "currency" },
+  { key: "address", label: "Address", type: "text", required: true },
+  { key: "beds", label: "Beds", type: "number" },
+  { key: "baths", label: "Baths", type: "number" },
+  { key: "square_feet", label: "Square feet", type: "number" },
+  { key: "year_built", label: "Year built", type: "number" },
+  { key: "purchase_date", label: "Purchase date", type: "date" },
+  { key: "purchase_price", label: "Purchase price", type: "currency" },
 ];
 
 const PERSON_FIELDS: EntityTypeSeed["field_schema"] = [
   { key: "relationship", label: "Relationship", type: "text" },
-  { key: "email",        label: "Email",        type: "text" },
-  { key: "phone",        label: "Phone",        type: "text" },
-  { key: "birthday",     label: "Birthday",     type: "date" },
-  { key: "notes",        label: "Notes",        type: "long_text" },
+  { key: "email", label: "Email", type: "text" },
+  { key: "phone", label: "Phone", type: "text" },
+  { key: "birthday", label: "Birthday", type: "date" },
+  { key: "notes", label: "Notes", type: "long_text" },
 ];
 
 const TEMPLATE_ENTITY_TYPES: Record<TemplateKey, EntityTypeSeed[]> = {
@@ -346,83 +337,181 @@ const TEMPLATE_ENTITY_TYPES: Record<TemplateKey, EntityTypeSeed[]> = {
     // Property is intentionally NOT seeded for Personal. It is an estate /
     // landlord concept that belongs to the asset-heavy templates (Investor,
     // Business, Family Office). Personal stays light.
-    { key: "vehicle",  label_singular: "Vehicle",  label_plural: "Vehicles",  icon: "travel",   field_schema: VEHICLE_FIELDS },
-    { key: "person",   label_singular: "Person",   label_plural: "People",    icon: "person",   field_schema: PERSON_FIELDS },
+    {
+      key: "vehicle",
+      label_singular: "Vehicle",
+      label_plural: "Vehicles",
+      icon: "travel",
+      field_schema: VEHICLE_FIELDS,
+    },
+    {
+      key: "person",
+      label_singular: "Person",
+      label_plural: "People",
+      icon: "person",
+      field_schema: PERSON_FIELDS,
+    },
   ],
   investor: [
-    { key: "property", label_singular: "Property", label_plural: "Properties", icon: "home", field_schema: PROPERTY_FIELDS },
-    { key: "fund",              label_singular: "Fund",              label_plural: "Funds",              icon: "wallet",
+    {
+      key: "property",
+      label_singular: "Property",
+      label_plural: "Properties",
+      icon: "home",
+      field_schema: PROPERTY_FIELDS,
+    },
+    {
+      key: "fund",
+      label_singular: "Fund",
+      label_plural: "Funds",
+      icon: "wallet",
       field_schema: [
-        { key: "manager",       label: "Manager",       type: "text" },
-        { key: "vintage",       label: "Vintage year",  type: "number" },
-        { key: "commitment",    label: "Commitment",    type: "currency" },
-        { key: "strategy",      label: "Strategy",      type: "text" },
-      ]},
-    { key: "deal",              label_singular: "Deal",              label_plural: "Deals",              icon: "scales",
+        { key: "manager", label: "Manager", type: "text" },
+        { key: "vintage", label: "Vintage year", type: "number" },
+        { key: "commitment", label: "Commitment", type: "currency" },
+        { key: "strategy", label: "Strategy", type: "text" },
+      ],
+    },
+    {
+      key: "deal",
+      label_singular: "Deal",
+      label_plural: "Deals",
+      icon: "scales",
       field_schema: [
-        { key: "company",       label: "Company",       type: "text", required: true },
-        { key: "stage",         label: "Stage",         type: "enum",
-          options: ["Pre-seed", "Seed", "Series A", "Series B", "Growth", "Other"] },
-        { key: "amount",        label: "Amount",        type: "currency" },
-        { key: "close_date",    label: "Close date",    type: "date" },
-      ]},
-    { key: "portfolio_company", label_singular: "Portfolio Company", label_plural: "Portfolio Companies", icon: "chart",
+        { key: "company", label: "Company", type: "text", required: true },
+        {
+          key: "stage",
+          label: "Stage",
+          type: "enum",
+          options: ["Pre-seed", "Seed", "Series A", "Series B", "Growth", "Other"],
+        },
+        { key: "amount", label: "Amount", type: "currency" },
+        { key: "close_date", label: "Close date", type: "date" },
+      ],
+    },
+    {
+      key: "portfolio_company",
+      label_singular: "Portfolio Company",
+      label_plural: "Portfolio Companies",
+      icon: "chart",
       field_schema: [
-        { key: "name",          label: "Company",       type: "text", required: true },
-        { key: "sector",        label: "Sector",        type: "text" },
-        { key: "ownership_pct", label: "Ownership %",   type: "number" },
-        { key: "valuation",     label: "Last valuation",type: "currency" },
-      ]},
+        { key: "name", label: "Company", type: "text", required: true },
+        { key: "sector", label: "Sector", type: "text" },
+        { key: "ownership_pct", label: "Ownership %", type: "number" },
+        { key: "valuation", label: "Last valuation", type: "currency" },
+      ],
+    },
   ],
   business: [
-    { key: "vendor",   label_singular: "Vendor",   label_plural: "Vendors",  icon: "tag",
+    {
+      key: "vendor",
+      label_singular: "Vendor",
+      label_plural: "Vendors",
+      icon: "tag",
       field_schema: [
-        { key: "contact_name",  label: "Contact",     type: "text" },
-        { key: "email",         label: "Email",       type: "text" },
-        { key: "phone",         label: "Phone",       type: "text" },
-        { key: "service",       label: "Service",     type: "text" },
-        { key: "contract_end",  label: "Contract end",type: "date" },
-      ]},
-    { key: "project",  label_singular: "Project",  label_plural: "Projects", icon: "chart",
+        { key: "contact_name", label: "Contact", type: "text" },
+        { key: "email", label: "Email", type: "text" },
+        { key: "phone", label: "Phone", type: "text" },
+        { key: "service", label: "Service", type: "text" },
+        { key: "contract_end", label: "Contract end", type: "date" },
+      ],
+    },
+    {
+      key: "project",
+      label_singular: "Project",
+      label_plural: "Projects",
+      icon: "chart",
       field_schema: [
-        { key: "client",        label: "Client",      type: "text" },
-        { key: "status",        label: "Status",      type: "enum",
-          options: ["Planning", "Active", "On hold", "Complete"] },
-        { key: "start_date",    label: "Start",       type: "date" },
-        { key: "end_date",      label: "End",         type: "date" },
-        { key: "budget",        label: "Budget",      type: "currency" },
-      ]},
-    { key: "property", label_singular: "Property", label_plural: "Properties",icon: "home", field_schema: PROPERTY_FIELDS },
-    { key: "employee", label_singular: "Employee", label_plural: "Employees", icon: "staff",
+        { key: "client", label: "Client", type: "text" },
+        {
+          key: "status",
+          label: "Status",
+          type: "enum",
+          options: ["Planning", "Active", "On hold", "Complete"],
+        },
+        { key: "start_date", label: "Start", type: "date" },
+        { key: "end_date", label: "End", type: "date" },
+        { key: "budget", label: "Budget", type: "currency" },
+      ],
+    },
+    {
+      key: "property",
+      label_singular: "Property",
+      label_plural: "Properties",
+      icon: "home",
+      field_schema: PROPERTY_FIELDS,
+    },
+    {
+      key: "employee",
+      label_singular: "Employee",
+      label_plural: "Employees",
+      icon: "staff",
       field_schema: [
-        { key: "title",         label: "Job title",   type: "text" },
-        { key: "department",    label: "Department",  type: "text" },
-        { key: "start_date",    label: "Start date",  type: "date" },
-        { key: "email",         label: "Email",       type: "text" },
-      ]},
+        { key: "title", label: "Job title", type: "text" },
+        { key: "department", label: "Department", type: "text" },
+        { key: "start_date", label: "Start date", type: "date" },
+        { key: "email", label: "Email", type: "text" },
+      ],
+    },
   ],
   family_office: [
-    { key: "property",   label_singular: "Property",   label_plural: "Properties",  icon: "home",       field_schema: PROPERTY_FIELDS },
-    { key: "investment", label_singular: "Investment", label_plural: "Investments", icon: "chart",
+    {
+      key: "property",
+      label_singular: "Property",
+      label_plural: "Properties",
+      icon: "home",
+      field_schema: PROPERTY_FIELDS,
+    },
+    {
+      key: "investment",
+      label_singular: "Investment",
+      label_plural: "Investments",
+      icon: "chart",
       field_schema: [
-        { key: "institution",   label: "Institution",  type: "text" },
-        { key: "account",       label: "Account #",    type: "text" },
-        { key: "asset_class",   label: "Asset class",  type: "enum",
-          options: ["Equity", "Fixed income", "Real estate", "Private equity", "Cash", "Other"] },
-        { key: "value",         label: "Current value",type: "currency" },
-        { key: "as_of",         label: "As of",        type: "date" },
-      ]},
-    { key: "vehicle",    label_singular: "Vehicle",    label_plural: "Vehicles",    icon: "travel",    field_schema: VEHICLE_FIELDS },
-    { key: "collection", label_singular: "Collection item", label_plural: "Collection", icon: "gift",
+        { key: "institution", label: "Institution", type: "text" },
+        { key: "account", label: "Account #", type: "text" },
+        {
+          key: "asset_class",
+          label: "Asset class",
+          type: "enum",
+          options: ["Equity", "Fixed income", "Real estate", "Private equity", "Cash", "Other"],
+        },
+        { key: "value", label: "Current value", type: "currency" },
+        { key: "as_of", label: "As of", type: "date" },
+      ],
+    },
+    {
+      key: "vehicle",
+      label_singular: "Vehicle",
+      label_plural: "Vehicles",
+      icon: "travel",
+      field_schema: VEHICLE_FIELDS,
+    },
+    {
+      key: "collection",
+      label_singular: "Collection item",
+      label_plural: "Collection",
+      icon: "gift",
       field_schema: [
-        { key: "category",      label: "Category",     type: "enum",
-          options: ["Art", "Jewelry", "Wine", "Watch", "Other"] },
-        { key: "artist_maker",  label: "Artist / Maker",type: "text" },
-        { key: "year",          label: "Year",          type: "number" },
-        { key: "appraised_value",label:"Appraised value",type: "currency" },
-        { key: "appraisal_date",label: "Appraisal date",type: "date" },
-      ]},
-    { key: "person",     label_singular: "Person",     label_plural: "People",      icon: "person",    field_schema: PERSON_FIELDS },
+        {
+          key: "category",
+          label: "Category",
+          type: "enum",
+          options: ["Art", "Jewelry", "Wine", "Watch", "Other"],
+        },
+        { key: "artist_maker", label: "Artist / Maker", type: "text" },
+        { key: "year", label: "Year", type: "number" },
+        { key: "appraised_value", label: "Appraised value", type: "currency" },
+        { key: "appraisal_date", label: "Appraisal date", type: "date" },
+      ],
+    },
+    {
+      key: "person",
+      label_singular: "Person",
+      label_plural: "People",
+      icon: "person",
+      field_schema: PERSON_FIELDS,
+    },
   ],
   custom: [],
 };

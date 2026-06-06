@@ -12,9 +12,7 @@ export type MemberSectionRef =
  * they have write access to each section. Returns an empty array for
  * owner / full / assigned (those don't use the allowlist).
  */
-export async function listMemberSectionRefs(
-  membershipId: string,
-): Promise<MemberSectionRef[]> {
+export async function listMemberSectionRefs(membershipId: string): Promise<MemberSectionRef[]> {
   const ctx = await requireContext();
   const supabase = await createClient();
 
@@ -32,11 +30,13 @@ export async function listMemberSectionRefs(
     .select("builtin_section, custom_section_id, can_write")
     .eq("membership_id", membershipId);
 
-  return ((data ?? []) as Array<{
-    builtin_section: Section | null;
-    custom_section_id: string | null;
-    can_write: boolean;
-  }>)
+  return (
+    (data ?? []) as Array<{
+      builtin_section: Section | null;
+      custom_section_id: string | null;
+      can_write: boolean;
+    }>
+  )
     .map((r) =>
       r.builtin_section
         ? ({
@@ -57,7 +57,4 @@ export async function listMemberSectionRefs(
 
 // Labels live in their own file (no server-only import) so client components
 // can reuse them. Re-exported here for backward compatibility.
-export {
-  ACCESS_LEVEL_LABELS,
-  ACCESS_LEVEL_BLURBS,
-} from "./access-labels";
+export { ACCESS_LEVEL_LABELS, ACCESS_LEVEL_BLURBS } from "./access-labels";

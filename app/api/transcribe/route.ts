@@ -26,10 +26,7 @@ export async function POST(request: Request) {
     label: "voice transcription",
   });
   if (!rl.ok) {
-    return NextResponse.json(
-      { error: "rate_limited", message: rl.message },
-      { status: 429 },
-    );
+    return NextResponse.json({ error: "rate_limited", message: rl.message }, { status: 429 });
   }
 
   try {

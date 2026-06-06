@@ -73,10 +73,8 @@ describe("normalize — envelope", () => {
   it("keeps source_quality_notes when present, null otherwise", () => {
     expect(normalize({ items: [rawItem()] }, MODEL).source_quality_notes).toBeNull();
     expect(
-      normalize(
-        { source_quality_notes: "blurry, tilted", items: [rawItem()] },
-        MODEL,
-      ).source_quality_notes,
+      normalize({ source_quality_notes: "blurry, tilted", items: [rawItem()] }, MODEL)
+        .source_quality_notes,
     ).toBe("blurry, tilted");
   });
 
@@ -96,11 +94,7 @@ describe("normalize — envelope", () => {
       },
       MODEL,
     );
-    expect(result.items.map((i) => i.merchant)).toEqual([
-      "Spinneys",
-      "Pharmacy",
-      "Cafe",
-    ]);
+    expect(result.items.map((i) => i.merchant)).toEqual(["Spinneys", "Pharmacy", "Cafe"]);
   });
 });
 
@@ -316,9 +310,7 @@ describe("normalize — defensive parsing of bad model output", () => {
   });
 
   it("falls back to 'unknown' for an out-of-enum document_type", () => {
-    expect(one({ title: "X", document_type: "spaceship" }).document_type).toBe(
-      "unknown",
-    );
+    expect(one({ title: "X", document_type: "spaceship" }).document_type).toBe("unknown");
   });
 
   it("rejects an out-of-enum suggested_section (→ null)", () => {
@@ -370,9 +362,7 @@ describe("normalize — defensive parsing of bad model output", () => {
     });
     expect(item.entities.people).toEqual(["A"]);
     expect(item.entities.amounts).toEqual([{ value: "10", currency: "USD" }]);
-    expect(item.entities.dates).toEqual([
-      { value: "Jan 1", iso: "2026-01-01" },
-    ]);
+    expect(item.entities.dates).toEqual([{ value: "Jan 1", iso: "2026-01-01" }]);
   });
 
   it("returns empty entities when the entities object is malformed", () => {

@@ -1,12 +1,7 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import { requireContext } from "./organizations";
-import type {
-  AccessLevel,
-  Invite,
-  Profile,
-  Role,
-} from "@/lib/supabase/types";
+import type { AccessLevel, Invite, Profile, Role } from "@/lib/supabase/types";
 
 export type CircleMember = {
   id: string; // membership id
@@ -97,10 +92,12 @@ export async function listInviteSectionRefs(
     .select("builtin_section, custom_section_id")
     .eq("invite_id", inviteId);
 
-  return ((data ?? []) as Array<{
-    builtin_section: string | null;
-    custom_section_id: string | null;
-  }>)
+  return (
+    (data ?? []) as Array<{
+      builtin_section: string | null;
+      custom_section_id: string | null;
+    }>
+  )
     .map((r) =>
       r.builtin_section
         ? ({ kind: "builtin", key: r.builtin_section } as const)

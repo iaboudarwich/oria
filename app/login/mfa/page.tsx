@@ -24,15 +24,13 @@ type Props = {
  */
 export default async function MfaPromptPage({ searchParams }: Props) {
   const { error, next } = await searchParams;
-  const safeNext =
-    next && next.startsWith("/") && !next.startsWith("//") ? next : "/dashboard";
+  const safeNext = next && next.startsWith("/") && !next.startsWith("//") ? next : "/dashboard";
 
   const supabase = await createClient();
   const { data: userData } = await supabase.auth.getUser();
   if (!userData.user) redirect("/login");
   const aal = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-  const needsStepUp =
-    aal.data?.nextLevel === "aal2" && aal.data.currentLevel === "aal1";
+  const needsStepUp = aal.data?.nextLevel === "aal2" && aal.data.currentLevel === "aal1";
   // Already elevated, or no factor, or a trusted device: nothing to confirm.
   if (!needsStepUp || (await isTrustedDevice(userData.user.id))) {
     redirect(safeNext);
@@ -41,24 +39,22 @@ export default async function MfaPromptPage({ searchParams }: Props) {
   const t = await getTranslations("auth");
 
   return (
-    <div className="min-h-screen bg-canvas relative flex flex-col items-center justify-center px-4 py-12 overflow-hidden">
+    <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-canvas px-4 py-12">
       <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -start-40 h-[600px] w-[600px] rounded-full bg-brand/5 blur-3xl" />
+        <div className="absolute -start-40 -top-40 h-[600px] w-[600px] rounded-full bg-brand/5 blur-3xl" />
       </div>
 
-      <div className="mb-8 relative z-10">
+      <div className="relative z-10 mb-8">
         <Wordmark />
       </div>
 
-      <div className="relative z-10 w-full max-w-[400px] animate-scale-in">
-        <div className="rounded-2xl border border-line bg-surface-raised shadow-xl px-8 py-8">
+      <div className="animate-scale-in relative z-10 w-full max-w-[400px]">
+        <div className="rounded-2xl border border-line bg-surface-raised px-8 py-8 shadow-xl">
           <div className="mb-6 text-center">
             <h1 className="text-[22px] font-semibold tracking-tight text-ink">
               {t("signin_2fa_title")}
             </h1>
-            <p className="mt-1.5 text-[13.5px] text-ink-muted">
-              {t("signin_2fa_help")}
-            </p>
+            <p className="mt-1.5 text-[13.5px] text-ink-muted">{t("signin_2fa_help")}</p>
           </div>
 
           {error ? (
@@ -73,7 +69,7 @@ export default async function MfaPromptPage({ searchParams }: Props) {
           <form action={verifyAtSignIn} className="space-y-3.5">
             <input type="hidden" name="next" value={safeNext} />
             <label className="block">
-              <span className="block mb-1.5 text-[12.5px] font-medium text-ink">
+              <span className="mb-1.5 block text-[12.5px] font-medium text-ink">
                 {t("signin_2fa_code_label")}
               </span>
               <input
@@ -84,7 +80,7 @@ export default async function MfaPromptPage({ searchParams }: Props) {
                 placeholder="123456"
                 autoFocus
                 required
-                className="block h-11 w-full rounded-xl border border-line bg-canvas px-3 text-[16px] text-ink placeholder:text-ink-faint outline-none transition-base focus:border-brand focus:ring-[3px] focus:ring-brand/12"
+                className="transition-base block h-11 w-full rounded-xl border border-line bg-canvas px-3 text-[16px] text-ink outline-none placeholder:text-ink-faint focus:border-brand focus:ring-[3px] focus:ring-brand/12"
               />
             </label>
 
@@ -97,9 +93,7 @@ export default async function MfaPromptPage({ searchParams }: Props) {
                 className="mt-0.5 h-4 w-4 accent-brand"
               />
               <span className="min-w-0">
-                <span className="block text-[12.5px] text-ink">
-                  {t("signin_2fa_remember")}
-                </span>
+                <span className="block text-[12.5px] text-ink">{t("signin_2fa_remember")}</span>
                 <span className="block text-[11.5px] text-ink-faint">
                   {t("signin_2fa_remember_help")}
                 </span>

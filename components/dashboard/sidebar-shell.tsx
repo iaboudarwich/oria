@@ -71,10 +71,7 @@ export function SidebarShell({
       setDragging(true);
 
       function onMove(ev: PointerEvent) {
-        const next = Math.max(
-          MIN_WIDTH,
-          Math.min(MAX_WIDTH, startW + (ev.clientX - startX)),
-        );
+        const next = Math.max(MIN_WIDTH, Math.min(MAX_WIDTH, startW + (ev.clientX - startX)));
         setWidth(next);
       }
       function onUp() {
@@ -124,7 +121,7 @@ export function SidebarShell({
           aria-orientation="vertical"
           aria-label="Resize sidebar"
           onPointerDown={startResize}
-          className="group fixed bottom-0 top-0 z-50 hidden w-1.5 cursor-col-resize lg:block"
+          className="group fixed top-0 bottom-0 z-50 hidden w-1.5 cursor-col-resize lg:block"
           style={{
             left: `calc(var(--sidebar-w) - 3px)`,
           }}
@@ -132,15 +129,13 @@ export function SidebarShell({
           {/* Visible grip line on hover/active for affordance. */}
           <div
             className={`mx-auto h-full w-px transition-colors duration-150 ${
-              dragging
-                ? "bg-ink-muted"
-                : "bg-transparent group-hover:bg-line-strong"
+              dragging ? "bg-ink-muted" : "bg-transparent group-hover:bg-line-strong"
             }`}
           />
         </div>
       ) : null}
 
-      <div className="sidebar-content md:pl-16 lg:pl-[var(--sidebar-w)] transition-[padding] duration-200 ease-[cubic-bezier(0.2,0.8,0.2,1)]">
+      <div className="sidebar-content transition-[padding] duration-200 ease-[cubic-bezier(0.2,0.8,0.2,1)] md:pl-16 lg:pl-[var(--sidebar-w)]">
         <main
           id="main-content"
           tabIndex={-1}

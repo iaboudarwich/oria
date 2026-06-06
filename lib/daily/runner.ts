@@ -36,10 +36,38 @@ type DefaultRoutine = {
 // Seeded once per user (in their primary space) the first time the loop sees
 // them. Titles are English seeds; the Today UI relabels by kind via i18n.
 const DEFAULT_ROUTINES: DefaultRoutine[] = [
-  { kind: "morning_briefing", title: "Morning Briefing", enabled: true, local_hour: 7, day_of_week: null, lead_minutes: null },
-  { kind: "weekly_review", title: "Weekly Review", enabled: true, local_hour: 8, day_of_week: 1, lead_minutes: null },
-  { kind: "yesterday_recap", title: "Yesterday Recap", enabled: false, local_hour: 20, day_of_week: null, lead_minutes: null },
-  { kind: "pre_meeting_prep", title: "Pre-Meeting Prep", enabled: true, local_hour: null, day_of_week: null, lead_minutes: 30 },
+  {
+    kind: "morning_briefing",
+    title: "Morning Briefing",
+    enabled: true,
+    local_hour: 7,
+    day_of_week: null,
+    lead_minutes: null,
+  },
+  {
+    kind: "weekly_review",
+    title: "Weekly Review",
+    enabled: true,
+    local_hour: 8,
+    day_of_week: 1,
+    lead_minutes: null,
+  },
+  {
+    kind: "yesterday_recap",
+    title: "Yesterday Recap",
+    enabled: false,
+    local_hour: 20,
+    day_of_week: null,
+    lead_minutes: null,
+  },
+  {
+    kind: "pre_meeting_prep",
+    title: "Pre-Meeting Prep",
+    enabled: true,
+    local_hour: null,
+    day_of_week: null,
+    lead_minutes: 30,
+  },
 ];
 
 export type RunSummary = {
@@ -77,9 +105,7 @@ export async function runDailyLoop(now: Date): Promise<RunSummary> {
     ritualReminders: 0,
   };
 
-  const { data: profiles } = await admin
-    .from("profiles")
-    .select("id, timezone, locale");
+  const { data: profiles } = await admin.from("profiles").select("id, timezone, locale");
   if (!profiles?.length) return summary;
 
   // Primary space per user: oldest membership.

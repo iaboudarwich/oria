@@ -24,9 +24,7 @@ describe("mergeTemplatesForApply — section dedup", () => {
   it("contributes the full section list for a single real template", () => {
     const personal = WORKSPACE_TEMPLATES.find((t) => t.key === "personal")!;
     const out = mergeTemplatesForApply(["personal"]);
-    expect(out.sections.map((s) => s.name)).toEqual(
-      personal.section_seeds.map((s) => s.name),
-    );
+    expect(out.sections.map((s) => s.name)).toEqual(personal.section_seeds.map((s) => s.name));
   });
 
   it("contributes nothing for the custom / skip template", () => {
@@ -97,12 +95,8 @@ describe("mergeTemplatesForApply — delegation_prominent OR-merge", () => {
 
   it("is true when any selected template is flagged", () => {
     expect(mergeTemplatesForApply(["investor"]).delegationProminent).toBe(true);
-    expect(
-      mergeTemplatesForApply(["personal", "investor"]).delegationProminent,
-    ).toBe(true);
-    expect(
-      mergeTemplatesForApply(["personal", "family_office"]).delegationProminent,
-    ).toBe(true);
+    expect(mergeTemplatesForApply(["personal", "investor"]).delegationProminent).toBe(true);
+    expect(mergeTemplatesForApply(["personal", "family_office"]).delegationProminent).toBe(true);
   });
 });
 
@@ -122,9 +116,7 @@ describe("resolveStoredTemplateKey", () => {
 
   it("collapses to 'custom' when multiple real templates are picked", () => {
     expect(resolveStoredTemplateKey(["investor", "business"])).toBe("custom");
-    expect(
-      resolveStoredTemplateKey(["personal", "investor", "family_office"]),
-    ).toBe("custom");
+    expect(resolveStoredTemplateKey(["personal", "investor", "family_office"])).toBe("custom");
   });
 
   it("collapses to 'custom' on Skip / empty selection", () => {

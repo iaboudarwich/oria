@@ -164,28 +164,22 @@ async function runProposalsForItems(
       .eq("organization_id", scope.organizationId)
       .is("upload_id", null)
       .eq("source", "suggested")
-      .in("due_at", proposals.map((p) => p.due_at));
+      .in(
+        "due_at",
+        proposals.map((p) => p.due_at),
+      );
     existing = (data ?? []) as typeof existing;
   }
-  const seen = new Set(
-    existing.map((r) => `${r.upload_id ?? ""}|${r.due_at ?? ""}|${r.title}`),
-  );
-  const fresh = proposals.filter(
-    (p) => !seen.has(`${p.upload_id ?? ""}|${p.due_at}|${p.title}`),
-  );
+  const seen = new Set(existing.map((r) => `${r.upload_id ?? ""}|${r.due_at ?? ""}|${r.title}`));
+  const fresh = proposals.filter((p) => !seen.has(`${p.upload_id ?? ""}|${p.due_at}|${p.title}`));
   if (fresh.length === 0) return 0;
 
-  const { error: insertError } = await supabase
-    .from("reminders")
-    .insert(fresh);
+  const { error: insertError } = await supabase.from("reminders").insert(fresh);
   if (insertError) return 0;
   return fresh.length;
 }
 
-function composeTitle(
-  item: ItemRow,
-  flags: { isBill: boolean; isRecurring: boolean },
-): string {
+function composeTitle(item: ItemRow, flags: { isBill: boolean; isRecurring: boolean }): string {
   const who = item.merchant?.trim();
   if (item.document_type === "invoice" || flags.isBill) {
     return who ? `Pay ${who}` : `Pay ${item.title}`;

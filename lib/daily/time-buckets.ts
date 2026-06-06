@@ -26,10 +26,7 @@ export type Bucketed<T extends TimedItem> = {
 };
 
 /** Bucket items by their local hour. Within each bucket order is preserved. */
-export function bucketByTime<T extends TimedItem>(
-  items: T[],
-  tz: string | null,
-): Bucketed<T> {
+export function bucketByTime<T extends TimedItem>(items: T[], tz: string | null): Bucketed<T> {
   const out: Bucketed<T> = { morning: [], afternoon: [], evening: [], anytime: [] };
   for (const it of items) {
     if (!it.whenISO) {

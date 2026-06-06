@@ -100,11 +100,7 @@ export async function getUploadDetail(id: string): Promise<UploadDetail | null> 
       .eq("upload_id", upload.id)
       .is("deleted_at", null)
       .order("created_at", { ascending: true }),
-    supabase
-      .from("extracted_entities")
-      .select("*")
-      .eq("upload_id", upload.id)
-      .maybeSingle(),
+    supabase.from("extracted_entities").select("*").eq("upload_id", upload.id).maybeSingle(),
   ]);
 
   return {

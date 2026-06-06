@@ -2,10 +2,7 @@
 
 import { useState, useTransition, useEffect, useCallback } from "react";
 import { StarIcon, TrashIcon, ChevronDownIcon } from "@/components/ui/icon";
-import {
-  deleteConversationAction,
-  starConversationAction,
-} from "@/lib/data/conversation-actions";
+import { deleteConversationAction, starConversationAction } from "@/lib/data/conversation-actions";
 import type { Conversation } from "@/lib/data/conversations";
 
 const STORAGE_KEY = "oria:ask:sidebar_collapsed";
@@ -25,11 +22,7 @@ function relativeTime(iso: string): string {
   });
 }
 
-export function ConversationSidebar({
-  conversations: initial,
-}: {
-  conversations: Conversation[];
-}) {
+export function ConversationSidebar({ conversations: initial }: { conversations: Conversation[] }) {
   const [conversations, setConversations] = useState(initial);
   const [starredOnly, setStarredOnly] = useState(false);
   const [, startTransition] = useTransition();
@@ -58,15 +51,11 @@ export function ConversationSidebar({
   // Close on backdrop click (mobile overlay mode).
   const handleBackdropClick = useCallback(() => setCollapsed(true), []);
 
-  const visible = starredOnly
-    ? conversations.filter((c) => c.starred)
-    : conversations;
+  const visible = starredOnly ? conversations.filter((c) => c.starred) : conversations;
 
   function handleStar(id: string, current: boolean) {
     const next = !current;
-    setConversations((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, starred: next } : c)),
-    );
+    setConversations((prev) => prev.map((c) => (c.id === id ? { ...c, starred: next } : c)));
     startTransition(() => {
       void starConversationAction(id, next);
     });
@@ -99,7 +88,7 @@ export function ConversationSidebar({
           onClick={toggle}
           aria-label="Expand history"
           title="History"
-          className="hidden md:flex shrink-0 w-6 items-start pt-1 text-ink-faint transition-base hover:text-ink"
+          className="transition-base hidden w-6 shrink-0 items-start pt-1 text-ink-faint hover:text-ink md:flex"
         >
           {/* Right-pointing chevron when collapsed */}
           <span className="rotate-[-90deg]">
@@ -126,19 +115,15 @@ export function ConversationSidebar({
           .join(" ")}
         aria-label="Conversation history"
       >
-        <div className="flex items-center justify-between px-1 mb-2">
-          <p className="text-eyebrow">
-            History
-          </p>
+        <div className="mb-2 flex items-center justify-between px-1">
+          <p className="text-eyebrow">History</p>
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={() => setStarredOnly((v) => !v)}
               title={starredOnly ? "Show all" : "Show starred"}
-              className={`rounded p-0.5 transition-base ${
-                starredOnly
-                  ? "text-amber-500"
-                  : "text-ink-faint hover:text-ink-muted"
+              className={`transition-base rounded p-0.5 ${
+                starredOnly ? "text-amber-500" : "text-ink-faint hover:text-ink-muted"
               }`}
             >
               <StarIcon size={12} />
@@ -149,7 +134,7 @@ export function ConversationSidebar({
               onClick={toggle}
               aria-label="Collapse history"
               title="Collapse"
-              className="rounded p-0.5 text-ink-faint transition-base hover:text-ink"
+              className="transition-base rounded p-0.5 text-ink-faint hover:text-ink"
             >
               {/* Left-pointing chevron when open */}
               <span className="rotate-90">
@@ -160,9 +145,7 @@ export function ConversationSidebar({
         </div>
 
         {visible.length === 0 ? (
-          <p className="px-1 text-[12px] text-ink-faint">
-            No starred conversations.
-          </p>
+          <p className="px-1 text-[12px] text-ink-faint">No starred conversations.</p>
         ) : (
           <ul className="space-y-0.5 overflow-y-auto">
             {visible.map((c) => (
@@ -183,7 +166,7 @@ export function ConversationSidebar({
           type="button"
           onClick={toggle}
           aria-label="Expand history"
-          className="md:hidden fixed top-1/2 left-0 z-40 -translate-y-1/2 flex items-center justify-center h-12 w-5 rounded-r-md border border-l-0 border-line bg-surface-raised text-ink-faint shadow-sm transition-base hover:text-ink"
+          className="transition-base fixed top-1/2 left-0 z-40 flex h-12 w-5 -translate-y-1/2 items-center justify-center rounded-r-md border border-l-0 border-line bg-surface-raised text-ink-faint shadow-sm hover:text-ink md:hidden"
         >
           <ChevronDownIcon size={11} className="rotate-[-90deg]" />
         </button>
@@ -205,22 +188,16 @@ function ConversationRow({
 
   return (
     <li className="group rounded-xl px-2 py-2 hover:bg-surface-raised">
-      <p className="truncate text-[12.5px] text-ink leading-snug">
-        {c.title ?? "Untitled"}
-      </p>
+      <p className="truncate text-[12.5px] leading-snug text-ink">{c.title ?? "Untitled"}</p>
       <div className="mt-1 flex items-center justify-between">
-        <span className="text-[10.5px] text-ink-faint">
-          {relativeTime(c.updated_at)}
-        </span>
-        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <span className="text-[10.5px] text-ink-faint">{relativeTime(c.updated_at)}</span>
+        <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
           <button
             type="button"
             onClick={onStar}
             title={c.starred ? "Unstar" : "Star"}
-            className={`rounded p-0.5 transition-base ${
-              c.starred
-                ? "text-amber-500"
-                : "text-ink-faint hover:text-ink-muted"
+            className={`transition-base rounded p-0.5 ${
+              c.starred ? "text-amber-500" : "text-ink-faint hover:text-ink-muted"
             }`}
           >
             <StarIcon size={11} />
@@ -247,7 +224,7 @@ function ConversationRow({
               type="button"
               onClick={() => setConfirmDelete(true)}
               title="Delete"
-              className="rounded p-0.5 text-ink-faint transition-base hover:text-claret"
+              className="transition-base rounded p-0.5 text-ink-faint hover:text-claret"
             >
               <TrashIcon size={11} />
             </button>

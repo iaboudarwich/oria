@@ -26,7 +26,7 @@ export async function WhoopCta({
       <h2 className="text-title text-ink">
         {whoopConnected ? t("whoop_waiting") : t("connect_whoop")}
       </h2>
-      <p className="mt-2 max-w-sm text-body text-ink-muted">{body}</p>
+      <p className="text-body mt-2 max-w-sm text-ink-muted">{body}</p>
       {whoopConnected ? null : (
         <div className="mt-5">
           <ConnectButton

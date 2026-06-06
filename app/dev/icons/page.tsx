@@ -26,8 +26,8 @@ export default function IconGalleryPage() {
     <main className="mx-auto max-w-5xl px-6 py-10">
       <h1 className="text-[20px] font-semibold text-ink">Icon gallery</h1>
       <p className="mt-1 text-[13px] text-ink-muted">
-        {ALL_ICONS.length} icons. Dev-only. Each row shows one icon across the
-        sizes used in the app, with its default size highlighted.
+        {ALL_ICONS.length} icons. Dev-only. Each row shows one icon across the sizes used in the
+        app, with its default size highlighted.
       </p>
 
       <section className="mt-8">
@@ -50,9 +50,7 @@ export default function IconGalleryPage() {
               {ALL_ICONS.map(({ name, Comp }) => (
                 <tr key={name} className="border-t border-line">
                   <td className="px-3 py-2 font-mono text-ink">{name}</td>
-                  <td className="px-3 py-2 text-ink-faint">
-                    {Comp.iconMeta.defaultSize}px
-                  </td>
+                  <td className="px-3 py-2 text-ink-faint">{Comp.iconMeta.defaultSize}px</td>
                   {USED_SIZES.map((s) => (
                     <td key={s} className="px-3 py-2 text-center text-ink">
                       <span className="inline-flex items-center justify-center">
@@ -73,8 +71,8 @@ export default function IconGalleryPage() {
       <section className="mt-10">
         <h2 className="text-eyebrow mb-3">Directional icons under RTL</h2>
         <p className="mb-3 text-[12.5px] text-ink-muted">
-          Left column is LTR, right column is RTL. Directional icons should
-          mirror; nothing else should.
+          Left column is LTR, right column is RTL. Directional icons should mirror; nothing else
+          should.
         </p>
         <div className="grid grid-cols-2 gap-4">
           <div className="rounded-xl border border-line p-4" dir="ltr">

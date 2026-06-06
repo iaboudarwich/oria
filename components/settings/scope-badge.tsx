@@ -18,9 +18,7 @@ export function ScopeBadge({
   return (
     <span
       className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11.5px] ${
-        isAccount
-          ? "border-line bg-canvas text-ink-muted"
-          : "border-brand/30 bg-brand/10 text-ink"
+        isAccount ? "border-line bg-canvas text-ink-muted" : "border-brand/30 bg-brand/10 text-ink"
       } ${className}`}
     >
       <span aria-hidden className={isAccount ? "text-ink-faint" : "text-brand"}>

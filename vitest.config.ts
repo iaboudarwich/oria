@@ -23,9 +23,7 @@ export default defineConfig({
   plugins: [tsconfigPaths()],
   resolve: {
     alias: {
-      "server-only": fileURLToPath(
-        new URL("./tests/stubs/server-only.ts", import.meta.url),
-      ),
+      "server-only": fileURLToPath(new URL("./tests/stubs/server-only.ts", import.meta.url)),
     },
   },
   test: {

@@ -5,9 +5,15 @@ import type { ConnectionStatus, ErrorKind } from "./types";
  * all three adapters' validateKey() and runtime fallback handling.
  *   401/403 -> invalid; 429 -> rate_limited; quota/credit/billing -> out_of_credits.
  */
-export function mapErrorToStatus(status: number | undefined, message: string | undefined): ConnectionStatus {
+export function mapErrorToStatus(
+  status: number | undefined,
+  message: string | undefined,
+): ConnectionStatus {
   const msg = (message ?? "").toLowerCase();
-  if (status === 402 || /quota|credit|billing|insufficient_quota|insufficient funds|balance/.test(msg)) {
+  if (
+    status === 402 ||
+    /quota|credit|billing|insufficient_quota|insufficient funds|balance/.test(msg)
+  ) {
     return "out_of_credits";
   }
   if (status === 429 || /rate.?limit|too many requests|overloaded/.test(msg)) {
@@ -26,10 +32,15 @@ export function mapErrorToStatus(status: number | undefined, message: string | u
  */
 export function mapErrorKind(status: number | undefined, message: string | undefined): ErrorKind {
   const msg = (message ?? "").toLowerCase();
-  if (/context.?length|context window|maximum context|too many tokens|reduce the length/.test(msg)) {
+  if (
+    /context.?length|context window|maximum context|too many tokens|reduce the length/.test(msg)
+  ) {
     return "context_too_long";
   }
-  if (status === 402 || /quota|credit|billing|insufficient_quota|insufficient funds|balance/.test(msg)) {
+  if (
+    status === 402 ||
+    /quota|credit|billing|insufficient_quota|insufficient funds|balance/.test(msg)
+  ) {
     return "out_of_credits";
   }
   if (status === 429 || /rate.?limit|too many requests|overloaded/.test(msg)) {
@@ -43,7 +54,6 @@ export function mapErrorKind(status: number | undefined, message: string | undef
   }
   return "unknown";
 }
-
 
 /** Pull a numeric HTTP status off an unknown thrown error, if present. */
 export function errorStatus(err: unknown): number | undefined {

@@ -30,63 +30,63 @@ meaning is not left/right).
 
 ## Full mapping (old custom name -> Lucide glyph)
 
-| Oria export | Lucide glyph | Default px | Notes |
-|---|---|---|---|
-| HomeIcon | `Home` | 18 | |
-| InboxIcon | `Inbox` | 18 | |
-| WalletIcon | `Wallet` | 18 | |
-| PropertiesIcon | `Building2` | 18 | judgment call (see below) |
-| StaffIcon | `Users` | 18 | |
-| ApprovalsIcon | `ClipboardCheck` | 18 | |
-| SparkIcon | `Sparkles` | 18 | judgment call (see below) |
-| CalendarIcon | `Calendar` | 18 | |
-| SettingsIcon | `Settings` | 18 | |
-| ChartIcon | `BarChart3` | 16 | |
-| ArrowRightIcon | `ArrowRight` | 16 | directional |
-| ArrowUpRightIcon | `ArrowUpRight` | 14 | directional |
-| ChevronLeftIcon | `ChevronLeft` | 14 | directional |
-| ChevronRightIcon | `ChevronRight` | 14 | directional |
-| SendIcon | `Send` | 16 | directional |
-| SidebarToggleIcon | `PanelLeft` | 16 | directional |
-| ChevronDownIcon | `ChevronDown` | 14 | |
-| ChevronUpIcon | `ChevronUp` | 14 | |
-| CheckIcon | `Check` | 16 | |
-| CheckCircleIcon | `CheckCircle2` | 14 | |
-| SearchIcon | `Search` | 16 | |
-| BellIcon | `Bell` | 18 | |
-| MenuIcon | `Menu` | 20 | |
-| CloseIcon | `X` | 20 | |
-| TrashIcon | `Trash2` | 18 | |
-| UploadIcon | `Upload` | 18 | |
-| DownloadIcon | `Download` | 14 | |
-| FilterIcon | `ListFilter` | 16 | judgment call (see below) |
-| CopyIcon | `Copy` | 14 | |
-| LinkIcon | `Link` | 14 | |
-| RotateIcon | `RotateCw` | 16 | |
-| EyeIcon | `Eye` | 14 | |
-| EyeOffIcon | `EyeOff` | 14 | |
-| DocumentIcon | `FileText` | 18 | |
-| LockIcon | `Lock` | 16 | |
-| TagIcon | `Tag` | 14 | also re-exported as `CustomSectionIcon` |
-| ClockIcon | `Clock` | 14 | |
-| PaperclipIcon | `Paperclip` | 16 | |
-| MapPinIcon | `MapPin` | 14 | |
-| PlaneIcon | `Plane` | 16 | |
-| HeartIcon | `Heart` | 16 | |
-| BoxIcon | `Box` | 16 | |
-| ScalesIcon | `Scale` | 16 | |
-| PersonIcon | `User` | 16 | |
-| GiftIcon | `Gift` | 16 | |
-| PulseIcon | `Activity` | 14 | |
-| MicIcon | `Mic` | 14 | central icon (distinct from the animated mic button, below) |
-| ChatIcon | `MessageCircle` | 14 | |
-| StarIcon | `Star` | 16 | |
-| CameraIcon | `Camera` | 16 | |
-| BugIcon | `Bug` | 16 | |
-| AlertIcon | `AlertTriangle` | 18 | |
-| SunIcon | `Sun` | 14 | folded in from theme-toggle |
-| MoonIcon | `Moon` | 14 | folded in from theme-toggle |
-| SystemIcon | `Monitor` | 14 | folded in from theme-toggle |
+| Oria export       | Lucide glyph     | Default px | Notes                                                       |
+| ----------------- | ---------------- | ---------- | ----------------------------------------------------------- |
+| HomeIcon          | `Home`           | 18         |                                                             |
+| InboxIcon         | `Inbox`          | 18         |                                                             |
+| WalletIcon        | `Wallet`         | 18         |                                                             |
+| PropertiesIcon    | `Building2`      | 18         | judgment call (see below)                                   |
+| StaffIcon         | `Users`          | 18         |                                                             |
+| ApprovalsIcon     | `ClipboardCheck` | 18         |                                                             |
+| SparkIcon         | `Sparkles`       | 18         | judgment call (see below)                                   |
+| CalendarIcon      | `Calendar`       | 18         |                                                             |
+| SettingsIcon      | `Settings`       | 18         |                                                             |
+| ChartIcon         | `BarChart3`      | 16         |                                                             |
+| ArrowRightIcon    | `ArrowRight`     | 16         | directional                                                 |
+| ArrowUpRightIcon  | `ArrowUpRight`   | 14         | directional                                                 |
+| ChevronLeftIcon   | `ChevronLeft`    | 14         | directional                                                 |
+| ChevronRightIcon  | `ChevronRight`   | 14         | directional                                                 |
+| SendIcon          | `Send`           | 16         | directional                                                 |
+| SidebarToggleIcon | `PanelLeft`      | 16         | directional                                                 |
+| ChevronDownIcon   | `ChevronDown`    | 14         |                                                             |
+| ChevronUpIcon     | `ChevronUp`      | 14         |                                                             |
+| CheckIcon         | `Check`          | 16         |                                                             |
+| CheckCircleIcon   | `CheckCircle2`   | 14         |                                                             |
+| SearchIcon        | `Search`         | 16         |                                                             |
+| BellIcon          | `Bell`           | 18         |                                                             |
+| MenuIcon          | `Menu`           | 20         |                                                             |
+| CloseIcon         | `X`              | 20         |                                                             |
+| TrashIcon         | `Trash2`         | 18         |                                                             |
+| UploadIcon        | `Upload`         | 18         |                                                             |
+| DownloadIcon      | `Download`       | 14         |                                                             |
+| FilterIcon        | `ListFilter`     | 16         | judgment call (see below)                                   |
+| CopyIcon          | `Copy`           | 14         |                                                             |
+| LinkIcon          | `Link`           | 14         |                                                             |
+| RotateIcon        | `RotateCw`       | 16         |                                                             |
+| EyeIcon           | `Eye`            | 14         |                                                             |
+| EyeOffIcon        | `EyeOff`         | 14         |                                                             |
+| DocumentIcon      | `FileText`       | 18         |                                                             |
+| LockIcon          | `Lock`           | 16         |                                                             |
+| TagIcon           | `Tag`            | 14         | also re-exported as `CustomSectionIcon`                     |
+| ClockIcon         | `Clock`          | 14         |                                                             |
+| PaperclipIcon     | `Paperclip`      | 16         |                                                             |
+| MapPinIcon        | `MapPin`         | 14         |                                                             |
+| PlaneIcon         | `Plane`          | 16         |                                                             |
+| HeartIcon         | `Heart`          | 16         |                                                             |
+| BoxIcon           | `Box`            | 16         |                                                             |
+| ScalesIcon        | `Scale`          | 16         |                                                             |
+| PersonIcon        | `User`           | 16         |                                                             |
+| GiftIcon          | `Gift`           | 16         |                                                             |
+| PulseIcon         | `Activity`       | 14         |                                                             |
+| MicIcon           | `Mic`            | 14         | central icon (distinct from the animated mic button, below) |
+| ChatIcon          | `MessageCircle`  | 14         |                                                             |
+| StarIcon          | `Star`           | 16         |                                                             |
+| CameraIcon        | `Camera`         | 16         |                                                             |
+| BugIcon           | `Bug`            | 16         |                                                             |
+| AlertIcon         | `AlertTriangle`  | 18         |                                                             |
+| SunIcon           | `Sun`            | 14         | folded in from theme-toggle                                 |
+| MoonIcon          | `Moon`           | 14         | folded in from theme-toggle                                 |
+| SystemIcon        | `Monitor`        | 14         | folded in from theme-toggle                                 |
 
 Aliases that resolve through the table: `CustomSectionIcon` (re-export of
 `TagIcon` in `lib/sections-meta.ts`) and `DisplayedIcon` (a local variable in

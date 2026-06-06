@@ -33,13 +33,10 @@ export function ResetAccountPanel() {
   return (
     <section>
       <div className="mb-2 px-1">
-        <h2 className="text-eyebrow">
-          Reset account
-        </h2>
+        <h2 className="text-eyebrow">Reset account</h2>
         <p className="mt-1 text-[12px] text-ink-faint">
-          Wipe all your uploads, reminders, conversations, and memory.
-          Keep your account, profile, and shared circle memberships. This
-          can&apos;t be undone.
+          Wipe all your uploads, reminders, conversations, and memory. Keep your account, profile,
+          and shared circle memberships. This can&apos;t be undone.
         </p>
       </div>
       <div className="overflow-hidden rounded-2xl border border-line bg-surface-raised shadow-[0_1px_2px_rgba(28,26,23,0.04),0_2px_8px_-6px_rgba(28,26,23,0.08)]">
@@ -57,9 +54,8 @@ export function ResetAccountPanel() {
         ) : (
           <form onSubmit={handleSubmit} className="space-y-3 px-4 py-3">
             <p className="text-[13px] text-ink">
-              Type{" "}
-              <span className="font-medium text-ink">&ldquo;{PHRASE}&rdquo;</span>{" "}
-              to confirm. All your personal content will be permanently deleted.
+              Type <span className="font-medium text-ink">&ldquo;{PHRASE}&rdquo;</span> to confirm.
+              All your personal content will be permanently deleted.
             </p>
             <input
               type="text"
@@ -69,12 +65,10 @@ export function ResetAccountPanel() {
                 setError(null);
               }}
               placeholder={PHRASE}
-              className="block h-9 w-full rounded-md bg-canvas/60 px-2.5 text-[13px] text-ink placeholder:text-ink-faint outline-none focus:bg-canvas"
+              className="block h-9 w-full rounded-md bg-canvas/60 px-2.5 text-[13px] text-ink outline-none placeholder:text-ink-faint focus:bg-canvas"
               autoFocus
             />
-            {error ? (
-              <p className="text-[11.5px] text-claret">{error}</p>
-            ) : null}
+            {error ? <p className="text-[11.5px] text-claret">{error}</p> : null}
             <div className="flex items-center justify-end gap-2">
               <button
                 type="button"
@@ -90,7 +84,7 @@ export function ResetAccountPanel() {
               <button
                 type="submit"
                 disabled={!ready || pending}
-                className="inline-flex h-8 items-center rounded-md border border-amber-400 bg-amber-50 px-3 text-[12px] text-amber-800 transition-base hover:bg-amber-100 disabled:opacity-40"
+                className="transition-base inline-flex h-8 items-center rounded-md border border-amber-400 bg-amber-50 px-3 text-[12px] text-amber-800 hover:bg-amber-100 disabled:opacity-40"
               >
                 {pending ? "Resetting…" : "Reset everything"}
               </button>

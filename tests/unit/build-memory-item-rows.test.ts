@@ -82,8 +82,18 @@ describe("buildMemoryItemRows — section routing", () => {
   it("forces receipts and invoices into finance", () => {
     const rows = buildMemoryItemRows({
       items: [
-        item({ title: "R", document_type: "receipt", suggested_section: "household", confidence: 0.95 }),
-        item({ title: "I", document_type: "invoice", suggested_section: "personal", confidence: 0.95 }),
+        item({
+          title: "R",
+          document_type: "receipt",
+          suggested_section: "household",
+          confidence: 0.95,
+        }),
+        item({
+          title: "I",
+          document_type: "invoice",
+          suggested_section: "personal",
+          confidence: 0.95,
+        }),
       ],
       organizationId: "org",
       uploadId: "up",
@@ -93,7 +103,14 @@ describe("buildMemoryItemRows — section routing", () => {
 
   it("honours a confident non-financial suggestion", () => {
     const rows = buildMemoryItemRows({
-      items: [item({ title: "Passport", document_type: "scanned_document", suggested_section: "travel", confidence: 0.9 })],
+      items: [
+        item({
+          title: "Passport",
+          document_type: "scanned_document",
+          suggested_section: "travel",
+          confidence: 0.9,
+        }),
+      ],
       organizationId: "org",
       uploadId: "up",
     });
@@ -102,7 +119,14 @@ describe("buildMemoryItemRows — section routing", () => {
 
   it("leaves a low-confidence suggestion Unsorted (null section)", () => {
     const rows = buildMemoryItemRows({
-      items: [item({ title: "Blurry note", document_type: "photo", suggested_section: "travel", confidence: 0.4 })],
+      items: [
+        item({
+          title: "Blurry note",
+          document_type: "photo",
+          suggested_section: "travel",
+          confidence: 0.4,
+        }),
+      ],
       organizationId: "org",
       uploadId: "up",
     });

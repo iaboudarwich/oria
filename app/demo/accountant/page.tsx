@@ -11,16 +11,16 @@ export default function AccountantRolePage() {
 
       <div className="mb-5 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-2">
-          <button className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-line bg-surface-raised px-3 text-[12px] text-ink-muted hover:text-ink hover:border-line-strong transition-base">
+          <button className="transition-base inline-flex h-8 items-center gap-1.5 rounded-lg border border-line bg-surface-raised px-3 text-[12px] text-ink-muted hover:border-line-strong hover:text-ink">
             <FilterIcon size={12} /> May
           </button>
-          <button className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-ink px-3 text-[12px] text-surface hover:bg-ink-soft transition-base">
+          <button className="transition-base inline-flex h-8 items-center gap-1.5 rounded-lg bg-ink px-3 text-[12px] text-surface hover:bg-ink-soft">
             <DownloadIcon size={12} /> Export
           </button>
         </div>
       </div>
 
-      <div className="space-y-6 animate-fade-up">
+      <div className="animate-fade-up space-y-6">
         <Stats />
         <Progress />
         <Categories />
@@ -51,7 +51,7 @@ function Stats() {
 function Progress() {
   return (
     <div className="rounded-xl border border-line bg-surface-raised p-5">
-      <div className="flex items-center justify-between mb-2">
+      <div className="mb-2 flex items-center justify-between">
         <p className="text-[12.5px] text-ink-muted">Reconciliation, May</p>
         <span className="text-[12px] text-ink-muted">96.4%</span>
       </div>
@@ -79,22 +79,25 @@ function Categories() {
       <div className="overflow-x-auto rounded-xl border border-line bg-surface-raised">
         <table className="w-full min-w-[520px] text-[13px]">
           <thead>
-            <tr className="text-left text-[11px] text-ink-faint border-b border-line">
+            <tr className="border-b border-line text-left text-[11px] text-ink-faint">
               <th className="px-4 py-2.5 font-medium">Category</th>
               <th className="px-3 py-2.5 font-medium">Amount</th>
               <th className="px-3 py-2.5 font-medium">Share</th>
-              <th className="px-4 py-2.5 font-medium text-right">YoY</th>
+              <th className="px-4 py-2.5 text-right font-medium">YoY</th>
             </tr>
           </thead>
           <tbody>
             {rows.map((r) => (
-              <tr key={r.cat} className="border-t border-line transition-base hover:bg-canvas/60">
+              <tr key={r.cat} className="transition-base border-t border-line hover:bg-canvas/60">
                 <td className="px-4 py-2.5 text-ink">{r.cat}</td>
                 <td className="px-3 py-2.5 text-ink">{r.v}</td>
                 <td className="px-3 py-2.5">
                   <div className="flex items-center gap-2">
                     <div className="h-1 w-16 overflow-hidden rounded-full bg-line">
-                      <div className="h-full rounded-full bg-accent" style={{ width: `${r.pct}%` }} />
+                      <div
+                        className="h-full rounded-full bg-accent"
+                        style={{ width: `${r.pct}%` }}
+                      />
                     </div>
                     <span className="text-[11.5px] text-ink-muted">{r.pct}%</span>
                   </div>
@@ -111,11 +114,41 @@ function Categories() {
 
 function Exceptions() {
   const rows = [
-    { d: "17 May", who: "Unknown, Nice", desc: "EUR 8,210 swipe", tone: "claret" as const, status: "Awaiting" },
-    { d: "12 May", who: "Pictet & Cie", desc: "FX rounding", tone: "champagne" as const, status: "Auto" },
-    { d: "09 May", who: "Vertumne", desc: "Possible duplicate", tone: "champagne" as const, status: "Contacted" },
-    { d: "04 May", who: "Capt. Mendez", desc: "Overtime coding", tone: "neutral" as const, status: "Coded" },
-    { d: "02 May", who: "Pacific Coast", desc: "Receipt missing", tone: "neutral" as const, status: "Requested" },
+    {
+      d: "17 May",
+      who: "Unknown, Nice",
+      desc: "EUR 8,210 swipe",
+      tone: "claret" as const,
+      status: "Awaiting",
+    },
+    {
+      d: "12 May",
+      who: "Pictet & Cie",
+      desc: "FX rounding",
+      tone: "champagne" as const,
+      status: "Auto",
+    },
+    {
+      d: "09 May",
+      who: "Vertumne",
+      desc: "Possible duplicate",
+      tone: "champagne" as const,
+      status: "Contacted",
+    },
+    {
+      d: "04 May",
+      who: "Capt. Mendez",
+      desc: "Overtime coding",
+      tone: "neutral" as const,
+      status: "Coded",
+    },
+    {
+      d: "02 May",
+      who: "Pacific Coast",
+      desc: "Receipt missing",
+      tone: "neutral" as const,
+      status: "Requested",
+    },
   ];
   return (
     <section>
@@ -126,19 +159,19 @@ function Exceptions() {
       <div className="overflow-x-auto rounded-xl border border-line bg-surface-raised">
         <table className="w-full min-w-[600px] text-[13px]">
           <thead>
-            <tr className="text-left text-[11px] text-ink-faint border-b border-line">
+            <tr className="border-b border-line text-left text-[11px] text-ink-faint">
               <th className="px-4 py-2.5 font-medium">Date</th>
               <th className="px-3 py-2.5 font-medium">Counterparty</th>
               <th className="px-3 py-2.5 font-medium">Description</th>
-              <th className="px-4 py-2.5 font-medium text-right">Status</th>
+              <th className="px-4 py-2.5 text-right font-medium">Status</th>
             </tr>
           </thead>
           <tbody>
             {rows.map((r, i) => (
-              <tr key={i} className="border-t border-line transition-base hover:bg-canvas/60">
-                <td className="px-4 py-2.5 text-ink-muted text-[12px]">{r.d}</td>
+              <tr key={i} className="transition-base border-t border-line hover:bg-canvas/60">
+                <td className="px-4 py-2.5 text-[12px] text-ink-muted">{r.d}</td>
                 <td className="px-3 py-2.5 text-ink">{r.who}</td>
-                <td className="px-3 py-2.5 text-ink-muted text-[12.5px]">{r.desc}</td>
+                <td className="px-3 py-2.5 text-[12.5px] text-ink-muted">{r.desc}</td>
                 <td className="px-4 py-2.5 text-right">
                   <Badge tone={r.tone}>
                     <Dot tone={r.tone} /> {r.status}

@@ -100,9 +100,7 @@ export async function moveSection(formData: FormData): Promise<void> {
   // doesn't depend on whatever default the next round of code thinks it is.
   // For ~20 rows this is fast.
   await Promise.all(
-    reordered.map((m, k) =>
-      upsertSetting(m.ref, { sort_order: k * 10, hidden: m.hidden }),
-    ),
+    reordered.map((m, k) => upsertSetting(m.ref, { sort_order: k * 10, hidden: m.hidden })),
   );
 
   revalidateSections();

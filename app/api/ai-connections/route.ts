@@ -3,10 +3,7 @@ import "server-only";
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { buildAdapter, type ProviderName } from "@/lib/ai-providers";
-import {
-  listAiConnections,
-  addAiConnection,
-} from "@/lib/data/ai-connections";
+import { listAiConnections, addAiConnection } from "@/lib/data/ai-connections";
 import { logAuditEvent } from "@/lib/data/audit-log";
 
 export const dynamic = "force-dynamic";
@@ -50,7 +47,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, status: result.status, error: result.error });
   }
 
-  const saved = await addAiConnection({ userId: user.id, provider: body.provider, apiKey: body.apiKey });
+  const saved = await addAiConnection({
+    userId: user.id,
+    provider: body.provider,
+    apiKey: body.apiKey,
+  });
   if (!saved.ok) return NextResponse.json({ ok: false, error: "save_failed" }, { status: 500 });
 
   await logAuditEvent({
@@ -59,5 +60,10 @@ export async function POST(request: Request) {
     resourceType: "ai_connection",
     metadata: { provider: body.provider, activated: saved.activated },
   });
-  return NextResponse.json({ ok: true, provider: body.provider, status: "active", activated: saved.activated });
+  return NextResponse.json({
+    ok: true,
+    provider: body.provider,
+    status: "active",
+    activated: saved.activated,
+  });
 }

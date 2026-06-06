@@ -36,7 +36,12 @@ export async function POST(request: Request) {
   } catch {
     return NextResponse.json({ error: "bad_request" }, { status: 400 });
   }
-  if (!body.organizationId || !body.sectionKey || !Array.isArray(body.files) || body.files.length === 0) {
+  if (
+    !body.organizationId ||
+    !body.sectionKey ||
+    !Array.isArray(body.files) ||
+    body.files.length === 0
+  ) {
     return NextResponse.json({ error: "bad_request" }, { status: 400 });
   }
 

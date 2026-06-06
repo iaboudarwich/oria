@@ -10,7 +10,7 @@ export async function SectionEventsPanel({ events }: { events: UpcomingEvent[] }
   const t = await getTranslations("cloud");
   return (
     <section className="rounded-2xl border border-line bg-surface-raised p-4">
-      <h2 className="mb-3 text-[13px] font-semibold uppercase tracking-[0.05em] text-ink-faint">
+      <h2 className="mb-3 text-[13px] font-semibold tracking-[0.05em] text-ink-faint uppercase">
         {t("events_heading")}
       </h2>
       <ul className="space-y-0.5">
@@ -40,7 +40,7 @@ export async function SectionEventsPanel({ events }: { events: UpcomingEvent[] }
           return (
             <li
               key={e.id}
-              className="flex items-center gap-3 rounded-lg px-2 py-1.5 transition-base hover:bg-canvas"
+              className="transition-base flex items-center gap-3 rounded-lg px-2 py-1.5 hover:bg-canvas"
             >
               {e.webViewLink ? (
                 <a

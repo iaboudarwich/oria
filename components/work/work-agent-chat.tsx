@@ -30,23 +30,16 @@ type ChatMessage = { role: "user" | "assistant"; content: string };
  * page; the model's standing context comes from workspace_context on
  * the server.
  */
-export function WorkAgentChat({
-  suggestions,
-}: {
-  suggestions: string[];
-}) {
+export function WorkAgentChat({ suggestions }: { suggestions: string[] }) {
   const [input, setInput] = useState("");
   const [turns, setTurns] = useState<Turn[]>([]);
   const [busy, setBusy] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const locale = useLocale() as Locale;
 
-  const updateTurn = useCallback(
-    (id: string, fn: (t: Turn) => Turn) => {
-      setTurns((prev) => prev.map((t) => (t.id === id ? fn(t) : t)));
-    },
-    [],
-  );
+  const updateTurn = useCallback((id: string, fn: (t: Turn) => Turn) => {
+    setTurns((prev) => prev.map((t) => (t.id === id ? fn(t) : t)));
+  }, []);
 
   // Stream /api/work/agent into turn `id`. Shared by send + retry.
   const runStream = useCallback(
@@ -119,9 +112,7 @@ export function WorkAgentChat({
         }
         if (!settled) {
           updateTurn(id, (t) =>
-            t.state === "streaming"
-              ? { ...t, state: "error", errorCode: "stream_incomplete" }
-              : t,
+            t.state === "streaming" ? { ...t, state: "error", errorCode: "stream_incomplete" } : t,
           );
         }
       } catch (e) {
@@ -215,7 +206,7 @@ export function WorkAgentChat({
                   <button
                     type="button"
                     onClick={() => void send(s)}
-                    className="cursor-pointer rounded-full border border-line bg-canvas px-2.5 py-1 text-[12px] text-ink-muted transition-base hover:border-line-strong hover:text-ink"
+                    className="transition-base cursor-pointer rounded-full border border-line bg-canvas px-2.5 py-1 text-[12px] text-ink-muted hover:border-line-strong hover:text-ink"
                   >
                     {s}
                   </button>
@@ -242,7 +233,7 @@ export function WorkAgentChat({
                   {t.state === "error" ? (
                     <WorkErrorMessage turn={t} onRetry={() => retry(t.id)} busy={busy} />
                   ) : t.answer ? (
-                    <p className="whitespace-pre-wrap text-[13.5px] leading-[1.55] text-ink">
+                    <p className="text-[13.5px] leading-[1.55] whitespace-pre-wrap text-ink">
                       {t.answer}
                     </p>
                   ) : (
@@ -269,7 +260,7 @@ export function WorkAgentChat({
           minRows={2}
           maxRows={8}
           placeholder="Ask the Work AI. Cmd/Ctrl + Enter to send."
-          className="block min-h-[44px] flex-1 rounded-xl border border-line bg-surface-raised px-3 py-2 text-[13.5px] text-ink placeholder:text-ink-faint outline-none transition-base focus:border-line-strong"
+          className="transition-base block min-h-[44px] flex-1 rounded-xl border border-line bg-surface-raised px-3 py-2 text-[13.5px] text-ink outline-none placeholder:text-ink-faint focus:border-line-strong"
         />
         <MicButton
           size="sm"
@@ -279,7 +270,7 @@ export function WorkAgentChat({
         <button
           type="submit"
           disabled={busy || input.trim().length === 0}
-          className="inline-flex h-10 cursor-pointer items-center gap-1.5 rounded-xl bg-ink px-3.5 text-[12.5px] text-surface transition-base hover:bg-ink-soft disabled:cursor-default disabled:opacity-50"
+          className="transition-base inline-flex h-10 cursor-pointer items-center gap-1.5 rounded-xl bg-ink px-3.5 text-[12.5px] text-surface hover:bg-ink-soft disabled:cursor-default disabled:opacity-50"
         >
           {busy ? "Thinking" : "Ask"}
           <ArrowRightIcon size={12} />
@@ -326,9 +317,7 @@ function WorkErrorMessage({
 
   let copy: string;
   if (code === "rate_limited" || code === "http_429") {
-    copy =
-      turn.errorMessage ??
-      "You've asked a lot in a short window. Try again in a minute.";
+    copy = turn.errorMessage ?? "You've asked a lot in a short window. Try again in a minute.";
   } else if (
     code.startsWith("http_5") ||
     code === "stream_failed" ||
@@ -346,7 +335,7 @@ function WorkErrorMessage({
         type="button"
         onClick={onRetry}
         disabled={busy}
-        className="inline-flex h-6 cursor-pointer items-center rounded-md border border-line bg-canvas px-2 text-[11.5px] text-ink-soft transition-base hover:border-line-strong hover:text-ink disabled:cursor-default disabled:opacity-40"
+        className="transition-base inline-flex h-6 cursor-pointer items-center rounded-md border border-line bg-canvas px-2 text-[11.5px] text-ink-soft hover:border-line-strong hover:text-ink disabled:cursor-default disabled:opacity-40"
       >
         Retry
       </button>

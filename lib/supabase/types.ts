@@ -1,13 +1,7 @@
 // Hand-written types matching supabase/migrations/0001_init.sql.
 // Re-generate with `supabase gen types typescript` once a project is linked.
 
-export type Role =
-  | "owner"
-  | "assistant"
-  | "staff"
-  | "household"
-  | "accountant"
-  | "external";
+export type Role = "owner" | "assistant" | "staff" | "household" | "accountant" | "external";
 
 export type Section =
   | "household"
@@ -61,13 +55,7 @@ export type DocumentType =
   | "resume"
   | "unknown";
 
-export type Json =
-  | string
-  | number
-  | boolean
-  | null
-  | { [k: string]: Json | undefined }
-  | Json[];
+export type Json = string | number | boolean | null | { [k: string]: Json | undefined } | Json[];
 
 type TimestampString = string;
 type UUID = string;
@@ -200,11 +188,7 @@ export interface Upload {
   group_id?: UUID | null;
 }
 
-export type UploadGroupStatus =
-  | "pending"
-  | "extracting"
-  | "merged"
-  | "split";
+export type UploadGroupStatus = "pending" | "extracting" | "merged" | "split";
 
 export interface UploadGroup {
   id: UUID;

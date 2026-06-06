@@ -53,7 +53,7 @@ export function Hint({
     <>
       {/* Backdrop. click anywhere outside the card to dismiss */}
       <div
-        className={`fixed inset-0 z-40 bg-ink/10 animate-fade-in ${hiddenOnDesktop}`}
+        className={`animate-fade-in fixed inset-0 z-40 bg-ink/10 ${hiddenOnDesktop}`}
         onClick={dismiss}
         aria-hidden
       />
@@ -62,20 +62,18 @@ export function Hint({
       <div
         role="dialog"
         aria-label={title}
-        className={`fixed bottom-6 right-6 z-50 w-80 rounded-2xl border border-line bg-surface-raised shadow-lg animate-fade-up ${hiddenOnDesktop}`}
+        className={`animate-fade-up fixed right-6 bottom-6 z-50 w-80 rounded-2xl border border-line bg-surface-raised shadow-lg ${hiddenOnDesktop}`}
       >
         <div className="flex items-start gap-3 p-4">
           <div className="flex-1">
             <p className="text-[13.5px] font-medium text-ink">{title}</p>
-            <p className="mt-1 text-[12.5px] leading-relaxed text-ink-muted">
-              {body}
-            </p>
+            <p className="mt-1 text-[12.5px] leading-relaxed text-ink-muted">{body}</p>
           </div>
           <button
             type="button"
             onClick={dismiss}
             aria-label="Dismiss"
-            className="shrink-0 rounded-lg p-1 text-ink-faint transition-base hover:bg-surface hover:text-ink"
+            className="transition-base shrink-0 rounded-lg p-1 text-ink-faint hover:bg-surface hover:text-ink"
           >
             <CloseIcon size={14} />
           </button>
@@ -84,7 +82,7 @@ export function Hint({
           <button
             type="button"
             onClick={dismiss}
-            className="text-[12px] text-ink-muted transition-base hover:text-ink"
+            className="transition-base text-[12px] text-ink-muted hover:text-ink"
           >
             Got it
           </button>

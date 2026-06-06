@@ -75,11 +75,7 @@ export function ModeToggle({ active }: { active: Mode }) {
         active={displayed === "personal"}
         onClick={() => switchTo("personal")}
       />
-      <ModePill
-        label="Work"
-        active={displayed === "work"}
-        onClick={() => switchTo("work")}
-      />
+      <ModePill label="Work" active={displayed === "work"} onClick={() => switchTo("work")} />
     </div>
   );
 }
@@ -99,7 +95,7 @@ function ModePill({
       role="tab"
       onClick={onClick}
       aria-selected={active}
-      className={`flex-1 cursor-pointer rounded-md py-1 text-[12px] transition-base focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink ${
+      className={`transition-base flex-1 cursor-pointer rounded-md py-1 text-[12px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink ${
         active
           ? "bg-surface-raised text-ink shadow-[0_1px_2px_rgba(28,26,23,0.06)]"
           : "text-ink-muted hover:text-ink"

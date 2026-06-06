@@ -24,7 +24,7 @@ export async function HealthStatCard({
   if (!data && !rituals) return null;
 
   const usesRecovery = data?.recoveryPct != null;
-  const score = usesRecovery ? data!.recoveryPct! : data?.sleepPct ?? null;
+  const score = usesRecovery ? data!.recoveryPct! : (data?.sleepPct ?? null);
   const metricLabel = usesRecovery ? t("recovery") : t("sleep_performance");
   const colorVar = usesRecovery ? DATA_VAR.recovery : DATA_VAR.sleep;
   const trackVar = usesRecovery ? DATA_TRACK.recovery : DATA_TRACK.sleep;
@@ -44,7 +44,7 @@ export async function HealthStatCard({
   return (
     <Link
       href="/dashboard/health"
-      className="block rounded-card border border-line bg-surface p-4 shadow-soft transition-base hover:border-ink/20"
+      className="transition-base block rounded-card border border-line bg-surface p-4 shadow-soft hover:border-ink/20"
     >
       <div className="flex items-center justify-between">
         <Eyebrow>{t("today_title")}</Eyebrow>

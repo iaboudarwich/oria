@@ -49,7 +49,10 @@ export async function createReminder(formData: FormData): Promise<void> {
 
   const upload_id_raw = String(formData.get("upload_id") ?? "").trim();
   const upload_id = upload_id_raw || null;
-  const notes = String(formData.get("notes") ?? "").trim().slice(0, 2000) || null;
+  const notes =
+    String(formData.get("notes") ?? "")
+      .trim()
+      .slice(0, 2000) || null;
 
   const ctx = await requireContext();
   const supabase = await createClient();
@@ -103,7 +106,10 @@ export async function updateReminder(formData: FormData): Promise<void> {
   if (!id) return;
   const title = String(formData.get("title") ?? "").trim();
   if (!title) return;
-  const notes = String(formData.get("notes") ?? "").trim().slice(0, 2000) || null;
+  const notes =
+    String(formData.get("notes") ?? "")
+      .trim()
+      .slice(0, 2000) || null;
   const due_at = await resolveDueAtFromForm(formData);
 
   const ctx = await requireContext();
@@ -122,8 +128,7 @@ export async function updateReminder(formData: FormData): Promise<void> {
   await logAuditEvent({
     userId: ctx.profile.id,
     organizationId:
-      (row as { organization_id?: string } | null)?.organization_id ??
-      ctx.organization.id,
+      (row as { organization_id?: string } | null)?.organization_id ?? ctx.organization.id,
     action: "reminder.updated",
     resourceType: "reminder",
     resourceId: id,
@@ -193,15 +198,12 @@ export async function deleteReminder(formData: FormData): Promise<void> {
     .in("organization_id", allowedOrgIds)
     .maybeSingle();
 
-  await supabase
-    .from("reminders")
-    .delete()
-    .eq("id", id)
-    .in("organization_id", allowedOrgIds);
+  await supabase.from("reminders").delete().eq("id", id).in("organization_id", allowedOrgIds);
 
   await logAuditEvent({
     userId: ctx.profile.id,
-    organizationId: (before as { organization_id?: string } | null)?.organization_id ?? ctx.organization.id,
+    organizationId:
+      (before as { organization_id?: string } | null)?.organization_id ?? ctx.organization.id,
     action: "reminder.deleted",
     resourceType: "reminder",
     resourceId: id,
@@ -273,9 +275,7 @@ export async function confirmReminder(formData: FormData): Promise<void> {
     .select("organization_id")
     .maybeSingle();
 
-  const orgId =
-    (row as { organization_id: string } | null)?.organization_id ??
-    ctx.organization.id;
+  const orgId = (row as { organization_id: string } | null)?.organization_id ?? ctx.organization.id;
   void recordLearningEvent({
     organizationId: orgId,
     actorId: ctx.profile.id,

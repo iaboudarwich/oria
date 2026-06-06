@@ -15,7 +15,9 @@ import type { Section } from "@/lib/supabase/types";
  *   source?:    "user" | "confirmation" (defaults to "user")
  */
 export async function addSectionMemory(formData: FormData): Promise<void> {
-  const content = String(formData.get("content") ?? "").trim().slice(0, 500);
+  const content = String(formData.get("content") ?? "")
+    .trim()
+    .slice(0, 500);
   if (!content) return;
 
   const scope = readScope(formData);

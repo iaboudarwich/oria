@@ -12,13 +12,7 @@ import { toggleReminderDone } from "@/lib/data/reminder-actions";
  * and the page revalidates the calendar route only (not the entire
  * layout) so the sidebar stays warm.
  */
-export function ReminderCheckbox({
-  id,
-  initialDone,
-}: {
-  id: string;
-  initialDone: boolean;
-}) {
+export function ReminderCheckbox({ id, initialDone }: { id: string; initialDone: boolean }) {
   const [done, setDone] = useOptimistic(initialDone);
   const [, startTransition] = useTransition();
 
@@ -39,7 +33,7 @@ export function ReminderCheckbox({
       type="button"
       onClick={onClick}
       aria-label={done ? "Mark not done" : "Mark done"}
-      className={`inline-flex h-4 w-4 items-center justify-center rounded border transition-base ${
+      className={`transition-base inline-flex h-4 w-4 items-center justify-center rounded border ${
         done
           ? "border-sage bg-sage text-surface"
           : "border-line-strong bg-surface hover:border-ink-muted"

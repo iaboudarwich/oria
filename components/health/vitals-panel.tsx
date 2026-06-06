@@ -6,13 +6,7 @@ import { HealthTimelineView } from "@/components/sections/health-timeline-view";
 /** Vitals: the medical record. Appointments, prescriptions, and lab results
  *  Oria has filed into the Health section, plus the drop / type affordances to
  *  add more. Reuses the existing HealthTimelineView so nothing is duplicated. */
-export async function VitalsPanel({
-  orgId,
-  filter,
-}: {
-  orgId: string;
-  filter?: string;
-}) {
+export async function VitalsPanel({ orgId, filter }: { orgId: string; filter?: string }) {
   const t = await getTranslations("health");
   return (
     <div className="space-y-5">

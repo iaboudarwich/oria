@@ -23,6 +23,6 @@ export async function POST() {
   if (!conn) return NextResponse.json({ error: "no_connection" }, { status: 404 });
 
   const result = await buildAdapter(conn.provider, conn.apiKey).validateKey();
-  await setAiConnectionStatus(user.id, result.status, result.valid ? null : result.error ?? null);
+  await setAiConnectionStatus(user.id, result.status, result.valid ? null : (result.error ?? null));
   return NextResponse.json({ status: result.status, valid: result.valid });
 }

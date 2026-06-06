@@ -14,8 +14,22 @@ import type {
   QueryType,
 } from "./types";
 
-export type { ProviderAdapter, ProviderName, QueryType, Message, CompletionOptions, CompletionResult } from "./types";
-export type { ValidationResult, ConnectionStatus, ContentPart, ToolDef, ToolCall, ErrorKind } from "./types";
+export type {
+  ProviderAdapter,
+  ProviderName,
+  QueryType,
+  Message,
+  CompletionOptions,
+  CompletionResult,
+} from "./types";
+export type {
+  ValidationResult,
+  ConnectionStatus,
+  ContentPart,
+  ToolDef,
+  ToolCall,
+  ErrorKind,
+} from "./types";
 
 import type { Message as Msg, CompletionOptions as Opts, CompletionResult as Res } from "./types";
 

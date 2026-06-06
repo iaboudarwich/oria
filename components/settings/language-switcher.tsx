@@ -33,9 +33,7 @@ export function LanguageSwitcher({
     <div className="space-y-5">
       {/* Account language */}
       <div>
-        <label className="block text-[13px] text-ink mb-1">
-          Account language
-        </label>
+        <label className="mb-1 block text-[13px] text-ink">Account language</label>
         <p className="mb-2 text-[11.5px] text-ink-faint">
           Controls the language of buttons, menus, and navigation.
         </p>
@@ -55,9 +53,7 @@ export function LanguageSwitcher({
       {/* Workspace content language. owner only */}
       {isOwner && (
         <div>
-          <label className="block text-[13px] text-ink mb-1">
-            Workspace content language
-          </label>
+          <label className="mb-1 block text-[13px] text-ink">Workspace content language</label>
           <p className="mb-2 text-[11.5px] text-ink-faint">
             Controls section names and AI-generated content for this workspace.
           </p>

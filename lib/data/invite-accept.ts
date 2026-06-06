@@ -27,13 +27,7 @@ export type InvitePreview = {
 
 export type InvitePreviewByCode = InvitePreview & { token: string };
 
-export type AcceptInviteFailure =
-  | "auth"
-  | "missing"
-  | "revoked"
-  | "used"
-  | "expired"
-  | "error";
+export type AcceptInviteFailure = "auth" | "missing" | "revoked" | "used" | "expired" | "error";
 
 export type AcceptInviteResult =
   | { ok: true; organizationId: string }
@@ -43,9 +37,7 @@ export type AcceptInviteResult =
  * Read-only preview of an invite by long-form token. Safe to call without
  * being a member of the target org. backed by a SECURITY DEFINER RPC.
  */
-export async function previewInvite(
-  token: string,
-): Promise<InvitePreview | null> {
+export async function previewInvite(token: string): Promise<InvitePreview | null> {
   if (!token) return null;
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("lookup_invite", {
@@ -55,9 +47,7 @@ export async function previewInvite(
   return data[0] as InvitePreview;
 }
 
-export async function previewInviteByCode(
-  code: string,
-): Promise<InvitePreviewByCode | null> {
+export async function previewInviteByCode(code: string): Promise<InvitePreviewByCode | null> {
   if (!code) return null;
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("lookup_invite_by_code", {
@@ -75,9 +65,7 @@ export async function previewInviteByCode(
  * On success, also sets the active-space cookie to the joined org so the
  * caller can just `redirect("/dashboard")` and land inside it.
  */
-export async function tryAcceptInvite(
-  token: string,
-): Promise<AcceptInviteResult> {
+export async function tryAcceptInvite(token: string): Promise<AcceptInviteResult> {
   if (!token) return { ok: false, reason: "missing" };
 
   const supabase = await createClient();
@@ -117,24 +105,15 @@ export async function tryAcceptInvite(
     } = await supabase.auth.getUser();
     if (user) {
       const [profileRes, orgRes] = await Promise.all([
-        supabase
-          .from("profiles")
-          .select("full_name, email")
-          .eq("id", user.id)
-          .maybeSingle(),
-        supabase
-          .from("organizations")
-          .select("name, kind")
-          .eq("id", orgId)
-          .maybeSingle(),
+        supabase.from("profiles").select("full_name, email").eq("id", user.id).maybeSingle(),
+        supabase.from("organizations").select("name, kind").eq("id", orgId).maybeSingle(),
       ]);
       const profile = profileRes.data as {
         full_name?: string;
         email?: string;
       } | null;
       const org = orgRes.data as { name?: string; kind?: string } | null;
-      const name =
-        profile?.full_name ?? profile?.email ?? user.email ?? "Someone";
+      const name = profile?.full_name ?? profile?.email ?? user.email ?? "Someone";
       const spaceName = org?.name ?? "your new space";
 
       void recordSystemEvent({

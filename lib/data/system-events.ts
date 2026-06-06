@@ -149,9 +149,7 @@ export async function countEvents(input: {
 }): Promise<number> {
   try {
     const admin = createAdminClient();
-    let q = admin
-      .from("system_events")
-      .select("id", { count: "exact", head: true });
+    let q = admin.from("system_events").select("id", { count: "exact", head: true });
     if (input.kind) q = q.eq("kind", input.kind);
     if (input.severity) q = q.eq("severity", input.severity);
     if (input.sinceISO) q = q.gte("created_at", input.sinceISO);
@@ -175,8 +173,7 @@ export async function listUserVisibleEvents(input: {
   if (input.organizationIds.length === 0) return [];
   try {
     const admin = createAdminClient();
-    const since =
-      input.sinceISO ?? new Date(Date.now() - 24 * 3600 * 1000).toISOString();
+    const since = input.sinceISO ?? new Date(Date.now() - 24 * 3600 * 1000).toISOString();
     const { data } = await admin
       .from("system_events")
       .select("*")
@@ -255,11 +252,7 @@ export async function sumEventContextFields(input: {
   for (const f of input.fields) out[f] = 0;
   try {
     const admin = createAdminClient();
-    let q = admin
-      .from("system_events")
-      .select("context")
-      .eq("kind", input.kind)
-      .limit(5000);
+    let q = admin.from("system_events").select("context").eq("kind", input.kind).limit(5000);
     if (input.sinceISO) q = q.gte("created_at", input.sinceISO);
     const { data } = await q;
     for (const row of (data ?? []) as Array<{

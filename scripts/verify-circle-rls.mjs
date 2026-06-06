@@ -25,7 +25,9 @@ const URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SRK = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const ANON = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 if (!URL || !SRK || !ANON) {
-  console.error("Missing env (NEXT_PUBLIC_SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY / NEXT_PUBLIC_SUPABASE_ANON_KEY)");
+  console.error(
+    "Missing env (NEXT_PUBLIC_SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY / NEXT_PUBLIC_SUPABASE_ANON_KEY)",
+  );
   process.exit(1);
 }
 const admin = createClient(URL, SRK, { auth: { persistSession: false } });
@@ -56,16 +58,38 @@ try {
   // Two temp users.
   const oEmail = `crcl-owner-${randomUUID().slice(0, 8)}@example.com`;
   const mEmail = `crcl-member-${randomUUID().slice(0, 8)}@example.com`;
-  owner = (await admin.auth.admin.createUser({ email: oEmail, password: pw, email_confirm: true })).data.user?.id;
-  member = (await admin.auth.admin.createUser({ email: mEmail, password: pw, email_confirm: true })).data.user?.id;
+  owner = (await admin.auth.admin.createUser({ email: oEmail, password: pw, email_confirm: true }))
+    .data.user?.id;
+  member = (await admin.auth.admin.createUser({ email: mEmail, password: pw, email_confirm: true }))
+    .data.user?.id;
   check("temp owner + member created", !!owner && !!member);
 
   // Owner's PRIVATE (personal) space + a CIRCLE the member also belongs to.
   personalOrg = (
-    await admin.from("organizations").insert({ slug: `p-${randomUUID().slice(0, 8)}`, name: "Personal", kind: "personal", parent_kind: "personal", created_by: owner }).select("id").single()
+    await admin
+      .from("organizations")
+      .insert({
+        slug: `p-${randomUUID().slice(0, 8)}`,
+        name: "Personal",
+        kind: "personal",
+        parent_kind: "personal",
+        created_by: owner,
+      })
+      .select("id")
+      .single()
   ).data?.id;
   circleOrg = (
-    await admin.from("organizations").insert({ slug: `c-${randomUUID().slice(0, 8)}`, name: "Family", kind: "circle", parent_kind: "personal", created_by: owner }).select("id").single()
+    await admin
+      .from("organizations")
+      .insert({
+        slug: `c-${randomUUID().slice(0, 8)}`,
+        name: "Family",
+        kind: "circle",
+        parent_kind: "personal",
+        created_by: owner,
+      })
+      .select("id")
+      .single()
   ).data?.id;
   await admin.from("memberships").insert([
     { organization_id: personalOrg, user_id: owner, role: "owner", access_level: "owner" },
@@ -76,10 +100,18 @@ try {
 
   // One PRIVATE item, one CIRCLE item.
   privateItem = (
-    await admin.from("memory_items").insert({ organization_id: personalOrg, title: "Private note", entities: {}, facts: {} }).select("id").single()
+    await admin
+      .from("memory_items")
+      .insert({ organization_id: personalOrg, title: "Private note", entities: {}, facts: {} })
+      .select("id")
+      .single()
   ).data?.id;
   circleItem = (
-    await admin.from("memory_items").insert({ organization_id: circleOrg, title: "Shared note", entities: {}, facts: {} }).select("id").single()
+    await admin
+      .from("memory_items")
+      .insert({ organization_id: circleOrg, title: "Shared note", entities: {}, facts: {} })
+      .select("id")
+      .single()
   ).data?.id;
   check("private + circle items seeded", !!privateItem && !!circleItem);
 
@@ -87,27 +119,46 @@ try {
   const ownerC = await userClient(oEmail, pw);
   const memberC = await userClient(mEmail, pw);
 
-  const ownerSees = (await ownerC.from("memory_items").select("id").in("id", [privateItem, circleItem])).data ?? [];
+  const ownerSees =
+    (await ownerC.from("memory_items").select("id").in("id", [privateItem, circleItem])).data ?? [];
   check("owner sees the UNION (private + circle)", ownerSees.length === 2, `${ownerSees.length}/2`);
 
-  const memberSeesCircle = (await memberC.from("memory_items").select("id").eq("id", circleItem)).data ?? [];
+  const memberSeesCircle =
+    (await memberC.from("memory_items").select("id").eq("id", circleItem)).data ?? [];
   check("member sees the circle item", memberSeesCircle.length === 1);
 
-  const memberSeesPrivate = (await memberC.from("memory_items").select("id").eq("id", privateItem)).data ?? [];
+  const memberSeesPrivate =
+    (await memberC.from("memory_items").select("id").eq("id", privateItem)).data ?? [];
   check("member CANNOT see the owner's PRIVATE item", memberSeesPrivate.length === 0);
 
   // Removed member loses access immediately.
   await admin.from("memberships").delete().eq("organization_id", circleOrg).eq("user_id", member);
   const removedC = await userClient(mEmail, pw);
-  const afterRemoval = (await removedC.from("memory_items").select("id").in("id", [privateItem, circleItem])).data ?? [];
-  check("a REMOVED member immediately loses access (sees nothing)", afterRemoval.length === 0, `${afterRemoval.length}`);
+  const afterRemoval =
+    (await removedC.from("memory_items").select("id").in("id", [privateItem, circleItem])).data ??
+    [];
+  check(
+    "a REMOVED member immediately loses access (sees nothing)",
+    afterRemoval.length === 0,
+    `${afterRemoval.length}`,
+  );
 
   // --- ORPHAN RULE: circle delete reverts items to the owner's private space ---
-  await admin.from("memory_items").update({ organization_id: personalOrg }).eq("organization_id", circleOrg);
+  await admin
+    .from("memory_items")
+    .update({ organization_id: personalOrg })
+    .eq("organization_id", circleOrg);
   await admin.from("organizations").delete().eq("id", circleOrg);
-  const survived = (await admin.from("memory_items").select("organization_id").eq("id", circleItem).maybeSingle()).data;
-  check("orphan rule: the circle item SURVIVED, reverted to owner private", survived?.organization_id === personalOrg);
-  const circleGone = (await admin.from("organizations").select("id").eq("id", circleOrg).maybeSingle()).data;
+  const survived = (
+    await admin.from("memory_items").select("organization_id").eq("id", circleItem).maybeSingle()
+  ).data;
+  check(
+    "orphan rule: the circle item SURVIVED, reverted to owner private",
+    survived?.organization_id === personalOrg,
+  );
+  const circleGone = (
+    await admin.from("organizations").select("id").eq("id", circleOrg).maybeSingle()
+  ).data;
   check("the circle org is gone", !circleGone);
 } catch (e) {
   check("no unexpected error", false, e instanceof Error ? e.message : String(e));

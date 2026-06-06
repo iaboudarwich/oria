@@ -14,10 +14,7 @@ import { createHmac } from "node:crypto";
  * Single source of truth shared by the extraction client, the Gmail scan
  * client, and the Google cloud (Drive/Calendar) client.
  */
-export function sidecarAuthHeaders(
-  method: "POST" | "GET",
-  path: string,
-): Record<string, string> {
+export function sidecarAuthHeaders(method: "POST" | "GET", path: string): Record<string, string> {
   const secret = process.env.ORIA_SIDECAR_SECRET;
   if (!secret) return {};
   const ts = Math.floor(Date.now() / 1000).toString();

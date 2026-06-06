@@ -22,7 +22,8 @@ export async function purgeExpiredSoftDeletes(): Promise<{ orgs: number; section
     .select("id, created_by, name")
     .not("deleted_at", "is", null)
     .lt("deleted_at", cutoff);
-  for (const o of (orgRows as { id: string; created_by: string | null; name: string }[] | null) ?? []) {
+  for (const o of (orgRows as { id: string; created_by: string | null; name: string }[] | null) ??
+    []) {
     await admin.from("organizations").delete().eq("id", o.id);
     orgs += 1;
     if (o.created_by) {
@@ -41,7 +42,8 @@ export async function purgeExpiredSoftDeletes(): Promise<{ orgs: number; section
     .select("id, created_by, name")
     .not("deleted_at", "is", null)
     .lt("deleted_at", cutoff);
-  for (const s of (secRows as { id: string; created_by: string | null; name: string }[] | null) ?? []) {
+  for (const s of (secRows as { id: string; created_by: string | null; name: string }[] | null) ??
+    []) {
     await admin.from("custom_sections").delete().eq("id", s.id);
     sections += 1;
     if (s.created_by) {

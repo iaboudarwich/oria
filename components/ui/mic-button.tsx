@@ -23,7 +23,17 @@ type MicButtonProps = {
 
 function MicIcon({ size }: { size: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
       <rect x="9" y="3" width="6" height="11" rx="3" />
       <path d="M5 11a7 7 0 0 0 14 0" />
       <path d="M12 18v3" />
@@ -69,12 +79,9 @@ export function MicButton({
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const startTimeRef = useRef<number>(0);
 
-  const dispatch = useCallback(
-    (event: Parameters<typeof nextRecordingState>[1]) => {
-      setState((s) => nextRecordingState(s, event));
-    },
-    [],
-  );
+  const dispatch = useCallback((event: Parameters<typeof nextRecordingState>[1]) => {
+    setState((s) => nextRecordingState(s, event));
+  }, []);
 
   const stopTimer = useCallback(() => {
     if (timerRef.current) {
@@ -146,9 +153,7 @@ export function MicButton({
       }, 100);
     } catch (err) {
       const msg =
-        err instanceof Error && err.name === "NotAllowedError"
-          ? t("error_denied")
-          : t("error_mic");
+        err instanceof Error && err.name === "NotAllowedError" ? t("error_denied") : t("error_mic");
       failTransient(msg, 4000);
     }
   }
@@ -193,20 +198,18 @@ export function MicButton({
         aria-label={label}
         aria-pressed={isPressed(state)}
         title={error ?? label}
-        className={`${btnSize} inline-flex items-center justify-center rounded-full transition-base
-          ${
-            recording
-              ? "bg-claret text-surface animate-mic-breathe"
-              : transcribing
-                ? "bg-ink/10 text-ink-faint cursor-wait"
-                : state === "error"
-                  ? "bg-claret/10 text-claret"
-                  : `bg-canvas border border-line text-ink-muted hover:bg-surface-raised hover:text-ink ${breatheWhenIdle ? "animate-mic-breathe" : ""}`
-          }
-          disabled:cursor-wait`}
+        className={`${btnSize} transition-base inline-flex items-center justify-center rounded-full ${
+          recording
+            ? "animate-mic-breathe bg-claret text-surface"
+            : transcribing
+              ? "cursor-wait bg-ink/10 text-ink-faint"
+              : state === "error"
+                ? "bg-claret/10 text-claret"
+                : `border border-line bg-canvas text-ink-muted hover:bg-surface-raised hover:text-ink ${breatheWhenIdle ? "animate-mic-breathe" : ""}`
+        } disabled:cursor-wait`}
       >
         {transcribing ? (
-          <span className="h-3.5 w-3.5 rounded-full border-2 border-ink-faint border-t-transparent animate-spin" />
+          <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-ink-faint border-t-transparent" />
         ) : (
           <MicIcon size={iconSize} />
         )}
@@ -224,7 +227,7 @@ export function MicButton({
         {status}
       </span>
       {state === "error" && error && (
-        <div className="absolute bottom-full mb-1 w-48 rounded-lg bg-ink px-2.5 py-1.5 text-[11px] text-surface shadow-md z-50">
+        <div className="absolute bottom-full z-50 mb-1 w-48 rounded-lg bg-ink px-2.5 py-1.5 text-[11px] text-surface shadow-md">
           {error}
         </div>
       )}

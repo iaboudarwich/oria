@@ -85,7 +85,12 @@ export function CaptureBar() {
     const nowISO = new Date().toISOString();
     const confirmation = tp("filed", { section: offer.sectionLabel });
     startTransition(async () => {
-      const res = await confirmPaste({ text: text.trim(), section: offer.section, timezone, nowISO });
+      const res = await confirmPaste({
+        text: text.trim(),
+        section: offer.section,
+        timezone,
+        nowISO,
+      });
       if (res.ok) {
         setFiled(confirmation);
         setOffer(null);
@@ -136,7 +141,7 @@ export function CaptureBar() {
         setDrag(false);
         if (e.dataTransfer.files?.length) void uploadFiles(e.dataTransfer.files);
       }}
-      className={`relative rounded-card border bg-surface p-2 shadow-soft transition-base ${
+      className={`transition-base relative rounded-card border bg-surface p-2 shadow-soft ${
         drag ? "border-brand" : "border-line"
       }`}
     >
@@ -164,7 +169,7 @@ export function CaptureBar() {
           minRows={1}
           maxRows={6}
           aria-label={t("placeholder")}
-          className="min-w-0 flex-1 bg-transparent px-2.5 py-2 text-[14px] text-ink placeholder:text-ink-faint outline-none"
+          className="min-w-0 flex-1 bg-transparent px-2.5 py-2 text-[14px] text-ink outline-none placeholder:text-ink-faint"
         />
 
         <input
@@ -181,7 +186,7 @@ export function CaptureBar() {
           type="button"
           onClick={() => inputRef.current?.click()}
           aria-label={t("attach")}
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-line bg-surface-3 text-ink-muted transition-base hover:text-ink"
+          className="transition-base flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-line bg-surface-3 text-ink-muted hover:text-ink"
         >
           <PaperclipIcon size={17} />
         </button>
@@ -195,7 +200,7 @@ export function CaptureBar() {
           onClick={submit}
           aria-label={t("send")}
           disabled={!text.trim() || !!offer}
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand text-accent-ink transition-base disabled:opacity-40"
+          className="transition-base flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand text-accent-ink disabled:opacity-40"
         >
           <SendIcon size={17} />
         </button>
@@ -216,14 +221,14 @@ export function CaptureBar() {
             type="button"
             onClick={addPaste}
             disabled={pending}
-            className="rounded-lg bg-brand px-3 py-1.5 text-[12.5px] font-medium text-accent-ink transition-base disabled:opacity-50"
+            className="transition-base rounded-lg bg-brand px-3 py-1.5 text-[12.5px] font-medium text-accent-ink disabled:opacity-50"
           >
             {tp("add", { section: offer.sectionLabel })}
           </button>
           <button
             type="button"
             onClick={() => setOffer(null)}
-            className="text-[12px] text-ink-muted transition-base hover:text-ink"
+            className="transition-base text-[12px] text-ink-muted hover:text-ink"
           >
             {tp("dismiss")}
           </button>

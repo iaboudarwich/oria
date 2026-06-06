@@ -14,8 +14,8 @@ export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
 
   const options: Array<{ value: string; label: string; icon: React.ReactNode }> = [
-    { value: "dark",   label: "Dark",   icon: <MoonIcon /> },
-    { value: "light",  label: "Light",  icon: <SunIcon /> },
+    { value: "dark", label: "Dark", icon: <MoonIcon /> },
+    { value: "light", label: "Light", icon: <SunIcon /> },
   ];
 
   return (
@@ -31,10 +31,8 @@ export function ThemeToggle() {
             type="button"
             suppressHydrationWarning
             onClick={() => setTheme(opt.value)}
-            className={`inline-flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-[12.5px] transition-base ${
-              active
-                ? "bg-surface-raised text-ink shadow-xs"
-                : "text-ink-muted hover:text-ink"
+            className={`transition-base inline-flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-[12.5px] ${
+              active ? "bg-surface-raised text-ink shadow-xs" : "text-ink-muted hover:text-ink"
             }`}
           >
             <span className={active ? "text-brand" : ""}>{opt.icon}</span>

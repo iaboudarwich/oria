@@ -35,9 +35,9 @@ function bill(p: Partial<BillItem>): BillItem {
 describe("summarizeSpend", () => {
   it("reports no data for an empty / amount-less set", () => {
     expect(summarizeSpend([], now).hasData).toBe(false);
-    expect(
-      summarizeSpend([bill({ occurred_at: "2026-06-01T00:00:00Z" })], now).hasData,
-    ).toBe(false); // no amount_normalized
+    expect(summarizeSpend([bill({ occurred_at: "2026-06-01T00:00:00Z" })], now).hasData).toBe(
+      false,
+    ); // no amount_normalized
   });
 
   it("sums this month and last month, and the MoM delta", () => {

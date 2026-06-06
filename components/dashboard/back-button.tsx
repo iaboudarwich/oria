@@ -22,7 +22,7 @@ export function BackButton({ href, label }: { href: string; label?: string }) {
         if (typeof window !== "undefined" && window.history.length > 1) router.back();
         else router.push(href);
       }}
-      className="inline-flex h-9 items-center gap-1 rounded-lg px-2.5 text-[12.5px] text-ink-muted transition-base hover:bg-surface-raised hover:text-ink"
+      className="transition-base inline-flex h-9 items-center gap-1 rounded-lg px-2.5 text-[12.5px] text-ink-muted hover:bg-surface-raised hover:text-ink"
     >
       <ChevronLeftIcon size={14} className="oria-icon-dir" />
       {label ?? t("back")}

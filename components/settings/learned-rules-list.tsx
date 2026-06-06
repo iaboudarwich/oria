@@ -45,7 +45,7 @@ export function LearnedRulesList({ rules }: { rules: LearnedRule[] }) {
             type="button"
             onClick={() => remove(r.id)}
             disabled={pending}
-            className="shrink-0 text-[12px] text-ink-faint transition-base hover:text-claret disabled:opacity-50"
+            className="transition-base shrink-0 text-[12px] text-ink-faint hover:text-claret disabled:opacity-50"
           >
             {t("remove")}
           </button>

@@ -1,11 +1,6 @@
 import { DemoTopbar } from "@/components/demo/demo-shell";
 import { Badge, Dot } from "@/components/ui/badge";
-import {
-  CheckIcon,
-  ClockIcon,
-  PaperclipIcon,
-  UploadIcon,
-} from "@/components/ui/icon";
+import { CheckIcon, ClockIcon, PaperclipIcon, UploadIcon } from "@/components/ui/icon";
 
 export const metadata = { title: "Staff" };
 
@@ -14,8 +9,7 @@ export default function StaffRolePage() {
     <>
       <DemoTopbar title="Welcome, Henri" />
 
-
-      <div className="space-y-6 animate-fade-up">
+      <div className="animate-fade-up space-y-6">
         <Stats />
 
         <div className="grid gap-5 lg:grid-cols-3">
@@ -63,11 +57,11 @@ function Today() {
         <h2 className="text-[14px] font-semibold text-ink">My day</h2>
         <span className="text-[12px] text-ink-muted">Tue 18 May</span>
       </div>
-      <ul className="rounded-xl border border-line bg-surface-raised divide-y divide-line">
+      <ul className="divide-y divide-line rounded-xl border border-line bg-surface-raised">
         {items.map((it) => (
           <li
             key={it.title}
-            className={`flex items-center gap-3 px-4 py-3 transition-base hover:bg-canvas/60 ${it.done ? "opacity-60" : ""}`}
+            className={`transition-base flex items-center gap-3 px-4 py-3 hover:bg-canvas/60 ${it.done ? "opacity-60" : ""}`}
           >
             <span
               className={`inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-md border ${
@@ -79,7 +73,9 @@ function Today() {
               <CheckIcon size={11} />
             </span>
             <div className="min-w-0 flex-1">
-              <p className={`text-[13.5px] ${it.done ? "text-ink-muted line-through" : "text-ink"}`}>
+              <p
+                className={`text-[13.5px] ${it.done ? "text-ink-muted line-through" : "text-ink"}`}
+              >
                 {it.title}
               </p>
               <p className="mt-0.5 flex items-center gap-1.5 text-[11.5px] text-ink-muted">
@@ -114,7 +110,7 @@ function Checklist() {
         <h2 className="text-[14px] font-semibold text-ink">Arrival, in 4 days</h2>
         <Badge tone="champagne">3 / 6</Badge>
       </div>
-      <ul className="rounded-xl border border-line bg-surface-raised divide-y divide-line">
+      <ul className="divide-y divide-line rounded-xl border border-line bg-surface-raised">
         {checks.map((c) => (
           <li key={c.label} className="flex items-center gap-2.5 px-4 py-2.5">
             <span
@@ -126,7 +122,9 @@ function Checklist() {
             >
               <CheckIcon size={10} />
             </span>
-            <span className={`flex-1 text-[13px] ${c.done ? "text-ink-muted line-through" : "text-ink"}`}>
+            <span
+              className={`flex-1 text-[13px] ${c.done ? "text-ink-muted line-through" : "text-ink"}`}
+            >
               {c.label}
             </span>
             {c.done && <Dot tone="sage" />}
@@ -146,7 +144,7 @@ function Submit() {
       <div className="rounded-xl border border-line bg-surface-raised p-5">
         <button
           type="button"
-          className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-line-strong bg-canvas/50 px-4 py-6 text-[13px] text-ink-muted transition-base hover:border-ink-muted hover:text-ink"
+          className="transition-base flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-line-strong bg-canvas/50 px-4 py-6 text-[13px] text-ink-muted hover:border-ink-muted hover:text-ink"
         >
           <UploadIcon size={15} />
           Drop a receipt
@@ -165,7 +163,7 @@ function Submit() {
             <option>New York</option>
           </select>
         </div>
-        <button className="mt-3 inline-flex h-10 w-full items-center justify-center gap-1.5 rounded-xl bg-ink text-[13px] text-surface hover:bg-ink-soft transition-base">
+        <button className="transition-base mt-3 inline-flex h-10 w-full items-center justify-center gap-1.5 rounded-xl bg-ink text-[13px] text-surface hover:bg-ink-soft">
           <PaperclipIcon size={13} /> Submit
         </button>
       </div>
@@ -175,19 +173,46 @@ function Submit() {
 
 function Recent() {
   const items = [
-    { vendor: "Coopérative Gstaad", what: "Pantry, weekly", amount: "CHF 412", state: "Approved", tone: "sage" as const },
-    { vendor: "Joiner, east wing", what: "Hardware", amount: "CHF 248", state: "Review", tone: "champagne" as const },
-    { vendor: "Florist, village", what: "Arrival", amount: "CHF 380", state: "Approved", tone: "sage" as const },
-    { vendor: "Garage Aebi", what: "Range Rover service", amount: "CHF 1,140", state: "Filed", tone: "neutral" as const },
+    {
+      vendor: "Coopérative Gstaad",
+      what: "Pantry, weekly",
+      amount: "CHF 412",
+      state: "Approved",
+      tone: "sage" as const,
+    },
+    {
+      vendor: "Joiner, east wing",
+      what: "Hardware",
+      amount: "CHF 248",
+      state: "Review",
+      tone: "champagne" as const,
+    },
+    {
+      vendor: "Florist, village",
+      what: "Arrival",
+      amount: "CHF 380",
+      state: "Approved",
+      tone: "sage" as const,
+    },
+    {
+      vendor: "Garage Aebi",
+      what: "Range Rover service",
+      amount: "CHF 1,140",
+      state: "Filed",
+      tone: "neutral" as const,
+    },
   ];
   return (
     <section className="lg:col-span-2">
       <div className="mb-3 flex items-center justify-between px-1">
         <h2 className="text-[14px] font-semibold text-ink">Recent expenses</h2>
       </div>
-      <ul className="rounded-xl border border-line bg-surface-raised divide-y divide-line">
+      <ul className="divide-y divide-line rounded-xl border border-line bg-surface-raised">
         {items.map((it) => (
-          <li key={it.vendor} className="flex items-center gap-3 px-4 py-3 transition-base hover:bg-canvas/60">
+          <li
+            key={it.vendor}
+            className="transition-base flex items-center gap-3 px-4 py-3 hover:bg-canvas/60"
+          >
             <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-line bg-canvas text-ink-muted">
               <PaperclipIcon size={12} />
             </span>

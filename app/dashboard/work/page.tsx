@@ -62,11 +62,11 @@ export default async function WorkHome() {
       <Topbar title={spaceName} />
 
       <div className="mb-6 px-1 text-[13px] text-ink-muted">
-        Your operational memory for {spaceName}. Drop in invoices,
-        contracts, and statements. Ask anything.
+        Your operational memory for {spaceName}. Drop in invoices, contracts, and statements. Ask
+        anything.
       </div>
 
-      <div className="space-y-9 animate-fade-up">
+      <div className="animate-fade-up space-y-9">
         <SearchHero />
 
         <section>
@@ -74,7 +74,7 @@ export default async function WorkHome() {
             <h2 className="text-[13px] font-medium text-ink-muted">Add to Oria</h2>
             <Link
               href="/dashboard/inbox"
-              className="text-[12px] text-ink-faint hover:text-ink transition-base"
+              className="transition-base text-[12px] text-ink-faint hover:text-ink"
             >
               Open upload page
             </Link>
@@ -83,24 +83,20 @@ export default async function WorkHome() {
         </section>
 
         <section>
-          <h2 className="mb-3 px-1 text-[13px] font-medium text-ink-muted">
-            Work areas
-          </h2>
+          <h2 className="mb-3 px-1 text-[13px] font-medium text-ink-muted">Work areas</h2>
           <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
             {TILES.map((t) => (
               <li key={t.href}>
                 <Link
                   href={t.href}
-                  className="group flex h-full items-start gap-3 rounded-2xl border border-line bg-surface-raised p-4 transition-base hover:border-line-strong hover:bg-canvas/40"
+                  className="group transition-base flex h-full items-start gap-3 rounded-2xl border border-line bg-surface-raised p-4 hover:border-line-strong hover:bg-canvas/40"
                 >
                   <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-canvas text-ink-soft">
                     <t.icon size={15} />
                   </span>
                   <div className="min-w-0 flex-1">
                     <p className="text-[13.5px] text-ink">{t.label}</p>
-                    <p className="mt-0.5 text-[11.5px] text-ink-faint">
-                      {t.hint}
-                    </p>
+                    <p className="mt-0.5 text-[11.5px] text-ink-faint">{t.hint}</p>
                   </div>
                 </Link>
               </li>

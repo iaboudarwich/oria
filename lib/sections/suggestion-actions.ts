@@ -57,16 +57,14 @@ export async function acceptSectionSuggestion(id: string): Promise<{ ok: boolean
       .eq("id", itemId)
       .eq("user_id", ctx.profile.id)
       .maybeSingle();
-    const item = itemRow as
-      | {
-          id: string;
-          status: string;
-          item_type: string;
-          source_subject: string | null;
-          source_date: string | null;
-          extracted: Record<string, unknown>;
-        }
-      | null;
+    const item = itemRow as {
+      id: string;
+      status: string;
+      item_type: string;
+      source_subject: string | null;
+      source_date: string | null;
+      extracted: Record<string, unknown>;
+    } | null;
     if (!item) continue;
 
     if (item.status === "pending") {
@@ -102,10 +100,7 @@ export async function acceptSectionSuggestion(id: string): Promise<{ ok: boolean
     }
   }
 
-  await admin
-    .from("section_suggestions")
-    .update({ status: "accepted" })
-    .eq("id", sugg.id);
+  await admin.from("section_suggestions").update({ status: "accepted" }).eq("id", sugg.id);
 
   await logAuditEvent({
     userId: ctx.profile.id,

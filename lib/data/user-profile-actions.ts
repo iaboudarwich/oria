@@ -30,11 +30,7 @@ export async function setUserPreferences(formData: FormData): Promise<void> {
     ["short", "medium", "long"],
     "medium",
   );
-  const formality = pick(
-    formData.get("formality"),
-    ["casual", "professional"],
-    "casual",
-  );
+  const formality = pick(formData.get("formality"), ["casual", "professional"], "casual");
   const pinnedMetrics = csv(formData.get("pinned_metrics"));
   const focusAreas = csv(formData.get("focus_areas"));
 

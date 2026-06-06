@@ -7,12 +7,7 @@ import { requireContext } from "./organizations";
 import { logAuditEvent } from "./audit-log";
 import { coerceDensity, coerceFontSize, coerceTheme } from "@/lib/appearance/prefs";
 import { coerceAccent } from "@/lib/appearance/accent";
-import {
-  DENSITY_COOKIE,
-  FONT_SIZE_COOKIE,
-  THEME_COOKIE,
-  ACCENT_COOKIE,
-} from "./appearance-prefs";
+import { DENSITY_COOKIE, FONT_SIZE_COOKIE, THEME_COOKIE, ACCENT_COOKIE } from "./appearance-prefs";
 
 const ONE_YEAR = 60 * 60 * 24 * 365;
 
@@ -22,10 +17,7 @@ const ONE_YEAR = 60 * 60 * 24 * 365;
  * cookies for the next server paint, and audits the change. The client applies
  * the change optimistically to the shell before this resolves.
  */
-export async function setAppearance(input: {
-  density?: string;
-  fontSize?: string;
-}): Promise<void> {
+export async function setAppearance(input: { density?: string; fontSize?: string }): Promise<void> {
   const ctx = await requireContext();
   const density = coerceDensity(input.density);
   const fontSize = coerceFontSize(input.fontSize);
@@ -67,7 +59,10 @@ export async function setAppearancePrefs(input: {
   accent?: string;
 }): Promise<void> {
   const ctx = await requireContext();
-  const update: Record<string, unknown> = { user_id: ctx.profile.id, updated_at: new Date().toISOString() };
+  const update: Record<string, unknown> = {
+    user_id: ctx.profile.id,
+    updated_at: new Date().toISOString(),
+  };
   const meta: Record<string, unknown> = {};
 
   const jar = await cookies();

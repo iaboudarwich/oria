@@ -292,9 +292,7 @@ async function main() {
   );
   out.push("");
   out.push(`Generated live on: ${present.join(", ") || "none"}.`);
-  out.push(
-    `Flagged, no key in env so live output not verified: ${flagged.join(", ") || "none"}.`,
-  );
+  out.push(`Flagged, no key in env so live output not verified: ${flagged.join(", ") || "none"}.`);
   out.push("");
   out.push(
     "Each sample below ran the same system prompt (the shared voice plus a minimal Ask framing) and the same question on every live provider, so the answers are directly comparable for cross-provider voice parity. Every answer was scanned for banned phrases; any hit is noted inline.",

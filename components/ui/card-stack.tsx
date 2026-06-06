@@ -22,7 +22,7 @@ export function CardStack({
       role="group"
       aria-label={ariaLabel}
       tabIndex={0}
-      className={`-mx-1 flex snap-x snap-mandatory gap-3 overflow-x-auto px-1 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${className}`}
+      className={`-mx-1 flex snap-x snap-mandatory [scrollbar-width:none] gap-3 overflow-x-auto px-1 pb-2 [&::-webkit-scrollbar]:hidden ${className}`}
     >
       {children}
     </div>

@@ -22,7 +22,7 @@ export default function ExternalRolePage() {
         </Badge>
       </div>
 
-      <div className="space-y-6 animate-fade-up">
+      <div className="animate-fade-up space-y-6">
         <Notice />
 
         <div className="grid gap-5 lg:grid-cols-3">
@@ -43,7 +43,7 @@ function Notice() {
         <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-line bg-canvas text-ink-muted">
           <LockIcon size={13} />
         </span>
-        <p className="text-[13.5px] text-ink leading-snug">
+        <p className="text-[13.5px] leading-snug text-ink">
           You can see 3 items, all about the Paris dinner on 17 June. Nothing else.
         </p>
       </div>
@@ -53,9 +53,24 @@ function Notice() {
 
 function Items() {
   const items = [
-    { title: "Confirm peonies and ranunculus", meta: "17 June, 12 guests", state: "Reply", tone: "champagne" as const },
-    { title: "Brief, table plan and palette", meta: "Sofia, 2 days ago", state: "Reviewed", tone: "sage" as const },
-    { title: "Delivery instructions", meta: "Hôtel Particulier, 16:00", state: "Confirmed", tone: "sage" as const },
+    {
+      title: "Confirm peonies and ranunculus",
+      meta: "17 June, 12 guests",
+      state: "Reply",
+      tone: "champagne" as const,
+    },
+    {
+      title: "Brief, table plan and palette",
+      meta: "Sofia, 2 days ago",
+      state: "Reviewed",
+      tone: "sage" as const,
+    },
+    {
+      title: "Delivery instructions",
+      meta: "Hôtel Particulier, 16:00",
+      state: "Confirmed",
+      tone: "sage" as const,
+    },
   ];
   return (
     <section className="lg:col-span-2">
@@ -68,7 +83,7 @@ function Items() {
           {items.map((it) => (
             <li
               key={it.title}
-              className="flex items-start gap-3 px-4 py-3 transition-base hover:bg-canvas/60"
+              className="transition-base flex items-start gap-3 px-4 py-3 hover:bg-canvas/60"
             >
               <span className="mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-line bg-canvas text-ink-muted">
                 <DocumentIcon size={12} />
@@ -87,7 +102,7 @@ function Items() {
           <span className="inline-flex items-center gap-1.5 text-[11.5px] text-ink-faint">
             <PersonIcon size={12} /> Sofia, your contact
           </span>
-          <button className="inline-flex h-8 items-center gap-1 rounded-lg bg-ink px-3 text-[12px] text-surface hover:bg-ink-soft transition-base">
+          <button className="transition-base inline-flex h-8 items-center gap-1 rounded-lg bg-ink px-3 text-[12px] text-surface hover:bg-ink-soft">
             <CheckIcon size={11} /> Confirm
           </button>
         </div>
@@ -105,12 +120,12 @@ function Upload() {
       <div className="rounded-xl border border-line bg-surface-raised p-5">
         <button
           type="button"
-          className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-line-strong bg-canvas/50 px-4 py-6 text-[13px] text-ink-muted transition-base hover:border-ink-muted hover:text-ink"
+          className="transition-base flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-line-strong bg-canvas/50 px-4 py-6 text-[13px] text-ink-muted hover:border-ink-muted hover:text-ink"
         >
           <PaperclipIcon size={15} />
           Drop a file
         </button>
-        <button className="mt-3 inline-flex h-10 w-full items-center justify-center rounded-xl bg-ink text-[13px] text-surface hover:bg-ink-soft transition-base">
+        <button className="transition-base mt-3 inline-flex h-10 w-full items-center justify-center rounded-xl bg-ink text-[13px] text-surface hover:bg-ink-soft">
           Send
         </button>
       </div>
@@ -130,7 +145,7 @@ function History() {
       <div className="mb-3 flex items-center justify-between px-1">
         <h2 className="text-[14px] font-semibold text-ink">History</h2>
       </div>
-      <ul className="rounded-xl border border-line bg-surface-raised divide-y divide-line">
+      <ul className="divide-y divide-line rounded-xl border border-line bg-surface-raised">
         {items.map((it, i) => (
           <li key={i} className="flex items-center gap-3 px-4 py-2.5">
             <span className="w-20 shrink-0 text-[11px] text-ink-faint">{it.when}</span>

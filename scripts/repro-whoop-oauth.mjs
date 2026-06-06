@@ -32,7 +32,9 @@ async function mintAuthCookies() {
   const CHUNK = 3200;
   const parts = [];
   if (value.length <= CHUNK) parts.push(`${name}=${value}`);
-  else for (let i = 0; i * CHUNK < value.length; i++) parts.push(`${name}.${i}=${value.slice(i * CHUNK, (i + 1) * CHUNK)}`);
+  else
+    for (let i = 0; i * CHUNK < value.length; i++)
+      parts.push(`${name}.${i}=${value.slice(i * CHUNK, (i + 1) * CHUNK)}`);
   parts.push("oria_tz=America/Los_Angeles");
   return parts.join("; ");
 }
@@ -59,15 +61,28 @@ for (const [label, path] of [
 console.log("");
 
 // 1. START
-const start = await fetch(`${BASE}/api/oauth/whoop/start`, { headers: { cookie }, redirect: "manual" });
+const start = await fetch(`${BASE}/api/oauth/whoop/start`, {
+  headers: { cookie },
+  redirect: "manual",
+});
 const loc = start.headers.get("location") || "";
 const sc = setCookies(start);
 console.log("== START ==");
 console.log("status:", start.status);
 console.log("location:", loc.slice(0, 90));
-console.log("set-cookie:", sc.map((s) => s.split(";")[0]));
-const stateParam = (() => { try { return new URL(loc).searchParams.get("state"); } catch { return null; } })();
-const scState = (sc.find((s) => s.startsWith("whoop_oauth_state=")) || "").split(";")[0].split("=")[1] || null;
+console.log(
+  "set-cookie:",
+  sc.map((s) => s.split(";")[0]),
+);
+const stateParam = (() => {
+  try {
+    return new URL(loc).searchParams.get("state");
+  } catch {
+    return null;
+  }
+})();
+const scState =
+  (sc.find((s) => s.startsWith("whoop_oauth_state=")) || "").split(";")[0].split("=")[1] || null;
 console.log("state in redirect:", stateParam);
 console.log("state in cookie  :", scState);
 console.log("MATCH:", !!stateParam && stateParam === scState);

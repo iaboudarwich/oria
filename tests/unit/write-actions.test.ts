@@ -9,22 +9,39 @@ import { localDateTimeToISO } from "@/lib/utils/tz";
 
 describe("actionNeedsClarification (never guess-and-execute)", () => {
   it("asks when a reminder has no title", () => {
-    const p: ProposedAction = { type: "reminder.create", title: "", date: "2026-06-06", time: "14:00" };
+    const p: ProposedAction = {
+      type: "reminder.create",
+      title: "",
+      date: "2026-06-06",
+      time: "14:00",
+    };
     expect(actionNeedsClarification(p)).toBe("missing_title");
   });
 
   it("asks when a reminder has no explicit time (no silent default)", () => {
-    const p: ProposedAction = { type: "reminder.create", title: "call movers", date: "2026-06-06", time: null };
+    const p: ProposedAction = {
+      type: "reminder.create",
+      title: "call movers",
+      date: "2026-06-06",
+      time: null,
+    };
     expect(actionNeedsClarification(p)).toBe("missing_when");
   });
 
   it("is confirmable when title + date + time are present", () => {
-    const p: ProposedAction = { type: "reminder.create", title: "call movers", date: "2026-06-06", time: "14:00" };
+    const p: ProposedAction = {
+      type: "reminder.create",
+      title: "call movers",
+      date: "2026-06-06",
+      time: "14:00",
+    };
     expect(actionNeedsClarification(p)).toBeNull();
   });
 
   it("complete/delete need a target", () => {
-    expect(actionNeedsClarification({ type: "reminder.complete", reminderId: "" })).toBe("missing_target");
+    expect(actionNeedsClarification({ type: "reminder.complete", reminderId: "" })).toBe(
+      "missing_target",
+    );
     expect(actionNeedsClarification({ type: "reminder.delete", reminderId: "r1" })).toBeNull();
   });
 

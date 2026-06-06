@@ -8,9 +8,7 @@ import { logAuditEvent } from "@/lib/data/audit-log";
  * user. Used for the one-time post-signup encouragement modal. Fire-and-forget;
  * never blocks the UI.
  */
-export async function recordTwoFactorPrompt(
-  kind: "shown" | "dismissed",
-): Promise<void> {
+export async function recordTwoFactorPrompt(kind: "shown" | "dismissed"): Promise<void> {
   const supabase = await createClient();
   const {
     data: { user },

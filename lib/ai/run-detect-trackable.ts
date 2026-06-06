@@ -84,8 +84,7 @@ export async function runDetectTrackable(uploadId: string): Promise<void> {
   if (result.renewal_date) {
     const renewalMs = new Date(result.renewal_date).getTime();
     if (renewalMs > Date.now()) {
-      const leadDays =
-        TRACKABLE_LEAD_DAYS[result.category as TrackableCategory] ?? 30;
+      const leadDays = TRACKABLE_LEAD_DAYS[result.category as TrackableCategory] ?? 30;
       const reminderTitle = `${result.title ?? result.category} renews${
         result.vendor ? ` (${result.vendor})` : ""
       }`;

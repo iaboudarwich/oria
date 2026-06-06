@@ -24,12 +24,7 @@ export function GmailConnectButton({
 
   return (
     <>
-      <Button
-        variant={variant}
-        size="sm"
-        onClick={() => setOpen(true)}
-        disabled={!configured}
-      >
+      <Button variant={variant} size="sm" onClick={() => setOpen(true)} disabled={!configured}>
         {label}
       </Button>
 
@@ -43,13 +38,13 @@ export function GmailConnectButton({
           <div
             aria-hidden
             onClick={() => setOpen(false)}
-            className="absolute inset-0 bg-ink/40 backdrop-blur-sm animate-fade-in"
+            className="animate-fade-in absolute inset-0 bg-ink/40 backdrop-blur-sm"
           />
-          <div className="relative z-[121] w-full max-w-md rounded-2xl border border-line bg-surface-raised p-6 shadow-xl animate-scale-in">
+          <div className="animate-scale-in relative z-[121] w-full max-w-md rounded-2xl border border-line bg-surface-raised p-6 shadow-xl">
             <h2 id="gmail-consent-title" className="text-title text-ink">
               {t("consent_title")}
             </h2>
-            <p className="mt-3 text-body text-ink-soft">{t("consent_body")}</p>
+            <p className="text-body mt-3 text-ink-soft">{t("consent_body")}</p>
             <label className="mt-4 flex cursor-pointer items-start gap-2.5 rounded-lg bg-surface px-3 py-2.5">
               <input
                 type="checkbox"
@@ -63,15 +58,19 @@ export function GmailConnectButton({
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="text-[12.5px] text-ink-faint transition-base hover:text-ink"
+                className="transition-base text-[12.5px] text-ink-faint hover:text-ink"
               >
                 {t("consent_cancel")}
               </button>
               {/* Plain anchor (no Link prefetch) so the OAuth start route is
                   only hit on an actual click, never on prefetch. */}
               <a
-                href={seedConfidential ? "/api/oauth/gmail/start" : "/api/oauth/gmail/start?confidential=0"}
-                className="inline-flex h-10 items-center justify-center gap-1.5 rounded-xl bg-ink px-4 text-[13.5px] font-medium text-surface transition-base hover:bg-ink-soft"
+                href={
+                  seedConfidential
+                    ? "/api/oauth/gmail/start"
+                    : "/api/oauth/gmail/start?confidential=0"
+                }
+                className="transition-base inline-flex h-10 items-center justify-center gap-1.5 rounded-xl bg-ink px-4 text-[13.5px] font-medium text-surface hover:bg-ink-soft"
               >
                 {t("consent_continue")}
               </a>

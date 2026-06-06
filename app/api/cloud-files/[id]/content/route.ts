@@ -12,10 +12,7 @@ export const runtime = "nodejs";
  * Fetch-on-demand parsed text for one linked Drive file (cached 5 min in Redis,
  * never persisted). Returns 410 when the file is no longer accessible in Drive.
  */
-export async function GET(
-  _request: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const supabase = await createClient();
   const {

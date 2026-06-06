@@ -57,19 +57,13 @@ export async function POST(request: Request) {
 
   const quota = await checkDailyAskRequests(ctx.profile.id);
   if (!quota.ok) {
-    return NextResponse.json(
-      { error: "rate_limited", message: quota.message },
-      { status: 429 },
-    );
+    return NextResponse.json({ error: "rate_limited", message: quota.message }, { status: 429 });
   }
 
   const workspaceContext = await getWorkspaceContext();
   const encoder = new TextEncoder();
 
-  function writeEvent(
-    controller: ReadableStreamDefaultController<Uint8Array>,
-    obj: unknown,
-  ) {
+  function writeEvent(controller: ReadableStreamDefaultController<Uint8Array>, obj: unknown) {
     controller.enqueue(encoder.encode(JSON.stringify(obj) + "\n"));
   }
 

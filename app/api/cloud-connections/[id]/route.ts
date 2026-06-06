@@ -13,10 +13,7 @@ export const runtime = "nodejs";
  * Revokes the token at Google and deletes the connection row. Its cloud_files
  * and calendar_events cascade-delete via their FK. Owner-scoped.
  */
-export async function DELETE(
-  _request: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const supabase = await createClient();
   const {

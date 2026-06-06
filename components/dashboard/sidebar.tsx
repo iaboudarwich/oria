@@ -33,10 +33,7 @@ import {
   WalletIcon,
 } from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
-import {
-  SpaceSwitcher,
-  type SpaceSummary,
-} from "@/components/dashboard/space-switcher";
+import { SpaceSwitcher, type SpaceSummary } from "@/components/dashboard/space-switcher";
 import { ModeToggle } from "@/components/dashboard/mode-toggle";
 import { UserMenu } from "@/components/dashboard/user-menu";
 
@@ -254,7 +251,7 @@ export function Sidebar({
           this drawer open), so there is no separate floating hamburger. */}
       {open ? (
         <div
-          className="fixed inset-0 z-40 bg-ink/30 backdrop-blur-sm lg:hidden animate-fade-in"
+          className="animate-fade-in fixed inset-0 z-40 bg-ink/30 backdrop-blur-sm lg:hidden"
           onClick={close}
           aria-hidden
         />
@@ -265,7 +262,7 @@ export function Sidebar({
         // the CSS var set by SidebarShell so expand/collapse stays in sync
         // with the main content padding.
         style={{ width: "var(--sidebar-w, 250px)" }}
-        className={`fixed inset-y-0 left-0 z-50 flex flex-col overflow-hidden border-e border-line glass shadow-lg transition-[width,transform] duration-200 ease-[cubic-bezier(0.2,0.8,0.2,1)] max-lg:!w-[260px] lg:translate-x-0 ${
+        className={`glass fixed inset-y-0 left-0 z-50 flex flex-col overflow-hidden border-e border-line shadow-lg transition-[width,transform] duration-200 ease-[cubic-bezier(0.2,0.8,0.2,1)] max-lg:!w-[260px] lg:translate-x-0 ${
           open ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -276,23 +273,16 @@ export function Sidebar({
           }`}
         >
           {collapsed ? null : (
-            <Wordmark
-              href={mode === "work" ? "/dashboard/work" : "/dashboard"}
-              onClick={close}
-            />
+            <Wordmark href={mode === "work" ? "/dashboard/work" : "/dashboard"} onClick={close} />
           )}
           {onToggle ? (
             <button
               type="button"
               onClick={onToggle}
-              className="hidden h-8 w-8 items-center justify-center rounded-lg text-ink-faint transition-base hover:bg-canvas/60 hover:text-ink lg:inline-flex"
+              className="transition-base hidden h-8 w-8 items-center justify-center rounded-lg text-ink-faint hover:bg-canvas/60 hover:text-ink lg:inline-flex"
               aria-label={collapsed ? t("expand") : t("collapse")}
             >
-              {collapsed ? (
-                <ChevronRightIcon size={13} />
-              ) : (
-                <ChevronLeftIcon size={13} />
-              )}
+              {collapsed ? <ChevronRightIcon size={13} /> : <ChevronLeftIcon size={13} />}
             </button>
           ) : null}
           <button
@@ -315,9 +305,7 @@ export function Sidebar({
         ) : null}
 
         {/* Space switcher: hidden when collapsed. */}
-        {!collapsed ? (
-          <SpaceSwitcher active={activeSpace} spaces={spaces} />
-        ) : null}
+        {!collapsed ? <SpaceSwitcher active={activeSpace} spaces={spaces} /> : null}
 
         {/* The tiers + a user card at the bottom. */}
         <nav
@@ -364,9 +352,7 @@ export function Sidebar({
           <ul className="flex flex-col gap-0.5">
             {[
               ...(mode === "work" ? workSecondaryNav : personalSecondaryNav),
-              ...extras
-                .map((k) => SIDEBAR_EXTRA_ITEMS[k])
-                .filter((s): s is NavSpec => !!s),
+              ...extras.map((k) => SIDEBAR_EXTRA_ITEMS[k]).filter((s): s is NavSpec => !!s),
             ].map((spec) => {
               const item = toItem(spec);
               return (
@@ -418,7 +404,11 @@ export function Sidebar({
                   an at-a-glance dot (green active, red needs attention). */}
               <li>
                 <NavLink
-                  item={{ label: t("connections"), href: "/dashboard/settings?tab=connections", icon: LinkIcon }}
+                  item={{
+                    label: t("connections"),
+                    href: "/dashboard/settings?tab=connections",
+                    icon: LinkIcon,
+                  }}
                   pathname={pathname}
                   onNavigate={close}
                   quiet
@@ -443,7 +433,7 @@ export function Sidebar({
               <Link
                 href="/security"
                 prefetch={false}
-                className="mt-3 block px-3 py-1 text-[10.5px] uppercase tracking-[0.10em] text-ink-faint transition-base hover:text-ink-muted"
+                className="transition-base mt-3 block px-3 py-1 text-[10.5px] tracking-[0.10em] text-ink-faint uppercase hover:text-ink-muted"
               >
                 {t("security")}
               </Link>
@@ -464,9 +454,7 @@ export function Sidebar({
 }
 
 function Divider({ collapsed }: { collapsed?: boolean } = {}) {
-  return (
-    <div className={`my-2 h-px bg-line ${collapsed ? "mx-1" : "mx-2"}`} />
-  );
+  return <div className={`my-2 h-px bg-line ${collapsed ? "mx-1" : "mx-2"}`} />;
 }
 
 function PrimaryRow({
@@ -488,13 +476,9 @@ function PrimaryRow({
       onClick={onNavigate}
       title={collapsed ? item.label : undefined}
       aria-label={collapsed ? item.label : undefined}
-      className={`group relative brand-indicator flex items-center gap-2.5 rounded-lg transition-base ${
+      className={`group brand-indicator transition-base relative flex items-center gap-2.5 rounded-lg ${
         collapsed ? "justify-center px-0 py-2" : "px-3 py-2"
-      } ${
-        active
-          ? "active bg-brand-muted text-brand font-medium"
-          : "text-ink hover:bg-canvas/60"
-      }`}
+      } ${active ? "active bg-brand-muted font-medium text-brand" : "text-ink hover:bg-canvas/60"}`}
     >
       <span
         className={`inline-flex h-5 w-5 items-center justify-center ${
@@ -505,9 +489,7 @@ function PrimaryRow({
       </span>
       {!collapsed ? (
         <>
-          <span className="flex-1 truncate text-[13.5px] font-medium">
-            {item.label}
-          </span>
+          <span className="flex-1 truncate text-[13.5px] font-medium">{item.label}</span>
           {item.shortcut ? (
             <kbd className="rounded border border-line bg-surface px-1.5 py-0.5 text-[10px] text-ink-faint">
               {item.shortcut}
@@ -539,14 +521,12 @@ function SectionsGroup({
         type="button"
         onClick={onToggle}
         aria-expanded={open}
-        className="flex w-full items-center gap-1.5 rounded-md px-3 py-1 text-eyebrow transition-base hover:text-ink-muted"
+        className="text-eyebrow transition-base flex w-full items-center gap-1.5 rounded-md px-3 py-1 hover:text-ink-muted"
       >
         <span className="flex-1 text-left">{t("sections")}</span>
         <ChevronDownIcon
           size={11}
-          className={`transition-transform duration-200 ${
-            open ? "" : "-rotate-90"
-          }`}
+          className={`transition-transform duration-200 ${open ? "" : "-rotate-90"}`}
         />
       </button>
       {open ? (
@@ -562,9 +542,9 @@ function SectionsGroup({
                   href={s.href}
                   onClick={onNavigate}
                   title={isSmart ? `${s.label} · ${t("smart_section")}` : undefined}
-                  className={`group relative brand-indicator flex min-h-[36px] items-center gap-2.5 rounded-lg px-3 py-2 text-[12.5px] transition-base ${
+                  className={`group brand-indicator transition-base relative flex min-h-[36px] items-center gap-2.5 rounded-lg px-3 py-2 text-[12.5px] ${
                     active
-                      ? "active bg-brand-muted text-brand font-medium"
+                      ? "active bg-brand-muted font-medium text-brand"
                       : isReview || isSmart
                         ? "text-ink-soft hover:bg-canvas/60 hover:text-ink"
                         : "text-ink-muted hover:bg-canvas/60 hover:text-ink"
@@ -614,9 +594,7 @@ function NavLink({
   trailingDot?: string;
 }) {
   const active =
-    item.href === "/dashboard"
-      ? pathname === "/dashboard"
-      : pathname.startsWith(item.href);
+    item.href === "/dashboard" ? pathname === "/dashboard" : pathname.startsWith(item.href);
   const Icon = item.icon;
   const text = quiet ? "text-[13px]" : "text-[13.5px]";
   return (
@@ -629,14 +607,14 @@ function NavLink({
         collapsed ? "justify-center px-0 py-2" : "px-3 py-2"
       } ${
         active
-          ? "bg-brand-muted text-brand font-medium"
+          ? "bg-brand-muted font-medium text-brand"
           : quiet
             ? "text-ink-muted hover:bg-canvas/60 hover:text-ink"
             : "text-ink-soft hover:bg-canvas/60 hover:text-ink"
       }`}
     >
       <span
-        className={`inline-flex h-5 w-5 items-center justify-center transition-base ${
+        className={`transition-base inline-flex h-5 w-5 items-center justify-center ${
           active
             ? "text-ink"
             : quiet
@@ -662,4 +640,3 @@ function NavLink({
     </Link>
   );
 }
-

@@ -45,30 +45,35 @@ export function MicrosoftPicker({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
   const [items, setItems] = useState<OneDriveItem[]>([]);
-  const [crumbs, setCrumbs] = useState<{ id: string | null; name: string }[]>([{ id: null, name: "" }]);
+  const [crumbs, setCrumbs] = useState<{ id: string | null; name: string }[]>([
+    { id: null, name: "" },
+  ]);
   const [selected, setSelected] = useState<Record<string, OneDriveItem>>({});
   const [busy, setBusy] = useState(false);
 
-  const load = useCallback(async (folderId: string | null) => {
-    setLoading(true);
-    setError(false);
-    try {
-      const qs = new URLSearchParams({ connectionId });
-      if (folderId) qs.set("folderId", folderId);
-      const res = await fetch(`/api/onedrive/browse?${qs.toString()}`);
-      if (!res.ok) {
+  const load = useCallback(
+    async (folderId: string | null) => {
+      setLoading(true);
+      setError(false);
+      try {
+        const qs = new URLSearchParams({ connectionId });
+        if (folderId) qs.set("folderId", folderId);
+        const res = await fetch(`/api/onedrive/browse?${qs.toString()}`);
+        if (!res.ok) {
+          setError(true);
+          setItems([]);
+          return;
+        }
+        const data = (await res.json()) as { items: OneDriveItem[] };
+        setItems(data.items ?? []);
+      } catch {
         setError(true);
-        setItems([]);
-        return;
+      } finally {
+        setLoading(false);
       }
-      const data = (await res.json()) as { items: OneDriveItem[] };
-      setItems(data.items ?? []);
-    } catch {
-      setError(true);
-    } finally {
-      setLoading(false);
-    }
-  }, [connectionId]);
+    },
+    [connectionId],
+  );
 
   function start() {
     setOpen(true);
@@ -132,7 +137,7 @@ export function MicrosoftPicker({
       <button
         type="button"
         onClick={start}
-        className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-line bg-surface-raised px-3 text-[12.5px] text-ink transition-base hover:bg-canvas"
+        className="transition-base inline-flex h-8 items-center gap-1.5 rounded-lg border border-line bg-surface-raised px-3 text-[12.5px] text-ink hover:bg-canvas"
       >
         {label}
       </button>
@@ -176,7 +181,7 @@ export function MicrosoftPicker({
                         <button
                           type="button"
                           onClick={() => enterFolder(it)}
-                          className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-[13px] text-ink transition-base hover:bg-canvas"
+                          className="transition-base flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-[13px] text-ink hover:bg-canvas"
                         >
                           <span aria-hidden>📁</span>
                           <span className="truncate">{it.name}</span>
@@ -184,7 +189,7 @@ export function MicrosoftPicker({
                       </li>
                     ) : (
                       <li key={it.id}>
-                        <label className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-[13px] text-ink transition-base hover:bg-canvas">
+                        <label className="transition-base flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-[13px] text-ink hover:bg-canvas">
                           <input
                             type="checkbox"
                             checked={!!selected[it.id]}
@@ -212,7 +217,7 @@ export function MicrosoftPicker({
                 type="button"
                 onClick={linkSelected}
                 disabled={selectedCount === 0 || busy}
-                className="rounded-lg bg-ink px-3 py-1.5 text-[12.5px] font-medium text-surface transition-base hover:bg-ink-soft disabled:opacity-50"
+                className="transition-base rounded-lg bg-ink px-3 py-1.5 text-[12.5px] font-medium text-surface hover:bg-ink-soft disabled:opacity-50"
               >
                 {labels.select}
                 {selectedCount > 0 ? ` (${selectedCount})` : ""}

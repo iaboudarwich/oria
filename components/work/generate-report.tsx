@@ -63,7 +63,7 @@ export function GenerateReportForm() {
             key={k.value}
             type="button"
             onClick={() => setKind(k.value)}
-            className={`cursor-pointer rounded-full border px-2.5 py-0.5 text-[11.5px] transition-base ${
+            className={`transition-base cursor-pointer rounded-full border px-2.5 py-0.5 text-[11.5px] ${
               kind === k.value
                 ? "border-ink bg-ink text-surface"
                 : "border-line bg-canvas text-ink-muted hover:border-line-strong hover:text-ink"
@@ -82,12 +82,12 @@ export function GenerateReportForm() {
             setError(null);
           }}
           placeholder="e.g. ‘March operations for Building A’ or ‘Top 10 vendors this quarter’"
-          className="block h-10 flex-1 rounded-xl border border-line bg-surface-raised px-3 text-[13px] text-ink placeholder:text-ink-faint outline-none transition-base focus:border-line-strong"
+          className="transition-base block h-10 flex-1 rounded-xl border border-line bg-surface-raised px-3 text-[13px] text-ink outline-none placeholder:text-ink-faint focus:border-line-strong"
         />
         <button
           type="submit"
           disabled={pending || prompt.trim().length === 0}
-          className="inline-flex h-10 cursor-pointer items-center gap-1.5 rounded-xl bg-ink px-3.5 text-[12.5px] text-surface transition-base hover:bg-ink-soft disabled:cursor-default disabled:opacity-50"
+          className="transition-base inline-flex h-10 cursor-pointer items-center gap-1.5 rounded-xl bg-ink px-3.5 text-[12.5px] text-surface hover:bg-ink-soft disabled:cursor-default disabled:opacity-50"
         >
           {pending ? "Generating" : "Generate"}
           <ArrowRightIcon size={12} />

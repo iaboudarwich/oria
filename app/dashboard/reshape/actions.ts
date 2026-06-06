@@ -23,7 +23,8 @@ async function gatherStructure(userId: string): Promise<ExistingOrg[]> {
         .is("deleted_at", null)
     : { data: [] };
   const byOrg = new Map<string, { id: string; name: string }[]>();
-  for (const r of (secRows as { id: string; name: string; organization_id: string }[] | null) ?? []) {
+  for (const r of (secRows as { id: string; name: string; organization_id: string }[] | null) ??
+    []) {
     const list = byOrg.get(r.organization_id) ?? [];
     list.push({ id: r.id, name: r.name });
     byOrg.set(r.organization_id, list);
@@ -69,7 +70,9 @@ export async function reshapeGeneratePatch(
 }
 
 /** Execute a reshape patch. Recorded with source 'reconfigure'. */
-export async function reshapeExecutePatch(patch: PlanPatch): Promise<{ ok: boolean; error?: string }> {
+export async function reshapeExecutePatch(
+  patch: PlanPatch,
+): Promise<{ ok: boolean; error?: string }> {
   const ctx = await getCurrentContext();
   if (!ctx) return { ok: false };
   const result = await executePlanPatch({ userId: ctx.profile.id, patch, source: "reconfigure" });
@@ -102,9 +105,12 @@ export async function undoSetupChange(
     .eq("id", planId)
     .eq("user_id", ctx.profile.id)
     .maybeSingle();
-  const row = data as
-    | { id: string; plan: StoredPlan; executed_at: string; reverted_at: string | null }
-    | null;
+  const row = data as {
+    id: string;
+    plan: StoredPlan;
+    executed_at: string;
+    reverted_at: string | null;
+  } | null;
   if (!row || row.reverted_at) return { ok: false };
   if (Date.now() - new Date(row.executed_at).getTime() >= 24 * 60 * 60 * 1000) return { ok: false };
 
@@ -127,11 +133,19 @@ export async function undoSetupChange(
   if (patch) {
     for (const r of patch.renames ?? []) {
       const table = r.kind === "org" ? "organizations" : "custom_sections";
-      await admin.from(table).update({ name: r.from }).eq("id", r.id).eq("created_by", ctx.profile.id);
+      await admin
+        .from(table)
+        .update({ name: r.from })
+        .eq("id", r.id)
+        .eq("created_by", ctx.profile.id);
     }
     for (const d of patch.deletes ?? []) {
       const table = d.kind === "org" ? "organizations" : "custom_sections";
-      await admin.from(table).update({ deleted_at: null }).eq("id", d.id).eq("created_by", ctx.profile.id);
+      await admin
+        .from(table)
+        .update({ deleted_at: null })
+        .eq("id", d.id)
+        .eq("created_by", ctx.profile.id);
     }
   }
 

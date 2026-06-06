@@ -48,7 +48,7 @@ async function redisCmd<T>(parts: (string | number)[]): Promise<T | null> {
     signal: AbortSignal.timeout(3_000),
   });
   if (!res.ok) return null;
-  const json = await res.json() as Array<{ result: T; error?: string }>;
+  const json = (await res.json()) as Array<{ result: T; error?: string }>;
   if (json[0]?.error) return null;
   return json[0]?.result ?? null;
 }
@@ -65,10 +65,7 @@ async function redisSet(key: string, value: string, ex: number): Promise<void> {
  * Check if we've already extracted this exact file for this org.
  * Returns the cached DedupEntry, or null if no cache hit.
  */
-export async function checkDedup(
-  orgId: string,
-  fileHash: string
-): Promise<DedupEntry | null> {
+export async function checkDedup(orgId: string, fileHash: string): Promise<DedupEntry | null> {
   if (!isConfigured() || !fileHash) return null;
 
   try {
@@ -88,16 +85,12 @@ export async function checkDedup(
 export async function recordDedup(
   orgId: string,
   fileHash: string,
-  entry: DedupEntry
+  entry: DedupEntry,
 ): Promise<void> {
   if (!isConfigured() || !fileHash) return;
 
   try {
-    await redisSet(
-      dedupKey(orgId, fileHash),
-      JSON.stringify(entry),
-      TTL_SECONDS
-    );
+    await redisSet(dedupKey(orgId, fileHash), JSON.stringify(entry), TTL_SECONDS);
   } catch (err) {
     console.warn("[cache/dedup] recordDedup error:", err);
   }

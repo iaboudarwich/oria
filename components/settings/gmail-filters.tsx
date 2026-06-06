@@ -44,7 +44,7 @@ function ChipInput({
             <button
               type="button"
               onClick={() => onChange(values.filter((x) => x !== v))}
-              className="text-ink-faint transition-base hover:text-claret"
+              className="transition-base text-ink-faint hover:text-claret"
               aria-label={`Remove ${v}`}
             >
               ×
@@ -185,7 +185,7 @@ export function GmailFilters({
           type="button"
           onClick={save}
           disabled={pending}
-          className="rounded-lg bg-ink px-4 py-1.5 text-[12.5px] font-medium text-surface transition-base hover:bg-ink-soft disabled:opacity-50"
+          className="transition-base rounded-lg bg-ink px-4 py-1.5 text-[12.5px] font-medium text-surface hover:bg-ink-soft disabled:opacity-50"
         >
           {pending ? t("filter_saving") : t("filter_save")}
         </button>

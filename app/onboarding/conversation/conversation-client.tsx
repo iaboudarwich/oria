@@ -90,18 +90,21 @@ export function ConversationClient() {
   return (
     <Shell>
       <div className="w-full max-w-lg">
-        <p className="mb-6 text-[12px] font-medium uppercase tracking-[0.08em] text-ink-faint">
+        <p className="mb-6 text-[12px] font-medium tracking-[0.08em] text-ink-faint uppercase">
           {t("conv_progress", { current: progress.current, total: progress.total })}
         </p>
 
         {busy || !question ? (
           <div className="flex items-center gap-3 py-8 text-ink-faint">
-            <span className="h-4 w-4 animate-spin rounded-full border-2 border-line-strong border-t-ink" aria-hidden />
+            <span
+              className="h-4 w-4 animate-spin rounded-full border-2 border-line-strong border-t-ink"
+              aria-hidden
+            />
             <span className="text-[14px]">{t("conv_thinking")}</span>
           </div>
         ) : (
           <>
-            <h1 className="text-[24px] font-semibold leading-snug tracking-tight text-ink text-balance sm:text-[28px]">
+            <h1 className="text-[24px] leading-snug font-semibold tracking-tight text-balance text-ink sm:text-[28px]">
               {question.text}
             </h1>
 
@@ -121,7 +124,7 @@ export function ConversationClient() {
                               prev.includes(opt) ? prev.filter((o) => o !== opt) : [...prev, opt],
                             )
                           }
-                          className={`flex items-center gap-2.5 rounded-xl border px-4 py-3 text-left text-[14px] transition-base ${
+                          className={`transition-base flex items-center gap-2.5 rounded-xl border px-4 py-3 text-left text-[14px] ${
                             on
                               ? "border-brand bg-brand-soft/50 text-ink"
                               : "border-line bg-surface-raised text-ink hover:border-line-strong hover:bg-surface"
@@ -129,7 +132,9 @@ export function ConversationClient() {
                         >
                           <span
                             className={`inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-[5px] border text-[10px] ${
-                              on ? "border-brand bg-brand text-surface" : "border-line-strong text-transparent"
+                              on
+                                ? "border-brand bg-brand text-surface"
+                                : "border-line-strong text-transparent"
                             }`}
                             aria-hidden
                           >
@@ -144,7 +149,7 @@ export function ConversationClient() {
                     type="button"
                     disabled={selected.length === 0}
                     onClick={() => advance(selected.join(", "), false)}
-                    className="mt-1 self-start rounded-xl bg-ink px-5 py-2.5 text-[14px] font-medium text-surface transition-base hover:bg-ink-soft disabled:opacity-40"
+                    className="transition-base mt-1 self-start rounded-xl bg-ink px-5 py-2.5 text-[14px] font-medium text-surface hover:bg-ink-soft disabled:opacity-40"
                   >
                     {t("conv_continue")}
                   </button>
@@ -156,7 +161,7 @@ export function ConversationClient() {
                       key={opt}
                       type="button"
                       onClick={() => advance(opt, false)}
-                      className="rounded-xl border border-line bg-surface-raised px-4 py-3 text-left text-[14px] text-ink transition-base hover:border-line-strong hover:bg-surface"
+                      className="transition-base rounded-xl border border-line bg-surface-raised px-4 py-3 text-left text-[14px] text-ink hover:border-line-strong hover:bg-surface"
                     >
                       {opt}
                     </button>
@@ -167,14 +172,14 @@ export function ConversationClient() {
                   <button
                     type="button"
                     onClick={() => advance(t("conv_yes"), false)}
-                    className="rounded-xl border border-line bg-surface-raised px-5 py-3 text-[14px] font-medium text-ink transition-base hover:bg-surface"
+                    className="transition-base rounded-xl border border-line bg-surface-raised px-5 py-3 text-[14px] font-medium text-ink hover:bg-surface"
                   >
                     {t("conv_yes")}
                   </button>
                   <button
                     type="button"
                     onClick={() => advance(t("conv_no"), false)}
-                    className="rounded-xl border border-line bg-surface-raised px-5 py-3 text-[14px] font-medium text-ink transition-base hover:bg-surface"
+                    className="transition-base rounded-xl border border-line bg-surface-raised px-5 py-3 text-[14px] font-medium text-ink hover:bg-surface"
                   >
                     {t("conv_no")}
                   </button>
@@ -198,12 +203,12 @@ export function ConversationClient() {
                     autoFocus
                     rows={3}
                     placeholder={t("conv_placeholder")}
-                    className="w-full resize-none rounded-xl border border-line-strong bg-surface-raised px-4 py-3 text-[15px] text-ink outline-none transition-base focus:border-ink placeholder:text-ink-faint"
+                    className="transition-base w-full resize-none rounded-xl border border-line-strong bg-surface-raised px-4 py-3 text-[15px] text-ink outline-none placeholder:text-ink-faint focus:border-ink"
                   />
                   <button
                     type="submit"
                     disabled={!draft.trim()}
-                    className="mt-3 rounded-xl bg-ink px-5 py-2.5 text-[14px] font-medium text-surface transition-base hover:bg-ink-soft disabled:opacity-40"
+                    className="transition-base mt-3 rounded-xl bg-ink px-5 py-2.5 text-[14px] font-medium text-surface hover:bg-ink-soft disabled:opacity-40"
                   >
                     {t("conv_continue")}
                   </button>
@@ -214,7 +219,7 @@ export function ConversationClient() {
             <button
               type="button"
               onClick={() => advance("", true)}
-              className="mt-6 text-[12.5px] text-ink-faint transition-base hover:text-ink"
+              className="transition-base mt-6 text-[12.5px] text-ink-faint hover:text-ink"
             >
               {t("conv_skip_one")}
             </button>

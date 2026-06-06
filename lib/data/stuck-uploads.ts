@@ -35,12 +35,8 @@ export async function recoverStuckUploads(): Promise<void> {
   try {
     const ctx = await requireContext();
     const supabase = await createClient();
-    const processingCutoff = new Date(
-      Date.now() - STUCK_THRESHOLD_MS,
-    ).toISOString();
-    const receivedCutoff = new Date(
-      Date.now() - RECEIVED_STUCK_MS,
-    ).toISOString();
+    const processingCutoff = new Date(Date.now() - STUCK_THRESHOLD_MS).toISOString();
+    const receivedCutoff = new Date(Date.now() - RECEIVED_STUCK_MS).toISOString();
 
     const { data } = await supabase
       .from("uploads")
@@ -53,9 +49,7 @@ export async function recoverStuckUploads(): Promise<void> {
     type Row = { id: string; status: string; updated_at: string };
     const ids = ((data ?? []) as Row[])
       .filter((r) =>
-        r.status === "processing"
-          ? r.updated_at < processingCutoff
-          : r.updated_at < receivedCutoff,
+        r.status === "processing" ? r.updated_at < processingCutoff : r.updated_at < receivedCutoff,
       )
       .map((r) => r.id)
       .slice(0, MAX_PER_SWEEP);
@@ -86,12 +80,8 @@ export async function recoverStuckUploads(): Promise<void> {
 export async function recoverStuckUploadsAcrossOrgs(): Promise<number> {
   try {
     const admin = createAdminClient();
-    const processingCutoff = new Date(
-      Date.now() - STUCK_THRESHOLD_MS,
-    ).toISOString();
-    const receivedCutoff = new Date(
-      Date.now() - RECEIVED_STUCK_MS,
-    ).toISOString();
+    const processingCutoff = new Date(Date.now() - STUCK_THRESHOLD_MS).toISOString();
+    const receivedCutoff = new Date(Date.now() - RECEIVED_STUCK_MS).toISOString();
 
     const { data } = await admin
       .from("uploads")
@@ -108,9 +98,7 @@ export async function recoverStuckUploadsAcrossOrgs(): Promise<number> {
     };
     const targets = ((data ?? []) as Row[])
       .filter((r) =>
-        r.status === "processing"
-          ? r.updated_at < processingCutoff
-          : r.updated_at < receivedCutoff,
+        r.status === "processing" ? r.updated_at < processingCutoff : r.updated_at < receivedCutoff,
       )
       .slice(0, MAX_PER_SWEEP_ALL_ORGS);
 

@@ -1,10 +1,4 @@
-import {
-  ChatIcon,
-  DocumentIcon,
-  DownloadIcon,
-  MicIcon,
-  PaperclipIcon,
-} from "@/components/ui/icon";
+import { ChatIcon, DocumentIcon, DownloadIcon, MicIcon, PaperclipIcon } from "@/components/ui/icon";
 import { classifyMime } from "@/lib/utils";
 
 type PreviewProps = {
@@ -23,11 +17,7 @@ export function Preview({ url, mime, filename }: PreviewProps) {
     return (
       <div className="flex items-center justify-center overflow-hidden rounded-2xl border border-line bg-canvas">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={url}
-          alt={filename}
-          className="max-h-[720px] w-auto object-contain"
-        />
+        <img src={url} alt={filename} className="max-h-[720px] w-auto object-contain" />
       </div>
     );
   }
@@ -35,11 +25,7 @@ export function Preview({ url, mime, filename }: PreviewProps) {
   if (group === "pdf") {
     return (
       <div className="overflow-hidden rounded-2xl border border-line bg-canvas">
-        <iframe
-          src={url}
-          title={filename}
-          className="h-[720px] w-full"
-        />
+        <iframe src={url} title={filename} className="h-[720px] w-full" />
       </div>
     );
   }
@@ -47,7 +33,7 @@ export function Preview({ url, mime, filename }: PreviewProps) {
   if (group === "audio") {
     return (
       <div className="rounded-2xl border border-line bg-surface-raised p-6">
-        <div className="flex items-center gap-3 mb-4">
+        <div className="mb-4 flex items-center gap-3">
           <MicIcon size={16} />
           <p className="text-[13.5px] text-ink">{filename}</p>
         </div>
@@ -69,21 +55,18 @@ function GenericPreview({
   filename: string;
 }) {
   const c = classifyMime(mime);
-  const Icon =
-    c.group === "doc" ? ChatIcon : c.group === "image" ? PaperclipIcon : DocumentIcon;
+  const Icon = c.group === "doc" ? ChatIcon : c.group === "image" ? PaperclipIcon : DocumentIcon;
   return (
     <div className="flex flex-col items-center justify-center gap-4 rounded-2xl border border-line bg-surface-raised px-6 py-20 text-center">
       <Icon size={28} />
       <div>
         <p className="text-[14px] text-ink">{filename}</p>
-        <p className="mt-0.5 text-[12px] text-ink-faint">
-          Preview not available in browser.
-        </p>
+        <p className="mt-0.5 text-[12px] text-ink-faint">Preview not available in browser.</p>
       </div>
       <a
         href={url}
         download={filename}
-        className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-ink px-3.5 text-[12.5px] text-surface hover:bg-ink-soft transition-base"
+        className="transition-base inline-flex h-9 items-center gap-1.5 rounded-lg bg-ink px-3.5 text-[12.5px] text-surface hover:bg-ink-soft"
       >
         <DownloadIcon size={12} /> Download
       </a>

@@ -9,13 +9,7 @@ import { getLocalParts } from "@/lib/utils/tz";
 
 export type SavedViewKey = "today" | "overdue" | "this_week" | "flagged" | "all";
 
-export const SAVED_VIEW_KEYS: SavedViewKey[] = [
-  "today",
-  "overdue",
-  "this_week",
-  "flagged",
-  "all",
-];
+export const SAVED_VIEW_KEYS: SavedViewKey[] = ["today", "overdue", "this_week", "flagged", "all"];
 
 /** The minimal shape a saved view filters on. Reminders and events both map to
  *  this; nothing here depends on which it is. */

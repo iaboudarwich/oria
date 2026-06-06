@@ -7,15 +7,8 @@ import { DropzoneCompact } from "@/components/upload/dropzone-compact";
 import { TextLogForm } from "@/components/section/text-log-form";
 import { Thumbnail } from "@/components/upload/thumbnail";
 import { SparkIcon } from "@/components/ui/icon";
-import {
-  getSignedUrlMap,
-  type UploadWithUploader,
-} from "@/lib/data/uploads";
-import {
-  listReviewUploads,
-  listSectionEntries,
-  type SectionEntry,
-} from "@/lib/data/sections";
+import { getSignedUrlMap, type UploadWithUploader } from "@/lib/data/uploads";
+import { listReviewUploads, listSectionEntries, type SectionEntry } from "@/lib/data/sections";
 import { getCustomSectionById } from "@/lib/data/custom-sections";
 import { listAllSections } from "@/lib/data/all-sections";
 import { displayActor } from "@/lib/data/timeline";
@@ -100,8 +93,16 @@ type MoveOption = {
 };
 
 const BUILTIN_SECTIONS: Section[] = [
-  "household", "travel", "properties", "staff", "events",
-  "finance", "legal", "personal", "vendors", "health",
+  "household",
+  "travel",
+  "properties",
+  "staff",
+  "events",
+  "finance",
+  "legal",
+  "personal",
+  "vendors",
+  "health",
 ];
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -113,9 +114,8 @@ type Props = {
 
 export default async function SectionPage({ params, searchParams }: Props) {
   const { section } = await params;
-  const sp: Record<string, string | string[] | undefined> = await (
-    searchParams ?? Promise.resolve({})
-  );
+  const sp: Record<string, string | string[] | undefined> = await (searchParams ??
+    Promise.resolve({}));
   const viewParam = typeof sp.view === "string" ? sp.view : null;
   const t = await getTranslations("empty");
 
@@ -133,15 +133,9 @@ export default async function SectionPage({ params, searchParams }: Props) {
       name: s.name,
     }));
     return (
-      <Layout
-        title="Unsorted"
-        count={uploads.length}
-        dropzoneNode={null}
-      >
+      <Layout title="Unsorted" count={uploads.length} dropzoneNode={null}>
         {uploads.length === 0 ? (
-          <p className="px-1 text-[13px] text-ink-faint">
-            All caught up.
-          </p>
+          <p className="px-1 text-[13px] text-ink-faint">All caught up.</p>
         ) : (
           <UploadList items={uploads} thumbs={thumbs} moveOptions={moveOptions} />
         )}
@@ -176,14 +170,8 @@ export default async function SectionPage({ params, searchParams }: Props) {
       <Layout
         title={custom.name}
         count={entries.length}
-        summaryNode={
-          entries.length > 0 && summary ? (
-            <SectionSummaryCard data={summary} />
-          ) : null
-        }
-        linkedFilesNode={
-          <SectionCloudPanels orgId={orgId} sectionKey={custom.id} cloud={cloud} />
-        }
+        summaryNode={entries.length > 0 && summary ? <SectionSummaryCard data={summary} /> : null}
+        linkedFilesNode={<SectionCloudPanels orgId={orgId} sectionKey={custom.id} cloud={cloud} />}
         dropzoneNode={
           <DropzoneCompact
             defaultCustomSectionId={custom.id}
@@ -240,14 +228,8 @@ export default async function SectionPage({ params, searchParams }: Props) {
     <Layout
       title={meta.label}
       count={entries.length}
-      summaryNode={
-        entries.length > 0 && summary ? (
-          <SectionSummaryCard data={summary} />
-        ) : null
-      }
-      linkedFilesNode={
-        <SectionCloudPanels orgId={orgId} sectionKey={sec} cloud={cloud} />
-      }
+      summaryNode={entries.length > 0 && summary ? <SectionSummaryCard data={summary} /> : null}
+      linkedFilesNode={<SectionCloudPanels orgId={orgId} sectionKey={sec} cloud={cloud} />}
       dropzoneNode={
         <DropzoneCompact
           defaultSection={sec}
@@ -262,9 +244,7 @@ export default async function SectionPage({ params, searchParams }: Props) {
           label="Or log by text"
         />
       }
-      viewTabsNode={
-        viewTabs ? <SectionViewTabs active={activeView} tabs={viewTabs} /> : null
-      }
+      viewTabsNode={viewTabs ? <SectionViewTabs active={activeView} tabs={viewTabs} /> : null}
     >
       {activeView === "trips" ? (
         <TripsView orgId={orgId} />
@@ -311,9 +291,7 @@ function placeholderForSection(sec: Section): string {
 
 /** Fetch signed thumbnail URLs keyed by entry id. Both uploads and items
  *  show the parent file's thumb. items don't have storage of their own. */
-async function thumbsForEntries(
-  entries: SectionEntry[],
-): Promise<Map<string, string>> {
+async function thumbsForEntries(entries: SectionEntry[]): Promise<Map<string, string>> {
   const seen = new Set<string>();
   const list: Array<{ id: string; storage_path: string }> = [];
   for (const e of entries) {
@@ -350,7 +328,7 @@ function Layout({
       <div className="mb-5 flex items-center gap-2 px-1">
         <Link
           href="/dashboard"
-          className="text-[12px] text-ink-faint hover:text-ink transition-base"
+          className="transition-base text-[12px] text-ink-faint hover:text-ink"
         >
           ← Home
         </Link>
@@ -387,7 +365,7 @@ function UploadList({
       {items.map((it) => (
         <li
           key={it.id}
-          className="group flex items-center gap-3 rounded-lg px-3 py-2 transition-base hover:bg-surface-raised"
+          className="group transition-base flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-surface-raised"
         >
           <Link
             href={`/dashboard/uploads/${it.id}`}
@@ -400,16 +378,12 @@ function UploadList({
               size={32}
             />
             <div className="min-w-0 flex-1">
-              <p className="truncate text-[13.5px] text-ink">
-                {it.title ?? it.filename}
-              </p>
+              <p className="truncate text-[13.5px] text-ink">{it.title ?? it.filename}</p>
               <p className="truncate text-[11.5px] text-ink-faint">
                 {displayActor(it.uploader)} · {relativeTime(it.created_at)}
               </p>
             </div>
-            {it.document_type === "unknown" ? (
-              <SparkIcon size={12} />
-            ) : null}
+            {it.document_type === "unknown" ? <SparkIcon size={12} /> : null}
           </Link>
           {moveOptions ? (
             <div className="opacity-0 transition-opacity duration-150 group-hover:opacity-100 focus-within:opacity-100">
@@ -430,13 +404,7 @@ function UploadList({
 
 /** Section page list that handles both whole uploads and orphan items
  *  (items extracted from multi-item uploads that landed elsewhere). */
-function EntryList({
-  entries,
-  thumbs,
-}: {
-  entries: SectionEntry[];
-  thumbs: Map<string, string>;
-}) {
+function EntryList({ entries, thumbs }: { entries: SectionEntry[]; thumbs: Map<string, string> }) {
   return (
     <ul className="space-y-0.5">
       {entries.map((e) => {
@@ -480,30 +448,22 @@ function EntryList({
             )}
             <div className="min-w-0 flex-1">
               {e.kind === "upload" ? (
-                <p className="truncate text-[13.5px] text-ink">
-                  {e.title ?? e.filename}
-                </p>
+                <p className="truncate text-[13.5px] text-ink">{e.title ?? e.filename}</p>
               ) : (
-                <p className="truncate text-[13.5px] text-ink">
-                  {e.merchant || e.title}
-                </p>
+                <p className="truncate text-[13.5px] text-ink">{e.merchant || e.title}</p>
               )}
               <p className="truncate text-[11.5px] text-ink-faint">{meta}</p>
             </div>
-            {e.kind === "upload" && e.document_type === "unknown" ? (
-              <SparkIcon size={12} />
-            ) : null}
+            {e.kind === "upload" && e.document_type === "unknown" ? <SparkIcon size={12} /> : null}
           </>
         );
         return (
           <li
             key={`${e.kind}-${e.id}`}
-            className="group flex items-center gap-3 rounded-lg px-3 py-2 transition-base hover:bg-surface-raised"
+            className="group transition-base flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-surface-raised"
           >
             {isTyped ? (
-              <div className="flex min-w-0 flex-1 items-center gap-3">
-                {Inner}
-              </div>
+              <div className="flex min-w-0 flex-1 items-center gap-3">{Inner}</div>
             ) : (
               <Link
                 href={`/dashboard/uploads/${e.upload_id}`}
@@ -512,9 +472,7 @@ function EntryList({
                 {Inner}
               </Link>
             )}
-            {e.kind === "upload" ? (
-              <InlineTrashButton uploadId={e.upload_id} />
-            ) : null}
+            {e.kind === "upload" ? <InlineTrashButton uploadId={e.upload_id} /> : null}
           </li>
         );
       })}

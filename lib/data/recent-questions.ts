@@ -31,9 +31,7 @@ export async function listRecentUserQuestions(input: {
 }): Promise<string[]> {
   const ctx = await requireContext();
   const limit = input.limit ?? 3;
-  const sinceISO = new Date(
-    Date.now() - (input.windowDays ?? 60) * 24 * 3600 * 1000,
-  ).toISOString();
+  const sinceISO = new Date(Date.now() - (input.windowDays ?? 60) * 24 * 3600 * 1000).toISOString();
 
   try {
     const supabase = await createClient();
@@ -53,10 +51,7 @@ export async function listRecentUserQuestions(input: {
     };
 
     // Rank: case-insensitive count; tiebreak by most-recent.
-    const counts = new Map<
-      string,
-      { display: string; count: number; lastAt: string }
-    >();
+    const counts = new Map<string, { display: string; count: number; lastAt: string }>();
     for (const r of (data ?? []) as Row[]) {
       const q = r.payload?.q;
       const via = r.payload?.via;
@@ -93,11 +88,7 @@ export async function listRecentUserQuestions(input: {
 
     return Array.from(counts.values())
       .filter((v) => v.count >= 2)
-      .sort((a, b) =>
-        b.count !== a.count
-          ? b.count - a.count
-          : b.lastAt.localeCompare(a.lastAt),
-      )
+      .sort((a, b) => (b.count !== a.count ? b.count - a.count : b.lastAt.localeCompare(a.lastAt)))
       .slice(0, limit)
       .map((v) => v.display);
   } catch {

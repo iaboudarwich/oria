@@ -79,9 +79,10 @@ export default async function UploadDetailPage({ params }: Props) {
 
   // Reminder suggestions. only when extraction exists and user is authenticated.
   const ctx = await getCurrentContext();
-  const suggestions = ctx && extractedEntity
-    ? await generateSuggestionsForUpload(upload.id, ctx.profile.id).catch(() => [])
-    : [];
+  const suggestions =
+    ctx && extractedEntity
+      ? await generateSuggestionsForUpload(upload.id, ctx.profile.id).catch(() => [])
+      : [];
 
   // Entity linking
   const [uploadEntityLinks, allEntityTypes] = await Promise.all([
@@ -89,9 +90,7 @@ export default async function UploadDetailPage({ params }: Props) {
     listEntityTypes(),
   ]);
   // Load all entities for all types so the picker shows them
-  const allEntitiesPerType = await Promise.all(
-    allEntityTypes.map((t) => listEntities(t.id)),
-  );
+  const allEntitiesPerType = await Promise.all(allEntityTypes.map((t) => listEntities(t.id)));
   const allEntities = allEntityTypes.flatMap((t, i) =>
     allEntitiesPerType[i].map((e) => ({ entity: e, entityType: t })),
   );
@@ -101,9 +100,7 @@ export default async function UploadDetailPage({ params }: Props) {
     entityType: l.entity_type,
     relationship: l.relationship,
   }));
-  const availableEntities = allEntities.filter(
-    ({ entity }) => !linkedEntityIds.has(entity.id),
-  );
+  const availableEntities = allEntities.filter(({ entity }) => !linkedEntityIds.has(entity.id));
 
   // Thumbnails for related image uploads.
   const relatedThumbs = await getSignedUrlMap(
@@ -153,7 +150,7 @@ export default async function UploadDetailPage({ params }: Props) {
       <div className="mb-4 flex items-center gap-2">
         <Link
           href="/dashboard/inbox"
-          className="inline-flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-[12.5px] text-ink-muted transition-base hover:bg-surface-raised hover:text-ink"
+          className="transition-base inline-flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-[12.5px] text-ink-muted hover:bg-surface-raised hover:text-ink"
         >
           <span className="-ml-0.5">←</span> Back to uploads
         </Link>
@@ -161,23 +158,19 @@ export default async function UploadDetailPage({ params }: Props) {
           <a
             href={signedUrl}
             download={upload.filename}
-            className="ml-auto inline-flex h-8 items-center gap-1.5 rounded-lg border border-line bg-surface-raised px-2.5 text-[12.5px] text-ink-soft transition-base hover:border-line-strong hover:text-ink"
+            className="transition-base ml-auto inline-flex h-8 items-center gap-1.5 rounded-lg border border-line bg-surface-raised px-2.5 text-[12.5px] text-ink-soft hover:border-line-strong hover:text-ink"
           >
             <DownloadIcon size={12} /> Download
           </a>
         ) : null}
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3 animate-fade-up">
+      <div className="animate-fade-up grid gap-6 lg:grid-cols-3">
         {/* Shared-element target: the inbox row thumbnail morphs into this
             preview during the View Transition (Round 16.9 Part 1). Only one
             detail renders at a time, so the name is safe to reserve here. */}
         <div className="lg:col-span-2" style={{ viewTransitionName: "upload-hero" }}>
-          <Preview
-            url={signedUrl}
-            mime={upload.mime_type}
-            filename={upload.filename}
-          />
+          <Preview url={signedUrl} mime={upload.mime_type} filename={upload.filename} />
         </div>
 
         <aside className="space-y-4">
@@ -192,11 +185,7 @@ export default async function UploadDetailPage({ params }: Props) {
 
           {/* Suggestions: open by default when present */}
           {suggestions.length > 0 && (
-            <Accordion
-              label="Suggested reminders"
-              defaultOpen
-              badge={suggestions.length}
-            >
+            <Accordion label="Suggested reminders" defaultOpen badge={suggestions.length}>
               <SuggestedRemindersPanel
                 suggestions={suggestions}
                 uploadId={upload.id}
@@ -238,7 +227,11 @@ export default async function UploadDetailPage({ params }: Props) {
               status={upload.status}
               skipReason={readSkipReason(upload.metadata)}
             />
-            {items.length === 1 ? <div className="mt-4"><SingleItemPanel item={items[0]} /></div> : null}
+            {items.length === 1 ? (
+              <div className="mt-4">
+                <SingleItemPanel item={items[0]} />
+              </div>
+            ) : null}
             {/* Recourse when a document extracted poorly: re-run the pipeline. */}
             <div className="mt-4 border-t border-line pt-4">
               <p className="mb-2 text-[12px] text-ink-faint">
@@ -253,10 +246,7 @@ export default async function UploadDetailPage({ params }: Props) {
             uploadId={upload.id}
             currentRef={currentRef}
             sections={moveOptions}
-            autoFiled={
-              upload.section_assigned_by === "auto" ||
-              detectAutoFiled(upload, items)
-            }
+            autoFiled={upload.section_assigned_by === "auto" || detectAutoFiled(upload, items)}
           />
 
           <Metadata
@@ -275,11 +265,7 @@ export default async function UploadDetailPage({ params }: Props) {
 
       <div className="mt-8 grid gap-6 lg:grid-cols-2">
         <LinkedTimeline events={events} />
-        <RelatedUploads
-          related={related}
-          thumbs={relatedThumbs}
-          currentLabel={sectionLabel}
-        />
+        <RelatedUploads related={related} thumbs={relatedThumbs} currentLabel={sectionLabel} />
       </div>
 
       <DeleteSection id={upload.id} filename={upload.filename} />
@@ -295,8 +281,8 @@ function readSkipReason(metadata: unknown): string | null {
 
 function DeleteSection({ id, filename }: { id: string; filename: string }) {
   return (
-    <details className="mt-12 border-t border-line pt-6 max-w-xl group">
-      <summary className="inline-flex cursor-pointer items-center gap-2 text-[12.5px] text-ink-faint transition-base hover:text-claret group-open:text-claret">
+    <details className="group mt-12 max-w-xl border-t border-line pt-6">
+      <summary className="transition-base inline-flex cursor-pointer items-center gap-2 text-[12.5px] text-ink-faint group-open:text-claret hover:text-claret">
         Delete this file
       </summary>
       <div className="mt-3 rounded-lg border border-line bg-surface-raised p-4">
@@ -312,7 +298,7 @@ function DeleteSection({ id, filename }: { id: string; filename: string }) {
             <input type="hidden" name="redirect_to" value="/dashboard" />
             <button
               type="submit"
-              className="inline-flex h-9 items-center rounded-lg bg-claret px-3.5 text-[12.5px] text-surface transition-base hover:bg-claret/90"
+              className="transition-base inline-flex h-9 items-center rounded-lg bg-claret px-3.5 text-[12.5px] text-surface hover:bg-claret/90"
             >
               Move to Deleted
             </button>
@@ -349,19 +335,12 @@ function SingleItemPanel({ item }: { item: MemoryItem }) {
 
   return (
     <section>
-      <h2 className="mb-3 px-1 text-[13px] font-medium text-ink-muted">
-        At a glance
-      </h2>
-      <dl className="rounded-xl border border-line bg-surface-raised divide-y divide-line">
+      <h2 className="mb-3 px-1 text-[13px] font-medium text-ink-muted">At a glance</h2>
+      <dl className="divide-y divide-line rounded-xl border border-line bg-surface-raised">
         {rows.map((r) => (
-          <div
-            key={r.label}
-            className="flex items-start justify-between gap-4 px-4 py-2.5"
-          >
+          <div key={r.label} className="flex items-start justify-between gap-4 px-4 py-2.5">
             <dt className="text-[12px] text-ink-faint">{r.label}</dt>
-            <dd className="max-w-[60%] truncate text-right text-[12.5px] text-ink">
-              {r.value}
-            </dd>
+            <dd className="max-w-[60%] truncate text-right text-[12.5px] text-ink">{r.value}</dd>
           </div>
         ))}
       </dl>
@@ -399,11 +378,7 @@ function detectAutoFiled(
   return items.some((it) => {
     if (it.confidence === null || it.confidence < 0.7) return false;
     if (upload.section && it.section === upload.section) return true;
-    if (
-      upload.custom_section_id &&
-      it.custom_section_id === upload.custom_section_id
-    )
-      return true;
+    if (upload.custom_section_id && it.custom_section_id === upload.custom_section_id) return true;
     return false;
   });
 }
@@ -424,9 +399,7 @@ function SectionPanel({
   const isReview = currentRef.kind === "review";
   return (
     <section>
-      <h2 className="mb-3 px-1 text-[13px] font-medium text-ink-muted">
-        Section
-      </h2>
+      <h2 className="mb-3 px-1 text-[13px] font-medium text-ink-muted">Section</h2>
       <div className="flex items-center gap-3 rounded-xl border border-line bg-surface-raised px-4 py-3">
         <div className="min-w-0 flex-1">
           <p className="flex items-center gap-2 truncate text-[13.5px] text-ink">
@@ -446,11 +419,7 @@ function SectionPanel({
             </p>
           ) : null}
         </div>
-        <MovePicker
-          uploadId={uploadId}
-          currentRef={currentRef}
-          sections={sections}
-        />
+        <MovePicker uploadId={uploadId} currentRef={currentRef} sections={sections} />
       </div>
     </section>
   );
@@ -491,16 +460,11 @@ function Metadata({
   return (
     <section>
       <h2 className="mb-3 px-1 text-[13px] font-medium text-ink-muted">Details</h2>
-      <dl className="rounded-xl border border-line bg-surface-raised divide-y divide-line">
+      <dl className="divide-y divide-line rounded-xl border border-line bg-surface-raised">
         {rows.map((r) => (
-          <div
-            key={r.label}
-            className="flex items-start justify-between gap-4 px-4 py-2.5"
-          >
+          <div key={r.label} className="flex items-start justify-between gap-4 px-4 py-2.5">
             <dt className="text-[12px] text-ink-faint">{r.label}</dt>
-            <dd className="max-w-[60%] truncate text-right text-[12.5px] text-ink">
-              {r.value}
-            </dd>
+            <dd className="max-w-[60%] truncate text-right text-[12.5px] text-ink">{r.value}</dd>
           </div>
         ))}
       </dl>
@@ -508,9 +472,7 @@ function Metadata({
   );
 }
 
-function displayName(
-  p: { full_name: string | null; email: string } | null,
-): string {
+function displayName(p: { full_name: string | null; email: string } | null): string {
   if (!p) return "Unknown";
   return p.full_name?.trim() || p.email;
 }
@@ -529,25 +491,18 @@ function LinkedReminders({
 }) {
   return (
     <section>
-      <h2 className="mb-3 px-1 text-[13px] font-medium text-ink-muted">
-        Reminders
-      </h2>
+      <h2 className="mb-3 px-1 text-[13px] font-medium text-ink-muted">Reminders</h2>
       {reminders.length === 0 ? (
         <p className="mb-3 px-1 text-[12.5px] text-ink-faint">
           No reminders linked to this upload yet.
         </p>
       ) : (
-        <ul className="rounded-xl border border-line bg-surface-raised divide-y divide-line">
+        <ul className="divide-y divide-line rounded-xl border border-line bg-surface-raised">
           {reminders.map((r) => (
-            <li
-              key={r.id}
-              className="flex items-center gap-3 px-4 py-2.5"
-            >
+            <li key={r.id} className="flex items-center gap-3 px-4 py-2.5">
               <span
                 className={`inline-flex h-4 w-4 shrink-0 items-center justify-center rounded border ${
-                  r.done
-                    ? "border-sage bg-sage text-surface"
-                    : "border-line-strong"
+                  r.done ? "border-sage bg-sage text-surface" : "border-line-strong"
                 }`}
               >
                 {r.done ? <CheckIcon size={10} /> : null}
@@ -573,7 +528,7 @@ function LinkedReminders({
       )}
 
       <details className="group mt-3 rounded-xl border border-line bg-surface-raised">
-        <summary className="flex cursor-pointer items-center gap-2 px-3 py-2 text-[12.5px] text-ink-muted transition-base hover:text-ink group-open:text-ink">
+        <summary className="transition-base flex cursor-pointer items-center gap-2 px-3 py-2 text-[12.5px] text-ink-muted group-open:text-ink hover:text-ink">
           <span className="text-[13px]">+</span>
           <span>Add reminder</span>
         </summary>
@@ -588,7 +543,7 @@ function LinkedReminders({
             required
             autoFocus
             placeholder="What to remember"
-            className="h-9 flex-1 rounded-md bg-canvas/60 px-2 text-[13px] text-ink placeholder:text-ink-faint outline-none focus:bg-canvas"
+            className="h-9 flex-1 rounded-md bg-canvas/60 px-2 text-[13px] text-ink outline-none placeholder:text-ink-faint focus:bg-canvas"
           />
           <input
             type="date"
@@ -604,7 +559,7 @@ function LinkedReminders({
           />
           <button
             type="submit"
-            className="inline-flex h-9 items-center justify-center rounded-md bg-ink px-3 text-[12.5px] text-surface hover:bg-ink-soft transition-base"
+            className="transition-base inline-flex h-9 items-center justify-center rounded-md bg-ink px-3 text-[12.5px] text-surface hover:bg-ink-soft"
           >
             Add
           </button>
@@ -631,15 +586,13 @@ function LinkedTimeline({
         <h2 className="text-[13px] font-medium text-ink-muted">Activity</h2>
         <Link
           href="/dashboard/timeline"
-          className="text-[12px] text-ink-faint hover:text-ink transition-base"
+          className="transition-base text-[12px] text-ink-faint hover:text-ink"
         >
           Open timeline
         </Link>
       </div>
       {events.length === 0 ? (
-        <p className="px-1 text-[12.5px] text-ink-faint">
-          No activity yet on this upload.
-        </p>
+        <p className="px-1 text-[12.5px] text-ink-faint">No activity yet on this upload.</p>
       ) : (
         <ul className="space-y-0.5">
           {events.map((e) => {
@@ -647,7 +600,7 @@ function LinkedTimeline({
             return (
               <li
                 key={e.id}
-                className="flex items-start gap-3 rounded-lg px-3 py-2 transition-base hover:bg-surface-raised"
+                className="transition-base flex items-start gap-3 rounded-lg px-3 py-2 hover:bg-surface-raised"
               >
                 <span className={`mt-0.5 ${v.color}`}>
                   <v.Icon size={14} />
@@ -658,9 +611,7 @@ function LinkedTimeline({
                     <p className="mt-0.5 text-[12px] text-ink-faint">{e.detail}</p>
                   ) : null}
                 </div>
-                <span className="text-[11px] text-ink-faint">
-                  {relativeTime(e.created_at)}
-                </span>
+                <span className="text-[11px] text-ink-faint">{relativeTime(e.created_at)}</span>
               </li>
             );
           })}
@@ -690,12 +641,8 @@ function RelatedUploads({
   if (related.length === 0) {
     return (
       <section>
-        <h2 className="mb-3 px-1 text-[13px] font-medium text-ink-muted">
-          Related
-        </h2>
-        <p className="px-1 text-[12.5px] text-ink-faint">
-          No other items in {currentLabel} yet.
-        </p>
+        <h2 className="mb-3 px-1 text-[13px] font-medium text-ink-muted">Related</h2>
+        <p className="px-1 text-[12.5px] text-ink-faint">No other items in {currentLabel} yet.</p>
       </section>
     );
   }
@@ -709,7 +656,7 @@ function RelatedUploads({
           <li key={r.id}>
             <Link
               href={`/dashboard/uploads/${r.id}`}
-              className="flex items-center gap-3 rounded-lg px-3 py-2 transition-base hover:bg-surface-raised"
+              className="transition-base flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-surface-raised"
             >
               <Thumbnail
                 mime={r.mime_type}
@@ -720,9 +667,7 @@ function RelatedUploads({
               <p className="min-w-0 flex-1 truncate text-[13.5px] text-ink">
                 {r.title ?? r.filename}
               </p>
-              <span className="text-[11.5px] text-ink-faint">
-                {relativeTime(r.created_at)}
-              </span>
+              <span className="text-[11.5px] text-ink-faint">{relativeTime(r.created_at)}</span>
               <ArrowRightIcon size={11} />
             </Link>
           </li>
@@ -737,16 +682,25 @@ function visualForKind(kind: EventKind): {
   color: string;
 } {
   switch (kind) {
-    case "upload": return { Icon: UploadIcon, color: "text-ink-muted" };
-    case "ai": return { Icon: SparkIcon, color: "text-[#7a5a2a]" };
-    case "reminder": return { Icon: CalendarIcon, color: "text-ink-muted" };
-    case "approval": return { Icon: ApprovalsIcon, color: "text-sage" };
-    case "event": return { Icon: GiftIcon, color: "text-ink-muted" };
-    case "staff": return { Icon: StaffIcon, color: "text-ink-muted" };
-    case "travel": return { Icon: PlaneIcon, color: "text-ink-muted" };
-    case "property": return { Icon: PropertiesIcon, color: "text-ink-muted" };
-    case "household": return { Icon: HomeIcon, color: "text-ink-muted" };
-    case "schedule": return { Icon: CalendarIcon, color: "text-ink-muted" };
+    case "upload":
+      return { Icon: UploadIcon, color: "text-ink-muted" };
+    case "ai":
+      return { Icon: SparkIcon, color: "text-[#7a5a2a]" };
+    case "reminder":
+      return { Icon: CalendarIcon, color: "text-ink-muted" };
+    case "approval":
+      return { Icon: ApprovalsIcon, color: "text-sage" };
+    case "event":
+      return { Icon: GiftIcon, color: "text-ink-muted" };
+    case "staff":
+      return { Icon: StaffIcon, color: "text-ink-muted" };
+    case "travel":
+      return { Icon: PlaneIcon, color: "text-ink-muted" };
+    case "property":
+      return { Icon: PropertiesIcon, color: "text-ink-muted" };
+    case "household":
+      return { Icon: HomeIcon, color: "text-ink-muted" };
+    case "schedule":
+      return { Icon: CalendarIcon, color: "text-ink-muted" };
   }
 }
-

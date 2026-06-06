@@ -48,7 +48,7 @@ function RolloverRow({ card, onGone }: { card: RolloverCard; onGone: () => void 
   }
 
   return (
-    <li className="flex items-center gap-3 rounded-lg px-3 py-2 transition-base hover:bg-surface-raised">
+    <li className="transition-base flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-surface-raised">
       <span className="text-ink-faint" aria-hidden>
         <RotateIcon size={14} />
       </span>
@@ -59,7 +59,7 @@ function RolloverRow({ card, onGone }: { card: RolloverCard; onGone: () => void 
         type="button"
         onClick={dismiss}
         aria-label={t("carried_dismiss")}
-        className="shrink-0 text-ink-faint transition-base hover:text-ink"
+        className="transition-base shrink-0 text-ink-faint hover:text-ink"
       >
         <CloseIcon size={16} />
       </button>

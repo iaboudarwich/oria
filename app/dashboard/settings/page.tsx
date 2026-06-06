@@ -3,21 +3,10 @@ import { getTranslations } from "next-intl/server";
 import { Topbar } from "@/components/dashboard/topbar";
 import { listAllSections } from "@/lib/data/all-sections";
 import { scopeKindOf, scopeLabel, resolveEditingScopeId } from "@/lib/settings/scope";
-import {
-  SettingsScopeBar,
-  type ScopeOption,
-} from "@/components/settings/settings-scope-bar";
+import { SettingsScopeBar, type ScopeOption } from "@/components/settings/settings-scope-bar";
 import { ScopeBadge } from "@/components/settings/scope-badge";
-import {
-  getCurrentContext,
-  listUserSpaces,
-  type UserSpace,
-} from "@/lib/data/organizations";
-import {
-  HeartIcon,
-  LockIcon,
-  PersonIcon,
-} from "@/components/ui/icon";
+import { getCurrentContext, listUserSpaces, type UserSpace } from "@/lib/data/organizations";
+import { HeartIcon, LockIcon, PersonIcon } from "@/components/ui/icon";
 import { DeleteAccountPanel } from "@/components/settings/delete-account-panel";
 import { ResetAccountPanel } from "@/components/settings/reset-account-panel";
 import { ConnectionsZones } from "@/components/settings/connections-zones";
@@ -27,10 +16,7 @@ import { SectionsEditorLazy } from "@/components/settings/sections-editor-lazy";
 import { SecurityPanel } from "@/components/settings/security-panel";
 import { SessionsPanel } from "@/components/settings/sessions-panel";
 import { AuditActivity } from "@/components/settings/audit-activity";
-import {
-  countUnusedBackupCodes,
-  readMfaEnrolledAt,
-} from "@/lib/auth/mfa";
+import { countUnusedBackupCodes, readMfaEnrolledAt } from "@/lib/auth/mfa";
 import { listRecentAuditEvents } from "@/lib/data/audit-log";
 import { isCurrentUserAdmin } from "@/lib/data/admin";
 import { readSidebarExtras } from "@/lib/data/sidebar-prefs";
@@ -60,17 +46,17 @@ export const metadata = { title: "Settings" };
 // Order reflects frequency of use: Connections is high-traffic and sits near
 // the top; Storage is occasional and sits lower. (Round 14 F1.)
 const TABS = [
-  { key: "general",    label: "General" },
+  { key: "general", label: "General" },
   { key: "connections", label: "Connections" },
-  { key: "ai",         label: "AI" },
+  { key: "ai", label: "AI" },
   { key: "appearance", label: "Appearance" },
   { key: "preferences", label: "Preferences" },
-  { key: "sections",   label: "Sections" },
-  { key: "circles",    label: "Circles" },
+  { key: "sections", label: "Sections" },
+  { key: "circles", label: "Circles" },
   { key: "workspaces", label: "Workspaces" },
-  { key: "storage",    label: "Storage" },
-  { key: "security",   label: "Security" },
-  { key: "privacy",    label: "Privacy" },
+  { key: "storage", label: "Storage" },
+  { key: "security", label: "Security" },
+  { key: "privacy", label: "Privacy" },
 ] as const;
 type TabKey = (typeof TABS)[number]["key"];
 
@@ -79,9 +65,8 @@ export default async function SettingsPage({
 }: {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const sp: Record<string, string | string[] | undefined> = await (
-    searchParams ?? Promise.resolve({})
-  );
+  const sp: Record<string, string | string[] | undefined> = await (searchParams ??
+    Promise.resolve({}));
   const rawTab = typeof sp.tab === "string" ? sp.tab : "general";
   const tab: TabKey = (TABS.map((t) => t.key) as string[]).includes(rawTab)
     ? (rawTab as TabKey)
@@ -93,9 +78,7 @@ export default async function SettingsPage({
     isCurrentUserAdmin(),
     readSidebarExtras(),
   ]);
-  const storageStats = ctx?.profile.id
-    ? await getUserStorageStats(ctx.profile.id)
-    : null;
+  const storageStats = ctx?.profile.id ? await getUserStorageStats(ctx.profile.id) : null;
   // MFA status for the Security tab, reads profiles.mfa_enrolled_at +
   // counts unused backup codes. Both are cheap admin-client reads.
   const mfa = ctx?.profile.id
@@ -107,19 +90,14 @@ export default async function SettingsPage({
   // Audit feed for the Security tab. Cap at the most recent 100 events;
   // anything older is in the JSON export.
   const auditEvents =
-    tab === "security" && ctx?.profile.id
-      ? await listRecentAuditEvents(ctx.profile.id, 100)
-      : [];
-  const trustedDevices =
-    tab === "security" ? await listTrustedDevices() : [];
+    tab === "security" && ctx?.profile.id ? await listRecentAuditEvents(ctx.profile.id, 100) : [];
+  const trustedDevices = tab === "security" ? await listTrustedDevices() : [];
   const aiConnections =
     tab === "ai" && ctx?.profile.id ? await listAiConnections(ctx.profile.id) : [];
   const aiReasoningMode =
     tab === "ai" && ctx?.profile.id ? await getReasoningMode(ctx.profile.id) : "auto";
   const profile: UserProfile | null =
-    tab === "preferences" && ctx?.profile.id
-      ? await getUserProfile(ctx.profile.id)
-      : null;
+    tab === "preferences" && ctx?.profile.id ? await getUserProfile(ctx.profile.id) : null;
   const timelineEnabled = extras.has("timeline");
   const appearance = tab === "appearance" ? await readAppearance() : null;
   const accentValue = tab === "appearance" ? await readAccent() : DEFAULT_ACCENT;
@@ -169,15 +147,15 @@ export default async function SettingsPage({
       ) : null}
 
       {/* Tab bar */}
-      <div className="mb-6 -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-10 lg:px-10 border-b border-line">
+      <div className="-mx-4 mb-6 border-b border-line px-4 sm:-mx-6 sm:px-6 lg:-mx-10 lg:px-10">
         <nav className="flex gap-1 overflow-x-auto">
           {TABS.map((t) => (
             <Link
               key={t.key}
               href={`/dashboard/settings?tab=${t.key}${editingId ? `&scope=${editingId}` : ""}`}
-              className={`shrink-0 px-3 py-2.5 text-[13px] transition-base border-b-2 -mb-px ${
+              className={`transition-base -mb-px shrink-0 border-b-2 px-3 py-2.5 text-[13px] ${
                 tab === t.key
-                  ? "border-ink text-ink font-medium"
+                  ? "border-ink font-medium text-ink"
                   : "border-transparent text-ink-muted hover:text-ink"
               }`}
             >
@@ -187,7 +165,7 @@ export default async function SettingsPage({
         </nav>
       </div>
 
-      <div className="mx-auto max-w-2xl space-y-9 animate-fade-up">
+      <div className="animate-fade-up mx-auto max-w-2xl space-y-9">
         {tab === "preferences" && profile ? (
           <>
             <ScopeBadge tone="account" label={accountBadge} />
@@ -213,7 +191,7 @@ export default async function SettingsPage({
               ) : null}
             </section>
             <div>
-              <ScopeBadge tone="scope" label={scopeAppliesBadge} className="mb-3 ms-1" />
+              <ScopeBadge tone="scope" label={scopeAppliesBadge} className="ms-1 mb-3" />
               <AppearancePanel
                 key={editingOrg.id}
                 organizationId={editingOrg.id}
@@ -234,14 +212,14 @@ export default async function SettingsPage({
             <SidebarPrefsPanel timelineEnabled={timelineEnabled} />
             {/* Appearance */}
             <section>
-              <h2 className="mb-3 px-1 text-eyebrow">
-                Appearance
-              </h2>
+              <h2 className="text-eyebrow mb-3 px-1">Appearance</h2>
               <div className="overflow-hidden rounded-2xl border border-line bg-surface-raised px-4 py-4 shadow-[0_1px_2px_rgba(28,26,23,0.04)]">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-[13px] text-ink">Theme</p>
-                    <p className="text-[11.5px] text-ink-faint">Choose light, dark, or follow your system setting.</p>
+                    <p className="text-[11.5px] text-ink-faint">
+                      Choose light, dark, or follow your system setting.
+                    </p>
                   </div>
                   <ThemeToggle />
                 </div>
@@ -279,16 +257,14 @@ export default async function SettingsPage({
             </div>
             <div className="mb-2 flex items-end justify-between px-1">
               <div>
-                <h2 className="text-eyebrow">
-                  Sections
-                </h2>
+                <h2 className="text-eyebrow">Sections</h2>
                 <p className="mt-1 text-[12px] text-ink-faint">
                   {`${visible.length} of ${total} visible. Sections follow the space you're in.`}
                 </p>
               </div>
               <Link
                 href="/dashboard/settings/sections/new"
-                className="inline-flex h-9 items-center rounded-md bg-ink px-3 text-[12px] text-surface hover:bg-ink-soft transition-base"
+                className="transition-base inline-flex h-9 items-center rounded-md bg-ink px-3 text-[12px] text-surface hover:bg-ink-soft"
               >
                 Add section
               </Link>
@@ -299,31 +275,25 @@ export default async function SettingsPage({
 
         {tab === "circles" && (
           <>
-          <ScopeBadge tone="account" label={accountBadge} />
-          <SpacesPanel
-            spaces={spaces}
-            activeOrgId={ctx?.organization.id ?? null}
-            kind="circle"
-          />
+            <ScopeBadge tone="account" label={accountBadge} />
+            <SpacesPanel spaces={spaces} activeOrgId={ctx?.organization.id ?? null} kind="circle" />
           </>
         )}
 
         {tab === "workspaces" && (
           <>
-          <ScopeBadge tone="account" label={accountBadge} />
-          <SpacesPanel
-            spaces={spaces}
-            activeOrgId={ctx?.organization.id ?? null}
-            kind="office"
-          />
+            <ScopeBadge tone="account" label={accountBadge} />
+            <SpacesPanel spaces={spaces} activeOrgId={ctx?.organization.id ?? null} kind="office" />
           </>
         )}
 
         {tab === "storage" && (
           <>
             <ScopeBadge tone="account" label={accountBadge} />
-            {storageStats ? <StorageSection stats={storageStats} /> : (
-              <p className="text-[13px] text-ink-faint px-1">Storage stats unavailable.</p>
+            {storageStats ? (
+              <StorageSection stats={storageStats} />
+            ) : (
+              <p className="px-1 text-[13px] text-ink-faint">Storage stats unavailable.</p>
             )}
           </>
         )}
@@ -349,16 +319,10 @@ export default async function SettingsPage({
         {tab === "security" && (
           <div className="space-y-9">
             <ScopeBadge tone="account" label={accountBadge} />
-            <SecurityPanel
-              enrolled={mfa.enrolled}
-              backupCodesLeft={mfa.backupCodesLeft}
-            />
+            <SecurityPanel enrolled={mfa.enrolled} backupCodesLeft={mfa.backupCodesLeft} />
             <TrustedDevicesPanel devices={trustedDevices} />
             <SessionsPanel />
-            <AuditActivity
-              events={auditEvents}
-              filter={sp.audit === "email" ? "email" : "all"}
-            />
+            <AuditActivity events={auditEvents} filter={sp.audit === "email" ? "email" : "all"} />
           </div>
         )}
 
@@ -366,7 +330,8 @@ export default async function SettingsPage({
           <>
             <ScopeBadge tone="account" label={accountBadge} />
             <div className="rounded-2xl border border-line bg-surface-raised px-4 py-3 text-[12.5px] text-ink-faint">
-              Voice dictation uses OpenAI Whisper. Audio is sent to OpenAI for transcription only and is not retained per their terms of service.
+              Voice dictation uses OpenAI Whisper. Audio is sent to OpenAI for transcription only
+              and is not retained per their terms of service.
             </div>
             <DataExportPanel />
             <ResetAccountPanel />
@@ -387,12 +352,10 @@ function DataExportPanel() {
   return (
     <section>
       <div className="mb-2 px-1">
-        <h2 className="text-eyebrow">
-          Your data
-        </h2>
+        <h2 className="text-eyebrow">Your data</h2>
         <p className="mt-1 text-[12px] text-ink-faint">
-          Download a copy of all your data as a JSON file: uploads metadata,
-          reminders, conversations, and more.
+          Download a copy of all your data as a JSON file: uploads metadata, reminders,
+          conversations, and more.
         </p>
       </div>
       <div className="overflow-hidden rounded-2xl border border-line bg-surface-raised shadow-[0_1px_2px_rgba(28,26,23,0.04),0_2px_8px_-6px_rgba(28,26,23,0.08)]">
@@ -401,7 +364,7 @@ function DataExportPanel() {
           <a
             href="/api/account/export"
             download
-            className="text-[11.5px] text-ink-muted transition-base hover:text-ink hover:underline"
+            className="transition-base text-[11.5px] text-ink-muted hover:text-ink hover:underline"
           >
             Download JSON
           </a>
@@ -430,15 +393,15 @@ function NoticedPanel({ derived }: { derived: UserProfile["derived"] }) {
 
   return (
     <section>
-      <h2 className="mb-1 px-1 text-eyebrow">What Oria has noticed</h2>
+      <h2 className="text-eyebrow mb-1 px-1">What Oria has noticed</h2>
       <p className="mb-3 px-1 text-[11.5px] text-ink-faint">
         Derived from your activity over the last 30 days. Read-only.
       </p>
       <div className="rounded-2xl border border-line bg-surface-raised p-4">
         {!hasData ? (
           <p className="text-[13px] text-ink-muted">
-            Not enough activity yet. Click around, ask a few questions, and this
-            will fill in within minutes.
+            Not enough activity yet. Click around, ask a few questions, and this will fill in within
+            minutes.
           </p>
         ) : (
           <dl className="space-y-2.5 text-[13px]">
@@ -474,33 +437,25 @@ function Noticed({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-baseline justify-between gap-3">
       <dt className="text-ink-muted">{label}</dt>
-      <dd className="text-right font-medium capitalize text-ink">{value}</dd>
+      <dd className="text-right font-medium text-ink capitalize">{value}</dd>
     </div>
   );
 }
 
 function SidebarPrefsPanel({ timelineEnabled }: { timelineEnabled: boolean }) {
   return (
-    <GroupedSection
-      label="Sidebar"
-    >
+    <GroupedSection label="Sidebar">
       <li className="flex items-center gap-3 px-3 py-2.5">
         <div className="min-w-0 flex-1">
           <p className="truncate text-[13.5px] text-ink">Timeline</p>
-          <p className="text-[11.5px] text-ink-faint">
-            Recent activity across the active space.
-          </p>
+          <p className="text-[11.5px] text-ink-faint">Recent activity across the active space.</p>
         </div>
         <form action={setSidebarExtra}>
           <input type="hidden" name="extra" value="timeline" />
-          <input
-            type="hidden"
-            name="enabled"
-            value={timelineEnabled ? "off" : "on"}
-          />
+          <input type="hidden" name="enabled" value={timelineEnabled ? "off" : "on"} />
           <button
             type="submit"
-            className={`inline-flex h-9 cursor-pointer items-center rounded-md border px-2.5 text-[11.5px] transition-base ${
+            className={`transition-base inline-flex h-9 cursor-pointer items-center rounded-md border px-2.5 text-[11.5px] ${
               timelineEnabled
                 ? "border-ink bg-ink text-surface"
                 : "border-line bg-canvas text-ink-muted hover:border-line-strong hover:text-ink"
@@ -518,10 +473,8 @@ function SidebarPrefsPanel({ timelineEnabled }: { timelineEnabled: boolean }) {
  *  Non-admins never see the link; the page itself also re-checks. */
 function AdminPanel() {
   return (
-    <GroupedSection
-      label="Admin"
-    >
-      <li className="flex items-center gap-3 px-3 py-2.5 transition-base hover:bg-canvas/60">
+    <GroupedSection label="Admin">
+      <li className="transition-base flex items-center gap-3 px-3 py-2.5 hover:bg-canvas/60">
         <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-line bg-canvas text-ink-muted">
           <LockIcon size={14} />
         </span>
@@ -533,7 +486,7 @@ function AdminPanel() {
         </div>
         <Link
           href="/dashboard/admin/health"
-          className="text-[11.5px] text-ink-muted hover:text-ink transition-base"
+          className="transition-base text-[11.5px] text-ink-muted hover:text-ink"
         >
           Open
         </Link>
@@ -578,23 +531,21 @@ function SpacesPanel({
       action={
         <Link
           href={newHref}
-          className="inline-flex h-7 cursor-pointer items-center rounded-md bg-ink px-2.5 text-[11.5px] text-surface hover:bg-ink-soft transition-base"
+          className="transition-base inline-flex h-7 cursor-pointer items-center rounded-md bg-ink px-2.5 text-[11.5px] text-surface hover:bg-ink-soft"
         >
           New {noun}
         </Link>
       }
     >
       {filtered.length === 0 ? (
-        <li className="px-4 py-3 text-[12.5px] text-ink-faint">
-          {emptyMessage}
-        </li>
+        <li className="px-4 py-3 text-[12.5px] text-ink-faint">{emptyMessage}</li>
       ) : (
         filtered.map((s) => {
           const isActive = s.organization.id === activeOrgId;
           return (
             <li
               key={s.organization.id}
-              className="flex items-center gap-3 px-3 py-2.5 transition-base hover:bg-canvas/60"
+              className="transition-base flex items-center gap-3 px-3 py-2.5 hover:bg-canvas/60"
             >
               <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-line bg-canvas text-ink-muted">
                 {isWork ? <LockIcon size={14} /> : <HeartIcon size={14} />}
@@ -615,7 +566,7 @@ function SpacesPanel({
               </div>
               <Link
                 href={isActive ? "/dashboard/circle" : "/dashboard"}
-                className="text-[11.5px] text-ink-muted hover:text-ink transition-base"
+                className="transition-base text-[11.5px] text-ink-muted hover:text-ink"
               >
                 {isActive ? "Manage" : "Switch to manage"}
               </Link>
@@ -642,12 +593,8 @@ function GroupedSection({
     <section>
       <div className="mb-2 flex items-end justify-between px-1">
         <div>
-          <h2 className="text-eyebrow">
-            {label}
-          </h2>
-          {hint ? (
-            <p className="mt-1 text-[12px] text-ink-faint">{hint}</p>
-          ) : null}
+          <h2 className="text-eyebrow">{label}</h2>
+          {hint ? <p className="mt-1 text-[12px] text-ink-faint">{hint}</p> : null}
         </div>
         {action}
       </div>
@@ -659,24 +606,15 @@ function GroupedSection({
 }
 
 function StorageSection({ stats }: { stats: StorageStats }) {
-  const {
-    lifetimeUsedBytes,
-    lifetimeLimitBytes,
-    dailyUsedBytes,
-    dailyLimitBytes,
-  } = stats;
+  const { lifetimeUsedBytes, lifetimeLimitBytes, dailyUsedBytes, dailyLimitBytes } = stats;
   const lifetimePct =
-    lifetimeLimitBytes > 0
-      ? Math.min(100, (lifetimeUsedBytes / lifetimeLimitBytes) * 100)
-      : 0;
+    lifetimeLimitBytes > 0 ? Math.min(100, (lifetimeUsedBytes / lifetimeLimitBytes) * 100) : 0;
   const dailyPct =
-    dailyLimitBytes > 0
-      ? Math.min(100, (dailyUsedBytes / dailyLimitBytes) * 100)
-      : 0;
+    dailyLimitBytes > 0 ? Math.min(100, (dailyUsedBytes / dailyLimitBytes) * 100) : 0;
 
   return (
     <GroupedSection label="Storage">
-      <li className="px-4 py-4 space-y-4">
+      <li className="space-y-4 px-4 py-4">
         <StorageBar
           label="Lifetime storage"
           used={lifetimeUsedBytes}
@@ -707,16 +645,8 @@ function StorageBar({
 }) {
   const isWarning = pct >= 80 && pct < 100;
   const isFull = pct >= 100;
-  const barColor = isFull
-    ? "bg-claret"
-    : isWarning
-      ? "bg-amber-500"
-      : "bg-ink";
-  const usedColor = isFull
-    ? "text-claret"
-    : isWarning
-      ? "text-amber-600"
-      : "text-ink-muted";
+  const barColor = isFull ? "bg-claret" : isWarning ? "bg-amber-500" : "bg-ink";
+  const usedColor = isFull ? "text-claret" : isWarning ? "text-amber-600" : "text-ink-muted";
 
   return (
     <div className="space-y-1.5">
@@ -782,13 +712,11 @@ function ModesPanel({ orgKind }: { orgKind: string }) {
   ];
 
   return (
-    <GroupedSection
-      label="Modes"
-    >
+    <GroupedSection label="Modes">
       {modes.map((m) => (
         <li
           key={m.id}
-          className="flex items-center gap-3 px-3 py-2 transition-base hover:bg-canvas/60"
+          className="transition-base flex items-center gap-3 px-3 py-2 hover:bg-canvas/60"
         >
           <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-line bg-canvas text-ink-muted">
             <m.Icon size={13} />
@@ -807,7 +735,7 @@ function ModesPanel({ orgKind }: { orgKind: string }) {
           </div>
           <Link
             href={m.cta.href}
-            className="text-[11.5px] text-ink-muted hover:text-ink transition-base"
+            className="transition-base text-[11.5px] text-ink-muted hover:text-ink"
           >
             {m.cta.label}
           </Link>
@@ -816,4 +744,3 @@ function ModesPanel({ orgKind }: { orgKind: string }) {
     </GroupedSection>
   );
 }
-

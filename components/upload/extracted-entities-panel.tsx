@@ -66,8 +66,7 @@ function formatCurrency(amount: unknown, currency: unknown): string {
   if (amount == null || amount === "") return "";
   const num = typeof amount === "number" ? amount : parseFloat(str(amount));
   if (isNaN(num)) return str(amount);
-  const cur =
-    typeof currency === "string" && currency.length === 3 ? currency : "USD";
+  const cur = typeof currency === "string" && currency.length === 3 ? currency : "USD";
   try {
     return new Intl.NumberFormat(undefined, {
       style: "currency",
@@ -104,22 +103,22 @@ function FieldRow({
   const displayVal = editing
     ? str(draft[editKey] ?? value)
     : sensitive && !revealed
-    ? value.replace(/./g, (c, i) => (i < value.length - 4 ? "*" : c))
-    : value;
+      ? value.replace(/./g, (c, i) => (i < value.length - 4 ? "*" : c))
+      : value;
 
   return (
-    <div className="flex items-start gap-2 py-1.5 border-b border-line last:border-0">
+    <div className="flex items-start gap-2 border-b border-line py-1.5 last:border-0">
       <span className="w-32 shrink-0 text-[11.5px] text-ink-faint">{label}</span>
-      <div className="flex-1 min-w-0">
+      <div className="min-w-0 flex-1">
         {editing ? (
           <input
             type="text"
             value={str(draft[editKey] ?? value)}
             onChange={(e) => onDraftChange(editKey, e.target.value)}
-            className="w-full rounded bg-canvas px-2 py-0.5 text-[13px] text-ink outline-none border border-line focus:border-ink-soft"
+            className="w-full rounded border border-line bg-canvas px-2 py-0.5 text-[13px] text-ink outline-none focus:border-ink-soft"
           />
         ) : (
-          <span className="text-[13px] text-ink break-words">{displayVal}</span>
+          <span className="text-[13px] break-words text-ink">{displayVal}</span>
         )}
       </div>
       {sensitive && !editing && (
@@ -139,7 +138,7 @@ function FieldRow({
 function LineItemsRow({ items }: { items: unknown }) {
   if (!Array.isArray(items) || items.length === 0) return null;
   return (
-    <div className="py-1.5 border-b border-line last:border-0">
+    <div className="border-b border-line py-1.5 last:border-0">
       <span className="text-[11.5px] text-ink-faint">Items</span>
       <ul className="mt-1 space-y-0.5">
         {items.map((item: unknown, i: number) => {
@@ -154,18 +153,12 @@ function LineItemsRow({ items }: { items: unknown }) {
           const it = item as Record<string, unknown>;
           const name = str(it.name ?? it.description ?? "");
           const qty = it.qty != null ? `x${str(it.qty)}` : "";
-          const price =
-            it.price != null ? formatCurrency(it.price, null) : "";
+          const price = it.price != null ? formatCurrency(it.price, null) : "";
           const parts = [name, qty, price].filter(Boolean);
           return (
-            <li
-              key={i}
-              className="flex items-baseline justify-between gap-3 text-[12.5px]"
-            >
+            <li key={i} className="flex items-baseline justify-between gap-3 text-[12.5px]">
               <span className="min-w-0 truncate text-ink">{parts[0] ?? ""}</span>
-              <span className="shrink-0 text-ink-faint">
-                {parts.slice(1).join(" ")}
-              </span>
+              <span className="shrink-0 text-ink-faint">{parts.slice(1).join(" ")}</span>
             </li>
           );
         })}
@@ -501,8 +494,7 @@ function StatementView({ f, editing, draft, onDraftChange }: FieldProps) {
   const period =
     formatDate(f.statement_period_start) && formatDate(f.statement_period_end)
       ? `${formatDate(f.statement_period_start)} to ${formatDate(f.statement_period_end)}`
-      : formatDate(f.statement_period_start) ||
-        formatDate(f.statement_period_end);
+      : formatDate(f.statement_period_start) || formatDate(f.statement_period_end);
   return (
     <>
       <FieldRow
@@ -603,38 +595,34 @@ function GenericView({ f, editing, draft, onDraftChange }: FieldProps) {
         draft={draft}
         onDraftChange={onDraftChange}
       />
-      {(keyDates as unknown[]).map(
-        (kd: unknown, i: number) => {
-          const item = kd as Record<string, unknown>;
-          return (
-            <FieldRow
-              key={i}
-              label={str(item.label) || "Date"}
-              value={formatDate(item.date)}
-              editKey={`key_dates_${i}`}
-              editing={false}
-              draft={{}}
-              onDraftChange={() => {}}
-            />
-          );
-        }
-      )}
-      {(keyAmounts as unknown[]).map(
-        (ka: unknown, i: number) => {
-          const item = ka as Record<string, unknown>;
-          return (
-            <FieldRow
-              key={i}
-              label={str(item.label) || "Amount"}
-              value={formatCurrency(item.amount, item.currency)}
-              editKey={`key_amounts_${i}`}
-              editing={false}
-              draft={{}}
-              onDraftChange={() => {}}
-            />
-          );
-        }
-      )}
+      {(keyDates as unknown[]).map((kd: unknown, i: number) => {
+        const item = kd as Record<string, unknown>;
+        return (
+          <FieldRow
+            key={i}
+            label={str(item.label) || "Date"}
+            value={formatDate(item.date)}
+            editKey={`key_dates_${i}`}
+            editing={false}
+            draft={{}}
+            onDraftChange={() => {}}
+          />
+        );
+      })}
+      {(keyAmounts as unknown[]).map((ka: unknown, i: number) => {
+        const item = ka as Record<string, unknown>;
+        return (
+          <FieldRow
+            key={i}
+            label={str(item.label) || "Amount"}
+            value={formatCurrency(item.amount, item.currency)}
+            editKey={`key_amounts_${i}`}
+            editing={false}
+            draft={{}}
+            onDraftChange={() => {}}
+          />
+        );
+      })}
     </>
   );
 }
@@ -646,11 +634,46 @@ function ProductView({ f, editing, draft, onDraftChange }: FieldProps) {
     : str(f.key_attributes);
   return (
     <>
-      <FieldRow label="Product" value={str(f.product_name)} editKey="product_name" editing={editing} draft={draft} onDraftChange={onDraftChange} />
-      <FieldRow label="Brand" value={str(f.brand)} editKey="brand" editing={editing} draft={draft} onDraftChange={onDraftChange} />
-      <FieldRow label="Category" value={str(f.category)} editKey="category" editing={editing} draft={draft} onDraftChange={onDraftChange} />
-      <FieldRow label="Attributes" value={attrs} editKey="key_attributes" editing={editing} draft={draft} onDraftChange={onDraftChange} />
-      <FieldRow label="Purpose" value={str(f.inferred_purpose)} editKey="inferred_purpose" editing={editing} draft={draft} onDraftChange={onDraftChange} />
+      <FieldRow
+        label="Product"
+        value={str(f.product_name)}
+        editKey="product_name"
+        editing={editing}
+        draft={draft}
+        onDraftChange={onDraftChange}
+      />
+      <FieldRow
+        label="Brand"
+        value={str(f.brand)}
+        editKey="brand"
+        editing={editing}
+        draft={draft}
+        onDraftChange={onDraftChange}
+      />
+      <FieldRow
+        label="Category"
+        value={str(f.category)}
+        editKey="category"
+        editing={editing}
+        draft={draft}
+        onDraftChange={onDraftChange}
+      />
+      <FieldRow
+        label="Attributes"
+        value={attrs}
+        editKey="key_attributes"
+        editing={editing}
+        draft={draft}
+        onDraftChange={onDraftChange}
+      />
+      <FieldRow
+        label="Purpose"
+        value={str(f.inferred_purpose)}
+        editKey="inferred_purpose"
+        editing={editing}
+        draft={draft}
+        onDraftChange={onDraftChange}
+      />
     </>
   );
 }
@@ -659,10 +682,38 @@ function ProductView({ f, editing, draft, onDraftChange }: FieldProps) {
 function SceneView({ f, editing, draft, onDraftChange }: FieldProps) {
   return (
     <>
-      <FieldRow label="Scene" value={str(f.scene_type)} editKey="scene_type" editing={editing} draft={draft} onDraftChange={onDraftChange} />
-      <FieldRow label="Subject" value={str(f.primary_subject)} editKey="primary_subject" editing={editing} draft={draft} onDraftChange={onDraftChange} />
-      <FieldRow label="Location" value={str(f.location_hints)} editKey="location_hints" editing={editing} draft={draft} onDraftChange={onDraftChange} />
-      <FieldRow label="Context" value={str(f.context)} editKey="context" editing={editing} draft={draft} onDraftChange={onDraftChange} />
+      <FieldRow
+        label="Scene"
+        value={str(f.scene_type)}
+        editKey="scene_type"
+        editing={editing}
+        draft={draft}
+        onDraftChange={onDraftChange}
+      />
+      <FieldRow
+        label="Subject"
+        value={str(f.primary_subject)}
+        editKey="primary_subject"
+        editing={editing}
+        draft={draft}
+        onDraftChange={onDraftChange}
+      />
+      <FieldRow
+        label="Location"
+        value={str(f.location_hints)}
+        editKey="location_hints"
+        editing={editing}
+        draft={draft}
+        onDraftChange={onDraftChange}
+      />
+      <FieldRow
+        label="Context"
+        value={str(f.context)}
+        editKey="context"
+        editing={editing}
+        draft={draft}
+        onDraftChange={onDraftChange}
+      />
     </>
   );
 }
@@ -707,11 +758,9 @@ const TYPE_LABEL: Record<string, string> = {
 export function ExtractedEntitiesPending() {
   return (
     <section>
-      <h2 className="mb-2 px-1 text-eyebrow">
-        What&rsquo;s in this
-      </h2>
+      <h2 className="text-eyebrow mb-2 px-1">What&rsquo;s in this</h2>
       <div className="rounded-2xl border border-line bg-surface-raised p-4">
-        <div className="space-y-2 animate-pulse">
+        <div className="animate-pulse space-y-2">
           <div className="h-3 w-24 rounded bg-line" />
           <div className="h-3 w-40 rounded bg-line" />
           <div className="h-3 w-32 rounded bg-line" />
@@ -725,9 +774,7 @@ export function ExtractedEntitiesPending() {
 export function ExtractedEntitiesFailed() {
   return (
     <section>
-      <h2 className="mb-2 px-1 text-eyebrow">
-        What&rsquo;s in this
-      </h2>
+      <h2 className="text-eyebrow mb-2 px-1">What&rsquo;s in this</h2>
       <div className="rounded-2xl border border-line bg-surface-raised px-4 py-3">
         <p className="text-[12.5px] text-ink-faint">
           Couldn&rsquo;t extract structured details from this document.
@@ -759,9 +806,10 @@ export function ExtractedEntitiesPanel({
 
   const activeFields = useMemo(() => {
     if (!entity) return {};
-    const base = entity.user_verified && entity.user_edited_fields
-      ? { ...entity.fields, ...entity.user_edited_fields }
-      : entity.fields;
+    const base =
+      entity.user_verified && entity.user_edited_fields
+        ? { ...entity.fields, ...entity.user_edited_fields }
+        : entity.fields;
     // Overlay translated fields if present (UI-only, doesn't affect storage)
     return translatedFields ? { ...base, ...translatedFields } : base;
   }, [entity, translatedFields]);
@@ -789,10 +837,7 @@ export function ExtractedEntitiesPanel({
   }, [entity, activeFields]);
 
   // Early returns. must come AFTER all hooks.
-  if (
-    !entity &&
-    (uploadStatus === "received" || uploadStatus === "processing")
-  ) {
+  if (!entity && (uploadStatus === "received" || uploadStatus === "processing")) {
     return <ExtractedEntitiesPending />;
   }
   if (!entity) return null;
@@ -821,13 +866,9 @@ export function ExtractedEntitiesPanel({
   return (
     <section>
       <div className="mb-2 flex items-center justify-between px-1">
-        <h2 className="text-eyebrow">
-          What&rsquo;s in this
-        </h2>
+        <h2 className="text-eyebrow">What&rsquo;s in this</h2>
         <div className="flex items-center gap-2">
-          {entity.user_verified && (
-            <span className="text-[10.5px] text-sage-600">Verified</span>
-          )}
+          {entity.user_verified && <span className="text-sage-600 text-[10.5px]">Verified</span>}
           {/* Translate button. only when locale is non-English */}
           {locale !== "en" && !translatedFields && (
             <button
@@ -839,7 +880,7 @@ export function ExtractedEntitiesPanel({
                   if (result) setTranslatedFields(result);
                 });
               }}
-              className="text-[11px] text-ink-faint transition-base hover:text-ink disabled:opacity-50"
+              className="transition-base text-[11px] text-ink-faint hover:text-ink disabled:opacity-50"
             >
               {translating ? "Translating..." : "Translate"}
             </button>
@@ -848,7 +889,7 @@ export function ExtractedEntitiesPanel({
             <button
               type="button"
               onClick={() => setTranslatedFields(null)}
-              className="text-[11px] text-ink-faint transition-base hover:text-ink"
+              className="transition-base text-[11px] text-ink-faint hover:text-ink"
             >
               Original
             </button>
@@ -860,7 +901,7 @@ export function ExtractedEntitiesPanel({
                 setDraft({ ...activeFields });
                 setEditing(true);
               }}
-              className="text-[11px] text-ink-faint transition-base hover:text-ink"
+              className="transition-base text-[11px] text-ink-faint hover:text-ink"
             >
               Edit
             </button>
@@ -870,7 +911,7 @@ export function ExtractedEntitiesPanel({
                 type="button"
                 onClick={handleSave}
                 disabled={pending}
-                className="text-[11px] text-ink transition-base hover:underline disabled:opacity-50"
+                className="transition-base text-[11px] text-ink hover:underline disabled:opacity-50"
               >
                 {pending ? "Saving..." : "Save"}
               </button>
@@ -881,7 +922,7 @@ export function ExtractedEntitiesPanel({
                   setDraft({});
                   setSaveError(null);
                 }}
-                className="text-[11px] text-ink-faint transition-base hover:text-ink"
+                className="transition-base text-[11px] text-ink-faint hover:text-ink"
               >
                 Cancel
               </button>
@@ -911,13 +952,10 @@ export function ExtractedEntitiesPanel({
           </p>
         )}
 
-        {saveError && (
-          <p className="mt-2 text-[11.5px] text-claret">{saveError}</p>
-        )}
+        {saveError && <p className="mt-2 text-[11.5px] text-claret">{saveError}</p>}
 
         <p className="mt-3 text-[10.5px] text-ink-faint">
-          Extracted by AI. Verify before relying on these details for important
-          decisions.
+          Extracted by AI. Verify before relying on these details for important decisions.
         </p>
       </div>
     </section>

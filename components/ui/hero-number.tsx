@@ -17,7 +17,7 @@ export function HeroNumber({
 }) {
   return (
     <p className={`flex items-baseline gap-2 ${className}`}>
-      <span className="font-display text-[clamp(28px,3.4vw,40px)] font-semibold leading-none tracking-[-0.02em] tabular-nums text-ink">
+      <span className="font-display text-[clamp(28px,3.4vw,40px)] leading-none font-semibold tracking-[-0.02em] text-ink tabular-nums">
         {value}
       </span>
       {label ? <span className="text-body-sm text-ink-muted">{label}</span> : null}

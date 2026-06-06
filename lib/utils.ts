@@ -28,11 +28,7 @@ export function classifyMime(mime: string | null | undefined): {
   if (mime.startsWith("image/")) return { label: "Image", group: "image" };
   if (mime === "application/pdf") return { label: "PDF", group: "pdf" };
   if (mime.startsWith("audio/")) return { label: "Audio", group: "audio" };
-  if (
-    mime.includes("word") ||
-    mime.includes("document") ||
-    mime === "text/plain"
-  )
+  if (mime.includes("word") || mime.includes("document") || mime === "text/plain")
     return { label: "Doc", group: "doc" };
   return { label: mime.split("/").pop() ?? "File", group: "other" };
 }

@@ -32,7 +32,8 @@ const CATEGORY_SECTION: Record<EventCategory, Section> = {
 // Heuristic signals (the spec's stated defaults). Used as the fast path and as
 // the fallback when the AI classifier is unavailable.
 const TRAVEL_RE = /\b(flight|flights|hotel|trip|airport|boarding|airbnb|rental car|itinerary)\b/i;
-const HEALTH_RE = /\b(doctor|dr\.|dentist|appointment|checkup|check-up|therapy|clinic|medical|surgery|vaccine)\b/i;
+const HEALTH_RE =
+  /\b(doctor|dr\.|dentist|appointment|checkup|check-up|therapy|clinic|medical|surgery|vaccine)\b/i;
 const FAMILY_RE = /\b(birthday|anniversary|family|wedding|graduation)\b/i;
 const FINANCE_RE = /\b(invoice|payment due|tax|accountant|bill|statement)\b/i;
 const AIRPORT_CODE_RE = /\b[A-Z]{3}\b/;
@@ -98,11 +99,19 @@ Return ONLY a JSON array of {"i": <index>, "category": "<one category>"} objects
       messages: [{ role: "user", content: prompt }],
     });
     const raw = msg.content[0]?.type === "text" ? msg.content[0].text.trim() : "[]";
-    const cleaned = raw.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim();
+    const cleaned = raw
+      .replace(/^```(?:json)?\s*/i, "")
+      .replace(/\s*```$/, "")
+      .trim();
     const parsed = JSON.parse(cleaned) as Array<{ i: number; category: string }>;
     const out = [...fallback];
     for (const row of parsed) {
-      if (typeof row.i === "number" && row.i >= 0 && row.i < out.length && isCategory(row.category)) {
+      if (
+        typeof row.i === "number" &&
+        row.i >= 0 &&
+        row.i < out.length &&
+        isCategory(row.category)
+      ) {
         out[row.i] = row.category;
       }
     }
@@ -216,13 +225,14 @@ export async function syncAllCalendars(): Promise<CalendarSyncSummary> {
     .eq("service", "calendar")
     .eq("status", "active");
 
-  const conns = (data as Array<{
-    id: string;
-    user_id: string;
-    account_email: string;
-    routing_mode: "auto" | "fixed";
-    routing_target_org_ids: string[] | null;
-  }>) ?? [];
+  const conns =
+    (data as Array<{
+      id: string;
+      user_id: string;
+      account_email: string;
+      routing_mode: "auto" | "fixed";
+      routing_target_org_ids: string[] | null;
+    }>) ?? [];
 
   let events = 0;
   for (const c of conns) {
@@ -286,15 +296,17 @@ export async function listUpcomingEvents(
     .lte("starts_at", until.toISOString())
     .order("starts_at", { ascending: true })
     .limit(8);
-  return ((data as Array<{
-    id: string;
-    title: string;
-    location: string | null;
-    starts_at: string;
-    is_all_day: boolean;
-    category: EventCategory | null;
-    web_view_link: string | null;
-  }>) ?? []).map((r) => ({
+  return (
+    (data as Array<{
+      id: string;
+      title: string;
+      location: string | null;
+      starts_at: string;
+      is_all_day: boolean;
+      category: EventCategory | null;
+      web_view_link: string | null;
+    }>) ?? []
+  ).map((r) => ({
     id: r.id,
     title: r.title,
     location: r.location,
@@ -322,15 +334,17 @@ export async function listSectionEvents(
     .gte("starts_at", new Date(Date.now() - 24 * 3600 * 1000).toISOString())
     .order("starts_at", { ascending: true })
     .limit(limit);
-  return ((data as Array<{
-    id: string;
-    title: string;
-    location: string | null;
-    starts_at: string;
-    is_all_day: boolean;
-    category: EventCategory | null;
-    web_view_link: string | null;
-  }>) ?? []).map((r) => ({
+  return (
+    (data as Array<{
+      id: string;
+      title: string;
+      location: string | null;
+      starts_at: string;
+      is_all_day: boolean;
+      category: EventCategory | null;
+      web_view_link: string | null;
+    }>) ?? []
+  ).map((r) => ({
     id: r.id,
     title: r.title,
     location: r.location,

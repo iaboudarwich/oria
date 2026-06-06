@@ -40,10 +40,7 @@ export function encryptToken(plain: string): string {
   const key = getKey();
   const iv = randomBytes(IV_BYTES);
   const cipher = createCipheriv(ALGO, key, iv);
-  const ciphertext = Buffer.concat([
-    cipher.update(plain, "utf8"),
-    cipher.final(),
-  ]);
+  const ciphertext = Buffer.concat([cipher.update(plain, "utf8"), cipher.final()]);
   const tag = cipher.getAuthTag();
   return `${iv.toString("hex")}:${tag.toString("hex")}:${ciphertext.toString("hex")}`;
 }
@@ -57,10 +54,7 @@ export function decryptToken(cipher: string): string {
   const [ivHex, tagHex, dataHex] = parts;
   const decipher = createDecipheriv(ALGO, key, Buffer.from(ivHex, "hex"));
   decipher.setAuthTag(Buffer.from(tagHex, "hex"));
-  const plain = Buffer.concat([
-    decipher.update(Buffer.from(dataHex, "hex")),
-    decipher.final(),
-  ]);
+  const plain = Buffer.concat([decipher.update(Buffer.from(dataHex, "hex")), decipher.final()]);
   return plain.toString("utf8");
 }
 

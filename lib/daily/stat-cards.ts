@@ -9,13 +9,7 @@ import type { ContextArchetype } from "@/lib/daily/context-surface";
  * Pure + tested so the tailoring can never drift from the UI.
  */
 
-export type StatCardKey =
-  | "context"
-  | "agenda"
-  | "health"
-  | "net_worth"
-  | "spend"
-  | "subscriptions";
+export type StatCardKey = "context" | "agenda" | "health" | "net_worth" | "spend" | "subscriptions";
 
 export const ALL_STAT_CARDS: StatCardKey[] = [
   "context",
@@ -75,10 +69,7 @@ export type CardPref = { key: StatCardKey; hidden: boolean };
  * The result is the exact ordered list the home renders (hidden flag respected
  * by the UI, but the card stays in the manager so it can be re-shown).
  */
-export function resolveStatCards(
-  available: StatCardKey[],
-  prefs: CardPref[],
-): CardPref[] {
+export function resolveStatCards(available: StatCardKey[], prefs: CardPref[]): CardPref[] {
   const avail = new Set(available);
   const seen = new Set<StatCardKey>();
   const out: CardPref[] = [];

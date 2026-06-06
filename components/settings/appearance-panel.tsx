@@ -86,9 +86,8 @@ export function AppearancePanel({
       <div>
         <h2 className="text-[15px] font-semibold text-ink">Appearance</h2>
         <p className="mt-1 text-[13px] text-ink-muted">
-          Give {scopeName} its own identity. The accent drives buttons,
-          indicators, and focus rings; the shadow tints the depth on cards and
-          modals. Changes apply to {scopeName} only.
+          Give {scopeName} its own identity. The accent drives buttons, indicators, and focus rings;
+          the shadow tints the depth on cards and modals. Changes apply to {scopeName} only.
         </p>
       </div>
 
@@ -102,7 +101,7 @@ export function AppearancePanel({
               onClick={() => setAccent(p.hex)}
               aria-label={p.label}
               title={p.label}
-              className={`h-8 w-8 rounded-full border-2 transition-base ${
+              className={`transition-base h-8 w-8 rounded-full border-2 ${
                 accent.toLowerCase() === p.hex.toLowerCase()
                   ? "border-ink"
                   : "border-transparent hover:border-line-strong"
@@ -142,7 +141,7 @@ export function AppearancePanel({
                 type="button"
                 onClick={() => selectVariant(opt.value)}
                 disabled={pending}
-                className={`rounded-md px-3 py-1.5 text-[12.5px] transition-base disabled:opacity-60 ${
+                className={`transition-base rounded-md px-3 py-1.5 text-[12.5px] disabled:opacity-60 ${
                   active ? "bg-ink text-surface" : "text-ink-muted hover:text-ink"
                 }`}
               >
@@ -155,8 +154,7 @@ export function AppearancePanel({
 
       <div>
         <p className="mb-2 text-[12.5px] font-medium text-ink">
-          Shadow color{" "}
-          <span className="font-normal text-ink-faint">(optional)</span>
+          Shadow color <span className="font-normal text-ink-faint">(optional)</span>
         </p>
         <div className="flex items-center gap-2">
           <input
@@ -185,7 +183,7 @@ export function AppearancePanel({
           type="button"
           onClick={reset}
           disabled={pending}
-          className="text-[12.5px] text-ink-faint transition-base hover:text-ink"
+          className="transition-base text-[12.5px] text-ink-faint hover:text-ink"
         >
           Reset to default
         </button>

@@ -55,7 +55,7 @@ export function ScanEmptyState({ status }: { status: Status }) {
         type="button"
         onClick={scanLonger}
         disabled={scanning}
-        className="mt-4 rounded-xl bg-ink px-4 py-2 text-[13px] font-medium text-surface transition-base hover:bg-ink-soft disabled:opacity-50"
+        className="transition-base mt-4 rounded-xl bg-ink px-4 py-2 text-[13px] font-medium text-surface hover:bg-ink-soft disabled:opacity-50"
       >
         {scanning ? t("scanning_starting") : t("scan_longer")}
       </button>

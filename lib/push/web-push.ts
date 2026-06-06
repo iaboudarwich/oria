@@ -54,10 +54,7 @@ export type SendResult = {
  * (404/410 from the push service) are pruned. Never throws on per-endpoint
  * failure; aggregates the outcome.
  */
-export async function sendPushToUser(
-  userId: string,
-  payload: PushPayload,
-): Promise<SendResult> {
+export async function sendPushToUser(userId: string, payload: PushPayload): Promise<SendResult> {
   if (!configured) return { configured: false, sent: 0, failed: 0, removed: 0 };
 
   const subs = await getSubscriptionsForUser(userId);

@@ -8,7 +8,7 @@ export function TakeTourButton({ label }: { label: string }) {
     <button
       type="button"
       onClick={() => window.dispatchEvent(new Event(TOUR_OPEN_EVENT))}
-      className="shrink-0 rounded-lg border border-line-strong px-3 py-1.5 text-[12.5px] font-medium text-ink transition-base hover:bg-surface"
+      className="transition-base shrink-0 rounded-lg border border-line-strong px-3 py-1.5 text-[12.5px] font-medium text-ink hover:bg-surface"
     >
       {label}
     </button>

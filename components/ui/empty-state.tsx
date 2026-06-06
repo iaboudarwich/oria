@@ -45,12 +45,8 @@ export function EmptyState({
           {icon}
         </div>
       ) : null}
-      <h2 className={compact ? "text-title text-ink" : "text-headline text-ink"}>
-        {headline}
-      </h2>
-      {description ? (
-        <p className="mt-2 max-w-sm text-body text-ink-muted">{description}</p>
-      ) : null}
+      <h2 className={compact ? "text-title text-ink" : "text-headline text-ink"}>{headline}</h2>
+      {description ? <p className="text-body mt-2 max-w-sm text-ink-muted">{description}</p> : null}
       {cta ? (
         <div className="mt-5">
           {cta.href ? (

@@ -71,7 +71,10 @@ export function CloudConnectionRow({
 
   return (
     <div className="flex flex-wrap items-center gap-2 rounded-xl border border-line bg-canvas px-3 py-2">
-      <span className={`h-2 w-2 shrink-0 rounded-full ${DOT[view.status] ?? "bg-ink-faint"}`} aria-hidden />
+      <span
+        className={`h-2 w-2 shrink-0 rounded-full ${DOT[view.status] ?? "bg-ink-faint"}`}
+        aria-hidden
+      />
       <span className="text-[12.5px] font-medium text-ink">
         {isCalendar ? labels.serviceCalendar : labels.serviceDrive}
       </span>
@@ -84,7 +87,9 @@ export function CloudConnectionRow({
           value={routingMode === "fixed" ? target : "auto"}
           disabled={pending}
           onChange={(e) =>
-            e.target.value === "auto" ? applyRouting("auto", "") : applyRouting("fixed", e.target.value)
+            e.target.value === "auto"
+              ? applyRouting("auto", "")
+              : applyRouting("fixed", e.target.value)
           }
           className="ml-auto rounded-lg border border-line bg-surface px-2 py-1 text-[11.5px] text-ink"
         >
@@ -107,7 +112,7 @@ export function CloudConnectionRow({
             cloudSetStatus(view.id, view.status === "paused" ? "active" : "paused"),
           )
         }
-        className="rounded-lg border border-line px-2 py-1 text-[11.5px] text-ink-muted transition-base hover:bg-surface disabled:opacity-50"
+        className="transition-base rounded-lg border border-line px-2 py-1 text-[11.5px] text-ink-muted hover:bg-surface disabled:opacity-50"
       >
         {view.status === "paused" ? labels.resume : labels.pause}
       </button>
@@ -115,7 +120,7 @@ export function CloudConnectionRow({
         type="button"
         disabled={pending}
         onClick={() => startTransition(() => cloudDisconnect(view.id))}
-        className="rounded-lg border border-line px-2 py-1 text-[11.5px] text-claret transition-base hover:bg-surface disabled:opacity-50"
+        className="transition-base rounded-lg border border-line px-2 py-1 text-[11.5px] text-claret hover:bg-surface disabled:opacity-50"
       >
         {labels.disconnect}
       </button>

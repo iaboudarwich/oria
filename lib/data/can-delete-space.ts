@@ -10,9 +10,7 @@
  */
 export type DeleteSpaceReason = "personal" | "not_owner" | "name_mismatch";
 
-export type CanDeleteSpaceDecision =
-  | { ok: true }
-  | { ok: false; reason: DeleteSpaceReason };
+export type CanDeleteSpaceDecision = { ok: true } | { ok: false; reason: DeleteSpaceReason };
 
 export function canDeleteSpace(input: {
   kind: string;
@@ -22,10 +20,7 @@ export function canDeleteSpace(input: {
 }): CanDeleteSpaceDecision {
   if (input.kind === "personal") return { ok: false, reason: "personal" };
   if (input.role !== "owner") return { ok: false, reason: "not_owner" };
-  if (
-    input.confirmName.trim().toLowerCase() !==
-    input.orgName.trim().toLowerCase()
-  ) {
+  if (input.confirmName.trim().toLowerCase() !== input.orgName.trim().toLowerCase()) {
     return { ok: false, reason: "name_mismatch" };
   }
   return { ok: true };

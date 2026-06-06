@@ -63,7 +63,7 @@ export function AddTrackableForm() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="text-[13px] text-ink-muted transition-base hover:text-ink"
+        className="transition-base text-[13px] text-ink-muted hover:text-ink"
       >
         {t("add")}
       </button>
@@ -89,11 +89,20 @@ export function AddTrackableForm() {
         </label>
         <label className="block">
           <span className="mb-1 block text-[11px] text-ink-muted">{t("name")}</span>
-          <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t("name_placeholder")} />
+          <Input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder={t("name_placeholder")}
+          />
         </label>
         <label className="block">
           <span className="mb-1 block text-[11px] text-ink-muted">{t("amount")}</span>
-          <Input value={amount} onChange={(e) => setAmount(e.target.value)} inputMode="decimal" placeholder="0" />
+          <Input
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            inputMode="decimal"
+            placeholder="0"
+          />
         </label>
         {showCadence ? (
           <label className="block">
@@ -113,7 +122,12 @@ export function AddTrackableForm() {
         ) : (
           <label className="block">
             <span className="mb-1 block text-[11px] text-ink-muted">{t("currency")}</span>
-            <Input value={currency} onChange={(e) => setCurrency(e.target.value)} maxLength={3} placeholder="USD" />
+            <Input
+              value={currency}
+              onChange={(e) => setCurrency(e.target.value)}
+              maxLength={3}
+              placeholder="USD"
+            />
           </label>
         )}
       </div>
@@ -125,7 +139,7 @@ export function AddTrackableForm() {
         <button
           type="button"
           onClick={() => setOpen(false)}
-          className="text-[12.5px] text-ink-muted transition-base hover:text-ink"
+          className="transition-base text-[12.5px] text-ink-muted hover:text-ink"
         >
           {t("cancel")}
         </button>
@@ -160,7 +174,7 @@ export function TrackableRowActions({ trackable }: { trackable: Trackable }) {
             type="button"
             disabled={pending}
             onClick={() => run(() => setTrackableStatus(trackable.id, "done"))}
-            className="text-[11.5px] text-ink-muted transition-base hover:text-ink"
+            className="transition-base text-[11.5px] text-ink-muted hover:text-ink"
           >
             {t("mark_done")}
           </button>
@@ -168,7 +182,7 @@ export function TrackableRowActions({ trackable }: { trackable: Trackable }) {
             type="button"
             disabled={pending}
             onClick={() => run(() => setTrackableStatus(trackable.id, "wont_do"))}
-            className="text-[11.5px] text-ink-muted transition-base hover:text-ink"
+            className="transition-base text-[11.5px] text-ink-muted hover:text-ink"
           >
             {t("wont_do")}
           </button>
@@ -179,7 +193,7 @@ export function TrackableRowActions({ trackable }: { trackable: Trackable }) {
           type="button"
           disabled={pending}
           onClick={() => run(() => setTrackableStatus(trackable.id, "active"))}
-          className="text-[11.5px] text-ink-muted transition-base hover:text-ink"
+          className="transition-base text-[11.5px] text-ink-muted hover:text-ink"
         >
           {t("reactivate")}
         </button>
@@ -188,8 +202,10 @@ export function TrackableRowActions({ trackable }: { trackable: Trackable }) {
         <button
           type="button"
           disabled={pending}
-          onClick={() => run(() => setTrackableExcluded(trackable.id, !trackable.exclude_from_insights))}
-          className="text-[11.5px] text-ink-muted transition-base hover:text-ink"
+          onClick={() =>
+            run(() => setTrackableExcluded(trackable.id, !trackable.exclude_from_insights))
+          }
+          className="transition-base text-[11.5px] text-ink-muted hover:text-ink"
         >
           {trackable.exclude_from_insights ? t("count") : t("exclude")}
         </button>
@@ -198,7 +214,7 @@ export function TrackableRowActions({ trackable }: { trackable: Trackable }) {
         type="button"
         disabled={pending}
         onClick={() => run(() => archiveTrackable(trackable.id))}
-        className="text-[11.5px] text-ink-muted transition-base hover:text-claret"
+        className="transition-base text-[11.5px] text-ink-muted hover:text-claret"
       >
         {t("remove")}
       </button>

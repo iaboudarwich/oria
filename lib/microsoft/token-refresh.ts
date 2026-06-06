@@ -35,8 +35,10 @@ async function refreshFromTable(
 ): Promise<FreshMicrosoftToken | null> {
   const admin = createAdminClient();
   // Column names differ between the two tables.
-  const accessCol = table === "cloud_connections" ? "encrypted_access_token" : "access_token_encrypted";
-  const refreshCol = table === "cloud_connections" ? "encrypted_refresh_token" : "refresh_token_encrypted";
+  const accessCol =
+    table === "cloud_connections" ? "encrypted_access_token" : "access_token_encrypted";
+  const refreshCol =
+    table === "cloud_connections" ? "encrypted_refresh_token" : "refresh_token_encrypted";
 
   const { data } = await admin
     .from(table)
@@ -70,7 +72,10 @@ async function refreshFromTable(
     await admin.from(table).update(update).eq("id", connectionId);
     return { connectionId, accountEmail: email, accessToken: refreshed.accessToken };
   } catch {
-    await admin.from(table).update({ status: "error", last_error: "Failed to refresh token" }).eq("id", connectionId);
+    await admin
+      .from(table)
+      .update({ status: "error", last_error: "Failed to refresh token" })
+      .eq("id", connectionId);
     return null;
   }
 }

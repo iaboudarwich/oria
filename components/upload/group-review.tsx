@@ -28,7 +28,7 @@ export function GroupReviewStrip({ groups }: { groups: GroupReview[] }) {
 
   return (
     <section aria-label={t("eyebrow")}>
-      <h2 className="mb-2 px-1 text-eyebrow">{t("eyebrow")}</h2>
+      <h2 className="text-eyebrow mb-2 px-1">{t("eyebrow")}</h2>
       <ul className="space-y-2">
         {visible.map((g) => (
           <GroupCard
@@ -42,13 +42,7 @@ export function GroupReviewStrip({ groups }: { groups: GroupReview[] }) {
   );
 }
 
-function GroupCard({
-  group,
-  onResolved,
-}: {
-  group: GroupReview;
-  onResolved: () => void;
-}) {
+function GroupCard({ group, onResolved }: { group: GroupReview; onResolved: () => void }) {
   const t = useTranslations("groupReview");
   const router = useRouter();
   const [pending, startTransition] = useTransition();

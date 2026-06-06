@@ -30,7 +30,7 @@ export function Accordion({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex w-full items-center justify-between gap-3 px-1 py-1 text-left transition-base hover:opacity-80"
+        className="transition-base flex w-full items-center justify-between gap-3 px-1 py-1 text-left hover:opacity-80"
         aria-expanded={open}
       >
         <span className="min-w-0">

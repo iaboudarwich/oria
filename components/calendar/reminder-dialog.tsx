@@ -93,114 +93,110 @@ export function ReminderFormModal({
       title={isEdit ? t("rd_edit_title") : t("rd_title")}
       description={!isEdit && scopeName ? t("adding_to", { space: scopeName }) : null}
     >
-        <form action={onSubmit} className="space-y-3">
-          {isEdit && initial ? (
-            <input type="hidden" name="id" value={initial.id} />
-          ) : null}
-          <div>
-            <label htmlFor="rd-title" className="mb-1 block text-eyebrow">
-              {t("rd_what")}
-            </label>
-            <div className="relative">
-              <AutoGrowTextarea
-                ref={titleRef}
-                name="title"
-                value={title}
-                onChange={setTitle}
-                required
-                minRows={1}
-                maxRows={3}
-                placeholder={t("rd_what")}
-                aria-label={t("rd_what")}
-                className="block w-full rounded-lg border border-line bg-canvas/60 pe-11 ps-3 py-2 text-[13.5px] text-ink placeholder:text-ink-faint outline-none focus:border-ink-muted focus:bg-canvas"
-              />
-              <div className="absolute end-1 top-1 flex items-center">
-                <MicButton
-                  size="sm"
-                  onTranscribed={(text) =>
-                    setTitle((prev) => (prev ? `${prev} ${text}` : text))
-                  }
-                  targetLanguage={locale}
-                />
-              </div>
-            </div>
-            <p className="mt-1 text-[11px] text-ink-faint">
-              {t("rd_voice")} · {t("rd_voice_hint")}
-            </p>
-          </div>
-
-          <div className="flex gap-2">
-            <div className="flex-1">
-              <label htmlFor="rd-date" className="mb-1 block text-eyebrow">
-                {t("rd_date")}
-              </label>
-              <input
-                id="rd-date"
-                type="date"
-                name="date"
-                required
-                defaultValue={initial?.date ?? todayLocal()}
-                className="h-10 w-full rounded-lg border border-line bg-canvas px-2 text-[12.5px] text-ink-soft outline-none focus:border-ink-muted"
-              />
-            </div>
-            <div className="flex-1">
-              <label htmlFor="rd-time" className="mb-1 block text-eyebrow">
-                {t("rd_time")}
-              </label>
-              <input
-                id="rd-time"
-                type="time"
-                name="time"
-                required
-                defaultValue={initial?.time ?? ""}
-                className="h-10 w-full rounded-lg border border-line bg-canvas px-2 text-[12.5px] text-ink-soft outline-none focus:border-ink-muted"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label htmlFor="rd-notes" className="mb-1 block text-eyebrow">
-              {t("rd_notes")}
-            </label>
+      <form action={onSubmit} className="space-y-3">
+        {isEdit && initial ? <input type="hidden" name="id" value={initial.id} /> : null}
+        <div>
+          <label htmlFor="rd-title" className="text-eyebrow mb-1 block">
+            {t("rd_what")}
+          </label>
+          <div className="relative">
             <AutoGrowTextarea
-              name="notes"
-              value={notes}
-              onChange={setNotes}
-              minRows={2}
-              maxRows={6}
-              placeholder={t("rd_notes_ph")}
-              aria-label={t("rd_notes")}
-              className="block w-full rounded-lg border border-line bg-canvas/60 px-3 py-2 text-[13px] text-ink placeholder:text-ink-faint outline-none focus:border-ink-muted focus:bg-canvas"
+              ref={titleRef}
+              name="title"
+              value={title}
+              onChange={setTitle}
+              required
+              minRows={1}
+              maxRows={3}
+              placeholder={t("rd_what")}
+              aria-label={t("rd_what")}
+              className="block w-full rounded-lg border border-line bg-canvas/60 py-2 ps-3 pe-11 text-[13.5px] text-ink outline-none placeholder:text-ink-faint focus:border-ink-muted focus:bg-canvas"
+            />
+            <div className="absolute end-1 top-1 flex items-center">
+              <MicButton
+                size="sm"
+                onTranscribed={(text) => setTitle((prev) => (prev ? `${prev} ${text}` : text))}
+                targetLanguage={locale}
+              />
+            </div>
+          </div>
+          <p className="mt-1 text-[11px] text-ink-faint">
+            {t("rd_voice")} · {t("rd_voice_hint")}
+          </p>
+        </div>
+
+        <div className="flex gap-2">
+          <div className="flex-1">
+            <label htmlFor="rd-date" className="text-eyebrow mb-1 block">
+              {t("rd_date")}
+            </label>
+            <input
+              id="rd-date"
+              type="date"
+              name="date"
+              required
+              defaultValue={initial?.date ?? todayLocal()}
+              className="h-10 w-full rounded-lg border border-line bg-canvas px-2 text-[12.5px] text-ink-soft outline-none focus:border-ink-muted"
             />
           </div>
-
-          <p className="text-[11.5px] text-ink-faint">{t("rd_notify")}</p>
-
-          {status === "error" ? (
-            <p className="text-[12px] text-claret">{t("rd_error")}</p>
-          ) : status === "notime" ? (
-            <p className="text-[12px] text-claret">{t("rd_need_time")}</p>
-          ) : status === "saved" ? (
-            <p className="text-[12px] text-sage">{isEdit ? t("rd_updated") : t("rd_added")}</p>
-          ) : null}
-
-          <div className="flex items-center justify-end gap-2 pt-1">
-            <button
-              type="button"
-              onClick={requestClose}
-              className="inline-flex h-9 items-center rounded-lg px-3 text-[12.5px] text-ink-muted transition-base hover:text-ink"
-            >
-              {t("rd_cancel")}
-            </button>
-            <button
-              type="submit"
-              disabled={pending || title.trim().length === 0}
-              className="inline-flex h-9 items-center rounded-lg bg-ink px-4 text-[12.5px] font-medium text-surface transition-base hover:bg-ink-soft disabled:opacity-50"
-            >
-              {pending ? t("rd_saving") : isEdit ? t("rd_update") : t("rd_save")}
-            </button>
+          <div className="flex-1">
+            <label htmlFor="rd-time" className="text-eyebrow mb-1 block">
+              {t("rd_time")}
+            </label>
+            <input
+              id="rd-time"
+              type="time"
+              name="time"
+              required
+              defaultValue={initial?.time ?? ""}
+              className="h-10 w-full rounded-lg border border-line bg-canvas px-2 text-[12.5px] text-ink-soft outline-none focus:border-ink-muted"
+            />
           </div>
-        </form>
+        </div>
+
+        <div>
+          <label htmlFor="rd-notes" className="text-eyebrow mb-1 block">
+            {t("rd_notes")}
+          </label>
+          <AutoGrowTextarea
+            name="notes"
+            value={notes}
+            onChange={setNotes}
+            minRows={2}
+            maxRows={6}
+            placeholder={t("rd_notes_ph")}
+            aria-label={t("rd_notes")}
+            className="block w-full rounded-lg border border-line bg-canvas/60 px-3 py-2 text-[13px] text-ink outline-none placeholder:text-ink-faint focus:border-ink-muted focus:bg-canvas"
+          />
+        </div>
+
+        <p className="text-[11.5px] text-ink-faint">{t("rd_notify")}</p>
+
+        {status === "error" ? (
+          <p className="text-[12px] text-claret">{t("rd_error")}</p>
+        ) : status === "notime" ? (
+          <p className="text-[12px] text-claret">{t("rd_need_time")}</p>
+        ) : status === "saved" ? (
+          <p className="text-[12px] text-sage">{isEdit ? t("rd_updated") : t("rd_added")}</p>
+        ) : null}
+
+        <div className="flex items-center justify-end gap-2 pt-1">
+          <button
+            type="button"
+            onClick={requestClose}
+            className="transition-base inline-flex h-9 items-center rounded-lg px-3 text-[12.5px] text-ink-muted hover:text-ink"
+          >
+            {t("rd_cancel")}
+          </button>
+          <button
+            type="submit"
+            disabled={pending || title.trim().length === 0}
+            className="transition-base inline-flex h-9 items-center rounded-lg bg-ink px-4 text-[12.5px] font-medium text-surface hover:bg-ink-soft disabled:opacity-50"
+          >
+            {pending ? t("rd_saving") : isEdit ? t("rd_update") : t("rd_save")}
+          </button>
+        </div>
+      </form>
     </Sheet>
   );
 }
@@ -215,17 +211,15 @@ export function ReminderDialog({ scopeName }: { scopeName: string | null }) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="inline-flex h-9 items-center gap-1.5 rounded-[10px] bg-ink px-3 text-[13px] font-medium text-surface transition-base hover:bg-ink-soft"
+        className="transition-base inline-flex h-9 items-center gap-1.5 rounded-[10px] bg-ink px-3 text-[13px] font-medium text-surface hover:bg-ink-soft"
       >
-        <span aria-hidden className="text-[15px] leading-none">+</span>
+        <span aria-hidden className="text-[15px] leading-none">
+          +
+        </span>
         {t("add_reminder")}
       </button>
       {open ? (
-        <ReminderFormModal
-          mode="create"
-          scopeName={scopeName}
-          onClose={() => setOpen(false)}
-        />
+        <ReminderFormModal mode="create" scopeName={scopeName} onClose={() => setOpen(false)} />
       ) : null}
     </>
   );

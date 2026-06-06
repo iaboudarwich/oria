@@ -47,7 +47,7 @@ export function InlineTrashButton({ uploadId }: { uploadId: string }) {
         }}
         aria-label="Delete"
         title="Delete"
-        className="inline-flex h-7 w-7 items-center justify-center rounded-md text-ink-faint opacity-0 transition-opacity duration-150 group-hover:opacity-100 focus-visible:opacity-100 hover:bg-canvas hover:text-claret"
+        className="inline-flex h-7 w-7 items-center justify-center rounded-md text-ink-faint opacity-0 transition-opacity duration-150 group-hover:opacity-100 hover:bg-canvas hover:text-claret focus-visible:opacity-100"
       >
         <TrashIcon size={13} />
       </button>
@@ -64,7 +64,7 @@ export function InlineTrashButton({ uploadId }: { uploadId: string }) {
           commit();
         }}
         disabled={pending}
-        className="inline-flex h-7 items-center rounded-md bg-claret px-2 text-[11px] text-surface transition-base hover:opacity-90 disabled:opacity-50"
+        className="transition-base inline-flex h-7 items-center rounded-md bg-claret px-2 text-[11px] text-surface hover:opacity-90 disabled:opacity-50"
       >
         {pending ? "Deleting" : "Delete?"}
       </button>
@@ -75,7 +75,7 @@ export function InlineTrashButton({ uploadId }: { uploadId: string }) {
           e.stopPropagation();
           setArmed(false);
         }}
-        className="inline-flex h-7 items-center rounded-md px-2 text-[11px] text-ink-muted transition-base hover:bg-canvas hover:text-ink"
+        className="transition-base inline-flex h-7 items-center rounded-md px-2 text-[11px] text-ink-muted hover:bg-canvas hover:text-ink"
       >
         Cancel
       </button>

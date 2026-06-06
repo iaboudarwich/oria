@@ -15,18 +15,14 @@ export async function setSpaceThemeVariant(
   variant: "light" | "dark" | "system" | null,
   organizationId?: string,
 ): Promise<void> {
-  const value =
-    variant === "light" || variant === "dark" || variant === "system" ? variant : null;
+  const value = variant === "light" || variant === "dark" || variant === "system" ? variant : null;
   const ctx = await requireContext();
   // Target the explicit scope when given (Settings editing scope), else the
   // active space. RLS on organizations only lets a member update; only an owner
   // can change a space's theme.
   const targetOrgId = organizationId ?? ctx.organization.id;
   const supabase = await createClient();
-  await supabase
-    .from("organizations")
-    .update({ theme_variant: value })
-    .eq("id", targetOrgId);
+  await supabase.from("organizations").update({ theme_variant: value }).eq("id", targetOrgId);
   void logAuditEvent({
     userId: ctx.profile.id,
     organizationId: targetOrgId,
@@ -54,10 +50,7 @@ export async function setSpaceTheme(formData: FormData): Promise<void> {
   // active space. RLS scopes the update to a space the user belongs to.
   const targetOrgId = rawOrg || ctx.organization.id;
   const supabase = await createClient();
-  await supabase
-    .from("organizations")
-    .update({ accent_color, shadow_color })
-    .eq("id", targetOrgId);
+  await supabase.from("organizations").update({ accent_color, shadow_color }).eq("id", targetOrgId);
 
   revalidatePath("/dashboard", "layout");
 }

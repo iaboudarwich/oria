@@ -10,9 +10,8 @@ type Props = {
 };
 
 export default async function ReshapePage({ searchParams }: Props) {
-  const sp: Record<string, string | string[] | undefined> = await (
-    searchParams ?? Promise.resolve({})
-  );
+  const sp: Record<string, string | string[] | undefined> = await (searchParams ??
+    Promise.resolve({}));
   const intent = typeof sp.intent === "string" ? sp.intent : undefined;
   const t = await getTranslations("reshape");
   return (

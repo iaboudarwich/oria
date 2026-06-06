@@ -21,14 +21,38 @@ type SearchResults = {
 const ACTIONS: { id: string; href: string; keywords: string }[] = [
   { id: "ask", href: "/dashboard/ask", keywords: "ask oria question answer" },
   { id: "upload", href: "/dashboard/inbox", keywords: "upload add file drop inbox" },
-  { id: "connect_email", href: "/dashboard/settings?tab=connections", keywords: "connect email gmail inbox sync" },
-  { id: "create_reminder", href: "/dashboard/reminders", keywords: "reminder due date follow up todo" },
-  { id: "manage_sections", href: "/dashboard/settings?tab=sections", keywords: "sections organize manage categories" },
-  { id: "email_routing", href: "/dashboard/settings?tab=connections", keywords: "email routing filters confidentiality workspace" },
+  {
+    id: "connect_email",
+    href: "/dashboard/settings?tab=connections",
+    keywords: "connect email gmail inbox sync",
+  },
+  {
+    id: "create_reminder",
+    href: "/dashboard/reminders",
+    keywords: "reminder due date follow up todo",
+  },
+  {
+    id: "manage_sections",
+    href: "/dashboard/settings?tab=sections",
+    keywords: "sections organize manage categories",
+  },
+  {
+    id: "email_routing",
+    href: "/dashboard/settings?tab=connections",
+    keywords: "email routing filters confidentiality workspace",
+  },
   { id: "features", href: "/dashboard/features", keywords: "features what can oria do help index" },
   { id: "settings", href: "/dashboard/settings", keywords: "settings account preferences" },
-  { id: "security", href: "/dashboard/settings?tab=security", keywords: "security two factor 2fa password sessions audit" },
-  { id: "export_data", href: "/dashboard/settings?tab=privacy", keywords: "export download data privacy" },
+  {
+    id: "security",
+    href: "/dashboard/settings?tab=security",
+    keywords: "security two factor 2fa password sessions audit",
+  },
+  {
+    id: "export_data",
+    href: "/dashboard/settings?tab=privacy",
+    keywords: "export download data privacy",
+  },
   { id: "trash", href: "/dashboard/trash", keywords: "trash deleted bin restore" },
   { id: "timeline", href: "/dashboard/timeline", keywords: "timeline activity feed history" },
 ];
@@ -257,8 +281,12 @@ export function CommandPalette({ spaces }: { spaces: PaletteSpace[] }) {
       aria-label={t("title")}
       className="fixed inset-0 z-[200] flex items-start justify-center px-4 pt-[12vh]"
     >
-      <div aria-hidden onClick={close} className="absolute inset-0 bg-ink/40 backdrop-blur-sm animate-fade-in" />
-      <div className="relative z-[201] w-full max-w-xl overflow-hidden rounded-2xl border border-line bg-surface-raised shadow-xl animate-scale-in">
+      <div
+        aria-hidden
+        onClick={close}
+        className="animate-fade-in absolute inset-0 bg-ink/40 backdrop-blur-sm"
+      />
+      <div className="animate-scale-in relative z-[201] w-full max-w-xl overflow-hidden rounded-2xl border border-line bg-surface-raised shadow-xl">
         <input
           ref={inputRef}
           value={query}
@@ -274,7 +302,7 @@ export function CommandPalette({ spaces }: { spaces: PaletteSpace[] }) {
           ) : (
             groups.map((g) => (
               <div key={g.heading} className="mb-1">
-                <p className="px-4 pb-1 pt-2 text-[10.5px] font-semibold uppercase tracking-[0.06em] text-ink-faint">
+                <p className="px-4 pt-2 pb-1 text-[10.5px] font-semibold tracking-[0.06em] text-ink-faint uppercase">
                   {g.heading}
                 </p>
                 {g.rows.map((row) => {
@@ -287,7 +315,7 @@ export function CommandPalette({ spaces }: { spaces: PaletteSpace[] }) {
                       type="button"
                       onMouseEnter={() => setActive(idx)}
                       onClick={() => row.onSelect()}
-                      className={`flex w-full items-center justify-between gap-3 px-4 py-2 text-left transition-base ${
+                      className={`transition-base flex w-full items-center justify-between gap-3 px-4 py-2 text-left ${
                         isActive ? "bg-canvas" : ""
                       }`}
                     >

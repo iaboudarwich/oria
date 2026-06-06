@@ -182,12 +182,15 @@ export function GooglePicker({
         type="button"
         onClick={open}
         disabled={busy}
-        className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-line bg-surface-raised px-3 text-[12.5px] text-ink transition-base hover:bg-canvas disabled:opacity-60"
+        className="transition-base inline-flex h-8 items-center gap-1.5 rounded-lg border border-line bg-surface-raised px-3 text-[12.5px] text-ink hover:bg-canvas disabled:opacity-60"
       >
         {busy ? "…" : label}
       </button>
       {error === "connect_drive" ? (
-        <a href="/api/oauth/google/connect?service=drive" className="text-[11.5px] text-accent hover:underline">
+        <a
+          href="/api/oauth/google/connect?service=drive"
+          className="text-[11.5px] text-accent hover:underline"
+        >
           {connectDriveLabel}
         </a>
       ) : error === "unavailable" ? (

@@ -30,7 +30,7 @@ export default async function TimelinePage() {
     <>
       <Topbar title="Timeline" />
 
-      <div className="space-y-8 animate-fade-up">
+      <div className="animate-fade-up space-y-8">
         {days.length === 0 ? (
           <p className="px-1 text-[13px] text-ink-faint">
             Every upload, reminder, and decision will appear here, in order. Nothing gets lost.
@@ -38,9 +38,7 @@ export default async function TimelinePage() {
         ) : (
           days.map((day) => (
             <section key={day.iso}>
-              <h2 className="mb-2 px-1 text-[13px] font-medium text-ink-muted">
-                {day.label}
-              </h2>
+              <h2 className="mb-2 px-1 text-[13px] font-medium text-ink-muted">{day.label}</h2>
               <ul className="space-y-0.5">
                 {day.entries.map((entry) => (
                   <TimelineRow key={entry.id} entry={entry} />
@@ -57,9 +55,7 @@ export default async function TimelinePage() {
 function TimelineRow({ entry }: { entry: TimelineEventWithActor }) {
   const v = visualFor(entry.kind);
   const actorLabel = displayActor(entry.actor);
-  const meta = entry.detail
-    ? `${actorLabel} · ${entry.detail}`
-    : actorLabel;
+  const meta = entry.detail ? `${actorLabel} · ${entry.detail}` : actorLabel;
 
   const content = (
     <>
@@ -95,15 +91,25 @@ function visualFor(kind: EventKind): {
   color: string;
 } {
   switch (kind) {
-    case "upload": return { Icon: UploadIcon, color: "text-ink-muted" };
-    case "ai": return { Icon: SparkIcon, color: "text-[#7a5a2a]" };
-    case "reminder": return { Icon: CalendarIcon, color: "text-ink-muted" };
-    case "approval": return { Icon: ApprovalsIcon, color: "text-sage" };
-    case "event": return { Icon: GiftIcon, color: "text-ink-muted" };
-    case "staff": return { Icon: StaffIcon, color: "text-ink-muted" };
-    case "travel": return { Icon: PlaneIcon, color: "text-ink-muted" };
-    case "property": return { Icon: PropertiesIcon, color: "text-ink-muted" };
-    case "household": return { Icon: HomeIcon, color: "text-ink-muted" };
-    case "schedule": return { Icon: CalendarIcon, color: "text-ink-muted" };
+    case "upload":
+      return { Icon: UploadIcon, color: "text-ink-muted" };
+    case "ai":
+      return { Icon: SparkIcon, color: "text-[#7a5a2a]" };
+    case "reminder":
+      return { Icon: CalendarIcon, color: "text-ink-muted" };
+    case "approval":
+      return { Icon: ApprovalsIcon, color: "text-sage" };
+    case "event":
+      return { Icon: GiftIcon, color: "text-ink-muted" };
+    case "staff":
+      return { Icon: StaffIcon, color: "text-ink-muted" };
+    case "travel":
+      return { Icon: PlaneIcon, color: "text-ink-muted" };
+    case "property":
+      return { Icon: PropertiesIcon, color: "text-ink-muted" };
+    case "household":
+      return { Icon: HomeIcon, color: "text-ink-muted" };
+    case "schedule":
+      return { Icon: CalendarIcon, color: "text-ink-muted" };
   }
 }

@@ -2,7 +2,12 @@ import "server-only";
 
 import { buildAdapter, oriaDefaultAdapter } from "@/lib/ai-providers";
 import type { Message, CompletionOptions } from "@/lib/ai-providers";
-import { mapErrorToStatus, mapErrorKind, errorStatus, errorMessage } from "@/lib/ai-providers/errors";
+import {
+  mapErrorToStatus,
+  mapErrorKind,
+  errorStatus,
+  errorMessage,
+} from "@/lib/ai-providers/errors";
 import {
   getActiveAiConnectionKey,
   setAiConnectionStatus,

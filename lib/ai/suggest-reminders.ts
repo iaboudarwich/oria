@@ -33,15 +33,15 @@ export async function generateSuggestionsForUpload(
 
   if (!entity) return [];
 
-  const fields = (entity.user_verified && entity.user_edited_fields
-    ? { ...(entity.fields as Record<string, unknown>), ...(entity.user_edited_fields as Record<string, unknown>) }
-    : (entity.fields as Record<string, unknown>));
+  const fields =
+    entity.user_verified && entity.user_edited_fields
+      ? {
+          ...(entity.fields as Record<string, unknown>),
+          ...(entity.user_edited_fields as Record<string, unknown>),
+        }
+      : (entity.fields as Record<string, unknown>);
 
-  const raw: ReminderSuggestion[] = deriveRaw(
-    entity.doc_type as string,
-    fields,
-    uploadId,
-  );
+  const raw: ReminderSuggestion[] = deriveRaw(entity.doc_type as string, fields, uploadId);
 
   if (raw.length === 0) return [];
 
@@ -74,7 +74,7 @@ export async function generateSuggestionsForUpload(
     .eq("source_upload_id", uploadId);
 
   const existingDates = ((existing ?? []) as { due_at: string | null }[])
-    .map((r) => r.due_at ? new Date(r.due_at).getTime() : null)
+    .map((r) => (r.due_at ? new Date(r.due_at).getTime() : null))
     .filter((t): t is number => t !== null);
 
   const sevenDaysMs = 7 * 24 * 3600 * 1000;

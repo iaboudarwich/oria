@@ -31,7 +31,7 @@ export default function Error({
         <div className="mt-6 flex justify-center text-ink-faint">
           <AlertIcon size={26} />
         </div>
-        <p className="mt-4 text-body text-ink-soft">{t("boundary_title")}</p>
+        <p className="text-body mt-4 text-ink-soft">{t("boundary_title")}</p>
         <div className="mt-6 flex flex-col gap-2">
           <Button variant="primary" onClick={() => reset()}>
             <RotateIcon size={14} />

@@ -15,18 +15,13 @@ import { useTheme } from "next-themes";
  * :root default, light overrides under `.light`), so accent and every token
  * cascade correctly. Switching spaces re-renders the layout, which re-runs this.
  */
-export function OrgThemeApplier({
-  variant,
-}: {
-  variant: "light" | "dark" | "system" | null;
-}) {
+export function OrgThemeApplier({ variant }: { variant: "light" | "dark" | "system" | null }) {
   const { resolvedTheme } = useTheme();
 
   useEffect(() => {
     const root = document.documentElement;
     const prefersDark = () =>
-      typeof window !== "undefined" &&
-      window.matchMedia("(prefers-color-scheme: dark)").matches;
+      typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches;
 
     function apply() {
       let dark: boolean;

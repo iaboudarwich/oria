@@ -1,11 +1,6 @@
 import { DemoTopbar } from "@/components/demo/demo-shell";
 import { Badge, Dot } from "@/components/ui/badge";
-import {
-  ArrowRightIcon,
-  CheckIcon,
-  PaperclipIcon,
-  SendIcon,
-} from "@/components/ui/icon";
+import { ArrowRightIcon, CheckIcon, PaperclipIcon, SendIcon } from "@/components/ui/icon";
 
 export const metadata = { title: "Assistant" };
 
@@ -14,8 +9,7 @@ export default function AssistantRolePage() {
     <>
       <DemoTopbar title="Today, in order" />
 
-
-      <div className="space-y-6 animate-fade-up">
+      <div className="animate-fade-up space-y-6">
         <Stats />
 
         <div className="grid gap-5 lg:grid-cols-3">
@@ -81,15 +75,15 @@ function Today() {
         <h2 className="text-[14px] font-semibold text-ink">Today</h2>
         <Badge tone="champagne">3 due</Badge>
       </div>
-      <div className="rounded-xl border border-line bg-surface-raised divide-y divide-line">
+      <div className="divide-y divide-line rounded-xl border border-line bg-surface-raised">
         {lanes.map((lane) => (
           <div key={lane.lane} className="px-4 py-3">
-            <p className="text-[11px] text-ink-faint mb-1.5">{lane.lane}</p>
+            <p className="mb-1.5 text-[11px] text-ink-faint">{lane.lane}</p>
             <ul className="space-y-1">
               {lane.items.map((it) => (
                 <li
                   key={it.t}
-                  className={`flex items-center gap-2.5 rounded-md px-2 py-1.5 transition-base hover:bg-canvas/50 ${it.done ? "opacity-60" : ""}`}
+                  className={`transition-base flex items-center gap-2.5 rounded-md px-2 py-1.5 hover:bg-canvas/50 ${it.done ? "opacity-60" : ""}`}
                 >
                   <span
                     className={`inline-flex h-4 w-4 shrink-0 items-center justify-center rounded border ${
@@ -100,7 +94,9 @@ function Today() {
                   >
                     <CheckIcon size={10} />
                   </span>
-                  <p className={`flex-1 text-[13px] ${it.done ? "text-ink-muted line-through" : "text-ink"}`}>
+                  <p
+                    className={`flex-1 text-[13px] ${it.done ? "text-ink-muted line-through" : "text-ink"}`}
+                  >
                     {it.t}
                   </p>
                   <span className="text-[11px] text-ink-faint">{it.w}</span>
@@ -128,11 +124,16 @@ function Messages() {
         <h2 className="text-[14px] font-semibold text-ink">Messages</h2>
         <Badge tone="neutral">2 unread</Badge>
       </div>
-      <div className="rounded-xl border border-line bg-surface-raised divide-y divide-line">
+      <div className="divide-y divide-line rounded-xl border border-line bg-surface-raised">
         <ul className="divide-y divide-line">
           {threads.map((t) => (
-            <li key={t.from} className="flex items-start gap-2.5 px-4 py-2.5 transition-base hover:bg-canvas/60">
-              <span className={`mt-1 h-1.5 w-1.5 shrink-0 rounded-full ${t.unread ? "bg-accent" : "bg-transparent"}`} />
+            <li
+              key={t.from}
+              className="transition-base flex items-start gap-2.5 px-4 py-2.5 hover:bg-canvas/60"
+            >
+              <span
+                className={`mt-1 h-1.5 w-1.5 shrink-0 rounded-full ${t.unread ? "bg-accent" : "bg-transparent"}`}
+              />
               <div className="min-w-0 flex-1">
                 <div className="flex items-center justify-between gap-2">
                   <p className={`truncate text-[13px] ${t.unread ? "text-ink" : "text-ink-soft"}`}>
@@ -176,9 +177,12 @@ function Agenda() {
         <h2 className="text-[14px] font-semibold text-ink">Diary</h2>
         <span className="text-[12px] text-ink-muted">Tue 18 May</span>
       </div>
-      <ul className="rounded-xl border border-line bg-surface-raised divide-y divide-line">
+      <ul className="divide-y divide-line rounded-xl border border-line bg-surface-raised">
         {items.map((it) => (
-          <li key={it.time} className="flex items-center gap-4 px-4 py-3 transition-base hover:bg-canvas/60">
+          <li
+            key={it.time}
+            className="transition-base flex items-center gap-4 px-4 py-3 hover:bg-canvas/60"
+          >
             <span className="w-12 shrink-0 text-[13px] font-medium text-ink">{it.time}</span>
             <div className="min-w-0 flex-1">
               <p className="text-[13.5px] text-ink">{it.title}</p>
@@ -202,15 +206,18 @@ function Waiting() {
       <div className="mb-3 flex items-center justify-between px-1">
         <h2 className="text-[14px] font-semibold text-ink">Waiting on principal</h2>
       </div>
-      <ul className="rounded-xl border border-line bg-surface-raised divide-y divide-line">
+      <ul className="divide-y divide-line rounded-xl border border-line bg-surface-raised">
         {items.map((r) => (
-          <li key={r.label} className="flex items-center gap-3 px-4 py-3 transition-base hover:bg-canvas/60">
+          <li
+            key={r.label}
+            className="transition-base flex items-center gap-3 px-4 py-3 hover:bg-canvas/60"
+          >
             <Dot tone="champagne" />
             <div className="min-w-0 flex-1">
               <p className="truncate text-[13px] text-ink">{r.label}</p>
               <p className="text-[11.5px] text-ink-muted">{r.time}</p>
             </div>
-            <button className="inline-flex h-7 items-center gap-1 rounded-lg bg-ink px-2.5 text-[11.5px] text-surface hover:bg-ink-soft transition-base">
+            <button className="transition-base inline-flex h-7 items-center gap-1 rounded-lg bg-ink px-2.5 text-[11.5px] text-surface hover:bg-ink-soft">
               Nudge <ArrowRightIcon size={11} />
             </button>
           </li>
@@ -219,4 +226,3 @@ function Waiting() {
     </section>
   );
 }
-

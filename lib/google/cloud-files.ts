@@ -316,16 +316,18 @@ export async function searchCloudFiles(
     similarity_threshold: similarityThreshold,
   });
   if (error || !data) return [];
-  return (data as Array<{
-    id: string;
-    name: string;
-    mime_type: string;
-    web_view_link: string | null;
-    content_summary: string | null;
-    connection_id: string;
-    provider_file_id: string;
-    similarity: number;
-  }>).map((r) => ({
+  return (
+    data as Array<{
+      id: string;
+      name: string;
+      mime_type: string;
+      web_view_link: string | null;
+      content_summary: string | null;
+      connection_id: string;
+      provider_file_id: string;
+      similarity: number;
+    }>
+  ).map((r) => ({
     id: r.id,
     name: r.name,
     mimeType: r.mime_type,
@@ -449,7 +451,14 @@ export async function syncAllLinkedFolders(): Promise<number> {
 
 /** All linked folder rows for the user (for the folder-sync cron). */
 export async function listLinkedFolders(): Promise<
-  { id: string; userId: string; connectionId: string; organizationId: string | null; sectionKey: string | null; providerFileId: string }[]
+  {
+    id: string;
+    userId: string;
+    connectionId: string;
+    organizationId: string | null;
+    sectionKey: string | null;
+    providerFileId: string;
+  }[]
 > {
   const admin = createAdminClient();
   const { data } = await admin
@@ -457,14 +466,16 @@ export async function listLinkedFolders(): Promise<
     .select("id, user_id, connection_id, organization_id, section_key, provider_file_id")
     .eq("is_folder", true)
     .eq("accessible", true);
-  return ((data as {
-    id: string;
-    user_id: string;
-    connection_id: string;
-    organization_id: string | null;
-    section_key: string | null;
-    provider_file_id: string;
-  }[]) ?? []).map((r) => ({
+  return (
+    (data as {
+      id: string;
+      user_id: string;
+      connection_id: string;
+      organization_id: string | null;
+      section_key: string | null;
+      provider_file_id: string;
+    }[]) ?? []
+  ).map((r) => ({
     id: r.id,
     userId: r.user_id,
     connectionId: r.connection_id,

@@ -48,19 +48,19 @@ type Row = {
 /** The user's WHOOP connection(s), oldest first (RLS-scoped). A user has at
  *  most one (unique on user_id), but the list shape matches the other
  *  connectors so the Connections hub treats them all the same. */
-export async function listWhoopConnections(
-  userId: string,
-): Promise<WhoopConnectionSummary[]> {
+export async function listWhoopConnections(userId: string): Promise<WhoopConnectionSummary[]> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("whoop_connections")
     .select("id, whoop_user_id, email, status, connected_at, last_synced_at, last_error")
     .eq("user_id", userId)
     .order("connected_at", { ascending: true });
-  return ((data as Pick<
-    Row,
-    "id" | "whoop_user_id" | "email" | "status" | "connected_at" | "last_synced_at" | "last_error"
-  >[]) ?? []).map((r) => ({
+  return (
+    (data as Pick<
+      Row,
+      "id" | "whoop_user_id" | "email" | "status" | "connected_at" | "last_synced_at" | "last_error"
+    >[]) ?? []
+  ).map((r) => ({
     id: r.id,
     whoopUserId: r.whoop_user_id,
     email: r.email,
@@ -193,9 +193,7 @@ export async function markConnectionSynced(connectionId: string): Promise<void> 
 }
 
 /** Every active connection (admin scope) for the sync cron. */
-export async function listActiveWhoopConnectionIds(): Promise<
-  { id: string; userId: string }[]
-> {
+export async function listActiveWhoopConnectionIds(): Promise<{ id: string; userId: string }[]> {
   const admin = createAdminClient();
   const { data } = await admin
     .from("whoop_connections")

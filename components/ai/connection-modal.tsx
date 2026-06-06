@@ -111,7 +111,11 @@ export function ConnectionModal({
       });
       const data = (await res.json()) as { ok?: boolean; status?: string };
       if (!data.ok) {
-        setError(data.status === "out_of_credits" || data.status === "rate_limited" ? t("error_status") : t("error_invalid"));
+        setError(
+          data.status === "out_of_credits" || data.status === "rate_limited"
+            ? t("error_status")
+            : t("error_invalid"),
+        );
         return;
       }
       onConnected(provider.id);
@@ -124,7 +128,10 @@ export function ConnectionModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4" onClick={close}>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4"
+      onClick={close}
+    >
       <div
         className="w-full max-w-md rounded-2xl bg-surface p-5 shadow-xl"
         onClick={(e) => e.stopPropagation()}
@@ -144,18 +151,26 @@ export function ConnectionModal({
                     setError(null);
                     setStep("setup");
                   }}
-                  className="flex w-full items-center justify-between rounded-xl border border-line bg-surface-raised px-4 py-3 text-left transition-base hover:bg-canvas"
+                  className="transition-base flex w-full items-center justify-between rounded-xl border border-line bg-surface-raised px-4 py-3 text-left hover:bg-canvas"
                 >
                   <span>
                     <span className="block text-[14px] font-semibold text-ink">{p.name}</span>
                     <span className="block text-[12px] text-ink-muted">{t(`desc_${p.id}`)}</span>
                   </span>
-                  <span aria-hidden className="text-ink-faint">›</span>
+                  <span aria-hidden className="text-ink-faint">
+                    ›
+                  </span>
                 </button>
               ))}
             </div>
-            <p className="mt-4 text-[11.5px] leading-snug text-ink-faint">{t("data_principle_body")}</p>
-            <button type="button" onClick={close} className="mt-3 text-[12.5px] text-ink-faint hover:text-ink">
+            <p className="mt-4 text-[11.5px] leading-snug text-ink-faint">
+              {t("data_principle_body")}
+            </p>
+            <button
+              type="button"
+              onClick={close}
+              className="mt-3 text-[12.5px] text-ink-faint hover:text-ink"
+            >
               {t("cancel")}
             </button>
           </>
@@ -175,12 +190,14 @@ export function ConnectionModal({
               href={provider.console}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-3 inline-flex h-9 items-center rounded-lg border border-line px-3 text-[12.5px] text-ink transition-base hover:bg-canvas"
+              className="transition-base mt-3 inline-flex h-9 items-center rounded-lg border border-line px-3 text-[12.5px] text-ink hover:bg-canvas"
             >
               {t("open_console", { name: provider.name })}
             </a>
             <div className="mt-3">
-              <label className="mb-1 block text-[12px] font-medium text-ink">{t("paste_label")}</label>
+              <label className="mb-1 block text-[12px] font-medium text-ink">
+                {t("paste_label")}
+              </label>
               <div className="flex items-center gap-2">
                 <input
                   ref={keyInputRef}
@@ -201,14 +218,18 @@ export function ConnectionModal({
             </div>
             {error ? <p className="mt-2 text-[12px] text-danger">{error}</p> : null}
             <div className="mt-4 flex items-center justify-between gap-2">
-              <button type="button" onClick={() => setStep("choose")} className="text-[12.5px] text-ink-faint hover:text-ink">
+              <button
+                type="button"
+                onClick={() => setStep("choose")}
+                className="text-[12.5px] text-ink-faint hover:text-ink"
+              >
                 {t("back")}
               </button>
               <button
                 type="button"
                 onClick={connect}
                 disabled={busy || !apiKey.trim()}
-                className="rounded-lg bg-ink px-4 py-2 text-[13px] font-medium text-surface transition-base hover:bg-ink-soft disabled:opacity-50"
+                className="transition-base rounded-lg bg-ink px-4 py-2 text-[13px] font-medium text-surface hover:bg-ink-soft disabled:opacity-50"
               >
                 {busy ? t("validating") : t("validate")}
               </button>
@@ -220,7 +241,9 @@ export function ConnectionModal({
               ✓
             </div>
             <h2 className="mt-3 text-[16px] font-semibold text-ink">{t("success")}</h2>
-            <p className="mt-1 text-[13px] text-ink-muted">{t("success_body", { name: provider.name })}</p>
+            <p className="mt-1 text-[13px] text-ink-muted">
+              {t("success_body", { name: provider.name })}
+            </p>
             <div className="mt-4 flex items-center justify-center gap-2">
               <button
                 type="button"
@@ -230,7 +253,7 @@ export function ConnectionModal({
                   setError(null);
                   setStep("choose");
                 }}
-                className="rounded-lg border border-line px-4 py-2 text-[13px] text-ink transition-base hover:bg-canvas"
+                className="transition-base rounded-lg border border-line px-4 py-2 text-[13px] text-ink hover:bg-canvas"
               >
                 {t("connect_another")}
               </button>
@@ -238,7 +261,7 @@ export function ConnectionModal({
                 ref={doneRef}
                 type="button"
                 onClick={close}
-                className="rounded-lg bg-ink px-4 py-2 text-[13px] font-medium text-surface transition-base hover:bg-ink-soft"
+                className="transition-base rounded-lg bg-ink px-4 py-2 text-[13px] font-medium text-surface hover:bg-ink-soft"
               >
                 {t("done")}
               </button>

@@ -8,10 +8,7 @@ import { createClient } from "@/lib/supabase/server";
  * server-side to schedule per-user-local routines and to localize generic push
  * bodies. Best-effort and idempotent. RLS scopes the write to the caller.
  */
-export async function syncLocaleTimezone(
-  timezone: string,
-  locale: string,
-): Promise<void> {
+export async function syncLocaleTimezone(timezone: string, locale: string): Promise<void> {
   try {
     if (!timezone) return;
     const supabase = await createClient();

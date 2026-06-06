@@ -8,11 +8,11 @@ import { revalidatePath } from "next/cache";
  * their life. The banner itself now routes into the Round-7 onboarding flow
  * (/onboarding/demo); this action only records the dismissal preference.
  */
-export async function dismissReprompt(
-  duration: "7d" | "permanent",
-): Promise<void> {
+export async function dismissReprompt(duration: "7d" | "permanent"): Promise<void> {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return;
 
   if (duration === "permanent") {

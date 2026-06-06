@@ -26,7 +26,7 @@ export function GmailScanAllButton() {
       type="button"
       onClick={scanAll}
       disabled={pending}
-      className="inline-flex h-9 items-center rounded-lg border border-line-strong px-3.5 text-[12.5px] font-medium text-ink transition-base hover:bg-surface-raised disabled:opacity-50"
+      className="transition-base inline-flex h-9 items-center rounded-lg border border-line-strong px-3.5 text-[12.5px] font-medium text-ink hover:bg-surface-raised disabled:opacity-50"
     >
       {pending ? t("scanning_all") : t("scan_all")}
     </button>

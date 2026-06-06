@@ -9,11 +9,7 @@ import type { WorkspaceContext } from "@/lib/data/workspace-context";
  * default; expands to a small form. Saving uses the server action so
  * RLS gates org membership at the DB.
  */
-export function ContextEditor({
-  context,
-}: {
-  context: WorkspaceContext | null;
-}) {
+export function ContextEditor({ context }: { context: WorkspaceContext | null }) {
   const [open, setOpen] = useState(false);
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -40,13 +36,11 @@ export function ContextEditor({
   return (
     <section>
       <div className="mb-2 flex items-baseline justify-between px-1">
-        <h2 className="text-eyebrow">
-          AI Context
-        </h2>
+        <h2 className="text-eyebrow">AI Context</h2>
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
-          className="cursor-pointer text-[11.5px] text-ink-muted transition-base hover:text-ink"
+          className="transition-base cursor-pointer text-[11.5px] text-ink-muted hover:text-ink"
         >
           {open ? "Close" : context ? "Edit" : "Set up"}
         </button>
@@ -58,8 +52,8 @@ export function ContextEditor({
             <p className="text-[13px] text-ink">{description}</p>
           ) : (
             <p className="text-[12.5px] text-ink-faint">
-              No context yet. Tell the Work AI what this Workspace is for so
-              it can tune answers and reports.
+              No context yet. Tell the Work AI what this Workspace is for so it can tune answers and
+              reports.
             </p>
           )}
           {instructions ? (
@@ -88,7 +82,7 @@ export function ContextEditor({
               rows={3}
               maxLength={1000}
               placeholder="e.g. ‘This Workspace manages Office Building A. Focus on tenant leases, parking revenue, insurance, maintenance costs, and vendor invoices.’"
-              className="block w-full resize-y rounded-md border border-line bg-canvas/40 px-2.5 py-2 text-[13px] text-ink placeholder:text-ink-faint outline-none focus:bg-canvas"
+              className="block w-full resize-y rounded-md border border-line bg-canvas/40 px-2.5 py-2 text-[13px] text-ink outline-none placeholder:text-ink-faint focus:bg-canvas"
             />
           </Field>
           <Field
@@ -101,7 +95,7 @@ export function ContextEditor({
               rows={3}
               maxLength={2000}
               placeholder="e.g. ‘Flag any vendor invoice 10% above its 12-month average. Show currency. Prefer monthly comparisons.’"
-              className="block w-full resize-y rounded-md border border-line bg-canvas/40 px-2.5 py-2 text-[13px] text-ink placeholder:text-ink-faint outline-none focus:bg-canvas"
+              className="block w-full resize-y rounded-md border border-line bg-canvas/40 px-2.5 py-2 text-[13px] text-ink outline-none placeholder:text-ink-faint focus:bg-canvas"
             />
           </Field>
           <Field
@@ -113,7 +107,7 @@ export function ContextEditor({
               name="preferred_metrics"
               defaultValue={metrics}
               placeholder="occupancy, NOI, parking revenue, utilities"
-              className="block h-9 w-full rounded-md border border-line bg-canvas/40 px-2.5 text-[13px] text-ink placeholder:text-ink-faint outline-none focus:bg-canvas"
+              className="block h-9 w-full rounded-md border border-line bg-canvas/40 px-2.5 text-[13px] text-ink outline-none placeholder:text-ink-faint focus:bg-canvas"
             />
           </Field>
           <Field label="Report style" hint="One word or short phrase.">
@@ -123,7 +117,7 @@ export function ContextEditor({
               defaultValue={style}
               maxLength={40}
               placeholder="executive · monthly brief · detailed"
-              className="block h-9 w-full max-w-xs rounded-md border border-line bg-canvas/40 px-2.5 text-[13px] text-ink placeholder:text-ink-faint outline-none focus:bg-canvas"
+              className="block h-9 w-full max-w-xs rounded-md border border-line bg-canvas/40 px-2.5 text-[13px] text-ink outline-none placeholder:text-ink-faint focus:bg-canvas"
             />
           </Field>
 
@@ -133,14 +127,14 @@ export function ContextEditor({
             <button
               type="button"
               onClick={() => setOpen(false)}
-              className="cursor-pointer text-[12px] text-ink-muted transition-base hover:text-ink"
+              className="transition-base cursor-pointer text-[12px] text-ink-muted hover:text-ink"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={pending}
-              className="inline-flex h-9 cursor-pointer items-center rounded-md bg-ink px-3 text-[12.5px] text-surface transition-base hover:bg-ink-soft disabled:cursor-default disabled:opacity-50"
+              className="transition-base inline-flex h-9 cursor-pointer items-center rounded-md bg-ink px-3 text-[12.5px] text-surface hover:bg-ink-soft disabled:cursor-default disabled:opacity-50"
             >
               {pending ? "Saving" : "Save"}
             </button>
@@ -163,9 +157,7 @@ function Field({
   return (
     <label className="block">
       <span className="mb-1 block text-[12.5px] text-ink">{label}</span>
-      {hint ? (
-        <span className="mb-1.5 block text-[11.5px] text-ink-faint">{hint}</span>
-      ) : null}
+      {hint ? <span className="mb-1.5 block text-[11.5px] text-ink-faint">{hint}</span> : null}
       {children}
     </label>
   );

@@ -7,11 +7,7 @@ import {
 import { listUserSpaces } from "@/lib/data/organizations";
 import { isGoogleOAuthConfigured } from "@/lib/google/oauth";
 import { isTokenCryptoConfigured } from "@/lib/security/token-crypto";
-import {
-  CloudConnectionRow,
-  type SpaceChoice,
-  type CloudRowLabels,
-} from "./cloud-connection-row";
+import { CloudConnectionRow, type SpaceChoice, type CloudRowLabels } from "./cloud-connection-row";
 import { syncedLabel } from "@/lib/cloud/shared/format";
 
 /**
@@ -90,13 +86,18 @@ export async function CloudServicesPanel({ userId }: { userId: string }) {
         const drv = driveByEmail.get(email);
         const hasMail = mailEmails.has(email);
         return (
-          <div key={email} className="space-y-2 rounded-2xl border border-line bg-surface-raised p-4">
+          <div
+            key={email}
+            className="space-y-2 rounded-2xl border border-line bg-surface-raised p-4"
+          >
             <p className="text-[13.5px] font-semibold text-ink">{email}</p>
 
             {/* Mail chip (managed by the Gmail card above). */}
             <div className="flex items-center gap-2 text-[12px] text-ink-muted">
               <span className="font-medium text-ink">{t("svc_mail")}</span>
-              <span className="text-ink-faint">{hasMail ? t("mail_managed") : t("svc_not_connected")}</span>
+              <span className="text-ink-faint">
+                {hasMail ? t("mail_managed") : t("svc_not_connected")}
+              </span>
             </div>
 
             {cal ? (
@@ -104,7 +105,7 @@ export async function CloudServicesPanel({ userId }: { userId: string }) {
             ) : (
               <a
                 href={`/api/oauth/google/connect?service=calendar&email=${encodeURIComponent(email)}`}
-                className="inline-flex h-8 items-center rounded-lg border border-line px-3 text-[12px] text-ink transition-base hover:bg-canvas"
+                className="transition-base inline-flex h-8 items-center rounded-lg border border-line px-3 text-[12px] text-ink hover:bg-canvas"
               >
                 {t("add_calendar")}
               </a>
@@ -115,7 +116,7 @@ export async function CloudServicesPanel({ userId }: { userId: string }) {
             ) : (
               <a
                 href={`/api/oauth/google/connect?service=drive&email=${encodeURIComponent(email)}`}
-                className="inline-flex h-8 items-center rounded-lg border border-line px-3 text-[12px] text-ink transition-base hover:bg-canvas"
+                className="transition-base inline-flex h-8 items-center rounded-lg border border-line px-3 text-[12px] text-ink hover:bg-canvas"
               >
                 {t("add_drive")}
               </a>

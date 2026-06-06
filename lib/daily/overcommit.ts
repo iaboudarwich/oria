@@ -53,8 +53,7 @@ export function assessOvercommitment(events: SignalEvent[]): OvercommitAssessmen
   }
 
   const overcommitted =
-    meetingCount >= OVERCOMMIT_EVENT_THRESHOLD ||
-    meetingHours >= OVERCOMMIT_HOURS_THRESHOLD;
+    meetingCount >= OVERCOMMIT_EVENT_THRESHOLD || meetingHours >= OVERCOMMIT_HOURS_THRESHOLD;
 
   return { overcommitted, meetingCount, meetingHours, suggestedHold };
 }

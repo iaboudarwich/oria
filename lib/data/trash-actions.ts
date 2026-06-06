@@ -97,14 +97,13 @@ export async function permanentlyDeleteUpload(formData: FormData): Promise<void>
     .maybeSingle();
   const path = (row as { storage_path: string } | null)?.storage_path;
 
-  await supabase
-    .from("uploads")
-    .delete()
-    .eq("id", id)
-    .eq("organization_id", ctx.organization.id);
+  await supabase.from("uploads").delete().eq("id", id).eq("organization_id", ctx.organization.id);
 
   if (path) {
-    await supabase.storage.from("uploads").remove([path]).catch(() => {});
+    await supabase.storage
+      .from("uploads")
+      .remove([path])
+      .catch(() => {});
   }
 
   await logAuditEvent({

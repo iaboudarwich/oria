@@ -20,9 +20,7 @@ type Section = { heading: string; paragraphs?: string[]; bullets?: string[] };
 const SECTIONS: Section[] = [
   {
     heading: "What we collect",
-    paragraphs: [
-      "We collect only what we need to run Oria for you:",
-    ],
+    paragraphs: ["We collect only what we need to run Oria for you:"],
     bullets: [
       "Your email and password, handled by our authentication provider (Supabase Auth).",
       "Files you upload. These are stored encrypted at rest in Supabase Storage, in a United States region.",
@@ -108,9 +106,7 @@ const SECTIONS: Section[] = [
   },
   {
     heading: "Contact",
-    paragraphs: [
-      "Questions about your privacy? Email us at privacy@heyoria.com.",
-    ],
+    paragraphs: ["Questions about your privacy? Email us at privacy@heyoria.com."],
   },
 ];
 
@@ -134,10 +130,10 @@ export default async function PrivacyPage() {
       {/* Layer 2: the binding technical detail. English-canonical. */}
       <div className="mt-12 border-t border-line pt-8">
         <h2 className="text-title text-ink">{t("details_title")}</h2>
-        <p className="mt-1 text-body-sm text-ink-faint">{t("details_subtitle")}</p>
-        <p className="mt-1 text-body-sm text-ink-faint">Last updated: {LAST_UPDATED}</p>
+        <p className="text-body-sm mt-1 text-ink-faint">{t("details_subtitle")}</p>
+        <p className="text-body-sm mt-1 text-ink-faint">Last updated: {LAST_UPDATED}</p>
 
-        <article className="prose prose-sm mt-6 max-w-none text-ink-soft prose-headings:text-ink prose-headings:font-semibold prose-strong:text-ink prose-a:text-brand">
+        <article className="prose prose-sm mt-6 max-w-none text-ink-soft prose-headings:font-semibold prose-headings:text-ink prose-a:text-brand prose-strong:text-ink">
           {SECTIONS.map((s) => (
             <section key={s.heading}>
               <h3 className="text-[15px] font-semibold text-ink">{s.heading}</h3>

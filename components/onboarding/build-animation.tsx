@@ -33,7 +33,10 @@ function usePrefersReducedMotion(): boolean {
       mq.addEventListener("change", onChange);
       return () => mq.removeEventListener("change", onChange);
     },
-    () => (typeof window !== "undefined" && !!window.matchMedia && window.matchMedia(REDUCED_QUERY).matches),
+    () =>
+      typeof window !== "undefined" &&
+      !!window.matchMedia &&
+      window.matchMedia(REDUCED_QUERY).matches,
     () => false,
   );
 }
@@ -43,7 +46,9 @@ function CalloutLine({ c }: { c: Callout }) {
   const t = useTranslations("build_anim");
   return (
     <span>
-      {c.reason ? t("callout", { section: c.section, reason: c.reason }) : t("callout_plain", { section: c.section })}
+      {c.reason
+        ? t("callout", { section: c.section, reason: c.reason })
+        : t("callout_plain", { section: c.section })}
     </span>
   );
 }
@@ -91,7 +96,13 @@ export function useBuildGate() {
  * scheduling only a quick finish, so there is no motion and onComplete still
  * fires.
  */
-export function BuildAnimation({ items, callouts = [], accent, durationMs = 12000, onComplete }: BuildAnimationProps) {
+export function BuildAnimation({
+  items,
+  callouts = [],
+  accent,
+  durationMs = 12000,
+  onComplete,
+}: BuildAnimationProps) {
   const t = useTranslations("build_anim");
   const reduced = usePrefersReducedMotion();
   const [phase, setPhase] = useState(0); // 0..3 accent progression
@@ -130,7 +141,12 @@ export function BuildAnimation({ items, callouts = [], accent, durationMs = 1200
     const sStart = total * 0.1;
     const sSpan = total * 0.45;
     for (let i = 0; i < sectionCount; i++) {
-      timers.push(setTimeout(() => setRevealedSections(i + 1), sStart + (sSpan / Math.max(1, sectionCount)) * i));
+      timers.push(
+        setTimeout(
+          () => setRevealedSections(i + 1),
+          sStart + (sSpan / Math.max(1, sectionCount)) * i,
+        ),
+      );
     }
     // The three answer callouts assemble across the run, each with room to read.
     const calloutAt = [0.16, 0.46, 0.74];
@@ -163,7 +179,9 @@ export function BuildAnimation({ items, callouts = [], accent, durationMs = 1200
               >
                 <span
                   className="h-2 w-2 shrink-0 rounded-full transition-colors duration-700"
-                  style={{ background: shownPhase >= 3 ? washColor : "var(--line-strong, #d6d3cd)" }}
+                  style={{
+                    background: shownPhase >= 3 ? washColor : "var(--line-strong, #d6d3cd)",
+                  }}
                 />
                 <span className="truncate text-[10px] text-ink-soft">{name}</span>
               </div>
@@ -177,7 +195,9 @@ export function BuildAnimation({ items, callouts = [], accent, durationMs = 1200
               className={`h-12 rounded-lg border transition-all duration-700 ${
                 shownPhase >= 2 ? "bg-canvas" : "bg-surface"
               }`}
-              style={{ borderColor: shownPhase >= 3 ? `${accentHex ?? "#5B7CDD"}55` : "var(--line)" }}
+              style={{
+                borderColor: shownPhase >= 3 ? `${accentHex ?? "#5B7CDD"}55` : "var(--line)",
+              }}
             />
             <div className="grid grid-cols-2 gap-2">
               <div className="h-8 rounded bg-line/60" />
@@ -196,7 +216,7 @@ export function BuildAnimation({ items, callouts = [], accent, durationMs = 1200
 
       {/* The callouts: each names a real section and a real answer, assembling
        *  the user's Oria in their own words. Announced politely. */}
-      <p className="mt-5 text-center text-eyebrow">{t("assembling")}</p>
+      <p className="text-eyebrow mt-5 text-center">{t("assembling")}</p>
       <ul className="mt-2 space-y-1.5" role="status" aria-live="polite">
         {shownCallouts.map((c, i) => (
           <li

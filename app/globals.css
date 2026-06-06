@@ -16,154 +16,168 @@
   color-scheme: dark;
 
   /* Layered surfaces (near-black) */
-  --canvas:           #08090B;
-  --surface:          #15181C;
-  --surface-raised:   #1B1F24;
-  --surface-floating: #23282E;
-  --surface-2:        #1B1F24;
-  --surface-3:        #23282E;
+  --canvas: #08090b;
+  --surface: #15181c;
+  --surface-raised: #1b1f24;
+  --surface-floating: #23282e;
+  --surface-2: #1b1f24;
+  --surface-3: #23282e;
 
   /* Ink */
-  --ink:              #F2F2F0;
-  --ink-soft:         #C8CCD2;
-  --ink-muted:        #9CA1A8;
-  --ink-faint:        #686D74;
+  --ink: #f2f2f0;
+  --ink-soft: #c8ccd2;
+  --ink-muted: #9ca1a8;
+  --ink-faint: #686d74;
 
   /* Hairline borders */
-  --line:             rgba(255, 255, 255, 0.07);
-  --line-strong:      rgba(255, 255, 255, 0.13);
+  --line: rgba(255, 255, 255, 0.07);
+  --line-strong: rgba(255, 255, 255, 0.13);
 
   /* The ONE mint accent */
-  --brand:            #4FE3AC;
-  --brand-soft:       rgba(79, 227, 172, 0.13);
-  --brand-muted:      rgba(79, 227, 172, 0.10);
-  --accent-ink:       #04130D; /* readable ink on the accent fill */
+  --brand: #4fe3ac;
+  --brand-soft: rgba(79, 227, 172, 0.13);
+  --brand-muted: rgba(79, 227, 172, 0.1);
+  --accent-ink: #04130d; /* readable ink on the accent fill */
 
   /* Legacy warm "accent" repointed to the amber data color (keeps one mint) */
-  --accent:           #F2B441;
-  --accent-soft:      rgba(242, 180, 65, 0.16);
-  --sand:             rgba(242, 180, 65, 0.10);
+  --accent: #f2b441;
+  --accent-soft: rgba(242, 180, 65, 0.16);
+  --sand: rgba(242, 180, 65, 0.1);
 
   /* Semantic data colors (one fixed meaning each) */
-  --rec:    #54D98C;  --rec-t:    rgba(84, 217, 140, 0.16);
-  --sleep:  #8C8CFF;  --sleep-t:  rgba(140, 140, 255, 0.16);
-  --strain: #46CBE0;  --strain-t: rgba(70, 203, 224, 0.16);
-  --spend:  #F2B441;  --spend-t:  rgba(242, 180, 65, 0.16);
-  --up:     #54D98C;  --down:     #F2685C;
+  --rec: #54d98c;
+  --rec-t: rgba(84, 217, 140, 0.16);
+  --sleep: #8c8cff;
+  --sleep-t: rgba(140, 140, 255, 0.16);
+  --strain: #46cbe0;
+  --strain-t: rgba(70, 203, 224, 0.16);
+  --spend: #f2b441;
+  --spend-t: rgba(242, 180, 65, 0.16);
+  --up: #54d98c;
+  --down: #f2685c;
 
   /* Semantic roles map onto the data colors (no color means two things) */
-  --sage:          var(--rec);
-  --claret:        var(--down);
-  --success:       var(--rec);    --success-soft: var(--rec-t);
-  --warning:       var(--spend);  --warning-soft: var(--spend-t);
-  --danger:        var(--down);   --danger-soft:  rgba(242, 104, 92, 0.14);
-  --info:          var(--brand);  --info-soft:    var(--brand-soft);
+  --sage: var(--rec);
+  --claret: var(--down);
+  --success: var(--rec);
+  --success-soft: var(--rec-t);
+  --warning: var(--spend);
+  --warning-soft: var(--spend-t);
+  --danger: var(--down);
+  --danger-soft: rgba(242, 104, 92, 0.14);
+  --info: var(--brand);
+  --info-soft: var(--brand-soft);
 
   /* Soft elevation */
-  --shadow:     0 1px 0 rgba(255,255,255,0.03) inset, 0 8px 24px -12px rgba(0,0,0,0.7);
-  --shadow-xs:  0 1px 2px rgba(0,0,0,0.25);
-  --shadow-sm:  var(--shadow);
-  --shadow-md:  var(--shadow);
-  --shadow-lg:  0 14px 34px -16px rgba(0,0,0,0.7);
-  --shadow-xl:  0 24px 60px -24px rgba(0,0,0,0.75);
-  --shadow-brand: 0 0 0 3px rgba(79,227,172,0.18);
+  --shadow: 0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 8px 24px -12px rgba(0, 0, 0, 0.7);
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.25);
+  --shadow-sm: var(--shadow);
+  --shadow-md: var(--shadow);
+  --shadow-lg: 0 14px 34px -16px rgba(0, 0, 0, 0.7);
+  --shadow-xl: 0 24px 60px -24px rgba(0, 0, 0, 0.75);
+  --shadow-brand: 0 0 0 3px rgba(79, 227, 172, 0.18);
 
   /* Radii (4/8pt scale; cards 20, tiles 18, pills 999) */
   --radius-tile: 18px;
   --radius-card: 20px;
 
   /* Motion */
-  --ease-out-quart:  cubic-bezier(0.25, 1, 0.5, 1);
-  --ease-spring:     cubic-bezier(0.3, 1.3, 0.4, 1);
-  --ease-in-out:     cubic-bezier(0.4, 0, 0.2, 1);
-  --duration-fast:   150ms;
-  --duration-base:   200ms;
-  --duration-slow:   300ms;
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-spring: cubic-bezier(0.3, 1.3, 0.4, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --duration-fast: 150ms;
+  --duration-base: 200ms;
+  --duration-slow: 300ms;
 }
 
 /* ── Light (on toggle) ─────────────────────────────────────── */
 .light {
   color-scheme: light;
 
-  --canvas:           #ECEAE4;
-  --surface:          #FFFFFF;
-  --surface-raised:   #FBFAF7;
-  --surface-floating: #F1F0EB;
-  --surface-2:        #FBFAF7;
-  --surface-3:        #F1F0EB;
+  --canvas: #eceae4;
+  --surface: #ffffff;
+  --surface-raised: #fbfaf7;
+  --surface-floating: #f1f0eb;
+  --surface-2: #fbfaf7;
+  --surface-3: #f1f0eb;
 
-  --ink:              #14171B;
-  --ink-soft:         #3A3F47;
-  --ink-muted:        #5C616A;
-  --ink-faint:        #90949C;
+  --ink: #14171b;
+  --ink-soft: #3a3f47;
+  --ink-muted: #5c616a;
+  --ink-faint: #90949c;
 
-  --line:             rgba(20, 22, 26, 0.09);
-  --line-strong:      rgba(20, 22, 26, 0.16);
+  --line: rgba(20, 22, 26, 0.09);
+  --line-strong: rgba(20, 22, 26, 0.16);
 
-  --brand:            #0E9E70;
-  --brand-soft:       rgba(14, 158, 112, 0.12);
-  --brand-muted:      rgba(14, 158, 112, 0.10);
-  --accent-ink:       #FFFFFF;
+  --brand: #0e9e70;
+  --brand-soft: rgba(14, 158, 112, 0.12);
+  --brand-muted: rgba(14, 158, 112, 0.1);
+  --accent-ink: #ffffff;
 
-  --accent:           #C5860F;
-  --accent-soft:      rgba(197, 134, 15, 0.14);
-  --sand:             rgba(197, 134, 15, 0.10);
+  --accent: #c5860f;
+  --accent-soft: rgba(197, 134, 15, 0.14);
+  --sand: rgba(197, 134, 15, 0.1);
 
-  --rec:    #1AA559;  --rec-t:    rgba(26, 165, 89, 0.14);
-  --sleep:  #5557E0;  --sleep-t:  rgba(85, 87, 224, 0.13);
-  --strain: #0E9CB2;  --strain-t: rgba(14, 156, 178, 0.13);
-  --spend:  #C5860F;  --spend-t:  rgba(197, 134, 15, 0.14);
-  --up:     #1AA559;  --down:     #D8493C;
+  --rec: #1aa559;
+  --rec-t: rgba(26, 165, 89, 0.14);
+  --sleep: #5557e0;
+  --sleep-t: rgba(85, 87, 224, 0.13);
+  --strain: #0e9cb2;
+  --strain-t: rgba(14, 156, 178, 0.13);
+  --spend: #c5860f;
+  --spend-t: rgba(197, 134, 15, 0.14);
+  --up: #1aa559;
+  --down: #d8493c;
 
   --danger-soft: rgba(216, 73, 60, 0.13);
 
-  --shadow:     0 1px 2px rgba(20,22,26,0.04), 0 12px 30px -16px rgba(20,22,26,0.22);
-  --shadow-xs:  0 1px 2px rgba(20,22,26,0.05);
-  --shadow-lg:  0 16px 38px -18px rgba(20,22,26,0.25);
-  --shadow-xl:  0 28px 64px -28px rgba(20,22,26,0.28);
-  --shadow-brand: 0 0 0 3px rgba(14,158,112,0.16);
+  --shadow: 0 1px 2px rgba(20, 22, 26, 0.04), 0 12px 30px -16px rgba(20, 22, 26, 0.22);
+  --shadow-xs: 0 1px 2px rgba(20, 22, 26, 0.05);
+  --shadow-lg: 0 16px 38px -18px rgba(20, 22, 26, 0.25);
+  --shadow-xl: 0 28px 64px -28px rgba(20, 22, 26, 0.28);
+  --shadow-brand: 0 0 0 3px rgba(14, 158, 112, 0.16);
 }
 
 /* ── Tailwind token bridge ─────────────────────────────────── */
 @theme inline {
   /* Surfaces */
-  --color-canvas:          var(--canvas);
-  --color-surface:         var(--surface);
-  --color-surface-raised:  var(--surface-raised);
-  --color-surface-floating:var(--surface-floating);
-  --color-surface-2:       var(--surface-2);
-  --color-surface-3:       var(--surface-3);
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-floating: var(--surface-floating);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
 
   /* Ink */
-  --color-ink:        var(--ink);
-  --color-ink-soft:   var(--ink-soft);
-  --color-ink-muted:  var(--ink-muted);
-  --color-ink-faint:  var(--ink-faint);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-faint: var(--ink-faint);
 
   /* Lines */
-  --color-line:        var(--line);
+  --color-line: var(--line);
   --color-line-strong: var(--line-strong);
 
   /* Brand (the one mint accent) */
-  --color-brand:      var(--brand);
+  --color-brand: var(--brand);
   --color-brand-soft: var(--brand-soft);
-  --color-brand-muted:var(--brand-muted);
+  --color-brand-muted: var(--brand-muted);
   --color-accent-ink: var(--accent-ink);
 
   /* Semantic data colors */
-  --color-rec:        var(--rec);
-  --color-rec-t:      var(--rec-t);
-  --color-sleep:      var(--sleep);
-  --color-sleep-t:    var(--sleep-t);
-  --color-strain:     var(--strain);
-  --color-strain-t:   var(--strain-t);
-  --color-spend:      var(--spend);
-  --color-spend-t:    var(--spend-t);
-  --color-up:         var(--up);
-  --color-down:       var(--down);
+  --color-rec: var(--rec);
+  --color-rec-t: var(--rec-t);
+  --color-sleep: var(--sleep);
+  --color-sleep-t: var(--sleep-t);
+  --color-strain: var(--strain);
+  --color-strain-t: var(--strain-t);
+  --color-spend: var(--spend);
+  --color-spend-t: var(--spend-t);
+  --color-up: var(--up);
+  --color-down: var(--down);
 
   /* Accent (legacy warm, now amber) */
-  --color-accent:      var(--accent);
+  --color-accent: var(--accent);
   --color-accent-soft: var(--accent-soft);
 
   /* Radii */
@@ -171,25 +185,29 @@
   --radius-card: var(--radius-card);
 
   /* Legacy aliases (used throughout existing code) */
-  --color-champagne:      var(--accent);
+  --color-champagne: var(--accent);
   --color-champagne-soft: var(--accent-soft);
-  --color-sand:           var(--sand);
-  --color-sage:           var(--sage);
-  --color-claret:         var(--claret);
-  --color-success:        var(--success);
-  --color-success-soft:   var(--success-soft);
-  --color-warning:        var(--warning);
-  --color-warning-soft:   var(--warning-soft);
-  --color-danger:         var(--danger);
-  --color-danger-soft:    var(--danger-soft);
+  --color-sand: var(--sand);
+  --color-sage: var(--sage);
+  --color-claret: var(--claret);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
 
   /* Fonts — Hanken Grotesk (UI + numbers), Fraunces (display) */
-  --font-sans:    var(--font-hanken), ui-sans-serif, system-ui, -apple-system, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+  --font-sans:
+    var(--font-hanken), ui-sans-serif, system-ui, -apple-system, "SF Pro Text", "Helvetica Neue",
+    Arial, sans-serif;
   --font-display: var(--font-fraunces), Georgia, "Times New Roman", Times, serif;
-  --font-mono:    var(--font-jetbrains-mono), var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-mono:
+    var(--font-jetbrains-mono), var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo,
+    monospace;
 
   /* Shadow tokens */
-  --shadow-soft:   var(--shadow);
+  --shadow-soft: var(--shadow);
   --shadow-raised: var(--shadow);
 }
 
@@ -222,7 +240,10 @@
     cursor: pointer;
   }
 
-  h1, h2, h3, h4 {
+  h1,
+  h2,
+  h3,
+  h4 {
     font-family: var(--font-display);
     letter-spacing: -0.012em;
     color: var(--ink);
@@ -231,17 +252,49 @@
 
 /* ── Utility layer ──────────────────────────────────────────── */
 @layer utilities {
-
   /* Typography scale. font-size and line-height are multiplied by the
    * per-user --font-scale (Round 14.8 F1, default 1) so the whole design-system
    * type resizes together without breaking line rhythm. */
-  .text-display  { font-size: calc(32px * var(--font-scale, 1)); line-height: calc(40px * var(--font-scale, 1)); font-weight: 600; letter-spacing: -0.02em; }
-  .text-headline { font-size: calc(24px * var(--font-scale, 1)); line-height: calc(32px * var(--font-scale, 1)); font-weight: 600; letter-spacing: -0.016em; }
-  .text-title    { font-size: calc(20px * var(--font-scale, 1)); line-height: calc(28px * var(--font-scale, 1)); font-weight: 600; letter-spacing: -0.012em; }
-  .text-body-lg  { font-size: calc(17px * var(--font-scale, 1)); line-height: calc(26px * var(--font-scale, 1)); font-weight: 400; }
-  .text-body     { font-size: calc(15px * var(--font-scale, 1)); line-height: calc(22px * var(--font-scale, 1)); font-weight: 400; }
-  .text-body-sm  { font-size: calc(13px * var(--font-scale, 1)); line-height: calc(18px * var(--font-scale, 1)); font-weight: 400; }
-  .text-caption  { font-size: calc(12px * var(--font-scale, 1)); line-height: calc(16px * var(--font-scale, 1)); font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; }
+  .text-display {
+    font-size: calc(32px * var(--font-scale, 1));
+    line-height: calc(40px * var(--font-scale, 1));
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+  .text-headline {
+    font-size: calc(24px * var(--font-scale, 1));
+    line-height: calc(32px * var(--font-scale, 1));
+    font-weight: 600;
+    letter-spacing: -0.016em;
+  }
+  .text-title {
+    font-size: calc(20px * var(--font-scale, 1));
+    line-height: calc(28px * var(--font-scale, 1));
+    font-weight: 600;
+    letter-spacing: -0.012em;
+  }
+  .text-body-lg {
+    font-size: calc(17px * var(--font-scale, 1));
+    line-height: calc(26px * var(--font-scale, 1));
+    font-weight: 400;
+  }
+  .text-body {
+    font-size: calc(15px * var(--font-scale, 1));
+    line-height: calc(22px * var(--font-scale, 1));
+    font-weight: 400;
+  }
+  .text-body-sm {
+    font-size: calc(13px * var(--font-scale, 1));
+    line-height: calc(18px * var(--font-scale, 1));
+    font-weight: 400;
+  }
+  .text-caption {
+    font-size: calc(12px * var(--font-scale, 1));
+    line-height: calc(16px * var(--font-scale, 1));
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
 
   /* Eyebrow: the small uppercase section label that sits above cards and
    * lists. The old inline pattern (10.5px, 0.12em tracking, ink-faint)
@@ -265,8 +318,12 @@
   }
 
   /* Text balance utilities */
-  .text-balance { text-wrap: balance; }
-  .text-pretty  { text-wrap: pretty; }
+  .text-balance {
+    text-wrap: balance;
+  }
+  .text-pretty {
+    text-wrap: pretty;
+  }
 
   /* Glass effect */
   .glass {
@@ -281,25 +338,42 @@
   }
 
   /* Sidebar width system */
-  .sidebar-expanded { --sidebar-w: 250px; }
-  .sidebar-collapsed { --sidebar-w: 64px; }
+  .sidebar-expanded {
+    --sidebar-w: 250px;
+  }
+  .sidebar-collapsed {
+    --sidebar-w: 64px;
+  }
   .sidebar-dragging aside,
-  .sidebar-dragging .sidebar-content { transition: none !important; }
-  .sidebar-dragging, .sidebar-dragging * {
+  .sidebar-dragging .sidebar-content {
+    transition: none !important;
+  }
+  .sidebar-dragging,
+  .sidebar-dragging * {
     user-select: none;
     cursor: col-resize !important;
   }
 
   /* Safe-area insets */
-  .pb-safe-bottom { padding-bottom: max(4rem, env(safe-area-inset-bottom)); }
-  .pb-safe        { padding-bottom: env(safe-area-inset-bottom); }
-  .pt-safe        { padding-top: env(safe-area-inset-top); }
-  .px-safe        { padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); }
+  .pb-safe-bottom {
+    padding-bottom: max(4rem, env(safe-area-inset-bottom));
+  }
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
+  }
+  .px-safe {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
 
   /* Hover lift — for card hover states */
   .hover-lift {
-    transition: transform var(--duration-base) var(--ease-out-quart),
-                box-shadow var(--duration-base) var(--ease-out-quart);
+    transition:
+      transform var(--duration-base) var(--ease-out-quart),
+      box-shadow var(--duration-base) var(--ease-out-quart);
   }
   .hover-lift:hover {
     transform: translateY(-2px);
@@ -334,7 +408,8 @@
 
   /* Transition base — explicit property list avoids layout thrashing */
   .transition-base {
-    transition-property: background-color, border-color, color, fill, stroke, box-shadow, opacity, transform;
+    transition-property:
+      background-color, border-color, color, fill, stroke, box-shadow, opacity, transform;
     transition-duration: var(--duration-fast);
     transition-timing-function: var(--ease-out-quart);
   }
@@ -357,7 +432,7 @@
     position: relative;
   }
   .brand-indicator::before {
-    content: '';
+    content: "";
     position: absolute;
     inset-inline-start: 0;
     top: 4px;
@@ -366,8 +441,9 @@
     border-radius: 2px;
     background: var(--brand);
     opacity: 0;
-    transition: opacity var(--duration-fast) var(--ease-out-quart),
-                transform var(--duration-fast) var(--ease-out-quart);
+    transition:
+      opacity var(--duration-fast) var(--ease-out-quart),
+      transform var(--duration-fast) var(--ease-out-quart);
     transform: scaleY(0.6);
   }
   .brand-indicator.active::before {
@@ -378,39 +454,83 @@
 
 /* ── Keyframes ──────────────────────────────────────────────── */
 @keyframes oria-fade-up {
-  from { opacity: 0; transform: translateY(6px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 @keyframes oria-fade-in {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 @keyframes oria-scale-in {
-  from { opacity: 0; transform: scale(0.96); }
-  to   { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 @keyframes shimmer {
-  0%   { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 @keyframes pulse-ring {
-  0%   { box-shadow: 0 0 0 0 rgba(91,95,221,0.4); }
-  70%  { box-shadow: 0 0 0 8px rgba(91,95,221,0); }
-  100% { box-shadow: 0 0 0 0 rgba(91,95,221,0); }
+  0% {
+    box-shadow: 0 0 0 0 rgba(91, 95, 221, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 8px rgba(91, 95, 221, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(91, 95, 221, 0);
+  }
 }
 @keyframes mic-breathe {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50%       { opacity: 0.6; transform: scale(0.92); }
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(0.92);
+  }
 }
 
 /* Drag handle hint — one shake on first reveal to teach
  * draggability without a tooltip. Subtle (3deg, 4 cycles). */
 @keyframes oria-drag-hint {
-  0%, 100% { transform: rotate(0); }
-  20%      { transform: rotate(-3deg) translateY(-1px); }
-  40%      { transform: rotate( 3deg) translateY(0); }
-  60%      { transform: rotate(-3deg) translateY(-1px); }
-  80%      { transform: rotate( 3deg) translateY(0); }
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+  20% {
+    transform: rotate(-3deg) translateY(-1px);
+  }
+  40% {
+    transform: rotate(3deg) translateY(0);
+  }
+  60% {
+    transform: rotate(-3deg) translateY(-1px);
+  }
+  80% {
+    transform: rotate(3deg) translateY(0);
+  }
 }
 
 /* Page navigation — cross-document view transitions. Pure CSS, so the
@@ -420,20 +540,42 @@
  * React 19 ViewTransition surface stabilizes — full document loads
  * (e.g. server-action redirects, hard reloads) animate today. */
 @keyframes oria-view-old {
-  from { opacity: 1; transform: translateY(0); }
-  to   { opacity: 0; transform: translateY(-4px); }
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
 }
 @keyframes oria-view-new {
-  from { opacity: 0; transform: translateY(4px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @layer utilities {
-  .animate-fade-up   { animation: oria-fade-up   0.22s var(--ease-out-quart) both; }
-  .animate-fade-in   { animation: oria-fade-in   0.18s ease-out both; }
-  .animate-scale-in  { animation: oria-scale-in  0.20s var(--ease-spring) both; }
-  .animate-pulse-ring { animation: pulse-ring 0.6s ease-out; }
-  .animate-mic-breathe { animation: mic-breathe 2.4s ease-in-out infinite; }
+  .animate-fade-up {
+    animation: oria-fade-up 0.22s var(--ease-out-quart) both;
+  }
+  .animate-fade-in {
+    animation: oria-fade-in 0.18s ease-out both;
+  }
+  .animate-scale-in {
+    animation: oria-scale-in 0.2s var(--ease-spring) both;
+  }
+  .animate-pulse-ring {
+    animation: pulse-ring 0.6s ease-out;
+  }
+  .animate-mic-breathe {
+    animation: mic-breathe 2.4s ease-in-out infinite;
+  }
 
   /* One-shot drag affordance. Apply once (typically gated by a
    *  localStorage flag) so users learn the handle is draggable. */
@@ -442,11 +584,21 @@
     transform-origin: center;
   }
 
-  .delay-1 { animation-delay: 30ms; }
-  .delay-2 { animation-delay: 60ms; }
-  .delay-3 { animation-delay: 90ms; }
-  .delay-4 { animation-delay: 120ms; }
-  .delay-5 { animation-delay: 150ms; }
+  .delay-1 {
+    animation-delay: 30ms;
+  }
+  .delay-2 {
+    animation-delay: 60ms;
+  }
+  .delay-3 {
+    animation-delay: 90ms;
+  }
+  .delay-4 {
+    animation-delay: 120ms;
+  }
+  .delay-5 {
+    animation-delay: 150ms;
+  }
 }
 
 /* Cross-document view transitions are an opt-in browser feature
@@ -454,7 +606,9 @@
  * prefers-reduced-motion: no-preference so users who've asked the OS
  * for reduced motion get an instant swap instead. */
 @media (prefers-reduced-motion: no-preference) {
-  @view-transition { navigation: auto; }
+  @view-transition {
+    navigation: auto;
+  }
 
   ::view-transition-old(root) {
     animation: oria-view-old var(--duration-base) var(--ease-out-quart) both;
@@ -466,14 +620,22 @@
 
 /* ── Reduced motion override ─────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-  .hover-lift:hover { transform: none; }
-  .btn-lift:hover:not(:disabled) { transform: none; }
-  .drag-hint-wiggle { animation: none; }
+  .hover-lift:hover {
+    transform: none;
+  }
+  .btn-lift:hover:not(:disabled) {
+    transform: none;
+  }
+  .drag-hint-wiggle {
+    animation: none;
+  }
 }
 
 /* ── RTL directional icons ───────────────────────────────────────
@@ -499,9 +661,15 @@
   /* Unclassed text inside the shell scales too. */
   font-size: calc(15px * var(--font-scale));
 }
-.app-shell[data-font-size="small"]  { --font-scale: 0.92; }
-.app-shell[data-font-size="large"]  { --font-scale: 1.12; }
-.app-shell[data-font-size="xlarge"] { --font-scale: 1.25; }
+.app-shell[data-font-size="small"] {
+  --font-scale: 0.92;
+}
+.app-shell[data-font-size="large"] {
+  --font-scale: 1.12;
+}
+.app-shell[data-font-size="xlarge"] {
+  --font-scale: 1.25;
+}
 .app-shell[data-density="compact"] {
   --density-card: 16px;
   --density-stack: 12px;
@@ -511,8 +679,12 @@
 
 /* Opt-in density utilities: components adopt these so Compact/Comfortable
  * actually changes their spacing. Padding, vertical stack gap, page gutter. */
-.pad-density    { padding: var(--density-card, 24px); }
-.stack-density > * + * { margin-top: var(--density-stack, 16px); }
+.pad-density {
+  padding: var(--density-card, 24px);
+}
+.stack-density > * + * {
+  margin-top: var(--density-stack, 16px);
+}
 .gutter-density {
   padding-inline-start: var(--density-gutter, 32px);
   padding-inline-end: var(--density-gutter, 32px);
@@ -545,9 +717,21 @@
  * above freezes the animation to its first frame, so it becomes a static
  * wash for users who opt out of motion (heuristic 6 + 11). */
 @keyframes oria-bg-drift {
-  0%   { background-position: 0% 0%, 100% 100%; }
-  50%  { background-position: 100% 20%, 0% 80%; }
-  100% { background-position: 0% 0%, 100% 100%; }
+  0% {
+    background-position:
+      0% 0%,
+      100% 100%;
+  }
+  50% {
+    background-position:
+      100% 20%,
+      0% 80%;
+  }
+  100% {
+    background-position:
+      0% 0%,
+      100% 100%;
+  }
 }
 .living-bg {
   position: fixed;
@@ -555,9 +739,19 @@
   z-index: -1;
   pointer-events: none;
   background-image:
-    radial-gradient(60% 50% at 20% 15%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 70%),
-    radial-gradient(55% 45% at 85% 85%, color-mix(in srgb, var(--brand) 10%, transparent), transparent 70%);
-  background-size: 180% 180%, 180% 180%;
+    radial-gradient(
+      60% 50% at 20% 15%,
+      color-mix(in srgb, var(--accent) 14%, transparent),
+      transparent 70%
+    ),
+    radial-gradient(
+      55% 45% at 85% 85%,
+      color-mix(in srgb, var(--brand) 10%, transparent),
+      transparent 70%
+    );
+  background-size:
+    180% 180%,
+    180% 180%;
   background-repeat: no-repeat;
   animation: oria-bg-drift 60s ease-in-out infinite;
 }

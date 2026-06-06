@@ -12,9 +12,7 @@ export default function DemoLayout({ children }: { children: ReactNode }) {
       <DemoBanner />
       <DemoTabs />
       <main>
-        <div className="mx-auto max-w-[1100px] px-6 py-8 pb-16 sm:px-8">
-          {children}
-        </div>
+        <div className="mx-auto max-w-[1100px] px-6 py-8 pb-16 sm:px-8">{children}</div>
       </main>
     </div>
   );

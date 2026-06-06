@@ -12,10 +12,7 @@ import {
   listPendingInvites,
   type CircleMember,
 } from "@/lib/data/circle";
-import {
-  listMemberSectionRefs,
-  type MemberSectionRef,
-} from "@/lib/data/member-access";
+import { listMemberSectionRefs, type MemberSectionRef } from "@/lib/data/member-access";
 import { ACCESS_LEVEL_LABELS } from "@/lib/data/access-labels";
 import { listAllSections } from "@/lib/data/all-sections";
 import { relativeTime } from "@/lib/utils";
@@ -52,10 +49,7 @@ export default async function MembersPage() {
 
   // Same for limited invites.
   const limitedInvites = invites.filter((i) => i.access_level === "limited");
-  const inviteAllowlists = new Map<
-    string,
-    Array<{ kind: "builtin" | "custom"; key: string }>
-  >();
+  const inviteAllowlists = new Map<string, Array<{ kind: "builtin" | "custom"; key: string }>>();
   await Promise.all(
     limitedInvites.map(async (i) => {
       const refs = await listInviteSectionRefs(i.id);
@@ -87,11 +81,11 @@ export default async function MembersPage() {
 
       <p className="mb-6 max-w-xl text-[13.5px] text-ink-muted">
         Personal items stay private. Only what is shared into this{" "}
-        {ctx.organization.kind === "office" ? "Workspace" : "circle"} is
-        visible to members, based on the access you grant them.
+        {ctx.organization.kind === "office" ? "Workspace" : "circle"} is visible to members, based
+        on the access you grant them.
       </p>
 
-      <div className="space-y-8 animate-fade-up">
+      <div className="animate-fade-up space-y-8">
         <section>
           <h2 className="mb-3 px-1 text-[13px] font-medium text-ink-muted">You</h2>
           <ul className="space-y-0.5">
@@ -108,15 +102,11 @@ export default async function MembersPage() {
         {others.length > 0 ? (
           <section>
             <h2 className="mb-3 px-1 text-[13px] font-medium text-ink-muted">
-              People in this{" "}
-              {ctx.organization.kind === "office" ? "Workspace" : "circle"}
+              People in this {ctx.organization.kind === "office" ? "Workspace" : "circle"}
             </h2>
             <ul className="space-y-2">
               {others.map((m) => (
-                <li
-                  key={m.id}
-                  className="rounded-xl border border-line bg-surface-raised p-1.5"
-                >
+                <li key={m.id} className="rounded-xl border border-line bg-surface-raised p-1.5">
                   <MemberRow
                     name={m.profile?.full_name ?? m.profile?.email ?? "Member"}
                     email={m.profile?.email ?? ""}
@@ -153,9 +143,7 @@ export default async function MembersPage() {
 
         {invites.length > 0 ? (
           <section>
-            <h2 className="mb-3 px-1 text-[13px] font-medium text-ink-muted">
-              Pending invites
-            </h2>
+            <h2 className="mb-3 px-1 text-[13px] font-medium text-ink-muted">Pending invites</h2>
             <ul className="space-y-2">
               {invites.map((inv: Invite) => (
                 <InviteCard
@@ -171,17 +159,11 @@ export default async function MembersPage() {
 
         {isOwner ? (
           <section className="max-w-xl rounded-2xl border border-line bg-surface-raised p-5 shadow-[0_1px_2px_rgba(28,26,23,0.04),0_2px_8px_-6px_rgba(28,26,23,0.08)]">
-            <h2 className="mb-1 text-[13.5px] font-medium text-ink">
-              Invite someone
-            </h2>
+            <h2 className="mb-1 text-[13.5px] font-medium text-ink">Invite someone</h2>
             <p className="mb-4 text-[12px] text-ink-faint">
-              They get a one-time link and a short code. Personal items stay
-              private.
+              They get a one-time link and a short code. Personal items stay private.
             </p>
-            <InviteCreator
-              sections={sectionOptions}
-              orgKind={ctx.organization.kind}
-            />
+            <InviteCreator sections={sectionOptions} orgKind={ctx.organization.kind} />
           </section>
         ) : null}
 
@@ -209,28 +191,20 @@ function PersonalView({ name }: { name: string }) {
       </p>
 
       <ul className="space-y-0.5">
-        <MemberRow
-          name={name}
-          email={""}
-          role="owner"
-          accessLevel="owner"
-          isSelf
-        />
+        {/* eslint-disable-next-line jsx-a11y/aria-role -- `role` here is the membership role prop, not an ARIA role */}
+        <MemberRow name={name} email={""} role="owner" accessLevel="owner" isSelf />
       </ul>
 
       <section className="mt-10 max-w-xl rounded-xl border border-line bg-surface-raised p-5">
-        <h3 className="text-[14px] font-semibold text-ink">
-          Want to share with someone?
-        </h3>
+        <h3 className="text-[14px] font-semibold text-ink">Want to share with someone?</h3>
         <p className="mt-1 text-[13px] text-ink-muted">
-          Create a circle for your family, partner, roommates, or assistant.
-          What you put inside a circle is only seen by people you invite, based
-          on the access you give them.
+          Create a circle for your family, partner, roommates, or assistant. What you put inside a
+          circle is only seen by people you invite, based on the access you give them.
         </p>
         <div className="mt-4">
           <Link
             href="/dashboard/circles/new"
-            className="inline-flex h-10 items-center rounded-lg bg-ink px-4 text-[13px] text-surface hover:bg-ink-soft transition-base"
+            className="transition-base inline-flex h-10 items-center rounded-lg bg-ink px-4 text-[13px] text-surface hover:bg-ink-soft"
           >
             Create a circle
           </Link>
@@ -264,18 +238,14 @@ function MemberRow({
     .join("");
   return (
     <div className="flex items-center gap-3 rounded-lg px-3 py-2">
-      <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-sand text-ink-soft text-[11px] font-semibold">
+      <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-sand text-[11px] font-semibold text-ink-soft">
         {initials || email[0]?.toUpperCase() || "?"}
       </span>
       <div className="min-w-0 flex-1">
         <p className="truncate text-[13px] text-ink">
           {name}
-          {title ? (
-            <span className="ml-2 text-[11.5px] text-ink-muted">{title}</span>
-          ) : null}
-          {isSelf ? (
-            <span className="ml-2 text-[11px] text-ink-faint">you</span>
-          ) : null}
+          {title ? <span className="ml-2 text-[11.5px] text-ink-muted">{title}</span> : null}
+          {isSelf ? <span className="ml-2 text-[11px] text-ink-faint">you</span> : null}
         </p>
         <p className="truncate text-[11.5px] text-ink-faint">
           {ACCESS_LEVEL_LABELS[accessLevel]} · {roleLabel(role)}
@@ -293,12 +263,19 @@ function firstName(m: CircleMember): string {
 
 function roleLabel(role: string): string {
   switch (role) {
-    case "owner": return "Owner";
-    case "household": return "Family";
-    case "assistant": return "Assistant";
-    case "accountant": return "Accountant";
-    case "staff": return "Staff";
-    case "external": return "Contributor";
-    default: return role;
+    case "owner":
+      return "Owner";
+    case "household":
+      return "Family";
+    case "assistant":
+      return "Assistant";
+    case "accountant":
+      return "Accountant";
+    case "staff":
+      return "Staff";
+    case "external":
+      return "Contributor";
+    default:
+      return role;
   }
 }

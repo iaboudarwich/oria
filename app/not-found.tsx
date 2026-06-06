@@ -11,8 +11,8 @@ export default async function NotFound() {
         <div className="flex justify-center">
           <Wordmark href="/" />
         </div>
-        <p className="mt-6 text-headline text-ink">404</p>
-        <p className="mt-2 text-body text-ink-soft">{t("notFound_title")}</p>
+        <p className="text-headline mt-6 text-ink">404</p>
+        <p className="text-body mt-2 text-ink-soft">{t("notFound_title")}</p>
         <div className="mt-6 flex justify-center">
           <Button href="/dashboard" variant="primary">
             {t("notFound_back")}

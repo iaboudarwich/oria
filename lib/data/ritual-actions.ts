@@ -73,10 +73,7 @@ export async function createRitual(input: RitualInput): Promise<{ ok: boolean }>
   return { ok: true };
 }
 
-export async function updateRitual(
-  id: string,
-  input: RitualInput,
-): Promise<{ ok: boolean }> {
+export async function updateRitual(id: string, input: RitualInput): Promise<{ ok: boolean }> {
   const clean = sanitize(input);
   if (!clean) return { ok: false };
   const ctx = await requireContext();
@@ -182,9 +179,7 @@ export async function toggleRitualDone(id: string): Promise<{ ok: boolean; done:
  * deterministic (no AI) so it never guesses wrong silently. Returns the matched
  * title, or ok:false when nothing clearly matched.
  */
-export async function markRitualByText(
-  text: string,
-): Promise<{ ok: boolean; title?: string }> {
+export async function markRitualByText(text: string): Promise<{ ok: boolean; title?: string }> {
   const value = text.trim();
   if (!value) return { ok: false };
   const ctx = await requireContext();

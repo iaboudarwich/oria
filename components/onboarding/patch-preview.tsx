@@ -33,7 +33,7 @@ export function PatchPreview({
           <button
             type="button"
             onClick={onCancel}
-            className="mt-3 rounded-xl border border-line-strong px-4 py-2 text-[13px] font-medium text-ink transition-base hover:bg-surface"
+            className="transition-base mt-3 rounded-xl border border-line-strong px-4 py-2 text-[13px] font-medium text-ink hover:bg-surface"
           >
             {t("try_again")}
           </button>
@@ -46,7 +46,7 @@ export function PatchPreview({
   const createCount = patch.creates.length + patch.section_adds.length;
   const confirmLabel = hasDeletes
     ? t("confirm_delete")
-    : createCount > 0 && (patch.renames.length > 0)
+    : createCount > 0 && patch.renames.length > 0
       ? t("confirm_mixed")
       : patch.renames.length > 0 && createCount === 0
         ? t("confirm_apply")
@@ -72,7 +72,9 @@ export function PatchPreview({
               {t("row_create")}: {w.name}
             </p>
             {w.sections.length ? (
-              <p className="mt-1 text-[12.5px] text-ink-muted">{w.sections.map((s) => s.title).join(", ")}</p>
+              <p className="mt-1 text-[12.5px] text-ink-muted">
+                {w.sections.map((s) => s.title).join(", ")}
+              </p>
             ) : null}
           </div>
         ))}
@@ -96,7 +98,9 @@ export function PatchPreview({
               {t("row_delete")}: {d.name}
             </p>
             {d.itemCount && d.itemCount > 0 ? (
-              <p className="mt-1 text-[12px] text-claret">{t("items_archived", { count: d.itemCount })}</p>
+              <p className="mt-1 text-[12px] text-claret">
+                {t("items_archived", { count: d.itemCount })}
+              </p>
             ) : null}
           </div>
         ))}
@@ -106,7 +110,7 @@ export function PatchPreview({
         type="button"
         onClick={handleConfirm}
         disabled={building}
-        className={`mt-5 w-full rounded-xl px-5 py-3 text-[15px] font-medium text-surface transition-base disabled:opacity-50 ${
+        className={`transition-base mt-5 w-full rounded-xl px-5 py-3 text-[15px] font-medium text-surface disabled:opacity-50 ${
           hasDeletes ? "bg-claret hover:opacity-90" : "bg-ink hover:bg-ink-soft"
         }`}
       >
@@ -114,8 +118,14 @@ export function PatchPreview({
       </button>
 
       {confirmDelete ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4" onClick={() => setConfirmDelete(false)}>
-          <div className="w-full max-w-sm rounded-2xl bg-surface p-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4"
+          onClick={() => setConfirmDelete(false)}
+        >
+          <div
+            className="w-full max-w-sm rounded-2xl bg-surface p-5 shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
             <h3 className="text-[15px] font-semibold text-ink">{t("delete_confirm_title")}</h3>
             <p className="mt-1 text-[13px] text-ink-muted">
               {t("delete_confirm_body", { count: totalArchived })}
@@ -135,7 +145,7 @@ export function PatchPreview({
                   setConfirmDelete(false);
                   onConfirm();
                 }}
-                className="rounded-lg bg-claret px-3 py-1.5 text-[12.5px] font-medium text-surface transition-base hover:opacity-90 disabled:opacity-50"
+                className="transition-base rounded-lg bg-claret px-3 py-1.5 text-[12.5px] font-medium text-surface hover:opacity-90 disabled:opacity-50"
               >
                 {t("delete_confirm_go")}
               </button>

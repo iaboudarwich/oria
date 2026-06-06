@@ -80,10 +80,7 @@ export async function createTrackableManual(input: {
 }
 
 /** Set a goal/wishlist/subscription's lifecycle status (active / wont_do / done). */
-export async function setTrackableStatus(
-  id: string,
-  status: string,
-): Promise<{ ok: boolean }> {
+export async function setTrackableStatus(id: string, status: string): Promise<{ ok: boolean }> {
   try {
     const ctx = await requireContext();
     const supabase = await createClient();

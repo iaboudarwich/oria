@@ -28,7 +28,7 @@ export function PoweredBy({
   return (
     <Link
       href="/dashboard/settings/ai"
-      className="mt-2 block text-center text-[11px] text-ink-faint transition-base hover:text-ink-muted"
+      className="transition-base mt-2 block text-center text-[11px] text-ink-faint hover:text-ink-muted"
     >
       {label}
     </Link>

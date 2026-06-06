@@ -15,9 +15,7 @@ export type PersonalizationContext = {
   pinnedMetrics: string[];
 };
 
-export function buildPersonalizationContext(
-  profile: UserProfile,
-): PersonalizationContext {
+export function buildPersonalizationContext(profile: UserProfile): PersonalizationContext {
   const responseWords =
     profile.preferences.responseLength === "short"
       ? 80
@@ -49,9 +47,7 @@ export function personalContextBlock(p: PersonalizationContext): string {
     );
   }
   if (p.pinnedMetrics.length > 0) {
-    lines.push(
-      `Pinned metrics to surface when relevant: ${p.pinnedMetrics.join(", ")}.`,
-    );
+    lines.push(`Pinned metrics to surface when relevant: ${p.pinnedMetrics.join(", ")}.`);
   }
   if (p.topSections.length > 0) {
     lines.push(`Most-engaged sections: ${p.topSections.join(", ")}.`);

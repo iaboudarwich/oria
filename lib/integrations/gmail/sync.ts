@@ -52,9 +52,10 @@ export async function syncAllGmailConnections(): Promise<SyncResult> {
     .eq("provider", "gmail")
     .eq("status", "active");
 
-  const conns = (data as
-    | { id: string; user_id: string; email_address: string; last_synced_at: string | null }[]
-    | null) ?? [];
+  const conns =
+    (data as
+      | { id: string; user_id: string; email_address: string; last_synced_at: string | null }[]
+      | null) ?? [];
 
   let newItems = 0;
   let renewed = 0;
@@ -130,9 +131,16 @@ async function applyAutoRenewals(userId: string, orgId: string | null): Promise<
     .select("id, vendor, renewal_date, details")
     .eq("organization_id", orgId)
     .is("archived_at", null);
-  const trackables = ((trackableRows as
-    | { id: string; vendor: string | null; renewal_date: string | null; details: Record<string, unknown> }[]
-    | null) ?? []).filter((t) => (t.details as { source?: string })?.source === "gmail" && t.vendor);
+  const trackables = (
+    (trackableRows as
+      | {
+          id: string;
+          vendor: string | null;
+          renewal_date: string | null;
+          details: Record<string, unknown>;
+        }[]
+      | null) ?? []
+  ).filter((t) => (t.details as { source?: string })?.source === "gmail" && t.vendor);
 
   if (trackables.length === 0) return 0;
 
@@ -142,9 +150,14 @@ async function applyAutoRenewals(userId: string, orgId: string | null): Promise<
     .eq("user_id", userId)
     .eq("status", "pending")
     .in("item_type", ["subscription", "bill"]);
-  const pending = (pendingRows as
-    | { id: string; item_type: string; extracted: { vendor?: string | null; renewal_date?: string | null } }[]
-    | null) ?? [];
+  const pending =
+    (pendingRows as
+      | {
+          id: string;
+          item_type: string;
+          extracted: { vendor?: string | null; renewal_date?: string | null };
+        }[]
+      | null) ?? [];
 
   const norm = (s: string | null | undefined) => (s ?? "").trim().toLowerCase();
   let renewed = 0;

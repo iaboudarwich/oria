@@ -47,9 +47,7 @@ type Row = {
  * All of the user's Gmail connections, oldest first (RLS-scoped). A user may
  * connect several Gmail accounts; each is managed independently.
  */
-export async function listGmailConnections(
-  userId: string,
-): Promise<GmailConnectionSummary[]> {
+export async function listGmailConnections(userId: string): Promise<GmailConnectionSummary[]> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("email_connections")
@@ -57,10 +55,12 @@ export async function listGmailConnections(
     .eq("user_id", userId)
     .eq("provider", "gmail")
     .order("connected_at", { ascending: true });
-  return ((data as Pick<
-    Row,
-    "id" | "email_address" | "status" | "connected_at" | "last_synced_at" | "last_error"
-  >[]) ?? []).map((r) => ({
+  return (
+    (data as Pick<
+      Row,
+      "id" | "email_address" | "status" | "connected_at" | "last_synced_at" | "last_error"
+    >[]) ?? []
+  ).map((r) => ({
     id: r.id,
     email: r.email_address,
     status: r.status,
@@ -71,10 +71,7 @@ export async function listGmailConnections(
 }
 
 /** True when the user already has a connection for this exact email address. */
-export async function isGmailEmailConnected(
-  userId: string,
-  email: string,
-): Promise<boolean> {
+export async function isGmailEmailConnected(userId: string, email: string): Promise<boolean> {
   const admin = createAdminClient();
   const { data } = await admin
     .from("email_connections")
@@ -134,9 +131,7 @@ export async function getGmailConnectionTokens(
     userId: r.user_id,
     email: r.email_address,
     accessToken: decryptToken(r.access_token_encrypted),
-    refreshToken: r.refresh_token_encrypted
-      ? decryptToken(r.refresh_token_encrypted)
-      : null,
+    refreshToken: r.refresh_token_encrypted ? decryptToken(r.refresh_token_encrypted) : null,
     tokenExpiresAt: r.token_expires_at,
     status: r.status,
   };
@@ -154,9 +149,7 @@ export async function getFreshGmailAccessToken(
   const conn = await getGmailConnectionTokens(connectionId);
   if (!conn) return null;
 
-  const expiresMs = conn.tokenExpiresAt
-    ? new Date(conn.tokenExpiresAt).getTime()
-    : 0;
+  const expiresMs = conn.tokenExpiresAt ? new Date(conn.tokenExpiresAt).getTime() : 0;
   const stillValid = expiresMs - Date.now() > 120_000;
   if (stillValid) {
     return { connectionId: conn.id, email: conn.email, accessToken: conn.accessToken };
@@ -187,10 +180,7 @@ export async function getFreshGmailAccessToken(
 }
 
 /** Flag one connection (by id) as needing attention. No token material touched. */
-export async function markConnectionError(
-  connectionId: string,
-  message: string,
-): Promise<void> {
+export async function markConnectionError(connectionId: string, message: string): Promise<void> {
   const admin = createAdminClient();
   await admin
     .from("email_connections")
@@ -366,10 +356,7 @@ export async function setGmailConnectionStatus(
  * cascade-delete with the connection and we need their linkage first. Scoped to
  * the connection so other connections' items are untouched.
  */
-export async function purgeGmailDerivedData(
-  userId: string,
-  connectionId: string,
-): Promise<void> {
+export async function purgeGmailDerivedData(userId: string, connectionId: string): Promise<void> {
   const admin = createAdminClient();
   const { data } = await admin
     .from("email_detected_items")
@@ -377,9 +364,10 @@ export async function purgeGmailDerivedData(
     .eq("user_id", userId)
     .eq("connection_id", connectionId)
     .eq("status", "approved");
-  const rows = (data as
-    | { resulting_trackable_id: string | null; resulting_reminder_id: string | null }[]
-    | null) ?? [];
+  const rows =
+    (data as
+      | { resulting_trackable_id: string | null; resulting_reminder_id: string | null }[]
+      | null) ?? [];
 
   const trackableIds = rows.map((r) => r.resulting_trackable_id).filter((x): x is string => !!x);
   const reminderIds = rows.map((r) => r.resulting_reminder_id).filter((x): x is string => !!x);
@@ -394,9 +382,5 @@ export async function purgeGmailDerivedData(
 
 export async function deleteGmailConnection(userId: string, connectionId: string): Promise<void> {
   const admin = createAdminClient();
-  await admin
-    .from("email_connections")
-    .delete()
-    .eq("id", connectionId)
-    .eq("user_id", userId);
+  await admin.from("email_connections").delete().eq("id", connectionId).eq("user_id", userId);
 }

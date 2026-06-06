@@ -8,10 +8,7 @@ import { TalkCube } from "@/components/dashboard/talk-cube";
 import { TodayPulse } from "@/components/dashboard/today-pulse";
 import { SectionsGrid } from "@/components/dashboard/sections-grid";
 import { getCurrentContext, listUserSpaces } from "@/lib/data/organizations";
-import {
-  countUploadsBySection,
-  listUploadsWithUploader,
-} from "@/lib/data/uploads";
+import { countUploadsBySection, listUploadsWithUploader } from "@/lib/data/uploads";
 import { listAllSections } from "@/lib/data/all-sections";
 import { computeUserInsights } from "@/lib/data/insights";
 import { readDismissedInsightIds } from "@/lib/data/insights-dismiss";
@@ -69,25 +66,19 @@ export default async function DashboardHome() {
   });
   const insightsP = computeUserInsights();
   const dismissedP = readDismissedInsightIds();
-  const suggestionP = ctx
-    ? getActiveSectionSuggestion(ctx.organization.id)
-    : Promise.resolve(null);
-  const mfaEnrolledP = ctx?.profile.id
-    ? readMfaEnrolledAt(ctx.profile.id)
-    : Promise.resolve(null);
-  const upcomingEventsP =
-    ctx?.profile.id
-      ? listUpcomingEvents(ctx.profile.id, ctx.organization.id, 48)
-      : Promise.resolve([]);
+  const suggestionP = ctx ? getActiveSectionSuggestion(ctx.organization.id) : Promise.resolve(null);
+  const mfaEnrolledP = ctx?.profile.id ? readMfaEnrolledAt(ctx.profile.id) : Promise.resolve(null);
+  const upcomingEventsP = ctx?.profile.id
+    ? listUpcomingEvents(ctx.profile.id, ctx.organization.id, 48)
+    : Promise.resolve([]);
   const uploads = await uploadsP;
-  const [sectionCounts, allSections, rawInsights, dismissed, suggestion] =
-    await Promise.all([
-      sectionCountsP,
-      allSectionsP,
-      insightsP,
-      dismissedP,
-      suggestionP,
-    ]);
+  const [sectionCounts, allSections, rawInsights, dismissed, suggestion] = await Promise.all([
+    sectionCountsP,
+    allSectionsP,
+    insightsP,
+    dismissedP,
+    suggestionP,
+  ]);
   const mfaEnrolledAt = await mfaEnrolledP;
   const upcomingEvents = await upcomingEventsP;
   const insights = rawInsights.filter((i) => !dismissed.has(i.id));
@@ -183,10 +174,8 @@ export default async function DashboardHome() {
     ctx &&
     !profile?.has_completed_guided_onboarding &&
     !profile?.onboarding_reprompt_permanent_dismiss &&
-    (
-      !profile?.onboarding_reprompt_dismissed_until ||
-      new Date(profile.onboarding_reprompt_dismissed_until as string) < new Date()
-    );
+    (!profile?.onboarding_reprompt_dismissed_until ||
+      new Date(profile.onboarding_reprompt_dismissed_until as string) < new Date());
 
   return (
     <>

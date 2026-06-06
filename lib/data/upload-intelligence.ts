@@ -90,8 +90,20 @@ function normalizeFilename(filename: string): string {
 }
 
 const NAME_STOPWORDS = new Set([
-  "the", "a", "an", "of", "and", "for", "to", "with", "by",
-  "my", "your", "their", "his", "her",
+  "the",
+  "a",
+  "an",
+  "of",
+  "and",
+  "for",
+  "to",
+  "with",
+  "by",
+  "my",
+  "your",
+  "their",
+  "his",
+  "her",
 ]);
 
 function titleCase(word: string): string {
@@ -128,10 +140,7 @@ function detectPersonInFilename(filename: string): string | null {
   return tokens.map(titleCase).join(" ");
 }
 
-function classify(file: {
-  filename: string;
-  mime_type: string | null;
-}): Classification {
+function classify(file: { filename: string; mime_type: string | null }): Classification {
   const name = file.filename;
   const mime = file.mime_type ?? "";
 
@@ -189,10 +198,7 @@ function classify(file: {
 export async function processUpload(uploadId: string): Promise<void> {
   const supabase = createAdminClient();
 
-  await supabase
-    .from("uploads")
-    .update({ status: "processing" })
-    .eq("id", uploadId);
+  await supabase.from("uploads").update({ status: "processing" }).eq("id", uploadId);
 
   const { data, error: readError } = await supabase
     .from("uploads")
@@ -227,14 +233,10 @@ export async function processUpload(uploadId: string): Promise<void> {
   // Context the user gave at upload time: the optional note + the Smart
   // Section hint (set when uploading through /dashboard/diet or /bills).
   const meta = upload.metadata ?? {};
-  const userDescription =
-    typeof meta.user_description === "string" ? meta.user_description : null;
-  const smartHintRaw =
-    typeof meta.smart_section_hint === "string" ? meta.smart_section_hint : null;
+  const userDescription = typeof meta.user_description === "string" ? meta.user_description : null;
+  const smartHintRaw = typeof meta.smart_section_hint === "string" ? meta.smart_section_hint : null;
   const smartSectionHint: "diet" | "bills" | null =
-    smartHintRaw === "diet" || smartHintRaw === "bills"
-      ? (smartHintRaw as "diet" | "bills")
-      : null;
+    smartHintRaw === "diet" || smartHintRaw === "bills" ? (smartHintRaw as "diet" | "bills") : null;
 
   // ----- Idempotency guard --------------------------------------------------
   // If this upload already has an extraction row, it was processed once
@@ -257,8 +259,7 @@ export async function processUpload(uploadId: string): Promise<void> {
   // ----- Identical-content reuse --------------------------------------------
   // If the exact same bytes were already filed in THIS org, clone that
   // upload's structured records instead of paying for a fresh extraction.
-  const contentHash =
-    typeof meta.content_hash === "string" ? meta.content_hash : null;
+  const contentHash = typeof meta.content_hash === "string" ? meta.content_hash : null;
   if (contentHash) {
     const twin = await findReusableTwinUpload(supabase, {
       organizationId: upload.organization_id,
@@ -326,10 +327,7 @@ export async function processUpload(uploadId: string): Promise<void> {
   if (skipReason) {
     void recordSystemEvent({
       kind: "extraction.skipped",
-      severity:
-        skipReason === "model_error" || skipReason === "empty_result"
-          ? "error"
-          : "warn",
+      severity: skipReason === "model_error" || skipReason === "empty_result" ? "error" : "warn",
       message: skipReason,
       context: {
         uploadId: upload.id,
@@ -374,16 +372,10 @@ export async function processUpload(uploadId: string): Promise<void> {
     // sections then showed nothing for that file. Mark the upload
     // failed so stuck-recovery can retry and the user sees a Failed
     // pill instead of a misleading green check.
-    const insertRes = await supabase
-      .from("memory_items")
-      .insert(itemRows)
-      .select("id");
+    const insertRes = await supabase.from("memory_items").insert(itemRows).select("id");
     if (insertRes.error || (insertRes.data ?? []).length === 0) {
       const msg = insertRes.error?.message ?? "memory_items insert returned 0 rows";
-      await supabase
-        .from("uploads")
-        .update({ status: "failed" })
-        .eq("id", uploadId);
+      await supabase.from("uploads").update({ status: "failed" }).eq("id", uploadId);
       void recordSystemEvent({
         kind: "upload.failed",
         severity: "error",
@@ -404,18 +396,14 @@ export async function processUpload(uploadId: string): Promise<void> {
     const isSingle = aiResult.items.length === 1;
     const single = aiResult.items[0];
     const singleSmart = single.smart_section ?? smartSectionHint ?? null;
-    const singleAutoSection =
-      isSingle
-        ? resolveFinalSection({
-            suggested:
-              single.confidence >= AUTO_FILE_CONFIDENCE
-                ? single.suggested_section
-                : null,
-            documentType: single.document_type,
-            smartSection: singleSmart,
-            sectionHint: null,
-          })
-        : null;
+    const singleAutoSection = isSingle
+      ? resolveFinalSection({
+          suggested: single.confidence >= AUTO_FILE_CONFIDENCE ? single.suggested_section : null,
+          documentType: single.document_type,
+          smartSection: singleSmart,
+          sectionHint: null,
+        })
+      : null;
     const newTitle =
       isSingle && single.title
         ? single.title
@@ -423,9 +411,9 @@ export async function processUpload(uploadId: string): Promise<void> {
           ? multiItemTitle(aiResult.items)
           : null;
 
-    await supabase.from("extractions").insert(
-      extractionFromAi(upload.id, aiResult, dominantType, dominantLanguage),
-    );
+    await supabase
+      .from("extractions")
+      .insert(extractionFromAi(upload.id, aiResult, dominantType, dominantLanguage));
 
     // Clear any stale `extraction_skipped` left over from a prior heuristic
     // fallback so the upload doesn't keep a "we couldn't read this" tag in
@@ -433,8 +421,7 @@ export async function processUpload(uploadId: string): Promise<void> {
     const prevMeta = upload.metadata ?? {};
     const nextMeta: Record<string, unknown> = { ...prevMeta };
     delete nextMeta.extraction_skipped;
-    const metaChanged =
-      JSON.stringify(prevMeta) !== JSON.stringify(nextMeta);
+    const metaChanged = JSON.stringify(prevMeta) !== JSON.stringify(nextMeta);
 
     // For bills/invoices/receipts, force the parent upload's section
     // to match the routing helper (Finance) even if a prior auto-run
@@ -446,29 +433,22 @@ export async function processUpload(uploadId: string): Promise<void> {
       singleSmart === "bills" ||
       single.document_type === "invoice" ||
       single.document_type === "receipt";
-    const shouldOverrideSection =
-      singleAutoSection && (isFinancialDoc || !upload.section);
+    const shouldOverrideSection = singleAutoSection && (isFinancialDoc || !upload.section);
 
     await supabase
       .from("uploads")
       .update({
         status: "filed",
         document_type: dominantType,
-        ...(shouldOverrideSection
-          ? { section: singleAutoSection }
-          : {}),
+        ...(shouldOverrideSection ? { section: singleAutoSection } : {}),
         ...(newTitle && (!upload.title || upload.title === upload.filename)
           ? { title: newTitle }
           : {}),
         ...(dominantLanguage ? { language: dominantLanguage } : {}),
         is_handwritten: anyHandwritten,
         ...(metaChanged ? { metadata: nextMeta } : {}),
-        ...(aiResult.extractionMethod
-          ? { extraction_method: aiResult.extractionMethod }
-          : {}),
-        ...(aiResult.fileHash
-          ? { file_hash: aiResult.fileHash }
-          : {}),
+        ...(aiResult.extractionMethod ? { extraction_method: aiResult.extractionMethod } : {}),
+        ...(aiResult.fileHash ? { file_hash: aiResult.fileHash } : {}),
       })
       .eq("id", uploadId);
 
@@ -521,9 +501,7 @@ export async function processUpload(uploadId: string): Promise<void> {
   }
 
   // ----- Heuristic fallback (no AI available) -------------------------------
-  await supabase
-    .from("extractions")
-    .insert(extractionFromHeuristic(upload.id, heuristic));
+  await supabase.from("extractions").insert(extractionFromHeuristic(upload.id, heuristic));
 
   const heuristicTitle =
     heuristic.document_type === "resume" && heuristic.detected_people[0]
@@ -531,15 +509,8 @@ export async function processUpload(uploadId: string): Promise<void> {
       : null;
 
   let matchedCustomSectionId: string | null = null;
-  if (
-    !heuristic.suggested_section &&
-    !upload.section &&
-    !upload.custom_section_id
-  ) {
-    matchedCustomSectionId = await matchCustomSection(
-      upload.filename,
-      upload.organization_id,
-    );
+  if (!heuristic.suggested_section && !upload.section && !upload.custom_section_id) {
+    matchedCustomSectionId = await matchCustomSection(upload.filename, upload.organization_id);
   }
 
   const nextMetadata = skipReason
@@ -554,9 +525,7 @@ export async function processUpload(uploadId: string): Promise<void> {
       ...(heuristic.suggested_section && !upload.section
         ? { section: heuristic.suggested_section }
         : {}),
-      ...(matchedCustomSectionId
-        ? { custom_section_id: matchedCustomSectionId }
-        : {}),
+      ...(matchedCustomSectionId ? { custom_section_id: matchedCustomSectionId } : {}),
       ...(heuristicTitle && (!upload.title || upload.title === upload.filename)
         ? { title: heuristicTitle }
         : {}),
@@ -635,9 +604,7 @@ function extractionFromAi(
     upload_id: uploadId,
     document_type: documentType,
     language,
-    secondary_languages: Array.from(
-      new Set(ai.items.flatMap((i) => i.secondary_languages)),
-    ),
+    secondary_languages: Array.from(new Set(ai.items.flatMap((i) => i.secondary_languages))),
     is_handwritten: ai.items.some((i) => i.is_handwritten),
     script_hints: [],
     raw_text: raw_text || null,
@@ -655,16 +622,12 @@ function extractionFromAi(
     },
     entities: allEntities,
     action_items: ai.items.flatMap((i) => i.action_items),
-    confidence:
-      ai.items.reduce((acc, i) => acc + i.confidence, 0) / ai.items.length,
+    confidence: ai.items.reduce((acc, i) => acc + i.confidence, 0) / ai.items.length,
     processor: ai.processor,
   };
 }
 
-function extractionFromHeuristic(
-  uploadId: string,
-  heuristic: Classification,
-): ExtractionInsert {
+function extractionFromHeuristic(uploadId: string, heuristic: Classification): ExtractionInsert {
   return {
     upload_id: uploadId,
     document_type: heuristic.document_type,
@@ -674,10 +637,7 @@ function extractionFromHeuristic(
     script_hints: [],
     raw_text: null,
     facts: {},
-    entities:
-      heuristic.detected_people.length > 0
-        ? { people: heuristic.detected_people }
-        : {},
+    entities: heuristic.detected_people.length > 0 ? { people: heuristic.detected_people } : {},
     action_items: [],
     confidence: null,
     processor: "heuristic-v2",
@@ -711,9 +671,9 @@ async function matchCustomSection(
   const rows = (data ?? []) as Row[];
 
   for (const sec of rows) {
-    const profile = (sec.profile && typeof sec.profile === "object"
-      ? (sec.profile as Record<string, unknown>)
-      : {}) as { kinds?: unknown; related?: unknown };
+    const profile = (
+      sec.profile && typeof sec.profile === "object" ? (sec.profile as Record<string, unknown>) : {}
+    ) as { kinds?: unknown; related?: unknown };
 
     const keywords: string[] = [sec.name.toLowerCase()];
 
@@ -735,7 +695,6 @@ async function matchCustomSection(
   }
   return null;
 }
-
 
 /**
  * Latest extraction for an upload (null if no pass has run).
@@ -856,9 +815,7 @@ export function factsToRows(facts: unknown): FactRow[] {
         : String(raw);
     out.push({
       key,
-      label:
-        FACT_LABELS[key] ??
-        key.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
+      label: FACT_LABELS[key] ?? key.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
       value,
     });
   }

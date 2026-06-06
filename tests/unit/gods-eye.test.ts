@@ -45,10 +45,7 @@ describe("isAccountOwnerInPersonal — the sole God's Eye gate", () => {
         organization: { kind: "personal" as const },
         membership: { role },
       } as Parameters<typeof isAccountOwnerInPersonal>[0];
-      expect(
-        isAccountOwnerInPersonal(ctx),
-        `Personal + ${role} should be false`,
-      ).toBe(false);
+      expect(isAccountOwnerInPersonal(ctx), `Personal + ${role} should be false`).toBe(false);
     }
   });
 });

@@ -7,10 +7,7 @@ import { ArrowRightIcon } from "@/components/ui/icon";
 import { MicButton } from "@/components/ui/mic-button";
 import { AutoGrowTextarea } from "@/components/ui/auto-grow-textarea";
 import type { Locale } from "@/i18n/config";
-import {
-  logFromText,
-  type LogFromTextInput,
-} from "@/lib/data/text-log-actions";
+import { logFromText, type LogFromTextInput } from "@/lib/data/text-log-actions";
 
 /**
  * Compact textarea + submit for typed-text logging. The user types a
@@ -58,9 +55,7 @@ export function TextLogForm({
     setError(null);
     setOk(null);
     const timezone =
-      typeof Intl !== "undefined"
-        ? Intl.DateTimeFormat().resolvedOptions().timeZone
-        : "UTC";
+      typeof Intl !== "undefined" ? Intl.DateTimeFormat().resolvedOptions().timeZone : "UTC";
     const nowISO = new Date().toISOString();
     const payload: LogFromTextInput = {
       text: value,
@@ -87,15 +82,13 @@ export function TextLogForm({
 
   return (
     <section>
-      <h2 className="mb-2 px-1 text-eyebrow">
-        {label}
-      </h2>
+      <h2 className="text-eyebrow mb-2 px-1">{label}</h2>
       <form
         onSubmit={(e) => {
           e.preventDefault();
           submit();
         }}
-        className="rounded-2xl border border-line bg-surface-raised p-3 space-y-2"
+        className="space-y-2 rounded-2xl border border-line bg-surface-raised p-3"
       >
         <AutoGrowTextarea
           value={text}
@@ -107,7 +100,7 @@ export function TextLogForm({
           placeholder={placeholder}
           minRows={rows}
           maxRows={10}
-          className="block w-full rounded-xl bg-canvas/40 px-3 py-2 text-[13px] text-ink placeholder:text-ink-faint outline-none transition-base focus:bg-canvas"
+          className="transition-base block w-full rounded-xl bg-canvas/40 px-3 py-2 text-[13px] text-ink outline-none placeholder:text-ink-faint focus:bg-canvas"
           onKeyDown={(e) => {
             if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
               e.preventDefault();
@@ -117,32 +110,34 @@ export function TextLogForm({
         />
         <div className="flex items-center justify-between gap-2">
           <p className="text-[11px] text-ink-faint">
-            {pending
-              ? "Reading…"
-              : error
-                ? <span className="text-claret">{error}</span>
-                : ok
-                  ? <span className="text-ink-muted">{ok}</span>
-                  : "⌘ + Enter to log."}
+            {pending ? (
+              "Reading…"
+            ) : error ? (
+              <span className="text-claret">{error}</span>
+            ) : ok ? (
+              <span className="text-ink-muted">{ok}</span>
+            ) : (
+              "⌘ + Enter to log."
+            )}
           </p>
           <div className="flex items-center gap-2">
-          <MicButton
-            size="sm"
-            onTranscribed={(t) => {
-              setText(text ? `${text} ${t}` : t);
-              setError(null);
-              setOk(null);
-            }}
-            targetLanguage={locale}
-          />
-          <button
-            type="submit"
-            disabled={pending || text.trim().length === 0}
-            className="cta inline-flex h-9 items-center gap-1.5 rounded-xl bg-ink px-3 text-[12.5px] text-surface transition-base hover:bg-ink-soft disabled:cursor-default disabled:opacity-40"
-          >
-            {pending ? "Logging" : "Log"}
-            <ArrowRightIcon size={11} />
-          </button>
+            <MicButton
+              size="sm"
+              onTranscribed={(t) => {
+                setText(text ? `${text} ${t}` : t);
+                setError(null);
+                setOk(null);
+              }}
+              targetLanguage={locale}
+            />
+            <button
+              type="submit"
+              disabled={pending || text.trim().length === 0}
+              className="cta transition-base inline-flex h-9 items-center gap-1.5 rounded-xl bg-ink px-3 text-[12.5px] text-surface hover:bg-ink-soft disabled:cursor-default disabled:opacity-40"
+            >
+              {pending ? "Logging" : "Log"}
+              <ArrowRightIcon size={11} />
+            </button>
           </div>
         </div>
       </form>

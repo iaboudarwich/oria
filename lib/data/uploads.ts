@@ -12,10 +12,12 @@ export type UploadWithUploader = Upload & {
  * Recent uploads with each one's uploader profile attached.
  * Uses two queries to avoid PostgREST relation inference quirks.
  */
-export async function listUploadsWithUploader(opts: {
-  section?: Section;
-  limit?: number;
-} = {}): Promise<UploadWithUploader[]> {
+export async function listUploadsWithUploader(
+  opts: {
+    section?: Section;
+    limit?: number;
+  } = {},
+): Promise<UploadWithUploader[]> {
   const { section, limit = 20 } = opts;
   const ctx = await requireContext();
   const supabase = await createClient();
@@ -41,10 +43,7 @@ export async function listUploadsWithUploader(opts: {
     new Set(uploads.map((u) => u.uploaded_by).filter((id): id is string => !!id)),
   );
 
-  const profileMap = new Map<
-    string,
-    Pick<Profile, "id" | "full_name" | "email">
-  >();
+  const profileMap = new Map<string, Pick<Profile, "id" | "full_name" | "email">>();
   if (uploaderIds.length > 0) {
     const { data: profiles } = await supabase
       .from("profiles")
@@ -58,13 +57,21 @@ export async function listUploadsWithUploader(opts: {
 
   return uploads.map((u) => ({
     ...u,
-    uploader: u.uploaded_by ? profileMap.get(u.uploaded_by) ?? null : null,
+    uploader: u.uploaded_by ? (profileMap.get(u.uploaded_by) ?? null) : null,
   }));
 }
 
 const SECTION_KEYS: Section[] = [
-  "household", "travel", "properties", "staff", "events",
-  "finance", "legal", "personal", "vendors", "health",
+  "household",
+  "travel",
+  "properties",
+  "staff",
+  "events",
+  "finance",
+  "legal",
+  "personal",
+  "vendors",
+  "health",
 ];
 
 /**
@@ -79,9 +86,7 @@ export async function countUploadsBySection(): Promise<Record<Section, number>> 
   // One query instead of one-per-section (was 10 round trips on the dashboard
   // home and inbox). Pull just the section column for the org's live uploads
   // and tally in memory; the section column is tiny and indexed.
-  const counts = Object.fromEntries(
-    SECTION_KEYS.map((s) => [s, 0]),
-  ) as Record<Section, number>;
+  const counts = Object.fromEntries(SECTION_KEYS.map((s) => [s, 0])) as Record<Section, number>;
 
   const { data } = await supabase
     .from("uploads")
@@ -108,9 +113,7 @@ export async function getSignedUrlMap(
   if (uploads.length === 0) return new Map();
   const supabase = await createClient();
   const paths = uploads.map((u) => u.storage_path);
-  const { data } = await supabase.storage
-    .from("uploads")
-    .createSignedUrls(paths, expiresIn);
+  const { data } = await supabase.storage.from("uploads").createSignedUrls(paths, expiresIn);
   const map = new Map<string, string>();
   if (!data) return map;
   data.forEach((d, i) => {

@@ -31,13 +31,33 @@ type Connector = {
 // coming-soon so the user sees the ambition.
 const CONNECTORS: Connector[] = [
   { id: "gmail", name: "Gmail", live: true, href: "/api/oauth/gmail/start" },
-  { id: "gcal", name: "Google Calendar", live: true, href: "/api/oauth/google/connect?service=calendar" },
-  { id: "gdrive", name: "Google Drive", live: true, href: "/api/oauth/google/connect?service=drive" },
+  {
+    id: "gcal",
+    name: "Google Calendar",
+    live: true,
+    href: "/api/oauth/google/connect?service=calendar",
+  },
+  {
+    id: "gdrive",
+    name: "Google Drive",
+    live: true,
+    href: "/api/oauth/google/connect?service=drive",
+  },
   { id: "gdocs", name: "Google Docs", via: "drive" },
   { id: "gsheets", name: "Google Sheets", via: "drive" },
   { id: "gslides", name: "Google Slides", via: "drive" },
-  { id: "outlook", name: "Microsoft Outlook", live: true, href: "/api/oauth/microsoft/connect?service=mail" },
-  { id: "onedrive", name: "Microsoft OneDrive", live: true, href: "/api/oauth/microsoft/connect?service=onedrive" },
+  {
+    id: "outlook",
+    name: "Microsoft Outlook",
+    live: true,
+    href: "/api/oauth/microsoft/connect?service=mail",
+  },
+  {
+    id: "onedrive",
+    name: "Microsoft OneDrive",
+    live: true,
+    href: "/api/oauth/microsoft/connect?service=onedrive",
+  },
   { id: "word", name: "Word", via: "onedrive" },
   { id: "excel", name: "Excel", via: "onedrive" },
   { id: "powerpoint", name: "PowerPoint", via: "onedrive" },
@@ -76,7 +96,12 @@ export function LinkClient({
   const [acknowledged, setAcknowledged] = useState(privacyAcknowledged);
 
   if (!acknowledged) {
-    return <ConnectPrivacyStep onAcknowledge={() => setAcknowledged(true)} onSkip={() => router.push("/dashboard")} />;
+    return (
+      <ConnectPrivacyStep
+        onAcknowledge={() => setAcknowledged(true)}
+        onSkip={() => router.push("/dashboard")}
+      />
+    );
   }
 
   const isConnected = (id: string): boolean =>
@@ -96,7 +121,7 @@ export function LinkClient({
         <button
           type="button"
           onClick={() => router.push("/dashboard")}
-          className="text-[13px] text-ink-muted transition-base hover:text-ink"
+          className="transition-base text-[13px] text-ink-muted hover:text-ink"
         >
           {t("link_skip")}
         </button>
@@ -132,7 +157,7 @@ export function LinkClient({
                 <button
                   type="button"
                   onClick={() => setAiModalOpen(true)}
-                  className="rounded-lg bg-ink px-4 py-2 text-[13px] font-medium text-surface transition-base hover:bg-ink-soft"
+                  className="transition-base rounded-lg bg-ink px-4 py-2 text-[13px] font-medium text-surface hover:bg-ink-soft"
                 >
                   {t("ai_card_connect")}
                 </button>
@@ -205,7 +230,7 @@ export function LinkClient({
         <button
           type="button"
           onClick={() => router.push("/dashboard")}
-          className="mt-7 w-full rounded-xl bg-ink px-5 py-3 text-[15px] font-medium text-surface transition-base hover:bg-ink-soft"
+          className="transition-base mt-7 w-full rounded-xl bg-ink px-5 py-3 text-[15px] font-medium text-surface hover:bg-ink-soft"
         >
           {t("link_done")}
         </button>
@@ -244,7 +269,7 @@ function ConnectPrivacyStep({
         <button
           type="button"
           onClick={onSkip}
-          className="text-[13px] text-ink-muted transition-base hover:text-ink"
+          className="transition-base text-[13px] text-ink-muted hover:text-ink"
         >
           {t("cancel")}
         </button>
@@ -257,7 +282,7 @@ function ConnectPrivacyStep({
 
         <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2">
           <div className="rounded-2xl border border-line bg-surface-raised p-5">
-            <p className="text-[11px] font-medium uppercase tracking-wide text-ink-faint">
+            <p className="text-[11px] font-medium tracking-wide text-ink-faint uppercase">
               {t("do_title")}
             </p>
             <ul className="mt-2.5 space-y-2">
@@ -272,7 +297,7 @@ function ConnectPrivacyStep({
             </ul>
           </div>
           <div className="rounded-2xl border border-line bg-surface-raised p-5">
-            <p className="text-[11px] font-medium uppercase tracking-wide text-ink-faint">
+            <p className="text-[11px] font-medium tracking-wide text-ink-faint uppercase">
               {t("never_title")}
             </p>
             <ul className="mt-2.5 space-y-2">
@@ -294,7 +319,7 @@ function ConnectPrivacyStep({
           type="button"
           onClick={proceed}
           disabled={pending}
-          className="mt-7 w-full rounded-xl bg-ink px-5 py-3 text-[15px] font-medium text-surface transition-base hover:bg-ink-soft disabled:opacity-50"
+          className="transition-base mt-7 w-full rounded-xl bg-ink px-5 py-3 text-[15px] font-medium text-surface hover:bg-ink-soft disabled:opacity-50"
         >
           {t("continue")}
         </button>

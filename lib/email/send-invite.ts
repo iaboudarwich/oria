@@ -102,7 +102,11 @@ export async function sendInviteEmail(input: {
     return { status: "sent" };
   } catch (e) {
     const message = e instanceof Error ? e.message : "Send failed";
-    console.error("[send-invite] resend SDK threw", { message, from, to: maskEmail(input.toEmail) });
+    console.error("[send-invite] resend SDK threw", {
+      message,
+      from,
+      to: maskEmail(input.toEmail),
+    });
     void recordSystemEvent({
       kind: "email.error",
       severity: "error",
@@ -117,11 +121,7 @@ export async function sendInviteEmail(input: {
  * Translate raw Resend errors into something operators can act on.
  * Falls back to the model's message when no specific case matches.
  */
-function friendlyReason(err: {
-  message?: string;
-  statusCode?: number;
-  name?: string;
-}): string {
+function friendlyReason(err: { message?: string; statusCode?: number; name?: string }): string {
   const msg = (err.message ?? "").toLowerCase();
   if (err.statusCode === 403 || msg.includes("not verified") || msg.includes("domain")) {
     return "Sending domain isn't verified on Resend yet.";

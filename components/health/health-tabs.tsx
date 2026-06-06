@@ -30,7 +30,7 @@ export async function HealthTabs({ active }: { active: HealthTab }) {
             key={tab}
             href={tab === "body" ? "/dashboard/health" : `/dashboard/health?tab=${tab}`}
             aria-current={isActive ? "page" : undefined}
-            className={`shrink-0 rounded-xl px-3 py-1.5 text-[13px] transition-base ${
+            className={`transition-base shrink-0 rounded-xl px-3 py-1.5 text-[13px] ${
               isActive
                 ? "bg-ink text-surface"
                 : "text-ink-muted hover:bg-surface-raised hover:text-ink"

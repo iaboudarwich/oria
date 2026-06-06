@@ -8,12 +8,7 @@ import { generateWorkReport } from "@/lib/ai/work-report";
 import { checkDailyAskRequests } from "@/lib/data/quotas";
 import { rateLimit, RATE_PRESETS } from "@/lib/rate-limit";
 import { recordSystemEvent } from "@/lib/data/system-events";
-import {
-  createJob,
-  markJobCompleted,
-  markJobFailed,
-  markJobStarted,
-} from "@/lib/data/jobs";
+import { createJob, markJobCompleted, markJobFailed, markJobStarted } from "@/lib/data/jobs";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -67,10 +62,7 @@ export async function POST(request: Request) {
 
   const quota = await checkDailyAskRequests(ctx.profile.id);
   if (!quota.ok) {
-    return NextResponse.json(
-      { error: "rate_limited", message: quota.message },
-      { status: 429 },
-    );
+    return NextResponse.json({ error: "rate_limited", message: quota.message }, { status: 429 });
   }
 
   const supabase = await createClient();

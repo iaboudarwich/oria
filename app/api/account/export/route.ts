@@ -73,9 +73,7 @@ export async function GET() {
   // ── Uploads ──────────────────────────────────────────────────────────
   const { data: uploadRows } = await admin
     .from("uploads")
-    .select(
-      "id, filename, title, mime_type, size_bytes, section, status, storage_path, created_at",
-    )
+    .select("id, filename, title, mime_type, size_bytes, section, status, storage_path, created_at")
     .eq("uploaded_by", user.id)
     .order("created_at", { ascending: false });
 
@@ -96,21 +94,16 @@ export async function GET() {
     }
   }
 
-  const uploads = (uploadRows ?? []).map(
-    (u: Record<string, unknown>) => ({
-      ...u,
-      download_url:
-        signedUrlMap[u.storage_path as string] ?? null,
-      storage_path: undefined, // don't leak internal bucket paths
-    }),
-  );
+  const uploads = (uploadRows ?? []).map((u: Record<string, unknown>) => ({
+    ...u,
+    download_url: signedUrlMap[u.storage_path as string] ?? null,
+    storage_path: undefined, // don't leak internal bucket paths
+  }));
 
   // ── Reminders ────────────────────────────────────────────────────────
   const { data: reminders } = await admin
     .from("reminders")
-    .select(
-      "id, title, due_at, done, notes, upload_id, organization_id, created_at",
-    )
+    .select("id, title, due_at, done, notes, upload_id, organization_id, created_at")
     .eq("created_by", user.id)
     .order("due_at", { ascending: true });
 
@@ -135,15 +128,11 @@ export async function GET() {
 
   const conversations = (convRows ?? []).map((c: Record<string, unknown>) => ({
     ...c,
-    messages: (messages as Record<string, unknown>[]).filter(
-      (m) => m.conversation_id === c.id,
-    ),
+    messages: (messages as Record<string, unknown>[]).filter((m) => m.conversation_id === c.id),
   }));
 
   // ── Memory items ─────────────────────────────────────────────────────
-  const orgIds = (memberships ?? []).map(
-    (m: { organization_id: string }) => m.organization_id,
-  );
+  const orgIds = (memberships ?? []).map((m: { organization_id: string }) => m.organization_id);
   let memoryItems: unknown[] = [];
   if (orgIds.length > 0) {
     // Only items extracted from uploads the user owns.

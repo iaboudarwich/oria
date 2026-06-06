@@ -32,9 +32,7 @@ describe("sanitizePatch: reshape delete/rename safety", () => {
       orgIds,
       sectionIds,
     );
-    expect(out.renames).toEqual([
-      { kind: "section", id: SEC, from: "Bills", to: "Expenses" },
-    ]);
+    expect(out.renames).toEqual([{ kind: "section", id: SEC, from: "Bills", to: "Expenses" }]);
   });
 
   it("drops a rename with no target or empty new name", () => {

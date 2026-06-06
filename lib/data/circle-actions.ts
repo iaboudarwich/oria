@@ -32,13 +32,7 @@ type Result<T = undefined> =
   | (T extends undefined ? { ok: true } : { ok: true; data: T })
   | { ok: false; error: string };
 
-const ALLOWED_INVITE_ROLES: Role[] = [
-  "household",
-  "assistant",
-  "accountant",
-  "staff",
-  "external",
-];
+const ALLOWED_INVITE_ROLES: Role[] = ["household", "assistant", "accountant", "staff", "external"];
 
 const ALLOWED_INVITE_ACCESS: AccessLevel[] = ["full", "limited", "assigned"];
 
@@ -46,9 +40,11 @@ function isEmail(value: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 }
 
-function parseSectionFields(
-  formData: FormData,
-): { builtin: string[]; custom: string[]; writeSet: Set<string> } {
+function parseSectionFields(formData: FormData): {
+  builtin: string[];
+  custom: string[];
+  writeSet: Set<string>;
+} {
   const builtin = formData.getAll("builtin").map(String).filter(Boolean);
   const custom = formData.getAll("custom").map(String).filter(Boolean);
 
@@ -82,15 +78,20 @@ function parseSectionFields(
 export async function inviteToCircle(
   formData: FormData,
 ): Promise<Result<{ invite: Invite; emailOutcome: EmailOutcome }>> {
-  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  const email = String(formData.get("email") ?? "")
+    .trim()
+    .toLowerCase();
   const display_name =
-    String(formData.get("display_name") ?? "").trim().slice(0, 80) || null;
-  const title = String(formData.get("title") ?? "").trim().slice(0, 40) || null;
+    String(formData.get("display_name") ?? "")
+      .trim()
+      .slice(0, 80) || null;
+  const title =
+    String(formData.get("title") ?? "")
+      .trim()
+      .slice(0, 40) || null;
 
   const roleRaw = String(formData.get("role") ?? "household");
-  const role = ALLOWED_INVITE_ROLES.includes(roleRaw as Role)
-    ? (roleRaw as Role)
-    : "household";
+  const role = ALLOWED_INVITE_ROLES.includes(roleRaw as Role) ? (roleRaw as Role) : "household";
 
   const accessRaw = String(formData.get("access_level") ?? "full");
   const access_level = ALLOWED_INVITE_ACCESS.includes(accessRaw as AccessLevel)
@@ -259,11 +260,13 @@ export async function regenerateInvite(
       .from("invite_sections")
       .select("builtin_section, custom_section_id, can_write")
       .eq("invite_id", prev.id);
-    const rows = ((oldSections ?? []) as Array<{
-      builtin_section: string | null;
-      custom_section_id: string | null;
-      can_write: boolean;
-    }>).map((r) => ({
+    const rows = (
+      (oldSections ?? []) as Array<{
+        builtin_section: string | null;
+        custom_section_id: string | null;
+        can_write: boolean;
+      }>
+    ).map((r) => ({
       invite_id: fresh.id,
       builtin_section: r.builtin_section,
       custom_section_id: r.custom_section_id,
@@ -347,9 +350,7 @@ export async function resendInvite(
  * Edit the access level (and section allowlist for "limited") of an invite
  * that hasn't been accepted yet.
  */
-export async function updateInviteAccess(
-  formData: FormData,
-): Promise<Result> {
+export async function updateInviteAccess(formData: FormData): Promise<Result> {
   const id = String(formData.get("id") ?? "");
   if (!id) return { ok: false, error: "Missing invite id" };
 

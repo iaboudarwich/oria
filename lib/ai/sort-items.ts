@@ -130,7 +130,12 @@ export async function sortItemsWithInstruction(input: {
       },
     );
   } catch (e) {
-    recordAiError({ surface: "sort-items", model: "fast", latencyMs: Date.now() - startedAt, error: e });
+    recordAiError({
+      surface: "sort-items",
+      model: "fast",
+      latencyMs: Date.now() - startedAt,
+      error: e,
+    });
     return null;
   }
   if (!result) return null;
@@ -150,7 +155,8 @@ export async function sortItemsWithInstruction(input: {
     if (typeof o.item_id !== "string" || !validIds.has(o.item_id)) continue;
     if (typeof o.target_kind !== "string") continue;
     if (typeof o.target_key !== "string") continue;
-    if (o.target_kind === "builtin" && !BUILTIN_SECTIONS.includes(o.target_key as Section)) continue;
+    if (o.target_kind === "builtin" && !BUILTIN_SECTIONS.includes(o.target_key as Section))
+      continue;
     if (o.target_kind === "custom" && !validCustom.has(o.target_key)) continue;
     if (o.target_kind === "review" && o.target_key !== "review") continue;
     out.push({

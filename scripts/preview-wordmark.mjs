@@ -25,7 +25,11 @@ async function strip(bg, color, label) {
   const pad = 16;
   const rowH = H + pad;
   const tiles = await Promise.all(
-    weights.map((wt) => sharp(Buffer.from(glyph(wt, color))).png().toBuffer()),
+    weights.map((wt) =>
+      sharp(Buffer.from(glyph(wt, color)))
+        .png()
+        .toBuffer(),
+    ),
   );
   const stripW = (W + 40) * weights.length + pad;
   const base = sharp({

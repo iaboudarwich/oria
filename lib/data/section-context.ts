@@ -51,15 +51,7 @@ export const BUILTIN_DEFAULT_CONTEXT: Record<Section, SectionContext> = {
     purpose: "People who work for you or with you.",
   },
   events: {
-    keywords: [
-      "invitation",
-      "rsvp",
-      "wedding",
-      "birthday",
-      "party",
-      "event",
-      "save the date",
-    ],
+    keywords: ["invitation", "rsvp", "wedding", "birthday", "party", "event", "save the date"],
     purpose: "Personal events, gatherings, invitations.",
   },
   finance: {
@@ -89,15 +81,7 @@ export const BUILTIN_DEFAULT_CONTEXT: Record<Section, SectionContext> = {
     purpose: "People you pay for services.",
   },
   health: {
-    keywords: [
-      "prescription",
-      "rx",
-      "doctor",
-      "medical",
-      "lab",
-      "test result",
-      "insurance card",
-    ],
+    keywords: ["prescription", "rx", "doctor", "medical", "lab", "test result", "insurance card"],
     purpose: "Medical, dental, prescriptions, health records.",
   },
 };
@@ -142,10 +126,7 @@ export async function getOrgSectionContexts(
       .eq("organization_id", organizationId),
   ]);
 
-  const settingsByBuiltin = new Map<
-    Section,
-    { context: unknown; hidden: boolean | null }
-  >();
+  const settingsByBuiltin = new Map<Section, { context: unknown; hidden: boolean | null }>();
   for (const s of (settingsRes.data ?? []) as Array<{
     builtin_section: Section | null;
     custom_section_id: string | null;
@@ -201,10 +182,7 @@ function parseContext(raw: unknown): SectionContext {
   return { keywords, purpose };
 }
 
-function mergeContext(
-  base: SectionContext,
-  extra: SectionContext,
-): SectionContext {
+function mergeContext(base: SectionContext, extra: SectionContext): SectionContext {
   const all = [...base.keywords, ...extra.keywords]
     .map((k) => k.toLowerCase().trim())
     .filter((k) => k.length >= 2);
@@ -214,15 +192,9 @@ function mergeContext(
   };
 }
 
-function contextFromCustomProfile(
-  name: string,
-  profile: unknown,
-): SectionContext {
+function contextFromCustomProfile(name: string, profile: unknown): SectionContext {
   const keywords: string[] = [name.toLowerCase()];
-  const p =
-    profile && typeof profile === "object"
-      ? (profile as Record<string, unknown>)
-      : null;
+  const p = profile && typeof profile === "object" ? (profile as Record<string, unknown>) : null;
   if (p) {
     if (Array.isArray(p.kinds)) {
       for (const k of p.kinds) keywords.push(String(k).toLowerCase());
@@ -236,8 +208,7 @@ function contextFromCustomProfile(
   }
   return {
     keywords: Array.from(new Set(keywords.filter((k) => k.length >= 2))),
-    purpose:
-      p && typeof p.mode === "string" ? `Mode: ${p.mode}` : undefined,
+    purpose: p && typeof p.mode === "string" ? `Mode: ${p.mode}` : undefined,
   };
 }
 
@@ -281,10 +252,32 @@ export function pickBestSection(
 }
 
 const ENRICH_STOPWORDS = new Set([
-  "the", "and", "with", "from", "this", "that", "your", "their",
-  "photo", "scan", "image", "document", "file", "files", "docs",
-  "final", "draft", "copy", "rev", "version", "untitled", "new",
-  "img", "pic", "screenshot", "screen",
+  "the",
+  "and",
+  "with",
+  "from",
+  "this",
+  "that",
+  "your",
+  "their",
+  "photo",
+  "scan",
+  "image",
+  "document",
+  "file",
+  "files",
+  "docs",
+  "final",
+  "draft",
+  "copy",
+  "rev",
+  "version",
+  "untitled",
+  "new",
+  "img",
+  "pic",
+  "screenshot",
+  "screen",
 ]);
 
 /**
@@ -303,12 +296,7 @@ export function distinctiveTokens(text: string): string[] {
         .replace(/[^a-z0-9\s'-]/g, " ")
         .split(/\s+/)
         .map((t) => t.trim().replace(/^[-']+|[-']+$/g, ""))
-        .filter(
-          (t) =>
-            t.length >= 4 &&
-            !ENRICH_STOPWORDS.has(t) &&
-            !/^\d+$/.test(t),
-        ),
+        .filter((t) => t.length >= 4 && !ENRICH_STOPWORDS.has(t) && !/^\d+$/.test(t)),
     ),
   ).slice(0, 4);
 }
@@ -355,19 +343,13 @@ export async function enrichBuiltinSectionFromMove(input: {
     const row = existing as Row | null;
     const prev = parseContext(row?.context);
     const merged = Array.from(
-      new Set([
-        ...prev.keywords.map((k) => k.toLowerCase()),
-        ...tokens,
-      ]),
+      new Set([...prev.keywords.map((k) => k.toLowerCase()), ...tokens]),
     ).slice(0, MAX_LEARNED_KEYWORDS_PER_SECTION);
 
     const nextContext = { ...prev, keywords: merged };
 
     if (row) {
-      await supabase
-        .from("section_settings")
-        .update({ context: nextContext })
-        .eq("id", row.id);
+      await supabase.from("section_settings").update({ context: nextContext }).eq("id", row.id);
     } else {
       await supabase.from("section_settings").insert({
         organization_id: input.organizationId,

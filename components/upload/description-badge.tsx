@@ -14,9 +14,7 @@ export function DescriptionBadge({ metadata }: Props) {
   if (!note) return null;
   return (
     <section>
-      <h2 className="mb-2 px-1 text-eyebrow">
-        Your note
-      </h2>
+      <h2 className="text-eyebrow mb-2 px-1">Your note</h2>
       <div className="rounded-2xl border border-line bg-surface-raised p-4">
         <p className="text-[13px] text-ink">&ldquo;{note}&rdquo;</p>
         <p className="mt-2 inline-flex items-center gap-1.5 text-[11.5px] text-ink-faint">

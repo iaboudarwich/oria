@@ -9,8 +9,14 @@ import { z } from "zod";
 
 // ── Shared atoms ──────────────────────────────────────────────────────────────
 
-const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}/).optional();
-const isoDatetime = z.string().regex(/^\d{4}-\d{2}-\d{2}T/).optional();
+const isoDate = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}/)
+  .optional();
+const isoDatetime = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}T/)
+  .optional();
 const currency = z.string().length(3).optional();
 const amount = z.number().optional();
 
@@ -29,16 +35,7 @@ export const ReceiptSchema = z.object({
   date: isoDate,
   line_items: z.array(lineItem).optional(),
   category_guess: z
-    .enum([
-      "groceries",
-      "dining",
-      "transport",
-      "lodging",
-      "medical",
-      "services",
-      "retail",
-      "other",
-    ])
+    .enum(["groceries", "dining", "transport", "lodging", "medical", "services", "retail", "other"])
     .optional(),
 });
 
@@ -65,9 +62,7 @@ export const LeaseSchema = z.object({
 
 export const ContractSchema = z.object({
   parties: z.array(z.string()),
-  contract_type: z
-    .enum(["employment", "nda", "service", "partnership", "other"])
-    .optional(),
+  contract_type: z.enum(["employment", "nda", "service", "partnership", "other"]).optional(),
   effective_date: isoDate,
   termination_date: isoDate,
   renewal_date: isoDate,
@@ -103,9 +98,7 @@ export const StatementSchema = z.object({
 });
 
 export const IdDocumentSchema = z.object({
-  document_type: z
-    .enum(["passport", "drivers_license", "national_id", "other"])
-    .optional(),
+  document_type: z.enum(["passport", "drivers_license", "national_id", "other"]).optional(),
   number_masked: z.string().optional(), // first chars replaced with *
   expiration_date: isoDate,
   name_on_document: z.string(),
@@ -114,13 +107,9 @@ export const IdDocumentSchema = z.object({
 export const GenericSchema = z.object({
   title: z.string().max(80),
   summary: z.string().optional(),
-  key_dates: z
-    .array(z.object({ label: z.string(), date: z.string() }))
-    .optional(),
+  key_dates: z.array(z.object({ label: z.string(), date: z.string() })).optional(),
   key_amounts: z
-    .array(
-      z.object({ label: z.string(), amount: amount, currency: z.string().optional() })
-    )
+    .array(z.object({ label: z.string(), amount: amount, currency: z.string().optional() }))
     .optional(),
 });
 

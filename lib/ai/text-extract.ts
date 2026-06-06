@@ -71,9 +71,7 @@ export type TextExtractInput = {
   nowISO?: string;
 };
 
-export async function extractFromText(
-  input: TextExtractInput,
-): Promise<ExtractionOutcome> {
+export async function extractFromText(input: TextExtractInput): Promise<ExtractionOutcome> {
   const client = getAnthropic();
   if (!client) return { kind: "skipped", reason: "model_unavailable" };
 
@@ -133,10 +131,7 @@ export async function extractFromText(
   );
   if (!toolUse) return { kind: "skipped", reason: "empty_result" };
 
-  const result = normalize(
-    toolUse.input as Record<string, unknown>,
-    response.model,
-  );
+  const result = normalize(toolUse.input as Record<string, unknown>, response.model);
   if (result.items.length === 0) {
     return { kind: "skipped", reason: "empty_result" };
   }

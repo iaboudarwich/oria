@@ -50,7 +50,7 @@ export function RitualVoiceLog() {
         e.preventDefault();
         submit();
       }}
-      className="rounded-2xl border border-line bg-surface-raised p-3 space-y-2"
+      className="space-y-2 rounded-2xl border border-line bg-surface-raised p-3"
     >
       <AutoGrowTextarea
         value={text}
@@ -62,7 +62,7 @@ export function RitualVoiceLog() {
         placeholder={t("log_ritual_ph")}
         minRows={1}
         maxRows={4}
-        className="block w-full rounded-xl bg-canvas/40 px-3 py-2 text-[13px] text-ink placeholder:text-ink-faint outline-none transition-base focus:bg-canvas"
+        className="transition-base block w-full rounded-xl bg-canvas/40 px-3 py-2 text-[13px] text-ink outline-none placeholder:text-ink-faint focus:bg-canvas"
         onKeyDown={(e) => {
           if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
             e.preventDefault();
@@ -87,7 +87,7 @@ export function RitualVoiceLog() {
           <button
             type="submit"
             disabled={pending || text.trim().length === 0}
-            className="cta inline-flex h-9 items-center gap-1.5 rounded-xl bg-ink px-3 text-[12.5px] text-surface transition-base hover:bg-ink-soft disabled:opacity-40"
+            className="cta transition-base inline-flex h-9 items-center gap-1.5 rounded-xl bg-ink px-3 text-[12.5px] text-surface hover:bg-ink-soft disabled:opacity-40"
           >
             {t("ritual_mark")}
             <ArrowRightIcon size={11} />

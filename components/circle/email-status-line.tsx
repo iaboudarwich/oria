@@ -32,9 +32,7 @@ export function EmailStatusLine({
     <p className="text-[12.5px] text-claret">
       Email didn&apos;t go through
       {outcome.reason ? `. ${outcome.reason}` : "."}{" "}
-      <span className="text-ink-muted">
-        Share the link or code below directly.
-      </span>
+      <span className="text-ink-muted">Share the link or code below directly.</span>
     </p>
   );
 }

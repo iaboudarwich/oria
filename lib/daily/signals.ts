@@ -207,24 +207,19 @@ export async function gatherDaySignals(
     (r) => r.dueAt !== null && new Date(r.dueAt) >= dayStart,
   );
 
-  const expiringTrackables: SignalTrackable[] = (trackablesRes.data ?? []).map(
-    (t) => ({
-      id: t.id as string,
-      title: (t.title as string) ?? "Trackable",
-      renewalDate: t.renewal_date as string,
-      category: (t.category as string) ?? null,
-    }),
-  );
+  const expiringTrackables: SignalTrackable[] = (trackablesRes.data ?? []).map((t) => ({
+    id: t.id as string,
+    title: (t.title as string) ?? "Trackable",
+    renewalDate: t.renewal_date as string,
+    category: (t.category as string) ?? null,
+  }));
 
-  const recurringBills: SignalRecurring[] = (recurringRes.data ?? []).map(
-    (m) => ({
-      id: m.id as string,
-      merchant: (m.merchant as string) ?? null,
-      amount:
-        m.amount_normalized === null ? null : Number(m.amount_normalized),
-      interval: (m.recurring_interval as string) ?? null,
-    }),
-  );
+  const recurringBills: SignalRecurring[] = (recurringRes.data ?? []).map((m) => ({
+    id: m.id as string,
+    merchant: (m.merchant as string) ?? null,
+    amount: m.amount_normalized === null ? null : Number(m.amount_normalized),
+    interval: (m.recurring_interval as string) ?? null,
+  }));
 
   const mapUpload = (u: Record<string, unknown>): SignalUpload => ({
     id: u.id as string,
@@ -234,11 +229,7 @@ export async function gatherDaySignals(
   });
 
   const entityRows = entitiesRes.data ?? [];
-  const actionableDocuments = extractActionableDocuments(
-    entityRows,
-    dayStart,
-    horizon,
-  );
+  const actionableDocuments = extractActionableDocuments(entityRows, dayStart, horizon);
   const docTypeByUpload: Record<string, string> = {};
   for (const row of entityRows) {
     if (typeof row.upload_id === "string" && typeof row.doc_type === "string") {

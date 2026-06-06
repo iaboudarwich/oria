@@ -98,9 +98,7 @@ export async function recordPattern(input: {
  */
 export async function runPatternDecay(now: Date): Promise<{ decayed: number; pruned: number }> {
   const admin = createAdminClient();
-  const dayStart = new Date(
-    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()),
-  );
+  const dayStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
   const { factor, floor } = decayConfig();
 
   const { data } = await admin

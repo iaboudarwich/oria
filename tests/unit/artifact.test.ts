@@ -13,7 +13,10 @@ describe("shouldAttemptArtifact", () => {
 
   it("fires when the user asks for a breakdown or list", () => {
     expect(
-      shouldAttemptArtifact("give me a breakdown by category", "Groceries were a big chunk of it this month."),
+      shouldAttemptArtifact(
+        "give me a breakdown by category",
+        "Groceries were a big chunk of it this month.",
+      ),
     ).toBe(true);
   });
 
@@ -31,7 +34,12 @@ describe("sanitizeArtifact", () => {
   });
 
   it("accepts a stat card", () => {
-    const a = sanitizeArtifact({ type: "stat_card", label: "Total", value: "$763", sublabel: "4 receipts" });
+    const a = sanitizeArtifact({
+      type: "stat_card",
+      label: "Total",
+      value: "$763",
+      sublabel: "4 receipts",
+    });
     expect(a).toEqual({ type: "stat_card", label: "Total", value: "$763", sublabel: "4 receipts" });
   });
 
@@ -67,11 +75,7 @@ describe("sanitizeArtifact", () => {
     const a = sanitizeArtifact({
       type: "table",
       columns: ["Item", "Amount"],
-      rows: [
-        ["Rent", "2500"],
-        ["Phone"],
-        ["Internet", "60"],
-      ],
+      rows: [["Rent", "2500"], ["Phone"], ["Internet", "60"]],
     });
     expect(a).toEqual({
       type: "table",

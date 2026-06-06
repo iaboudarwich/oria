@@ -14,10 +14,11 @@ or connect your email/calendar/cloud; Oria extracts the meaning, files each item
 into the right section, remembers the facts (dates, amounts, vendors, people),
 and answers questions in natural language ("when did I last pay electricity?",
 "what flights do I have?"). The thesis: most people's important information is
-scattered across inboxes, drives, and paper; Oria centralizes and *understands*
+scattered across inboxes, drives, and paper; Oria centralizes and _understands_
 it without forcing the user to organize anything manually.
 
 **End-to-end UX:**
+
 - **Signup** (`/signup`): email + password (Supabase Auth), email verification.
 - **Onboarding** (`/onboarding/demo` -> `/conversation` -> `/preview` -> `/link` -> reveal): a 30s demo, a short adaptive conversation that distils a `UserContext`, an AI-tailored plan shown in a premium build animation, a connectors step, and a one-time reveal of the built dashboard.
 - **Daily use**: upload or forward email; items auto-file into sections (Bills, Health, Travel, etc.); browse sections, the Calendar, Items (entities), and Trackables; ask Oria anything (text or image, with optional deeper reasoning).
@@ -65,6 +66,7 @@ file is in `supabase/migrations/`. Highlights by number:
 - **0065 template_key_refactor** (Round 13: backfilled abstract `template_key` values to `custom`, new CHECK = real-life template ids + `custom`).
 
 **Key tables and columns (current):**
+
 - `profiles`: id (=auth user), email, `has_completed_guided_onboarding`, `onboarding_completed_at`, `mfa_enrolled_at`, `reasoning_mode`, preferences/derived (JSON), `content_language`.
 - `organizations`: id, slug, name, kind (`personal|office|circle`), `parent_kind` (`personal|work`), `is_default_for_kind`, description, `template_key` (real-life ids + `custom` + null), `accent_color`, `shadow_color`, `things_label`, `deleted_at`, created_by.
 - `memberships`: organization_id, user_id, role (`owner|...`), access level.
@@ -91,7 +93,7 @@ rows. Storage RLS aligned in 0042 (audited in Round 12, `scripts/audit-storage-r
 
 ## 4. Codebase map
 
-- `app/` - routes. `app/dashboard/*` (the product: sections, calendar, things [Items], inbox [Uploads], bills, diet, work/*, settings, reshape, ask), `app/onboarding/*` (demo, conversation, preview, link), `app/api/*` (ask, cron/*, OAuth callbacks), `app/(marketing)/*`, `app/login`, `app/signup`, `app/security` (responsible disclosure), `app/privacy`, `app/terms`.
+- `app/` - routes. `app/dashboard/*` (the product: sections, calendar, things [Items], inbox [Uploads], bills, diet, work/_, settings, reshape, ask), `app/onboarding/_`(demo, conversation, preview, link),`app/api/_` (ask, cron/_, OAuth callbacks), `app/(marketing)/*`, `app/login`, `app/signup`, `app/security` (responsible disclosure), `app/privacy`, `app/terms`.
 - `lib/` - `lib/ai/*` (agent, retrieve, classifiers, extract, suggested-questions, ask-images), `lib/ai-providers/*` (the multi-provider abstraction: anthropic, openai, gemini adapters + model-map + errors + types), `lib/data/*` (data-layer reads/writes: organizations, calendar, smart-sections, things-label, space-theme, mode-actions, workspace-templates, audit-log, conversations, user-profile, ...), `lib/onboarding/*` (conversation-engine, templates, template-generator, plan-executor, reshape-plan, types), `lib/integrations/gmail/*`, `lib/google/*`, `lib/microsoft/*`, `lib/cloud/shared/*`, `lib/supabase/*` (server/admin/types), `lib/sections-meta.ts`, `lib/sections/routing.ts`, `lib/rate-limit.ts`, `lib/analytics.ts`.
 - `components/` - `components/dashboard/*` (sidebar, topbar, space-switcher, user-menu), `components/sections/*` (section-view-tabs, trips-view, health-timeline-view, bills-spend-view), `components/calendar/*`, `components/ask/*` (ask-chat), `components/onboarding/*` (patch-preview, build-animation, onboarding-reveal), `components/settings/*` (one panel per concern), `components/connections/*`, `components/command/command-palette.tsx`, `components/ui/*` (icon, button, toast, theme-toggle, mic-button).
 - `messages/{en,ar,fr,es}.json` - i18n (next-intl), key parity enforced.
@@ -118,20 +120,20 @@ rows. Storage RLS aligned in 0042 (audited in Round 12, `scripts/audit-storage-r
 
 ## 6. Integrations and connectors
 
-| Service | Use | Env vars | Status |
-|---|---|---|---|
-| Anthropic | Oria's infrastructure AI (extraction, classifiers, default Ask) | `ANTHROPIC_API_KEY` | live |
-| OpenAI | BYO conversation provider | user key (encrypted in `user_ai_connections`) | live |
-| Gemini | BYO conversation provider (vision since R13) | user key | live |
-| Supabase | DB/Auth/Storage | `NEXT_PUBLIC_SUPABASE_URL`, anon/service keys | live |
-| Google Cloud (Gmail/Calendar/Drive) | OAuth connectors | Google OAuth client id/secret + 3 env vars (per memory: needs creds + Railway sidecar) | live, OAuth verification pending |
-| Microsoft Graph (Outlook/OneDrive) | OAuth connectors | MS client id/secret | live, publisher verification pending |
-| Railway | Python sidecar host | sidecar URL + HMAC secret | live |
-| Vercel | app hosting + cron | project/team ids in memory | live |
-| Resend | transactional email (reminders, verify) | `RESEND_*` | live (skips if unconfigured) |
-| Sentry | error tracking | `SENTRY_*` | live |
-| Upstash | rate limiting | `UPSTASH_*` (or in-memory fallback) | live |
-| Cloudflare | DNS/edge | n/a | live |
+| Service                             | Use                                                             | Env vars                                                                               | Status                               |
+| ----------------------------------- | --------------------------------------------------------------- | -------------------------------------------------------------------------------------- | ------------------------------------ |
+| Anthropic                           | Oria's infrastructure AI (extraction, classifiers, default Ask) | `ANTHROPIC_API_KEY`                                                                    | live                                 |
+| OpenAI                              | BYO conversation provider                                       | user key (encrypted in `user_ai_connections`)                                          | live                                 |
+| Gemini                              | BYO conversation provider (vision since R13)                    | user key                                                                               | live                                 |
+| Supabase                            | DB/Auth/Storage                                                 | `NEXT_PUBLIC_SUPABASE_URL`, anon/service keys                                          | live                                 |
+| Google Cloud (Gmail/Calendar/Drive) | OAuth connectors                                                | Google OAuth client id/secret + 3 env vars (per memory: needs creds + Railway sidecar) | live, OAuth verification pending     |
+| Microsoft Graph (Outlook/OneDrive)  | OAuth connectors                                                | MS client id/secret                                                                    | live, publisher verification pending |
+| Railway                             | Python sidecar host                                             | sidecar URL + HMAC secret                                                              | live                                 |
+| Vercel                              | app hosting + cron                                              | project/team ids in memory                                                             | live                                 |
+| Resend                              | transactional email (reminders, verify)                         | `RESEND_*`                                                                             | live (skips if unconfigured)         |
+| Sentry                              | error tracking                                                  | `SENTRY_*`                                                                             | live                                 |
+| Upstash                             | rate limiting                                                   | `UPSTASH_*` (or in-memory fallback)                                                    | live                                 |
+| Cloudflare                          | DNS/edge                                                        | n/a                                                                                    | live                                 |
 
 `CRON_SECRET` guards all `/api/cron/*` routes.
 
@@ -183,6 +185,7 @@ eligibility, surfaced in Settings -> Preferences "Recent Setup Changes". **Purge
 **Tabs (R14 order):** General, Connections, AI, Appearance, Preferences,
 Sections, Circles, Workspaces, Storage, Security, Privacy
 (`app/dashboard/settings/page.tsx` TABS). Reshape card on the General landing.
+
 - **General**: modes, sidebar prefs (Timeline toggle - "Recent activity across the active space."), Theme (light/dark/system), Language, admin (admin only).
 - **Connections**: `ConnectionsPanel` (Gmail hub), `CloudServicesPanel` (Google Calendar+Drive grouped by account), `MicrosoftServicesPanel` (Outlook mail/calendar + OneDrive). Status dots: active=sage, paused=ink-faint, error/revoked=claret. (Full hub redesign deferred - see round-14 report.)
 - **AI**: BYO provider connection + reasoning mode.
@@ -203,7 +206,7 @@ Sections, Circles, Workspaces, Storage, Security, Privacy
 ## 12. Storage and quotas
 
 Originals stored in Supabase Storage (RLS-scoped, encrypted at rest). Cloud files
-are *referenced/indexed* (`cloud_files`), not copied. Soft-deleted uploads sit in
+are _referenced/indexed_ (`cloud_files`), not copied. Soft-deleted uploads sit in
 Trash for 30 days then purge. Per-user storage quota + daily Ask request quota
 (`lib/data/quotas.ts`). Reshape soft-deletes purge after 24h.
 
@@ -295,4 +298,4 @@ commits. Branch strategy: trunk-based on `main`.
 
 ---
 
-*Generated at the end of Round 14. For per-round detail see `docs/audits/round-N-2026-06.md` (N = 7..14).*
+_Generated at the end of Round 14. For per-round detail see `docs/audits/round-N-2026-06.md` (N = 7..14)._

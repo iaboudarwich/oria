@@ -44,10 +44,7 @@ Respond with ONLY the JSON array, nothing else.`;
     if (!Array.isArray(parsed) || parsed.length === 0) return defaultSchema();
     // Validate each field has required keys
     return parsed.filter(
-      (f) =>
-        typeof f.key === "string" &&
-        typeof f.label === "string" &&
-        typeof f.type === "string",
+      (f) => typeof f.key === "string" && typeof f.label === "string" && typeof f.type === "string",
     );
   } catch {
     return defaultSchema();

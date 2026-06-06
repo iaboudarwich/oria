@@ -7,11 +7,7 @@ import {
 import { listUserSpaces } from "@/lib/data/organizations";
 import { isMicrosoftOAuthConfigured } from "@/lib/microsoft/oauth";
 import { isTokenCryptoConfigured } from "@/lib/security/token-crypto";
-import {
-  CloudConnectionRow,
-  type SpaceChoice,
-  type CloudRowLabels,
-} from "./cloud-connection-row";
+import { CloudConnectionRow, type SpaceChoice, type CloudRowLabels } from "./cloud-connection-row";
 import { OutlookMailRow, type OutlookMailLabels } from "./outlook-mail-row";
 import { syncedLabel } from "@/lib/cloud/shared/format";
 
@@ -33,7 +29,10 @@ export async function MicrosoftServicesPanel({ userId }: { userId: string }) {
   ]);
 
   const t = await getTranslations("connections");
-  const spaces: SpaceChoice[] = spacesRaw.map((s) => ({ id: s.organization.id, name: s.organization.name }));
+  const spaces: SpaceChoice[] = spacesRaw.map((s) => ({
+    id: s.organization.id,
+    name: s.organization.name,
+  }));
 
   const emails = new Set<string>();
   for (const m of mail) emails.add(m.email);
@@ -99,16 +98,26 @@ export async function MicrosoftServicesPanel({ userId }: { userId: string }) {
         const cal = calByEmail.get(email);
         const drv = driveByEmail.get(email);
         return (
-          <div key={email} className="space-y-2 rounded-2xl border border-line bg-surface-raised p-4">
+          <div
+            key={email}
+            className="space-y-2 rounded-2xl border border-line bg-surface-raised p-4"
+          >
             <p className="text-[13.5px] font-semibold text-ink">{email}</p>
 
             {mailConn ? (
               <OutlookMailRow
-                view={{ id: mailConn.id, status: mailConn.status, lastSyncLabel: syncedLabel(mailConn.lastSyncedAt) }}
+                view={{
+                  id: mailConn.id,
+                  status: mailConn.status,
+                  lastSyncLabel: syncedLabel(mailConn.lastSyncedAt),
+                }}
                 labels={mailLabels}
               />
             ) : (
-              <a href={connectLink("mail", email)} className="inline-flex h-8 items-center rounded-lg border border-line px-3 text-[12px] text-ink transition-base hover:bg-canvas">
+              <a
+                href={connectLink("mail", email)}
+                className="transition-base inline-flex h-8 items-center rounded-lg border border-line px-3 text-[12px] text-ink hover:bg-canvas"
+              >
                 {t("add_outlook")}
               </a>
             )}
@@ -116,7 +125,10 @@ export async function MicrosoftServicesPanel({ userId }: { userId: string }) {
             {cal ? (
               <CloudConnectionRow view={rowView(cal)} spaces={spaces} labels={rowLabels} />
             ) : (
-              <a href={connectLink("calendar", email)} className="inline-flex h-8 items-center rounded-lg border border-line px-3 text-[12px] text-ink transition-base hover:bg-canvas">
+              <a
+                href={connectLink("calendar", email)}
+                className="transition-base inline-flex h-8 items-center rounded-lg border border-line px-3 text-[12px] text-ink hover:bg-canvas"
+              >
                 {t("add_outlook_calendar")}
               </a>
             )}
@@ -124,7 +136,10 @@ export async function MicrosoftServicesPanel({ userId }: { userId: string }) {
             {drv ? (
               <CloudConnectionRow view={rowView(drv)} spaces={spaces} labels={rowLabels} />
             ) : (
-              <a href={connectLink("onedrive", email)} className="inline-flex h-8 items-center rounded-lg border border-line px-3 text-[12px] text-ink transition-base hover:bg-canvas">
+              <a
+                href={connectLink("onedrive", email)}
+                className="transition-base inline-flex h-8 items-center rounded-lg border border-line px-3 text-[12px] text-ink hover:bg-canvas"
+              >
                 {t("add_onedrive")}
               </a>
             )}

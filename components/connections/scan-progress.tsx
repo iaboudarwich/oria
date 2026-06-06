@@ -95,11 +95,15 @@ export function ScanProgress({
     const processed = agg.emailsProcessed;
     const pct = total > 0 ? Math.min(100, Math.round((processed / total) * 100)) : 0;
     const scanningCount = Math.max(1, agg.inboxesScanning);
-    const title = scanningCount > 1 ? t("scanning_inboxes", { count: scanningCount }) : t("scanning_title");
+    const title =
+      scanningCount > 1 ? t("scanning_inboxes", { count: scanningCount }) : t("scanning_title");
     return (
       <div className="rounded-xl border border-line bg-surface-raised px-4 py-3">
         <div className="flex items-center gap-3">
-          <span className="h-4 w-4 animate-spin rounded-full border-2 border-line-strong border-t-ink" aria-hidden />
+          <span
+            className="h-4 w-4 animate-spin rounded-full border-2 border-line-strong border-t-ink"
+            aria-hidden
+          />
           <div className="min-w-0 flex-1">
             <p className="text-[13.5px] font-medium text-ink">{title}</p>
             <p className="text-[12px] text-ink-muted">
@@ -128,7 +132,7 @@ export function ScanProgress({
         <button
           type="button"
           onClick={rescan}
-          className="shrink-0 rounded-lg border border-line-strong px-3 py-1.5 text-[12px] font-medium text-ink transition-base hover:bg-surface"
+          className="transition-base shrink-0 rounded-lg border border-line-strong px-3 py-1.5 text-[12px] font-medium text-ink hover:bg-surface"
         >
           {t("rescan")}
         </button>
@@ -143,7 +147,7 @@ export function ScanProgress({
       <button
         type="button"
         onClick={rescan}
-        className="shrink-0 rounded-lg border border-line-strong px-3 py-1.5 text-[12px] font-medium text-ink transition-base hover:bg-surface"
+        className="transition-base shrink-0 rounded-lg border border-line-strong px-3 py-1.5 text-[12px] font-medium text-ink hover:bg-surface"
       >
         {t("rescan")}
       </button>

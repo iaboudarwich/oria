@@ -112,9 +112,9 @@ export function ReportDialog({ open, onClose, userId }: Props) {
       <div
         aria-hidden
         onClick={() => status !== "sending" && onClose()}
-        className="absolute inset-0 bg-ink/40 backdrop-blur-sm animate-fade-in"
+        className="animate-fade-in absolute inset-0 bg-ink/40 backdrop-blur-sm"
       />
-      <div className="relative z-[121] w-full max-w-md rounded-2xl border border-line bg-surface-raised p-6 shadow-xl animate-scale-in">
+      <div className="animate-scale-in relative z-[121] w-full max-w-md rounded-2xl border border-line bg-surface-raised p-6 shadow-xl">
         {status === "done" ? (
           <div className="flex flex-col items-center justify-center py-6 text-center">
             <p className="text-title text-ink">{t("thanks")}</p>
@@ -122,24 +122,21 @@ export function ReportDialog({ open, onClose, userId }: Props) {
         ) : (
           <>
             <div className="flex items-start justify-between">
-              <h2
-                id="report-dialog-title"
-                className="text-title text-ink"
-              >
+              <h2 id="report-dialog-title" className="text-title text-ink">
                 {t("title")}
               </h2>
               <button
                 type="button"
                 onClick={onClose}
                 aria-label={t("close")}
-                className="-mr-1 -mt-1 inline-flex h-8 w-8 items-center justify-center rounded-lg text-ink-faint transition-base hover:text-ink"
+                className="transition-base -mt-1 -mr-1 inline-flex h-8 w-8 items-center justify-center rounded-lg text-ink-faint hover:text-ink"
               >
                 <CloseIcon size={18} />
               </button>
             </div>
 
             <label className="mt-4 block">
-              <span className="mb-1.5 block text-body-sm text-ink-muted">
+              <span className="text-body-sm mb-1.5 block text-ink-muted">
                 {t("description_label")}
               </span>
               <textarea
@@ -148,12 +145,12 @@ export function ReportDialog({ open, onClose, userId }: Props) {
                 onChange={(e) => setText(e.target.value)}
                 rows={4}
                 placeholder={t("description_placeholder")}
-                className="block w-full resize-none rounded-xl border border-line-strong bg-surface px-3.5 py-2.5 text-body text-ink placeholder:text-ink-faint outline-none transition-base focus:border-ink"
+                className="text-body transition-base block w-full resize-none rounded-xl border border-line-strong bg-surface px-3.5 py-2.5 text-ink outline-none placeholder:text-ink-faint focus:border-ink"
               />
             </label>
 
             {context ? (
-              <div className="mt-3 rounded-xl border border-line bg-canvas px-3.5 py-3 text-body-sm text-ink-muted">
+              <div className="text-body-sm mt-3 rounded-xl border border-line bg-canvas px-3.5 py-3 text-ink-muted">
                 <p className="mb-1.5 text-ink-soft">{t("context_note")}</p>
                 <dl className="space-y-0.5">
                   <ContextRow label={t("url")} value={context.url} />

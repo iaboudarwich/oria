@@ -201,10 +201,6 @@
       "Bash(jobs)",
       "Bash(python3 -c \"import json; d=json.load\\(open\\('messages/en.json'\\)\\)['settings_help']; print\\(sorted\\(d.keys\\(\\)\\)\\)\")"
     ],
-    "deny": [
-      "Bash(rm:*)",
-      "Bash(curl:*)",
-      "Bash(wget:*)"
-    ]
+    "deny": ["Bash(rm:*)", "Bash(curl:*)", "Bash(wget:*)"]
   }
 }

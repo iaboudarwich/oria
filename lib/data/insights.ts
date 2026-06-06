@@ -51,9 +51,7 @@ export async function computeUserInsights(): Promise<Insight[]> {
   const [spending, leases, diet, recurring] = await Promise.all([
     detectSpendingDelta(supabase, orgId).catch(() => null),
     detectExpiringDocs(supabase, orgId).catch(() => []),
-    isWork
-      ? Promise.resolve(null)
-      : detectDietTrend(supabase, orgId).catch(() => null),
+    isWork ? Promise.resolve(null) : detectDietTrend(supabase, orgId).catch(() => null),
     detectOverdueRecurring(supabase, orgId).catch(() => null),
   ]);
 
@@ -76,10 +74,7 @@ type SBClient = Awaited<ReturnType<typeof createClient>>;
  * Only flags when there's enough signal on both sides AND the delta
  * is at least 15%.
  */
-async function detectSpendingDelta(
-  supabase: SBClient,
-  orgId: string,
-): Promise<Insight | null> {
+async function detectSpendingDelta(supabase: SBClient, orgId: string): Promise<Insight | null> {
   const now = Date.now();
   const since60ISO = new Date(now - 60 * 24 * 3600 * 1000).toISOString();
   const split = now - 30 * 24 * 3600 * 1000;
@@ -125,9 +120,7 @@ async function detectSpendingDelta(
   return {
     id: `spending-${direction}-${pct}`,
     kind: "spending.delta",
-    message: `Spending ${word} ${pct}% vs the previous 30 days${
-      currency ? ` (${currency})` : ""
-    }.`,
+    message: `Spending ${word} ${pct}% vs the previous 30 days${currency ? ` (${currency})` : ""}.`,
     href: "/dashboard/work/analysis",
   };
 }
@@ -137,10 +130,7 @@ async function detectSpendingDelta(
  * for these document types, see lib/ai/extract.ts) falls in the next
  * 30 days. One insight per row, capped at two.
  */
-async function detectExpiringDocs(
-  supabase: SBClient,
-  orgId: string,
-): Promise<Insight[]> {
+async function detectExpiringDocs(supabase: SBClient, orgId: string): Promise<Insight[]> {
   const now = new Date();
   const in30 = new Date(now.getTime() + 30 * 24 * 3600 * 1000);
   // DocumentType only has "contract", leases come through with that
@@ -169,15 +159,12 @@ async function detectExpiringDocs(
   for (const r of (data ?? []) as Row[]) {
     const days = Math.max(
       0,
-      Math.round(
-        (new Date(r.occurred_at).getTime() - Date.now()) / (24 * 3600 * 1000),
-      ),
+      Math.round((new Date(r.occurred_at).getTime() - Date.now()) / (24 * 3600 * 1000)),
     );
     const isLease = /\blease\b|\brental\b|\btenant\b/i.test(r.title);
     const noun = isLease ? "Lease" : "Contract";
     const subject = r.merchant || r.title || noun;
-    const when =
-      days === 0 ? "today" : days === 1 ? "in 1 day" : `in ${days} days`;
+    const when = days === 0 ? "today" : days === 1 ? "in 1 day" : `in ${days} days`;
     out.push({
       id: `expiring-${r.id}`,
       kind: isLease ? "lease.expiring" : "contract.expiring",
@@ -193,10 +180,7 @@ async function detectExpiringDocs(
  * Workspaces because Diet is a personal-mode concept (smart routing
  * never tags Diet items inside an office org).
  */
-async function detectDietTrend(
-  supabase: SBClient,
-  orgId: string,
-): Promise<Insight | null> {
+async function detectDietTrend(supabase: SBClient, orgId: string): Promise<Insight | null> {
   const now = Date.now();
   const since14ISO = new Date(now - 14 * 24 * 3600 * 1000).toISOString();
   const split = now - 7 * 24 * 3600 * 1000;
@@ -248,18 +232,11 @@ async function detectDietTrend(
  * Recurring items whose last occurrence is past the expected cadence.
  * We surface only the worst-overdue one so the strip stays calm.
  */
-async function detectOverdueRecurring(
-  supabase: SBClient,
-  orgId: string,
-): Promise<Insight | null> {
-  const since180ISO = new Date(
-    Date.now() - 180 * 24 * 3600 * 1000,
-  ).toISOString();
+async function detectOverdueRecurring(supabase: SBClient, orgId: string): Promise<Insight | null> {
+  const since180ISO = new Date(Date.now() - 180 * 24 * 3600 * 1000).toISOString();
   const { data } = await supabase
     .from("memory_items")
-    .select(
-      "merchant, occurred_at, recurring_interval, upload_id, document_type",
-    )
+    .select("merchant, occurred_at, recurring_interval, upload_id, document_type")
     .eq("organization_id", orgId)
     .eq("is_recurring", true)
     .is("deleted_at", null)
@@ -301,8 +278,7 @@ async function detectOverdueRecurring(
     }
   }
 
-  let worst: { merchant: string; overdueDays: number; upload_id: string | null } | null =
-    null;
+  let worst: { merchant: string; overdueDays: number; upload_id: string | null } | null = null;
   const now = Date.now();
   for (const b of byMerchant.values()) {
     const expectedNext = b.last + b.intervalDays * 24 * 3600 * 1000;
@@ -323,9 +299,7 @@ async function detectOverdueRecurring(
     message: `${worst.merchant} usually arrives by now, last one was ${
       worst.overdueDays
     } day${worst.overdueDays === 1 ? "" : "s"} ago.`,
-    href: worst.upload_id
-      ? `/dashboard/uploads/${worst.upload_id}`
-      : "/dashboard/calendar",
+    href: worst.upload_id ? `/dashboard/uploads/${worst.upload_id}` : "/dashboard/calendar",
   };
 }
 

@@ -13,10 +13,7 @@ export const runtime = "nodejs";
  *   GET /api/uploads/:id/status
  *   → { status, items_count, sorted_count, unsorted_count }
  */
-export async function GET(
-  _request: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const ctx = await getCurrentContext();
   if (!ctx) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });

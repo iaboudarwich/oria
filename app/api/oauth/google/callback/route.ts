@@ -80,7 +80,11 @@ export async function GET(request: Request) {
     // Calendar: kick off the first sync in the background so events appear
     // without waiting for the hourly cron. Drive waits for the user to pick.
     if (service === "calendar") {
-      after(syncUserCalendars(user.id).then(() => undefined).catch(() => undefined));
+      after(
+        syncUserCalendars(user.id)
+          .then(() => undefined)
+          .catch(() => undefined),
+      );
     }
 
     const notice = service === "drive" ? "drive_connected" : "calendar_connected";

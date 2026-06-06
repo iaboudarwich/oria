@@ -83,8 +83,7 @@ export async function GET(req: NextRequest) {
 
         return { id: job.id, ok: true };
       } catch (err) {
-        const message =
-          err instanceof Error ? err.message : "Cron extraction failed";
+        const message = err instanceof Error ? err.message : "Cron extraction failed";
 
         if (job.retry_count < MAX_RETRIES) {
           await requeueJobForRetry(job.id, message, job.retry_count);
@@ -92,10 +91,7 @@ export async function GET(req: NextRequest) {
           await markJobFailed(job.id, message);
           try {
             const admin = createAdminClient();
-            await admin
-              .from("uploads")
-              .update({ status: "failed" })
-              .eq("id", job.upload_id);
+            await admin.from("uploads").update({ status: "failed" }).eq("id", job.upload_id);
             void recordSystemEvent({
               kind: "upload.failed",
               severity: "error",
@@ -143,8 +139,7 @@ export async function GET(req: NextRequest) {
         void runDetectTrackable(job.upload_id).catch(() => {});
         return { id: job.id, ok: true };
       } catch (err) {
-        const message =
-          err instanceof Error ? err.message : "Entity extraction failed";
+        const message = err instanceof Error ? err.message : "Entity extraction failed";
         if (job.retry_count < MAX_RETRIES) {
           await requeueJobForRetry(job.id, message, job.retry_count);
         } else {
@@ -177,8 +172,7 @@ export async function GET(req: NextRequest) {
         }).catch(() => {});
         return { id: job.id, ok: true };
       } catch (err) {
-        const message =
-          err instanceof Error ? err.message : "Image analysis failed";
+        const message = err instanceof Error ? err.message : "Image analysis failed";
         if (job.retry_count < MAX_RETRIES) {
           await requeueJobForRetry(job.id, message, job.retry_count);
         } else {
@@ -203,8 +197,7 @@ export async function GET(req: NextRequest) {
         await markJobCompleted(job.id);
         return { id: job.id, ok: true };
       } catch (err) {
-        const message =
-          err instanceof Error ? err.message : "Categorization failed";
+        const message = err instanceof Error ? err.message : "Categorization failed";
         if (job.retry_count < MAX_RETRIES) {
           await requeueJobForRetry(job.id, message, job.retry_count);
         } else {

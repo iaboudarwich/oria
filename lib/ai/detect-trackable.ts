@@ -2,9 +2,17 @@ import "server-only";
 import { getAnthropic, getModel } from "@/lib/ai/anthropic";
 
 export type TrackableCategory =
-  | "insurance" | "subscription" | "lease" | "membership"
-  | "certification" | "id_document" | "contract" | "warranty"
-  | "wishlist" | "goal" | "other";
+  | "insurance"
+  | "subscription"
+  | "lease"
+  | "membership"
+  | "certification"
+  | "id_document"
+  | "contract"
+  | "warranty"
+  | "wishlist"
+  | "goal"
+  | "other";
 
 export type TrackableDetectionResult = {
   is_trackable: boolean;
@@ -22,18 +30,18 @@ export type TrackableDetectionResult = {
 
 /** Default lead times by category (days before renewal_date). */
 export const TRACKABLE_LEAD_DAYS: Record<TrackableCategory, number> = {
-  insurance:     90,
-  lease:         90,
-  id_document:   60,
+  insurance: 90,
+  lease: 90,
+  id_document: 60,
   certification: 60,
-  contract:      60,
-  membership:    30,
-  warranty:      30,
-  subscription:  14,
+  contract: 60,
+  membership: 30,
+  warranty: 30,
+  subscription: 14,
   // Wishlist + goal have no renewal date; lead time is unused but kept defined.
-  wishlist:      30,
-  goal:          30,
-  other:         30,
+  wishlist: 30,
+  goal: 30,
+  other: 30,
 };
 
 /**
@@ -86,8 +94,7 @@ If is_trackable is false, you can omit other fields or set them to null.`;
       max_tokens: 400,
       messages: [{ role: "user", content: prompt }],
     });
-    const raw =
-      msg.content[0]?.type === "text" ? msg.content[0].text.trim() : "{}";
+    const raw = msg.content[0]?.type === "text" ? msg.content[0].text.trim() : "{}";
     const cleaned = raw
       .replace(/^```(?:json)?\s*/i, "")
       .replace(/\s*```$/, "")

@@ -24,9 +24,6 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const [google, outlook] = await Promise.all([
-    syncAllCalendars(),
-    syncAllOutlookCalendars(),
-  ]);
+  const [google, outlook] = await Promise.all([syncAllCalendars(), syncAllOutlookCalendars()]);
   return NextResponse.json({ google, outlook });
 }

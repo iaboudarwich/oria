@@ -2,9 +2,7 @@ import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import { requireContext } from "./organizations";
 
-export type FieldType =
-  | "text" | "number" | "date" | "currency"
-  | "enum" | "boolean" | "long_text";
+export type FieldType = "text" | "number" | "date" | "currency" | "enum" | "boolean" | "long_text";
 
 export type FieldDef = {
   key: string;
@@ -72,7 +70,7 @@ export async function getEntityType(id: string): Promise<EntityType | null> {
     .eq("organization_id", ctx.organization.id)
     .is("archived_at", null)
     .maybeSingle();
-  return (data as EntityType | null);
+  return data as EntityType | null;
 }
 
 // ── Entities ──────────────────────────────────────────────────────────────────
@@ -100,12 +98,10 @@ export async function getEntity(id: string): Promise<Entity | null> {
     .eq("organization_id", ctx.organization.id)
     .is("archived_at", null)
     .maybeSingle();
-  return (data as Entity | null);
+  return data as Entity | null;
 }
 
-export async function countEntitiesByType(
-  orgId: string,
-): Promise<Record<string, number>> {
+export async function countEntitiesByType(orgId: string): Promise<Record<string, number>> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("entities")

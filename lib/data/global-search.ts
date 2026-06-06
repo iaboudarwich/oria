@@ -3,10 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { requireContext } from "./organizations";
 import { searchUploads, type SearchResult } from "./search";
 import { getSignedUrlMap } from "./uploads";
-import {
-  DEFAULT_BUILTIN_ORDER,
-  listAllSections,
-} from "./all-sections";
+import { DEFAULT_BUILTIN_ORDER, listAllSections } from "./all-sections";
 import type { Reminder, Section } from "@/lib/supabase/types";
 
 const BUILTIN_LABELS: Record<Section, string> = {
@@ -60,12 +57,42 @@ export type LiveSearchResult = {
 const STATIC_PAGES: { id: string; label: string; href: string; keywords: string[] }[] = [
   { id: "home", label: "Home", href: "/dashboard", keywords: ["home", "dashboard"] },
   { id: "upload", label: "Upload", href: "/dashboard/inbox", keywords: ["upload", "drop", "add"] },
-  { id: "timeline", label: "Timeline", href: "/dashboard/timeline", keywords: ["timeline", "feed", "activity"] },
-  { id: "reminders", label: "Reminders", href: "/dashboard/reminders", keywords: ["reminder", "reminders", "todo", "task"] },
-  { id: "circle", label: "Circle", href: "/dashboard/circle", keywords: ["circle", "family", "share", "invite"] },
-  { id: "trash", label: "Deleted", href: "/dashboard/trash", keywords: ["trash", "deleted", "bin"] },
-  { id: "settings", label: "Settings", href: "/dashboard/settings", keywords: ["settings", "section", "manage", "organize"] },
-  { id: "private", label: "Private Oria", href: "/dashboard/private", keywords: ["private", "self-hosted", "local"] },
+  {
+    id: "timeline",
+    label: "Timeline",
+    href: "/dashboard/timeline",
+    keywords: ["timeline", "feed", "activity"],
+  },
+  {
+    id: "reminders",
+    label: "Reminders",
+    href: "/dashboard/reminders",
+    keywords: ["reminder", "reminders", "todo", "task"],
+  },
+  {
+    id: "circle",
+    label: "Circle",
+    href: "/dashboard/circle",
+    keywords: ["circle", "family", "share", "invite"],
+  },
+  {
+    id: "trash",
+    label: "Deleted",
+    href: "/dashboard/trash",
+    keywords: ["trash", "deleted", "bin"],
+  },
+  {
+    id: "settings",
+    label: "Settings",
+    href: "/dashboard/settings",
+    keywords: ["settings", "section", "manage", "organize"],
+  },
+  {
+    id: "private",
+    label: "Private Oria",
+    href: "/dashboard/private",
+    keywords: ["private", "self-hosted", "local"],
+  },
 ];
 
 function relativeTime(iso: string): string {
@@ -115,9 +142,7 @@ export async function liveSearch(query: string): Promise<LiveSearchResult> {
       id: `${s.ref.kind}:${s.ref.key}`,
       name: s.name,
       href: s.href,
-      kind: (s.ref.kind === "review" ? "builtin" : s.ref.kind) as
-        | "builtin"
-        | "custom",
+      kind: (s.ref.kind === "review" ? "builtin" : s.ref.kind) as "builtin" | "custom",
     }));
 
   // 3. Reminders. match by title.
@@ -130,9 +155,7 @@ export async function liveSearch(query: string): Promise<LiveSearchResult> {
     .order("due_at", { ascending: true, nullsFirst: false })
     .limit(5);
   const reminderRows =
-    (remindersRes.data as Array<
-      Pick<Reminder, "id" | "title" | "due_at" | "upload_id">
-    >) ?? [];
+    (remindersRes.data as Array<Pick<Reminder, "id" | "title" | "due_at" | "upload_id">>) ?? [];
 
   // 3b. Entities (things). match by name.
   const entitiesRes = await supabase
@@ -168,9 +191,7 @@ export async function liveSearch(query: string): Promise<LiveSearchResult> {
       id: r.id,
       title: r.title,
       due_at: r.due_at,
-      href: r.upload_id
-        ? `/dashboard/uploads/${r.upload_id}`
-        : "/dashboard/reminders",
+      href: r.upload_id ? `/dashboard/uploads/${r.upload_id}` : "/dashboard/reminders",
     })),
     pages: pages.map((p) => ({ id: p.id, label: p.label, href: p.href })),
     entities: entityRows.map((e) => ({

@@ -15,9 +15,7 @@ export function ComingUpRollup({ buckets }: { buckets: ComingUpBucket[] }) {
   if (buckets.length === 0) return null;
   return (
     <section>
-      <h2 className="mb-2 px-1 text-eyebrow">
-        Coming up
-      </h2>
+      <h2 className="text-eyebrow mb-2 px-1">Coming up</h2>
       <ul className="grid grid-cols-2 gap-1.5 sm:grid-cols-3 sm:gap-2 md:grid-cols-4 lg:grid-cols-5">
         {buckets.map((b) => (
           <li
@@ -27,7 +25,7 @@ export function ComingUpRollup({ buckets }: { buckets: ComingUpBucket[] }) {
             }`}
           >
             <p
-              className={`text-[10.5px] uppercase tracking-[0.1em] ${
+              className={`text-[10.5px] tracking-[0.1em] uppercase ${
                 b.tone === "alert" ? "text-claret" : "text-ink-faint"
               }`}
             >

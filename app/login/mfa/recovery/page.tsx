@@ -18,10 +18,7 @@ export default async function MfaRecoveryPage() {
           <p className="font-medium text-ink">{t("recovery_none_title")}</p>
           <p className="mt-1">
             {t("recovery_none_body")}{" "}
-            <a
-              href="mailto:security@heyoria.com"
-              className="text-brand hover:opacity-80"
-            >
+            <a href="mailto:security@heyoria.com" className="text-brand hover:opacity-80">
               security@heyoria.com
             </a>
             .

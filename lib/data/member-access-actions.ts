@@ -34,10 +34,7 @@ export async function updateMemberAccess(formData: FormData): Promise<void> {
   // If moving away from 'limited', clear the section allowlist so it doesn't
   // resurface as a stale state next time they're set back to limited.
   if (level !== "limited") {
-    await supabase
-      .from("membership_sections")
-      .delete()
-      .eq("membership_id", membershipId);
+    await supabase.from("membership_sections").delete().eq("membership_id", membershipId);
   }
 
   revalidatePath("/dashboard/circle");
@@ -77,10 +74,7 @@ export async function setMemberSections(formData: FormData): Promise<void> {
     .filter((v) => v.length > 0);
 
   // Simplest correct path: wipe and reinsert.
-  await supabase
-    .from("membership_sections")
-    .delete()
-    .eq("membership_id", membershipId);
+  await supabase.from("membership_sections").delete().eq("membership_id", membershipId);
 
   const rows: Array<{
     membership_id: string;
@@ -116,7 +110,9 @@ export async function setMemberSections(formData: FormData): Promise<void> {
 export async function setMemberTitle(formData: FormData): Promise<void> {
   const membershipId = String(formData.get("membership_id") ?? "");
   if (!membershipId) return;
-  const titleRaw = String(formData.get("title") ?? "").trim().slice(0, 60);
+  const titleRaw = String(formData.get("title") ?? "")
+    .trim()
+    .slice(0, 60);
   const title = titleRaw.length > 0 ? titleRaw : null;
 
   const owner = await ensureOwner();

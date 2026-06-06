@@ -40,7 +40,7 @@ export function DemoClient() {
         <button
           type="button"
           onClick={() => router.push(NEXT)}
-          className="text-[13px] text-ink-muted transition-base hover:text-ink"
+          className="transition-base text-[13px] text-ink-muted hover:text-ink"
         >
           {t("demo_skip")}
         </button>
@@ -54,7 +54,7 @@ export function DemoClient() {
       >
         <p
           key={slide}
-          className="max-w-xl text-[28px] font-semibold leading-[1.2] tracking-tight text-ink text-balance animate-fade-up sm:text-[40px]"
+          className="animate-fade-up max-w-xl text-[28px] leading-[1.2] font-semibold tracking-tight text-balance text-ink sm:text-[40px]"
         >
           {slides[slide]}
         </p>

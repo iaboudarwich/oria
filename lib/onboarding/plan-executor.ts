@@ -9,7 +9,11 @@ import type { PlanPatch, SetupPlan, WorkspacePlan } from "./types";
 export type ExecuteResult = { ok: boolean; error?: string; primaryOrgId?: string };
 
 function slugify(name: string): string {
-  const base = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "space";
+  const base =
+    name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "") || "space";
   return `${base}-${randomUUID().slice(0, 6)}`;
 }
 
@@ -46,20 +50,26 @@ export async function executeSetupPlan(input: {
     .order("created_at", { ascending: true })
     .limit(1)
     .maybeSingle();
-  const personal = personalRow as
-    | { id: string; name: string; accent_color: string | null; template_key: string | null }
-    | null;
+  const personal = personalRow as {
+    id: string;
+    name: string;
+    accent_color: string | null;
+    template_key: string | null;
+  } | null;
   let personalTouched = false;
 
   async function addSections(orgId: string, ws: WorkspacePlan) {
     const sorted = [...ws.sections].sort((a, b) => a.priority - b.priority);
     for (const s of sorted) {
-      await admin
-        .from("custom_sections")
-        .upsert(
-          { organization_id: orgId, name: s.title.slice(0, 60), icon: s.icon, created_by: input.userId },
-          { onConflict: "organization_id,name", ignoreDuplicates: true },
-        );
+      await admin.from("custom_sections").upsert(
+        {
+          organization_id: orgId,
+          name: s.title.slice(0, 60),
+          icon: s.icon,
+          created_by: input.userId,
+        },
+        { onConflict: "organization_id,name", ignoreDuplicates: true },
+      );
     }
   }
 
@@ -221,11 +231,18 @@ export async function executePlanPatch(input: {
       if (error || !org) throw new Error("org_create_failed");
       const orgId = (org as { id: string }).id;
       createdOrgIds.push(orgId);
-      await admin.from("memberships").insert({ organization_id: orgId, user_id: input.userId, role: "owner" });
+      await admin
+        .from("memberships")
+        .insert({ organization_id: orgId, user_id: input.userId, role: "owner" });
       const sorted = [...ws.sections].sort((a, b) => a.priority - b.priority);
       for (const s of sorted) {
         await admin.from("custom_sections").upsert(
-          { organization_id: orgId, name: s.title.slice(0, 60), icon: s.icon, created_by: input.userId },
+          {
+            organization_id: orgId,
+            name: s.title.slice(0, 60),
+            icon: s.icon,
+            created_by: input.userId,
+          },
           { onConflict: "organization_id,name", ignoreDuplicates: true },
         );
       }
@@ -235,7 +252,12 @@ export async function executePlanPatch(input: {
     // 2. Section adds into existing orgs.
     for (const add of patch.section_adds) {
       await admin.from("custom_sections").upsert(
-        { organization_id: add.orgId, name: add.section.title.slice(0, 60), icon: add.section.icon, created_by: input.userId },
+        {
+          organization_id: add.orgId,
+          name: add.section.title.slice(0, 60),
+          icon: add.section.icon,
+          created_by: input.userId,
+        },
         { onConflict: "organization_id,name", ignoreDuplicates: true },
       );
     }
@@ -252,14 +274,22 @@ export async function executePlanPatch(input: {
           .eq("id", r.id)
           .eq("created_by", input.userId);
       } else {
-        await admin.from("custom_sections").update({ name: r.to.slice(0, 60) }).eq("id", r.id).eq("created_by", input.userId);
+        await admin
+          .from("custom_sections")
+          .update({ name: r.to.slice(0, 60) })
+          .eq("id", r.id)
+          .eq("created_by", input.userId);
       }
     }
 
     // 4. Soft-deletes (owner-scoped). Items stay intact for the 24h undo.
     for (const d of patch.deletes) {
       const table = d.kind === "org" ? "organizations" : "custom_sections";
-      await admin.from(table).update({ deleted_at: now }).eq("id", d.id).eq("created_by", input.userId);
+      await admin
+        .from(table)
+        .update({ deleted_at: now })
+        .eq("id", d.id)
+        .eq("created_by", input.userId);
     }
 
     await admin.from("onboarding_setup_plans").insert({

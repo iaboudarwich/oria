@@ -41,7 +41,11 @@ describe("buildPersonalizationContext", () => {
   it("maps medium -> 200 and long -> 400, casual -> warm", () => {
     const med = buildPersonalizationContext({
       ...heavyBillsShort,
-      preferences: { ...heavyBillsShort.preferences, responseLength: "medium", formality: "casual" },
+      preferences: {
+        ...heavyBillsShort.preferences,
+        responseLength: "medium",
+        formality: "casual",
+      },
     });
     expect(med.responseWords).toBe(200);
     expect(med.tone).toBe("warm");

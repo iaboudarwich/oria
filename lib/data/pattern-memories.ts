@@ -54,9 +54,7 @@ export async function maybeWritePatternMemoryFromMove(input: {
 
     const admin = createAdminClient();
 
-    const sinceISO = new Date(
-      Date.now() - LOOKBACK_DAYS * 24 * 3600 * 1000,
-    ).toISOString();
+    const sinceISO = new Date(Date.now() - LOOKBACK_DAYS * 24 * 3600 * 1000).toISOString();
 
     // Recent moves to the same destination, in this org only.
     const { data, error } = await admin
@@ -73,9 +71,7 @@ export async function maybeWritePatternMemoryFromMove(input: {
       const to = row.payload?.to;
       if (!to) return false;
       if (input.destination.kind === "builtin") {
-        return (
-          to.section === input.destination.section && !to.custom_section_id
-        );
+        return to.section === input.destination.section && !to.custom_section_id;
       }
       return to.custom_section_id === input.destination.customSectionId;
     });
@@ -93,17 +89,13 @@ export async function maybeWritePatternMemoryFromMove(input: {
       .select("id, title, filename, merchant")
       .in("id", priorIds);
 
-    const priorTokenSets: Set<string>[] = ((uploadRows ?? []) as Array<{
-      title: string | null;
-      filename: string;
-      merchant?: string | null;
-    }>).map((u) =>
-      new Set(
-        distinctiveTokens(
-          `${u.title ?? ""} ${u.filename} ${u.merchant ?? ""}`,
-        ),
-      ),
-    );
+    const priorTokenSets: Set<string>[] = (
+      (uploadRows ?? []) as Array<{
+        title: string | null;
+        filename: string;
+        merchant?: string | null;
+      }>
+    ).map((u) => new Set(distinctiveTokens(`${u.title ?? ""} ${u.filename} ${u.merchant ?? ""}`)));
 
     // The distinctive token shared across at least REPEAT_THRESHOLD prior
     // moves AND the current one is the pattern key.
@@ -136,14 +128,9 @@ export async function maybeWritePatternMemoryFromMove(input: {
 
     await admin.from("section_memories").insert({
       organization_id: input.organizationId,
-      builtin_section:
-        input.destination.kind === "builtin"
-          ? input.destination.section
-          : null,
+      builtin_section: input.destination.kind === "builtin" ? input.destination.section : null,
       custom_section_id:
-        input.destination.kind === "custom"
-          ? input.destination.customSectionId
-          : null,
+        input.destination.kind === "custom" ? input.destination.customSectionId : null,
       smart_section: null,
       content,
       source: "pattern",

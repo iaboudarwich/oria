@@ -69,7 +69,9 @@ export function ContextChart({
                   />
                   {points.map((p, i) => {
                     const [x, y] = pts[i].split(",");
-                    return <circle key={i} cx={x} cy={y} r={2.5} style={{ fill: "var(--brand)" }} />;
+                    return (
+                      <circle key={i} cx={x} cy={y} r={2.5} style={{ fill: "var(--brand)" }} />
+                    );
                   })}
                 </>
               );
@@ -91,7 +93,9 @@ export function ContextChart({
           </span>
         ))}
       </div>
-      {caption ? <figcaption className="px-1 text-[11.5px] text-ink-faint">{caption}</figcaption> : null}
+      {caption ? (
+        <figcaption className="px-1 text-[11.5px] text-ink-faint">{caption}</figcaption>
+      ) : null}
     </figure>
   );
 }

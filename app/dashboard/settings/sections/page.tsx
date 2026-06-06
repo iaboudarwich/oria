@@ -25,12 +25,12 @@ export default async function EditSectionsPage() {
     <>
       <Topbar title="Edit sections" />
 
-      <div className="mx-auto max-w-2xl space-y-4 animate-fade-up">
+      <div className="animate-fade-up mx-auto max-w-2xl space-y-4">
         <div className="flex items-end justify-between gap-3 px-1">
           <div className="min-w-0">
             <p className="text-[12.5px] text-ink-muted">
-              Reorder, hide, rename or remove. Built-in sections can be
-              hidden but not deleted; your custom sections can do it all.
+              Reorder, hide, rename or remove. Built-in sections can be hidden but not deleted; your
+              custom sections can do it all.
             </p>
             <p className="mt-1 text-[11.5px] text-ink-faint">
               {visible} of {sections.length} visible.
@@ -38,7 +38,7 @@ export default async function EditSectionsPage() {
           </div>
           <Link
             href="/dashboard/settings/sections/new"
-            className="cta inline-flex h-8 shrink-0 items-center rounded-md bg-ink px-3 text-[12px] text-surface transition-base hover:bg-ink-soft"
+            className="cta transition-base inline-flex h-8 shrink-0 items-center rounded-md bg-ink px-3 text-[12px] text-surface hover:bg-ink-soft"
           >
             Add section
           </Link>
@@ -47,9 +47,8 @@ export default async function EditSectionsPage() {
         <SectionsEditor sections={sections} />
 
         <p className="px-1 pt-1 text-[11px] text-ink-faint">
-          Adding a section opens a short form so Oria knows what belongs
-          there: purpose, related items, file types. That context goes
-          into how new uploads get classified.
+          Adding a section opens a short form so Oria knows what belongs there: purpose, related
+          items, file types. That context goes into how new uploads get classified.
         </p>
       </div>
     </>

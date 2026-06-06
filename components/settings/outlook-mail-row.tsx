@@ -29,7 +29,13 @@ const DOT: Record<string, string> = {
 };
 
 /** One connected Outlook mailbox row: status, pause/resume, disconnect. */
-export function OutlookMailRow({ view, labels }: { view: OutlookMailView; labels: OutlookMailLabels }) {
+export function OutlookMailRow({
+  view,
+  labels,
+}: {
+  view: OutlookMailView;
+  labels: OutlookMailLabels;
+}) {
   const [pending, startTransition] = useTransition();
   const statusLabel =
     view.status === "active"
@@ -41,7 +47,10 @@ export function OutlookMailRow({ view, labels }: { view: OutlookMailView; labels
           : labels.statusRevoked;
   return (
     <div className="flex flex-wrap items-center gap-2 rounded-xl border border-line bg-canvas px-3 py-2">
-      <span className={`h-2 w-2 shrink-0 rounded-full ${DOT[view.status] ?? "bg-ink-faint"}`} aria-hidden />
+      <span
+        className={`h-2 w-2 shrink-0 rounded-full ${DOT[view.status] ?? "bg-ink-faint"}`}
+        aria-hidden
+      />
       <span className="text-[12.5px] font-medium text-ink">{labels.mail}</span>
       <span className="text-[11.5px] text-ink-faint">
         {statusLabel} · {labels.lastSync.replace("{time}", view.lastSyncLabel)}
@@ -49,8 +58,12 @@ export function OutlookMailRow({ view, labels }: { view: OutlookMailView; labels
       <button
         type="button"
         disabled={pending}
-        onClick={() => startTransition(() => outlookSetStatus(view.id, view.status === "paused" ? "active" : "paused"))}
-        className="ml-auto rounded-lg border border-line px-2 py-1 text-[11.5px] text-ink-muted transition-base hover:bg-surface disabled:opacity-50"
+        onClick={() =>
+          startTransition(() =>
+            outlookSetStatus(view.id, view.status === "paused" ? "active" : "paused"),
+          )
+        }
+        className="transition-base ml-auto rounded-lg border border-line px-2 py-1 text-[11.5px] text-ink-muted hover:bg-surface disabled:opacity-50"
       >
         {view.status === "paused" ? labels.resume : labels.pause}
       </button>
@@ -58,7 +71,7 @@ export function OutlookMailRow({ view, labels }: { view: OutlookMailView; labels
         type="button"
         disabled={pending}
         onClick={() => startTransition(() => outlookDisconnect(view.id))}
-        className="rounded-lg border border-line px-2 py-1 text-[11.5px] text-claret transition-base hover:bg-surface disabled:opacity-50"
+        className="transition-base rounded-lg border border-line px-2 py-1 text-[11.5px] text-claret hover:bg-surface disabled:opacity-50"
       >
         {labels.disconnect}
       </button>

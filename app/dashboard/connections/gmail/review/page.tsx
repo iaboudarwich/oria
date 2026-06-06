@@ -34,7 +34,7 @@ export default async function GmailReviewPage() {
     <>
       <Topbar title={t("title")} />
 
-      <div className="mx-auto max-w-2xl space-y-6 animate-fade-up">
+      <div className="animate-fade-up mx-auto max-w-2xl space-y-6">
         <p className="text-[13px] text-ink-muted">
           {t("header_sub", { pending: counts.pending, approved: counts.approved })}
         </p>

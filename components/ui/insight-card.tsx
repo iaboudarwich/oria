@@ -24,7 +24,9 @@ export function InsightCard({
   className?: string;
 }) {
   return (
-    <section className={`space-y-3 rounded-2xl border border-line bg-surface-raised p-4 ${className}`}>
+    <section
+      className={`space-y-3 rounded-2xl border border-line bg-surface-raised p-4 ${className}`}
+    >
       <p className="text-[14px] leading-snug text-ink">{insight}</p>
       {evidence ? <div>{evidence}</div> : null}
       {detail && detailLabel ? (

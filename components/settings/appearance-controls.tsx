@@ -85,7 +85,7 @@ export function AppearanceControls({ initialAccent }: { initialAccent: string })
                 type="button"
                 onClick={() => pickTheme(opt.value)}
                 aria-pressed={active}
-                className={`min-h-[44px] rounded-md px-3.5 text-[12.5px] transition-base ${
+                className={`transition-base min-h-[44px] rounded-md px-3.5 text-[12.5px] ${
                   active ? "bg-ink text-surface" : "text-ink-muted hover:text-ink"
                 }`}
               >
@@ -111,7 +111,7 @@ export function AppearanceControls({ initialAccent }: { initialAccent: string })
                 aria-label={t(`accent_${p.key}` as "accent_mint")}
                 aria-pressed={active}
                 title={t(`accent_${p.key}` as "accent_mint")}
-                className={`h-9 w-9 rounded-full border-2 transition-base ${
+                className={`transition-base h-9 w-9 rounded-full border-2 ${
                   active ? "border-ink" : "border-transparent hover:border-line-strong"
                 }`}
                 style={{ background: p[tone].accent }}
@@ -147,7 +147,7 @@ export function AppearanceControls({ initialAccent }: { initialAccent: string })
           <button
             type="button"
             onClick={applyCustom}
-            className="h-9 rounded-md border border-line-strong px-3 text-[12.5px] text-ink-muted transition-base hover:text-ink"
+            className="transition-base h-9 rounded-md border border-line-strong px-3 text-[12.5px] text-ink-muted hover:text-ink"
           >
             {t("accent_custom_apply")}
           </button>

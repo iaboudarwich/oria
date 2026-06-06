@@ -100,7 +100,7 @@ export class ConversationEngine {
         id: q.id,
         text: text.text,
         type: q.type,
-        options: q.type === "multiple_choice" ? text.options ?? q.options : undefined,
+        options: q.type === "multiple_choice" ? (text.options ?? q.options) : undefined,
         multi: q.type === "multiple_choice" ? q.multi === true : undefined,
       },
       progress: { current: asked + 1, total },
@@ -131,7 +131,9 @@ ${NO_EMDASH}
 Return JSON only: {"text": "the question", ${q.type === "multiple_choice" ? `"options": ["...", "..."]` : `"options": null`}}`;
 
     const user = `Conversation so far:\n${history || "(none yet)"}\n\nBase question: "${q.base}"${
-      q.type === "multiple_choice" ? `\nBase options: ${JSON.stringify(q.options)} (translate/adapt them into ${language}; keep the same count and meaning)` : ""
+      q.type === "multiple_choice"
+        ? `\nBase options: ${JSON.stringify(q.options)} (translate/adapt them into ${language}; keep the same count and meaning)`
+        : ""
     }`;
 
     try {
@@ -142,11 +144,15 @@ Return JSON only: {"text": "the question", ${q.type === "multiple_choice" ? `"op
         messages: [{ role: "user", content: user }],
       });
       const raw = msg.content[0]?.type === "text" ? msg.content[0].text.trim() : "{}";
-      const cleaned = raw.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim();
+      const cleaned = raw
+        .replace(/^```(?:json)?\s*/i, "")
+        .replace(/\s*```$/, "")
+        .trim();
       const parsed = JSON.parse(cleaned) as { text?: string; options?: string[] | null };
       return {
         text: parsed.text?.trim() || q.base,
-        options: Array.isArray(parsed.options) && parsed.options.length ? parsed.options : q.options,
+        options:
+          Array.isArray(parsed.options) && parsed.options.length ? parsed.options : q.options,
       };
     } catch {
       return fallback;
@@ -189,7 +195,10 @@ Infer sensibly from partial answers. Keep arrays tight (max 5 each).`;
         messages: [{ role: "user", content: transcript || "(no answers)" }],
       });
       const raw = msg.content[0]?.type === "text" ? msg.content[0].text.trim() : "{}";
-      const cleaned = raw.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim();
+      const cleaned = raw
+        .replace(/^```(?:json)?\s*/i, "")
+        .replace(/\s*```$/, "")
+        .trim();
       const parsed = JSON.parse(cleaned) as Partial<UserContext>;
       return {
         roles: arr(parsed.roles),
@@ -197,7 +206,8 @@ Infer sensibly from partial answers. Keep arrays tight (max 5 each).`;
         chaos_areas: arr(parsed.chaos_areas),
         data_sources: arr(parsed.data_sources),
         collaborators: arr(parsed.collaborators),
-        week_one_priority: typeof parsed.week_one_priority === "string" ? parsed.week_one_priority : "",
+        week_one_priority:
+          typeof parsed.week_one_priority === "string" ? parsed.week_one_priority : "",
         notes: typeof parsed.notes === "string" ? parsed.notes : "",
         intent,
       };

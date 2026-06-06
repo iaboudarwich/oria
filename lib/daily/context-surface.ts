@@ -48,9 +48,7 @@ export function resolveContextArchetype(org: {
   // Investor lives on the personal org, keyed explicitly.
   if (org.template_key === "investor") return "investor";
   if (org.parent_kind === "work" || org.kind === "office") {
-    return BUSINESS_WORK_TEMPLATES.has(org.template_key ?? "")
-      ? "business"
-      : "family_office";
+    return BUSINESS_WORK_TEMPLATES.has(org.template_key ?? "") ? "business" : "family_office";
   }
   return "personal";
 }

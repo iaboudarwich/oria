@@ -25,12 +25,8 @@ export default async function SearchPage({ searchParams }: Props) {
     <>
       <Topbar title="Search" />
 
-      <div className="mx-auto max-w-2xl py-8 animate-fade-up">
-        <LiveSearch
-          variant="inline"
-          autoFocus
-          initialQuery={initialQuery}
-        />
+      <div className="animate-fade-up mx-auto max-w-2xl py-8">
+        <LiveSearch variant="inline" autoFocus initialQuery={initialQuery} />
 
         {initialQuery ? null : (
           <>
@@ -42,7 +38,7 @@ export default async function SearchPage({ searchParams }: Props) {
                 <Link
                   key={p}
                   href={`/dashboard/search?q=${encodeURIComponent(p)}`}
-                  className="inline-flex items-center rounded-lg px-2.5 py-1 text-[12.5px] text-ink-soft transition-base hover:bg-surface-raised hover:text-ink"
+                  className="transition-base inline-flex items-center rounded-lg px-2.5 py-1 text-[12.5px] text-ink-soft hover:bg-surface-raised hover:text-ink"
                 >
                   {p}
                 </Link>

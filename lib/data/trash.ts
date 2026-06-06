@@ -20,9 +20,7 @@ export function daysUntilPurge(deletedAt: string, now: Date = new Date()): numbe
  * Soft-deleted uploads for the user's org, newest deletion first.
  * Items past the 30-day retention have already been purged by purgeExpiredTrash.
  */
-export async function listTrashUploads(
-  limit = 100,
-): Promise<UploadWithUploader[]> {
+export async function listTrashUploads(limit = 100): Promise<UploadWithUploader[]> {
   const ctx = await requireContext();
   const supabase = await createClient();
 
@@ -43,10 +41,7 @@ async function attachUploaders(uploads: Upload[]): Promise<UploadWithUploader[]>
   const uploaderIds = Array.from(
     new Set(uploads.map((u) => u.uploaded_by).filter((id): id is string => !!id)),
   );
-  const profileMap = new Map<
-    string,
-    Pick<Profile, "id" | "full_name" | "email">
-  >();
+  const profileMap = new Map<string, Pick<Profile, "id" | "full_name" | "email">>();
   if (uploaderIds.length > 0) {
     const { data: profiles } = await supabase
       .from("profiles")
@@ -59,7 +54,7 @@ async function attachUploaders(uploads: Upload[]): Promise<UploadWithUploader[]>
   }
   return uploads.map((u) => ({
     ...u,
-    uploader: u.uploaded_by ? profileMap.get(u.uploaded_by) ?? null : null,
+    uploader: u.uploaded_by ? (profileMap.get(u.uploaded_by) ?? null) : null,
   }));
 }
 
@@ -80,13 +75,15 @@ export async function purgeExpiredTrash(): Promise<void> {
     .not("deleted_at", "is", null)
     .lt("deleted_at", cutoff);
 
-  const rows =
-    (expired as { id: string; storage_path: string }[] | null) ?? [];
+  const rows = (expired as { id: string; storage_path: string }[] | null) ?? [];
   if (rows.length === 0) return;
 
   // Remove storage objects first (best effort), then DB rows.
   const paths = rows.map((r) => r.storage_path);
-  await supabase.storage.from("uploads").remove(paths).catch(() => {});
+  await supabase.storage
+    .from("uploads")
+    .remove(paths)
+    .catch(() => {});
   await supabase
     .from("uploads")
     .delete()
@@ -95,4 +92,3 @@ export async function purgeExpiredTrash(): Promise<void> {
       rows.map((r) => r.id),
     );
 }
-

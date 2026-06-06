@@ -119,7 +119,7 @@ function SuggestionCard({
             type="button"
             onClick={() => setCommenting((v) => !v)}
             disabled={pending}
-            className="text-[12.5px] text-ink-faint transition-base hover:text-ink disabled:opacity-50"
+            className="transition-base text-[12.5px] text-ink-faint hover:text-ink disabled:opacity-50"
           >
             {t("comment")}
           </button>
@@ -127,7 +127,7 @@ function SuggestionCard({
             type="button"
             onClick={no}
             disabled={pending}
-            className="text-[12.5px] text-ink-faint transition-base hover:text-ink disabled:opacity-50"
+            className="transition-base text-[12.5px] text-ink-faint hover:text-ink disabled:opacity-50"
           >
             {t("no")}
           </button>
@@ -135,7 +135,7 @@ function SuggestionCard({
             type="button"
             onClick={yes}
             disabled={pending}
-            className="rounded-lg bg-ink px-3 py-1.5 text-[12.5px] font-medium text-surface transition-base hover:bg-ink-soft disabled:opacity-50"
+            className="transition-base rounded-lg bg-ink px-3 py-1.5 text-[12.5px] font-medium text-surface hover:bg-ink-soft disabled:opacity-50"
           >
             {t("yes")}
           </button>
@@ -157,7 +157,7 @@ function SuggestionCard({
             type="button"
             onClick={sendComment}
             disabled={pending}
-            className="rounded-lg border border-line px-3 py-1.5 text-[12.5px] text-ink transition-base hover:bg-surface disabled:opacity-50"
+            className="transition-base rounded-lg border border-line px-3 py-1.5 text-[12.5px] text-ink hover:bg-surface disabled:opacity-50"
           >
             {t("comment_send")}
           </button>

@@ -3,13 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
-import {
-  CalendarIcon,
-  ChatIcon,
-  HomeIcon,
-  InboxIcon,
-  MenuIcon,
-} from "@/components/ui/icon";
+import { CalendarIcon, ChatIcon, HomeIcon, InboxIcon, MenuIcon } from "@/components/ui/icon";
 import { CaptureButton } from "./capture-button";
 
 /**
@@ -63,7 +57,7 @@ export function BottomTabBar({ onMore }: { onMore: () => void }) {
           className={itemClass(active)}
         >
           <Icon size={20} />
-          <span className="text-[10.5px] font-medium leading-none">{t(tab.key)}</span>
+          <span className="text-[10.5px] leading-none font-medium">{t(tab.key)}</span>
         </Link>
       </li>
     );
@@ -72,7 +66,7 @@ export function BottomTabBar({ onMore }: { onMore: () => void }) {
   return (
     <nav
       aria-label={t("primary_nav")}
-      className="fixed bottom-0 inset-x-0 z-40 border-t border-line glass pb-safe lg:hidden md:inset-x-auto md:inset-y-0 md:left-0 md:w-16 md:border-e md:border-t-0 md:pb-0 md:pt-safe"
+      className="glass pb-safe md:pt-safe fixed inset-x-0 bottom-0 z-40 border-t border-line md:inset-x-auto md:inset-y-0 md:left-0 md:w-16 md:border-e md:border-t-0 md:pb-0 lg:hidden"
     >
       <ul className="mx-auto flex max-w-[640px] items-stretch md:mx-0 md:h-full md:max-w-none md:flex-col md:justify-start md:gap-1 md:pt-3">
         {tabItem(TABS[0])}
@@ -88,10 +82,10 @@ export function BottomTabBar({ onMore }: { onMore: () => void }) {
           <button
             type="button"
             onClick={onMore}
-            className="flex min-h-[56px] w-full flex-col items-center justify-center gap-0.5 px-1 text-ink-muted transition-base hover:text-ink md:min-h-0 md:h-14"
+            className="transition-base flex min-h-[56px] w-full flex-col items-center justify-center gap-0.5 px-1 text-ink-muted hover:text-ink md:h-14 md:min-h-0"
           >
             <MenuIcon size={20} />
-            <span className="text-[10.5px] font-medium leading-none">{t("more")}</span>
+            <span className="text-[10.5px] leading-none font-medium">{t("more")}</span>
           </button>
         </li>
       </ul>

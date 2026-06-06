@@ -20,11 +20,7 @@ import type { Locale } from "@/i18n/config";
 
 export const metadata = { title: "Ask Oria" };
 
-export default async function AskPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ q?: string }>;
-}) {
+export default async function AskPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
   // A question typed in the home capture bar arrives as ?q=; seed the composer.
   const initialInput = ((await searchParams)?.q ?? "").slice(0, 2000);
   const [ctx, spaces, recentQuestions] = await Promise.all([
@@ -38,13 +34,10 @@ export default async function AskPage({
   //     by design), and
   //   • you actually have more than one space. otherwise there's
   //     nothing to span across.
-  const crossSpaceAvailable =
-    !!ctx && isAccountOwnerInPersonal(ctx) && spaces.length > 1;
+  const crossSpaceAvailable = !!ctx && isAccountOwnerInPersonal(ctx) && spaces.length > 1;
 
   const [conversations, seenHints, locale, aiConnection, reasoningMode] = await Promise.all([
-    ctx
-      ? listConversations({ userId: ctx.profile.id, limit: 50 })
-      : Promise.resolve([]),
+    ctx ? listConversations({ userId: ctx.profile.id, limit: 50 }) : Promise.resolve([]),
     getSeenHintKeys(),
     getLocale(),
     ctx?.profile.id ? getAiConnection(ctx.profile.id) : Promise.resolve(null),
@@ -93,7 +86,10 @@ export default async function AskPage({
             reasoningMode={reasoningMode}
             initialInput={initialInput}
           />
-          <PoweredBy provider={aiConnection?.provider ?? null} reasoning={reasoningMode === "always"} />
+          <PoweredBy
+            provider={aiConnection?.provider ?? null}
+            reasoning={reasoningMode === "always"}
+          />
         </div>
       </div>
       <Hint

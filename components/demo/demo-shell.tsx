@@ -26,13 +26,13 @@ export function DemoHeader() {
         <div className="flex items-center gap-2">
           <Link
             href="/login"
-            className="hidden text-[13px] text-ink-muted hover:text-ink transition-base sm:inline"
+            className="transition-base hidden text-[13px] text-ink-muted hover:text-ink sm:inline"
           >
             Sign in
           </Link>
           <Link
             href="/signup"
-            className="inline-flex h-8 items-center rounded-lg bg-ink px-3 text-[12.5px] text-surface hover:bg-ink-soft transition-base"
+            className="transition-base inline-flex h-8 items-center rounded-lg bg-ink px-3 text-[12.5px] text-surface hover:bg-ink-soft"
           >
             Get started
           </Link>
@@ -64,7 +64,7 @@ export function DemoTabs() {
               <Link
                 key={r.id}
                 href={`/demo/${r.id}`}
-                className={`whitespace-nowrap rounded-lg px-3 py-1.5 text-[12.5px] transition-base ${
+                className={`transition-base rounded-lg px-3 py-1.5 text-[12.5px] whitespace-nowrap ${
                   active
                     ? "bg-ink text-surface"
                     : "text-ink-muted hover:bg-surface-raised hover:text-ink"
@@ -83,9 +83,7 @@ export function DemoTabs() {
 export function DemoTopbar({ title }: { title: string }) {
   return (
     <div className="mb-6">
-      <h1 className="text-[20px] font-semibold tracking-tight text-ink sm:text-[22px]">
-        {title}
-      </h1>
+      <h1 className="text-[20px] font-semibold tracking-tight text-ink sm:text-[22px]">{title}</h1>
     </div>
   );
 }

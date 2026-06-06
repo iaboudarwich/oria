@@ -9,12 +9,20 @@ const dayStart = Date.UTC(2026, 5, 4); // 2026-06-04 00:00 UTC
 
 describe("decayStep", () => {
   it("keeps a pattern reinforced today unchanged (reinforced persists)", () => {
-    const step = decayStep({ score: 3.2, lastObservedAtMs: dayStart + 5 * 3_600_000, dayStartMs: dayStart });
+    const step = decayStep({
+      score: 3.2,
+      lastObservedAtMs: dayStart + 5 * 3_600_000,
+      dayStartMs: dayStart,
+    });
     expect(step).toEqual({ action: "keep", score: 3.2 });
   });
 
   it("decays a stale pattern by the factor", () => {
-    const step = decayStep({ score: 2, lastObservedAtMs: dayStart - 3 * DAY, dayStartMs: dayStart });
+    const step = decayStep({
+      score: 2,
+      lastObservedAtMs: dayStart - 3 * DAY,
+      dayStartMs: dayStart,
+    });
     expect(step.action).toBe("update");
     expect(step.score).toBeCloseTo(2 * DEFAULT_DECAY_FACTOR, 5);
   });

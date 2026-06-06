@@ -3,11 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import {
-  enrollStart,
-  enrollVerify,
-  disable,
-} from "@/lib/auth/mfa-actions";
+import { enrollStart, enrollVerify, disable } from "@/lib/auth/mfa-actions";
 
 type Props = {
   /** True when the user already has a verified TOTP factor. */
@@ -120,9 +116,8 @@ function NotEnrolledView() {
       {state.stage === "qr" && (
         <div className="space-y-4 rounded-2xl border border-line bg-canvas p-5">
           <p className="text-[13.5px] text-ink">
-            Scan this code with your authenticator app (1Password, Authy,
-            Google Authenticator, etc.), then enter the 6-digit code it
-            displays.
+            Scan this code with your authenticator app (1Password, Authy, Google Authenticator,
+            etc.), then enter the 6-digit code it displays.
           </p>
           {/* The QR data URL comes back from Supabase as inline SVG. */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -135,7 +130,7 @@ function NotEnrolledView() {
             <summary className="cursor-pointer hover:text-ink">
               Can&apos;t scan? Show secret
             </summary>
-            <code className="mt-2 block break-all rounded-md border border-line bg-surface px-2 py-1.5 font-mono text-[12px] text-ink">
+            <code className="mt-2 block rounded-md border border-line bg-surface px-2 py-1.5 font-mono text-[12px] break-all text-ink">
               {state.secret}
             </code>
           </details>
@@ -144,9 +139,7 @@ function NotEnrolledView() {
 
           <form onSubmit={verify} className="space-y-3">
             <label className="block">
-              <span className="block mb-1.5 text-[12.5px] font-medium text-ink">
-                6-digit code
-              </span>
+              <span className="mb-1.5 block text-[12.5px] font-medium text-ink">6-digit code</span>
               <input
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
@@ -157,7 +150,7 @@ function NotEnrolledView() {
                 placeholder="123456"
                 required
                 autoFocus
-                className="block h-11 w-full rounded-xl border border-line bg-surface-raised px-3 text-[16px] tabular-nums text-ink placeholder:text-ink-faint outline-none transition-base focus:border-brand focus:ring-[3px] focus:ring-brand/12"
+                className="transition-base block h-11 w-full rounded-xl border border-line bg-surface-raised px-3 text-[16px] text-ink tabular-nums outline-none placeholder:text-ink-faint focus:border-brand focus:ring-[3px] focus:ring-brand/12"
               />
             </label>
             <div className="flex gap-2">
@@ -181,9 +174,7 @@ function NotEnrolledView() {
         <BackupCodesPanel
           codes={state.backupCodes}
           acked={state.acked}
-          onAck={(v) =>
-            setState({ ...state, acked: v })
-          }
+          onAck={(v) => setState({ ...state, acked: v })}
           onClose={finish}
           pending={pending}
         />
@@ -256,24 +247,22 @@ function EnrolledView({ backupCodesLeft }: { backupCodesLeft: number }) {
           className="space-y-3 rounded-2xl border border-claret/30 bg-claret/[0.03] p-5"
         >
           <p className="text-[13px] text-ink">
-            Disabling 2FA requires your password AND a current code from
-            your authenticator app (or one of your backup codes).
+            Disabling 2FA requires your password AND a current code from your authenticator app (or
+            one of your backup codes).
           </p>
           {error && <ErrorBanner>{error}</ErrorBanner>}
           <label className="block">
-            <span className="block mb-1.5 text-[12.5px] font-medium text-ink">
-              Password
-            </span>
+            <span className="mb-1.5 block text-[12.5px] font-medium text-ink">Password</span>
             <input
               name="password"
               type="password"
               autoComplete="current-password"
               required
-              className="block h-11 w-full rounded-xl border border-line bg-surface-raised px-3 text-[16px] text-ink outline-none transition-base focus:border-brand focus:ring-[3px] focus:ring-brand/12"
+              className="transition-base block h-11 w-full rounded-xl border border-line bg-surface-raised px-3 text-[16px] text-ink outline-none focus:border-brand focus:ring-[3px] focus:ring-brand/12"
             />
           </label>
           <label className="block">
-            <span className="block mb-1.5 text-[12.5px] font-medium text-ink">
+            <span className="mb-1.5 block text-[12.5px] font-medium text-ink">
               6-digit code or backup code
             </span>
             <input
@@ -282,7 +271,7 @@ function EnrolledView({ backupCodesLeft }: { backupCodesLeft: number }) {
               autoComplete="one-time-code"
               placeholder="123456 or xxxxx-xxxxx"
               required
-              className="block h-11 w-full rounded-xl border border-line bg-surface-raised px-3 text-[16px] text-ink outline-none transition-base focus:border-brand focus:ring-[3px] focus:ring-brand/12"
+              className="transition-base block h-11 w-full rounded-xl border border-line bg-surface-raised px-3 text-[16px] text-ink outline-none focus:border-brand focus:ring-[3px] focus:ring-brand/12"
             />
           </label>
           <div className="flex gap-2">
@@ -337,19 +326,15 @@ function BackupCodesPanel({
       aria-labelledby="backup-codes-title"
       className="fixed inset-0 z-[100] flex items-center justify-center px-4 py-6"
     >
-      <div
-        aria-hidden
-        className="absolute inset-0 bg-ink/40 backdrop-blur-sm animate-fade-in"
-      />
-      <div className="relative z-[101] w-full max-w-md rounded-2xl border border-line bg-surface-raised p-6 shadow-xl animate-scale-in">
+      <div aria-hidden className="animate-fade-in absolute inset-0 bg-ink/40 backdrop-blur-sm" />
+      <div className="animate-scale-in relative z-[101] w-full max-w-md rounded-2xl border border-line bg-surface-raised p-6 shadow-xl">
         <div>
           <h3 id="backup-codes-title" className="text-[16px] font-semibold text-ink">
             Save these backup codes
           </h3>
           <p className="mt-1 text-[13px] text-ink-muted">
-            Each code works once if you lose access to your authenticator app.
-            We show them only this once. Store them somewhere safe (a password
-            manager works well).
+            Each code works once if you lose access to your authenticator app. We show them only
+            this once. Store them somewhere safe (a password manager works well).
           </p>
         </div>
 
@@ -368,7 +353,7 @@ function BackupCodesPanel({
           <button
             type="button"
             onClick={copyAll}
-            className="text-[12.5px] font-medium text-brand underline underline-offset-2 transition-base hover:opacity-80"
+            className="transition-base text-[12.5px] font-medium text-brand underline underline-offset-2 hover:opacity-80"
           >
             Copy all
           </button>
@@ -385,12 +370,7 @@ function BackupCodesPanel({
         </label>
 
         <div className="mt-5 flex justify-end">
-          <Button
-            type="button"
-            onClick={onClose}
-            variant="primary"
-            disabled={!acked || pending}
-          >
+          <Button type="button" onClick={onClose} variant="primary" disabled={!acked || pending}>
             Done
           </Button>
         </div>

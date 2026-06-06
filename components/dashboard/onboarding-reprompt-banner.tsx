@@ -20,7 +20,7 @@ export function OnboardingRepromptBanner() {
       </div>
       <Link
         href="/onboarding/demo"
-        className="shrink-0 inline-flex h-8 items-center rounded-lg bg-ink px-3 text-[12px] text-surface hover:bg-ink-soft transition-base"
+        className="transition-base inline-flex h-8 shrink-0 items-center rounded-lg bg-ink px-3 text-[12px] text-surface hover:bg-ink-soft"
       >
         Start
       </Link>
@@ -30,7 +30,7 @@ export function OnboardingRepromptBanner() {
           setDismissed(true);
           startTransition(() => void dismissReprompt("7d"));
         }}
-        className="shrink-0 text-[11.5px] text-ink-muted hover:text-ink transition-base"
+        className="transition-base shrink-0 text-[11.5px] text-ink-muted hover:text-ink"
       >
         Later
       </button>
@@ -40,7 +40,7 @@ export function OnboardingRepromptBanner() {
           setDismissed(true);
           startTransition(() => void dismissReprompt("permanent"));
         }}
-        className="shrink-0 text-[11px] text-ink-faint hover:text-ink transition-base"
+        className="transition-base shrink-0 text-[11px] text-ink-faint hover:text-ink"
       >
         Don&apos;t show again
       </button>

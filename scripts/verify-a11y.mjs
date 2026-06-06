@@ -73,7 +73,12 @@ async function mintAuthCookies() {
     if (value.length <= CHUNK) out.push({ name, value, domain: host, path: "/" });
     else
       for (let i = 0; i * CHUNK < value.length; i++)
-        out.push({ name: `${name}.${i}`, value: value.slice(i * CHUNK, (i + 1) * CHUNK), domain: host, path: "/" });
+        out.push({
+          name: `${name}.${i}`,
+          value: value.slice(i * CHUNK, (i + 1) * CHUNK),
+          domain: host,
+          path: "/",
+        });
     out.push({ name: "oria_active_org", value: A11Y_ORG, domain: host, path: "/" });
     out.push({ name: "oria_tz", value: "America/Los_Angeles", domain: host, path: "/" });
     return out;
@@ -89,7 +94,12 @@ async function scan(page, route) {
     // @ts-expect-error injected global
     return await window.axe.run(document, { runOnly: { type: "tag", values: tags } });
   }, AXE_TAGS);
-  const violations = result.violations.map((v) => ({ id: v.id, impact: v.impact, nodes: v.nodes.length, help: v.help }));
+  const violations = result.violations.map((v) => ({
+    id: v.id,
+    impact: v.impact,
+    nodes: v.nodes.length,
+    help: v.help,
+  }));
   return { status: res ? res.status() : 0, url: page.url(), violations };
 }
 
@@ -115,8 +125,11 @@ for (const route of routes) {
     axeBlocking += blocking.length;
     warnings += pageErrors.length;
     const tag = blocking.length === 0 ? "PASS" : "FAIL";
-    console.log(`${tag}  ${route}  (${r.violations.length} total, ${blocking.length} critical/serious, ${pageErrors.length} page warning(s))`);
-    for (const v of blocking) console.log(`        [${v.impact}] ${v.id}: ${v.help} (${v.nodes} node(s))`);
+    console.log(
+      `${tag}  ${route}  (${r.violations.length} total, ${blocking.length} critical/serious, ${pageErrors.length} page warning(s))`,
+    );
+    for (const v of blocking)
+      console.log(`        [${v.impact}] ${v.id}: ${v.help} (${v.nodes} node(s))`);
     for (const e of pageErrors) console.log(`        WARN pageerror: ${e}`);
   } catch (err) {
     console.log(`ERROR ${route}  -> ${err instanceof Error ? err.message : err}`);
@@ -125,9 +138,13 @@ for (const route of routes) {
 }
 
 if (!authCookies) {
-  console.log(`SKIP  authenticated routes -> set Supabase keys in .env.local to include the dashboard`);
+  console.log(
+    `SKIP  authenticated routes -> set Supabase keys in .env.local to include the dashboard`,
+  );
 }
 
 await browser.close();
-console.log(`\naxe-core: ${axeBlocking} critical/serious violation(s) across ${routes.length} route(s)${warnings ? ` (${warnings} page warning(s), see above)` : ""}`);
+console.log(
+  `\naxe-core: ${axeBlocking} critical/serious violation(s) across ${routes.length} route(s)${warnings ? ` (${warnings} page warning(s), see above)` : ""}`,
+);
 process.exit(axeBlocking === 0 ? 0 : 1);

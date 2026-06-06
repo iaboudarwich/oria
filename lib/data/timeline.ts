@@ -8,9 +8,7 @@ export type TimelineEventWithActor = TimelineEvent & {
   actor: Pick<Profile, "id" | "full_name" | "email"> | null;
 };
 
-export async function listTimeline(
-  limit = 100,
-): Promise<TimelineEventWithActor[]> {
+export async function listTimeline(limit = 100): Promise<TimelineEventWithActor[]> {
   const ctx = await requireContext();
   const supabase = await createClient();
 
@@ -22,19 +20,12 @@ export async function listTimeline(
     .limit(limit);
   if (error || !data) return [];
 
-  const events = enforceActiveOrg(
-    data as TimelineEvent[],
-    ctx.organization.id,
-    "listTimeline",
-  );
+  const events = enforceActiveOrg(data as TimelineEvent[], ctx.organization.id, "listTimeline");
   const actorIds = Array.from(
     new Set(events.map((e) => e.actor_id).filter((id): id is string => !!id)),
   );
 
-  const profileMap = new Map<
-    string,
-    Pick<Profile, "id" | "full_name" | "email">
-  >();
+  const profileMap = new Map<string, Pick<Profile, "id" | "full_name" | "email">>();
   if (actorIds.length > 0) {
     const { data: profiles } = await supabase
       .from("profiles")
@@ -48,7 +39,7 @@ export async function listTimeline(
 
   return events.map((e) => ({
     ...e,
-    actor: e.actor_id ? profileMap.get(e.actor_id) ?? null : null,
+    actor: e.actor_id ? (profileMap.get(e.actor_id) ?? null) : null,
   }));
 }
 
@@ -81,17 +72,14 @@ export function groupByDay(events: TimelineEventWithActor[]): TimelineGroup[] {
 
 function relativeDay(d: Date): string {
   const today = new Date();
-  const startOf = (x: Date) =>
-    new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
+  const startOf = (x: Date) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
   const diff = (startOf(today) - startOf(d)) / (1000 * 60 * 60 * 24);
   if (diff === 0) return "Today";
   if (diff === 1) return "Yesterday";
   return d.toLocaleDateString(undefined, { weekday: "long" });
 }
 
-export function displayActor(
-  actor: { full_name: string | null; email: string } | null,
-): string {
+export function displayActor(actor: { full_name: string | null; email: string } | null): string {
   if (!actor) return "Oria";
   return actor.full_name?.trim() || actor.email.split("@")[0];
 }

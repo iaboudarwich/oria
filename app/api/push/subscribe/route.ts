@@ -3,10 +3,7 @@ import "server-only";
 import { NextResponse } from "next/server";
 import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
-import {
-  savePushSubscription,
-  deletePushSubscription,
-} from "@/lib/data/push-subscriptions";
+import { savePushSubscription, deletePushSubscription } from "@/lib/data/push-subscriptions";
 import { logAuditEvent } from "@/lib/data/audit-log";
 
 export const dynamic = "force-dynamic";
@@ -35,11 +32,7 @@ export async function POST(request: Request) {
   const endpoint = body.endpoint;
   const p256dh = body.keys?.p256dh;
   const auth = body.keys?.auth;
-  if (
-    typeof endpoint !== "string" ||
-    typeof p256dh !== "string" ||
-    typeof auth !== "string"
-  ) {
+  if (typeof endpoint !== "string" || typeof p256dh !== "string" || typeof auth !== "string") {
     return NextResponse.json({ error: "bad_request" }, { status: 400 });
   }
 

@@ -4,10 +4,7 @@ import { NextResponse, after } from "next/server";
 import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentContext } from "@/lib/data/organizations";
-import {
-  exchangeCodeForTokens,
-  fetchPrimaryEmail,
-} from "@/lib/integrations/gmail/oauth";
+import { exchangeCodeForTokens, fetchPrimaryEmail } from "@/lib/integrations/gmail/oauth";
 import {
   upsertGmailConnection,
   seedDefaultConfidentialKeywords,
@@ -23,9 +20,7 @@ export const runtime = "nodejs";
 
 function settingsRedirect(error: string): NextResponse {
   const base = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
-  return NextResponse.redirect(
-    new URL(`/dashboard/settings?tab=connections&error=${error}`, base),
-  );
+  return NextResponse.redirect(new URL(`/dashboard/settings?tab=connections&error=${error}`, base));
 }
 
 /**

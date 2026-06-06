@@ -37,7 +37,9 @@ const SERVICE_ROLE = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 const ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 if (!SUPABASE_URL || !SERVICE_ROLE || !ANON_KEY) {
-  console.error("Missing Supabase env vars. Set NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY.");
+  console.error(
+    "Missing Supabase env vars. Set NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY.",
+  );
   process.exit(1);
 }
 
@@ -104,7 +106,12 @@ async function bootstrapPersonalOrg(user: TestUser): Promise<string> {
 
   const { data: org } = await admin
     .from("organizations")
-    .insert({ slug: `audit-${user.id.slice(0, 8)}`, name: "Audit personal", kind: "personal", created_by: user.id })
+    .insert({
+      slug: `audit-${user.id.slice(0, 8)}`,
+      name: "Audit personal",
+      kind: "personal",
+      created_by: user.id,
+    })
     .select("id")
     .single();
   if (!org) throw new Error("bootstrap: could not create personal org");
@@ -116,7 +123,10 @@ async function bootstrapPersonalOrg(user: TestUser): Promise<string> {
   return (org as { id: string }).id;
 }
 
-async function uploadFileAs(user: TestUser, orgId: string): Promise<{
+async function uploadFileAs(
+  user: TestUser,
+  orgId: string,
+): Promise<{
   uploadId: string;
   storagePath: string;
 }> {
@@ -147,7 +157,10 @@ async function uploadFileAs(user: TestUser, orgId: string): Promise<{
   if (ins.error) throw new Error(`uploads insert: ${ins.error.message}`);
 
   cleanups.unshift(async () => {
-    await admin.storage.from("uploads").remove([path]).catch(() => {});
+    await admin.storage
+      .from("uploads")
+      .remove([path])
+      .catch(() => {});
     await admin.from("uploads").delete().eq("id", uploadId);
   });
   return { uploadId, storagePath: path };
@@ -163,9 +176,7 @@ async function attackerAttempts(label: string, attacker: TestUser, storagePath: 
   );
 
   // 2. Sign URL via SDK.
-  const su = await attacker.client.storage
-    .from("uploads")
-    .createSignedUrl(storagePath, 60);
+  const su = await attacker.client.storage.from("uploads").createSignedUrl(storagePath, 60);
   record(
     `${label}: createSignedUrl() blocked`,
     !!su.error,
@@ -193,11 +204,7 @@ async function addLimitedMember(orgId: string, userId: string) {
     access_level: "limited",
   });
   cleanups.unshift(async () => {
-    await admin
-      .from("memberships")
-      .delete()
-      .eq("organization_id", orgId)
-      .eq("user_id", userId);
+    await admin.from("memberships").delete().eq("organization_id", orgId).eq("user_id", userId);
   });
 }
 

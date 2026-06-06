@@ -19,10 +19,7 @@ export async function TodayPulse({
   activeSpaceId: string;
   tz: string | null;
 }) {
-  const [{ entries }, reviewCount] = await Promise.all([
-    loadCalendar(),
-    countReviewUploads(),
-  ]);
+  const [{ entries }, reviewCount] = await Promise.all([loadCalendar(), countReviewUploads()]);
 
   const horizonMs = new Date().getTime() + 7 * 24 * 60 * 60 * 1000;
 
@@ -46,7 +43,7 @@ export async function TodayPulse({
       {reviewCount > 0 ? (
         <Link
           href="/dashboard/sections/review"
-          className="flex items-center gap-3 rounded-lg px-3 py-2 transition-base hover:bg-surface-raised"
+          className="transition-base flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-surface-raised"
         >
           <p className="min-w-0 flex-1 text-[13px] text-ink">
             {reviewCount} unsorted in your inbox

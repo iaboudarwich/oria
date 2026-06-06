@@ -72,8 +72,7 @@ export async function TripsView({ orgId }: { orgId: string }) {
   if (legs.length === 0) {
     return (
       <p className="px-1 text-[13px] text-ink-faint">
-        No trips detected yet. Upload a flight confirmation and Oria will group
-        it into a trip.
+        No trips detected yet. Upload a flight confirmation and Oria will group it into a trip.
       </p>
     );
   }
@@ -94,18 +93,14 @@ export async function TripsView({ orgId }: { orgId: string }) {
   return (
     <ul className="space-y-3">
       {trips.map((trip, i) => {
-        const label =
-          trip.map((l) => l.location).find((l) => l) ?? trip[0].title;
+        const label = trip.map((l) => l.location).find((l) => l) ?? trip[0].title;
         const start = trip[0].date;
         const end = trip[trip.length - 1].date;
         return (
-          <li
-            key={i}
-            className="rounded-2xl border border-line bg-surface-raised p-4"
-          >
+          <li key={i} className="rounded-2xl border border-line bg-surface-raised p-4">
             <div className="flex items-baseline justify-between gap-3">
-              <p className="min-w-0 truncate text-title text-ink">{label}</p>
-              <p className="shrink-0 text-body-sm text-ink-muted">
+              <p className="text-title min-w-0 truncate text-ink">{label}</p>
+              <p className="text-body-sm shrink-0 text-ink-muted">
                 {start === end ? fmtDate(start) : `${fmtDate(start)} to ${fmtDate(end)}`}
               </p>
             </div>
@@ -115,13 +110,13 @@ export async function TripsView({ orgId }: { orgId: string }) {
                   {leg.uploadId ? (
                     <Link
                       href={`/dashboard/uploads/${leg.uploadId}`}
-                      className="flex items-center gap-2 text-body-sm text-ink-soft transition-base hover:text-ink"
+                      className="text-body-sm transition-base flex items-center gap-2 text-ink-soft hover:text-ink"
                     >
                       <span className="shrink-0 text-ink-faint">{fmtDate(leg.date)}</span>
                       <span className="min-w-0 truncate">{legLine(leg)}</span>
                     </Link>
                   ) : (
-                    <div className="flex items-center gap-2 text-body-sm text-ink-soft">
+                    <div className="text-body-sm flex items-center gap-2 text-ink-soft">
                       <span className="shrink-0 text-ink-faint">{fmtDate(leg.date)}</span>
                       <span className="min-w-0 truncate">{legLine(leg)}</span>
                     </div>

@@ -91,11 +91,7 @@ export function startOfDayInTz(d: Date, tz: string | null | undefined): Date {
  * Returns true when two dates fall on the same calendar day in the
  * given TZ. Used to bucket meals into the Today list.
  */
-export function sameDayInTz(
-  a: Date,
-  b: Date,
-  tz: string | null | undefined,
-): boolean {
+export function sameDayInTz(a: Date, b: Date, tz: string | null | undefined): boolean {
   const zone = tz && isValidTz(tz) ? tz : "UTC";
   try {
     const fmt = new Intl.DateTimeFormat("en-CA", {
@@ -141,7 +137,13 @@ export function getLocalParts(
     const hour = parts.hour === "24" ? 0 : Number(parts.hour ?? "0");
     const ymd = `${parts.year}-${parts.month}-${parts.day}`;
     const dows: Record<string, number> = {
-      Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6,
+      Sun: 0,
+      Mon: 1,
+      Tue: 2,
+      Wed: 3,
+      Thu: 4,
+      Fri: 5,
+      Sat: 6,
     };
     const dayOfWeek = dows[parts.weekday ?? "Sun"] ?? 0;
     return { hour, dayOfWeek, ymd };
@@ -200,7 +202,7 @@ export function localDateTimeToISO(
       parts.year,
       (parts.month ?? 1) - 1,
       parts.day ?? 1,
-      parts.hour === 24 ? 0 : parts.hour ?? 0,
+      parts.hour === 24 ? 0 : (parts.hour ?? 0),
       parts.minute ?? 0,
       parts.second ?? 0,
     );

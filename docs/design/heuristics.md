@@ -60,22 +60,22 @@ These hold across every screen, every component, every state.
     accent is mint, and it means "Oria / primary action / the live thing", never
     a data value. Each data series owns one fixed hue, in both themes.
 
-    | Role | Token | Dark | Light |
-    |---|---|---|---|
-    | Page | `--canvas` | `#08090B` | `#ECEAE4` |
-    | Surface (tile) | `--surface` | `#15181C` | `#FFFFFF` |
-    | Surface raised | `--surface-2` | `#1B1F24` | `#FBFAF7` |
-    | Surface high | `--surface-3` | `#23282E` | `#F1F0EB` |
-    | Hairline | `--line` / `--line-strong` | white .07 / .13 | ink .09 / .16 |
-    | Text | `--ink` | `#F2F2F0` | `#14171B` |
-    | Muted | `--ink-muted` | `#9CA1A8` | `#5C616A` |
-    | Faint (captions) | `--ink-faint` | `#686D74` | `#90949C` |
-    | Accent (mint) | `--brand` (`--accent-ink` on fill) | `#4FE3AC` | `#0E9E70` |
-    | Recovery / up | `--rec` / `--up` | `#54D98C` | `#1AA559` |
-    | Sleep | `--sleep` | `#8C8CFF` | `#5557E0` |
-    | Strain | `--strain` | `#46CBE0` | `#0E9CB2` |
-    | Spend | `--spend` | `#F2B441` | `#C5860F` |
-    | Down / negative | `--down` | `#F2685C` | `#D8493C` |
+    | Role             | Token                              | Dark            | Light         |
+    | ---------------- | ---------------------------------- | --------------- | ------------- |
+    | Page             | `--canvas`                         | `#08090B`       | `#ECEAE4`     |
+    | Surface (tile)   | `--surface`                        | `#15181C`       | `#FFFFFF`     |
+    | Surface raised   | `--surface-2`                      | `#1B1F24`       | `#FBFAF7`     |
+    | Surface high     | `--surface-3`                      | `#23282E`       | `#F1F0EB`     |
+    | Hairline         | `--line` / `--line-strong`         | white .07 / .13 | ink .09 / .16 |
+    | Text             | `--ink`                            | `#F2F2F0`       | `#14171B`     |
+    | Muted            | `--ink-muted`                      | `#9CA1A8`       | `#5C616A`     |
+    | Faint (captions) | `--ink-faint`                      | `#686D74`       | `#90949C`     |
+    | Accent (mint)    | `--brand` (`--accent-ink` on fill) | `#4FE3AC`       | `#0E9E70`     |
+    | Recovery / up    | `--rec` / `--up`                   | `#54D98C`       | `#1AA559`     |
+    | Sleep            | `--sleep`                          | `#8C8CFF`       | `#5557E0`     |
+    | Strain           | `--strain`                         | `#46CBE0`       | `#0E9CB2`     |
+    | Spend            | `--spend`                          | `#F2B441`       | `#C5860F`     |
+    | Down / negative  | `--down`                           | `#F2685C`       | `#D8493C`     |
 
     Each data hue has a `*-t` tinted companion (`--rec-t`, ...) for dial tracks
     and pill fills. Status semantics route through `lib/ui/status-color.ts`
@@ -112,13 +112,13 @@ These hold across every screen, every component, every state.
 
 Use the 4px scale: 4, 8, 12, 16, 20, 24, 32, 40, 48, 64, 96. Nothing in between.
 
-| Use | Comfortable | Compact |
-|---|---|---|
-| Card inner padding | 24 | 16 |
-| Stack between cards | 16 | 12 |
-| Inline gap (related items) | 8 | 6 |
-| Page gutter | 32 | 24 |
-| Section separator | 64 | 48 |
+| Use                        | Comfortable | Compact |
+| -------------------------- | ----------- | ------- |
+| Card inner padding         | 24          | 16      |
+| Stack between cards        | 16          | 12      |
+| Inline gap (related items) | 8           | 6       |
+| Page gutter                | 32          | 24      |
+| Section separator          | 64          | 48      |
 
 ---
 
@@ -199,6 +199,7 @@ Oria is a data product: a number or a dial almost always beats a sentence.
 **WCAG AA is the floor, not the ceiling.** axe-core runs in CI. Zero critical violations on every commit.
 
 Specifics:
+
 - Color contrast: 4.5:1 minimum for body text, 3:1 for large text (18px+)
 - Focus rings: visible on every interactive element, never outline: none without replacement
 - Focus ring style: 2px solid #0f0f0f, 2px offset, :focus-visible only
@@ -223,6 +224,7 @@ Lighthouse accessibility score must be >= 95 on every page in CI.
 Three categories of motion. Everything else is banned.
 
 ### A. Functional (explains state change)
+
 - Card insertion: height 0 to auto, 240ms ease-out
 - Card removal: opacity 1 to 0, 180ms ease-in
 - Modal open: opacity + scale 0.96 to 1, 200ms ease-out
@@ -230,15 +232,18 @@ Three categories of motion. Everything else is banned.
 - Layout shift: crossfade 160ms, never slide
 
 ### B. Acknowledgment (confirms action)
+
 - Button press: scale 0.97, 120ms
 - Suggestion swipe: follow finger, snap on threshold
 - Undo countdown: linear progress bar, 60s
 
 ### C. Atmospheric (sets tone, rarely)
+
 - Living background: 30-60s gradient drift, paused on reduced motion
 - Hero number on Today: count-up animation on first load only, 600ms ease-out
 
 ### Banned
+
 - Bounce easings (cute, ages badly)
 - Parallax scrolling
 - Auto-play video
@@ -254,46 +259,54 @@ Default easing: cubic-bezier(0.2, 0, 0, 1) (ease-out-quart). Never linear except
 ## 7. Component patterns
 
 ### Buttons
+
 - Primary: filled ink, white text, 10px radius, 44px min height, 16px horizontal padding
 - Secondary: ghost (transparent), ink border, ink text
 - Tertiary: text only, ink underline on hover
 - Destructive: oxblood, used sparingly, always with confirmation
 
 ### Inputs
+
 - Single line: 10px radius, beige border, ink text, no inset shadow
 - Focus: 2px ink ring, no background change
 - Error: oxblood border + helper text below
 - Multi-line: same but minimum 4 visible rows
 
 ### Cards
+
 - Glass tile (default): bg-tile border border-tile-border rounded-2xl p-6
 - Bordered (interactive): same plus hover:shadow-sm
 - Hero (Today blocks): bigger radius (22px), bigger padding (32px)
 
 ### Empty states
+
 - Eyebrow label
 - Plain sentence explaining the state
 - One action (button or link)
 - No illustrations. No mascots. The void is the message.
 
 ### Loading states
+
 - Skeleton blocks (matched to the shape of the content), not spinners
 - Spinners only inside buttons during submit (16px, 2px stroke)
 - Never block the whole screen unless a critical operation
 
 ### Toasts
+
 - Top-center on desktop, bottom on mobile
 - Auto-dismiss 4s for info, 6s for success, never for errors
 - Errors get a manual dismiss + a "Retry" or "Reconnect" action
 - Stack max 3, FIFO
 
 ### Modals
+
 - Center on desktop, bottom-sheet on mobile (< 640px)
 - Backdrop: rgba(15, 15, 15, 0.4) with backdrop-blur-sm
 - Close on ESC, backdrop click, and visible X
 - Focus trapped inside, returned to trigger on close
 
 ### Navigation
+
 - Desktop: a SINGLE left rail (`components/dashboard/sidebar.tsx`), drag-to-resize
   width persisted. Logo, Today + Ask primary, Sections, mode nav, account.
 - Mobile: a bottom tab bar (`components/dashboard/bottom-tab-bar.tsx`) with a
@@ -351,6 +364,7 @@ of judgment-call mappings are documented in
 ## 12. What to do when in doubt
 
 In order:
+
 1. Open Linear or Things 3 and find a comparable surface. Copy the restraint.
 2. Strip everything until the screen looks too empty, then add back the one thing missing.
 3. Ask: would a calm friend make this? If it's loud, it's wrong.

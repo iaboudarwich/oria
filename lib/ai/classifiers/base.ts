@@ -23,7 +23,10 @@ export async function runFastJsonClassifier<T>(
       ],
       { tier: "fast", maxTokens: opts.maxTokens, jsonMode: true },
     );
-    const text = res.content.trim().replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "");
+    const text = res.content
+      .trim()
+      .replace(/^```(?:json)?\s*/i, "")
+      .replace(/\s*```$/, "");
     return opts.parse(JSON.parse(text)) ?? opts.fallback;
   } catch {
     return opts.fallback;

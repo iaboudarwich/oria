@@ -38,13 +38,7 @@ function refId(ref: { kind: string; key: string }) {
 /** 6-dot drag-handle icon. */
 function DragHandleIcon({ size = 14 }: { size?: number }) {
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 14 14"
-      fill="currentColor"
-      aria-hidden
-    >
+    <svg width={size} height={size} viewBox="0 0 14 14" fill="currentColor" aria-hidden>
       <circle cx="4.5" cy="3" r="1.2" />
       <circle cx="4.5" cy="7" r="1.2" />
       <circle cx="4.5" cy="11" r="1.2" />
@@ -63,11 +57,7 @@ function DragHandleIcon({ size = 14 }: { size?: number }) {
  *  Set once on first reveal; subsequent visits skip the animation. */
 const DRAG_HINT_KEY = "oria.drag_hint_shown";
 
-export function SectionsEditor({
-  sections: initial,
-}: {
-  sections: MergedSection[];
-}) {
+export function SectionsEditor({ sections: initial }: { sections: MergedSection[] }) {
   const [sections, setSections] = useState(initial);
   const [, startTransition] = useTransition();
   // Wiggle gating. Starts off so SSR + first paint match (no hydration
@@ -115,20 +105,14 @@ export function SectionsEditor({
     const reordered = arrayMove(sections, oldIndex, newIndex);
     setSections(reordered);
     startTransition(() => {
-      void reorderSections(
-        reordered.map((s) => ({ kind: s.ref.kind, key: s.ref.key })),
-      );
+      void reorderSections(reordered.map((s) => ({ kind: s.ref.kind, key: s.ref.key })));
     });
   }
 
   const ids = sections.map((s) => refId(s.ref));
 
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCenter}
-      onDragEnd={handleDragEnd}
-    >
+    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
       <SortableContext items={ids} strategy={verticalListSortingStrategy}>
         <ul className="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface-raised shadow-[0_1px_2px_rgba(28,26,23,0.04),0_2px_8px_-6px_rgba(28,26,23,0.08)]">
           {sections.map((s, i) => (
@@ -139,22 +123,16 @@ export function SectionsEditor({
               wiggleHandle={wiggleHint && i === 0}
               onToggleHidden={(ref, hidden) => {
                 setSections((prev) =>
-                  prev.map((x) =>
-                    refId(x.ref) === refId(ref) ? { ...x, hidden } : x,
-                  ),
+                  prev.map((x) => (refId(x.ref) === refId(ref) ? { ...x, hidden } : x)),
                 );
               }}
               onRename={(ref, name) => {
                 setSections((prev) =>
-                  prev.map((x) =>
-                    refId(x.ref) === refId(ref) ? { ...x, name } : x,
-                  ),
+                  prev.map((x) => (refId(x.ref) === refId(ref) ? { ...x, name } : x)),
                 );
               }}
               onDelete={(ref) => {
-                setSections((prev) =>
-                  prev.filter((x) => refId(x.ref) !== refId(ref)),
-                );
+                setSections((prev) => prev.filter((x) => refId(x.ref) !== refId(ref)));
               }}
             />
           ))}
@@ -182,14 +160,9 @@ function SortableSectionRow({
    *  hint only fires once per user. */
   wiggleHandle?: boolean;
 }) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id,
+  });
 
   const [renaming, setRenaming] = useState(false);
 
@@ -227,7 +200,7 @@ function SortableSectionRow({
         {...attributes}
         {...listeners}
         aria-label="Drag to reorder"
-        className={`inline-flex h-7 w-7 cursor-grab items-center justify-center rounded-md text-ink-faint transition-base hover:bg-canvas hover:text-ink active:cursor-grabbing ${
+        className={`transition-base inline-flex h-7 w-7 cursor-grab items-center justify-center rounded-md text-ink-faint hover:bg-canvas hover:text-ink active:cursor-grabbing ${
           wiggleHandle ? "drag-hint-wiggle" : ""
         }`}
       >
@@ -288,7 +261,7 @@ function SortableSectionRow({
           <button
             type="button"
             onClick={() => setRenaming(true)}
-            className="text-[11.5px] text-ink-muted hover:text-ink transition-base"
+            className="transition-base text-[11.5px] text-ink-muted hover:text-ink"
           >
             Rename
           </button>
@@ -310,7 +283,7 @@ function SortableSectionRow({
           <input type="hidden" name="id" value={section.ref.key} />
           <button
             type="submit"
-            className="text-[11.5px] text-ink-faint hover:text-claret transition-base"
+            className="transition-base text-[11.5px] text-ink-faint hover:text-claret"
           >
             Remove
           </button>
@@ -340,7 +313,7 @@ function HideButton({
       <input type="hidden" name="key" value={target.key} />
       <button
         type="submit"
-        className="inline-flex h-7 items-center gap-1.5 rounded-md px-2 text-[11.5px] text-ink-muted transition-base hover:bg-canvas hover:text-ink"
+        className="transition-base inline-flex h-7 items-center gap-1.5 rounded-md px-2 text-[11.5px] text-ink-muted hover:bg-canvas hover:text-ink"
         aria-label={hidden ? "Show section" : "Hide section"}
       >
         {hidden ? <EyeIcon size={12} /> : <EyeOffIcon size={12} />}

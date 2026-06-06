@@ -9,10 +9,10 @@ export type ExtractionMethod =
   | "markitdown"
   | "tesseract"
   | "passthrough"
-  | "pdf-parse"   // npm pdf-parse fallback
-  | "mammoth"     // npm mammoth fallback (DOCX)
-  | "xlsx"        // npm xlsx fallback (sheets)
-  | "claude"      // Claude vision/document block (existing path)
+  | "pdf-parse" // npm pdf-parse fallback
+  | "mammoth" // npm mammoth fallback (DOCX)
+  | "xlsx" // npm xlsx fallback (sheets)
+  | "claude" // Claude vision/document block (existing path)
   | "failed";
 
 export interface ExtractionServiceResult {

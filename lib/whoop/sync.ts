@@ -88,9 +88,7 @@ async function resolvePrimaryOrgId(userId: string): Promise<string | null> {
 
 export type WhoopSyncResult = { ok: boolean; days: number; error?: string };
 
-export async function syncWhoopConnection(
-  connectionId: string,
-): Promise<WhoopSyncResult> {
+export async function syncWhoopConnection(connectionId: string): Promise<WhoopSyncResult> {
   const fresh = await getFreshWhoopAccessToken(connectionId);
   if (!fresh) return { ok: false, days: 0, error: "no_token" };
 

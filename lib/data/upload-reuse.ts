@@ -160,9 +160,7 @@ export async function reuseRecordsFromTwin(
     .eq("organization_id", input.organizationId);
   // Cast through unknown: the dynamic column-list select can't be
   // narrowed to a typed row by supabase-js's generated types.
-  const sourceItems = (itemData ?? []) as unknown as Array<
-    Record<string, unknown>
-  >;
+  const sourceItems = (itemData ?? []) as unknown as Array<Record<string, unknown>>;
   // Only reuse when the twin genuinely produced structured records. A twin
   // that only went through the heuristic fallback (no memory_items) gives
   // us nothing worth cloning. fall back to a fresh extraction.
@@ -173,10 +171,7 @@ export async function reuseRecordsFromTwin(
     sourceItems as Array<{ upload_id: string } & Record<string, unknown>>,
     input.newUploadId,
   );
-  const insertItems = await admin
-    .from("memory_items")
-    .insert(itemRows)
-    .select("id");
+  const insertItems = await admin.from("memory_items").insert(itemRows).select("id");
   if (insertItems.error || (insertItems.data ?? []).length === 0) {
     return { reused: false };
   }
@@ -189,9 +184,11 @@ export async function reuseRecordsFromTwin(
     .select(EXTRACTION_CLONE_COLUMNS.join(","))
     .eq("upload_id", input.twinUploadId)
     .limit(1);
-  const sourceExtraction = ((exData ?? []) as unknown as Array<
-    { upload_id: string; processor?: unknown } & Record<string, unknown>
-  >)[0];
+  const sourceExtraction = (
+    (exData ?? []) as unknown as Array<
+      { upload_id: string; processor?: unknown } & Record<string, unknown>
+    >
+  )[0];
   if (sourceExtraction) {
     const cloned = {
       ...remapRowsToUpload([sourceExtraction], input.newUploadId)[0],
@@ -202,8 +199,7 @@ export async function reuseRecordsFromTwin(
 
   // 4. Derive the summary fields the upload row mirrors, from the twin.
   const first = sourceItems[0];
-  const documentType =
-    typeof first.document_type === "string" ? first.document_type : null;
+  const documentType = typeof first.document_type === "string" ? first.document_type : null;
   const language = typeof first.language === "string" ? first.language : null;
   const isHandwritten = sourceItems.some((r) => r.is_handwritten === true);
   const title = typeof first.title === "string" ? first.title : null;

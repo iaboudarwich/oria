@@ -71,7 +71,7 @@ export default async function FeaturesPage() {
     <>
       <Topbar title={t("title")} />
 
-      <div className="mx-auto max-w-2xl space-y-7 animate-fade-up">
+      <div className="animate-fade-up mx-auto max-w-2xl space-y-7">
         <div className="flex items-start justify-between gap-4">
           <p className="text-[13px] text-ink-muted">{t("subtitle")}</p>
           <TakeTourButton label={t("take_tour")} />
@@ -79,7 +79,7 @@ export default async function FeaturesPage() {
 
         {GROUPS.map(({ group, items }) => (
           <section key={group} className="space-y-2">
-            <h2 className="text-[13px] font-semibold uppercase tracking-[0.06em] text-ink-faint">
+            <h2 className="text-[13px] font-semibold tracking-[0.06em] text-ink-faint uppercase">
               {t(`group_${group}`)}
             </h2>
             <ul className="overflow-hidden rounded-2xl border border-line bg-surface-raised">
@@ -88,7 +88,7 @@ export default async function FeaturesPage() {
                   <Link
                     href={item.href}
                     prefetch={false}
-                    className="flex items-center justify-between gap-3 px-4 py-3 transition-base hover:bg-canvas"
+                    className="transition-base flex items-center justify-between gap-3 px-4 py-3 hover:bg-canvas"
                   >
                     <span className="min-w-0">
                       <span className="block text-[14px] font-medium text-ink">

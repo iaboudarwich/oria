@@ -14,9 +14,7 @@ export type ActiveSuggestion = {
 };
 
 /** The org's current pending section suggestion, if any (for the dashboard). */
-export async function getActiveSectionSuggestion(
-  orgId: string,
-): Promise<ActiveSuggestion | null> {
+export async function getActiveSectionSuggestion(orgId: string): Promise<ActiveSuggestion | null> {
   const admin = createAdminClient();
   const { data } = await admin
     .from("section_suggestions")
@@ -27,8 +25,18 @@ export async function getActiveSectionSuggestion(
     .limit(1)
     .maybeSingle();
   if (!data) return null;
-  const r = data as { id: string; suggested_name: string; item_type: string | null; item_ids: string[] };
-  return { id: r.id, name: r.suggested_name, itemType: r.item_type, count: r.item_ids?.length ?? 0 };
+  const r = data as {
+    id: string;
+    suggested_name: string;
+    item_type: string | null;
+    item_ids: string[];
+  };
+  return {
+    id: r.id,
+    name: r.suggested_name,
+    itemType: r.item_type,
+    count: r.item_ids?.length ?? 0,
+  };
 }
 
 type Candidate = { id: string; vendor: string; title: string; type: string };
@@ -61,9 +69,15 @@ export async function computeSectionSuggestions(userId: string, orgId: string): 
       .eq("user_id", userId)
       .in("status", ["pending", "approved"])
       .limit(120);
-    const candidates: Candidate[] = ((itemRows as
-      | { id: string; item_type: string; extracted: { vendor?: string | null; title?: string | null } }[]
-      | null) ?? [])
+    const candidates: Candidate[] = (
+      (itemRows as
+        | {
+            id: string;
+            item_type: string;
+            extracted: { vendor?: string | null; title?: string | null };
+          }[]
+        | null) ?? []
+    )
       .map((r) => ({
         id: r.id,
         vendor: (r.extracted?.vendor ?? "").trim(),
@@ -100,20 +114,25 @@ Return ONLY JSON: {"section_name": "Title Case name or null", "item_type": "domi
       messages: [{ role: "user", content: prompt }],
     });
     const raw = msg.content[0]?.type === "text" ? msg.content[0].text.trim() : "{}";
-    const cleaned = raw.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim();
+    const cleaned = raw
+      .replace(/^```(?:json)?\s*/i, "")
+      .replace(/\s*```$/, "")
+      .trim();
     const parsed = JSON.parse(cleaned) as {
       section_name: string | null;
       item_type: string | null;
       indexes: number[];
     };
-    if (!parsed.section_name || !Array.isArray(parsed.indexes) || parsed.indexes.length < MIN_CLUSTER) {
+    if (
+      !parsed.section_name ||
+      !Array.isArray(parsed.indexes) ||
+      parsed.indexes.length < MIN_CLUSTER
+    ) {
       return;
     }
     if (existingNames.includes(parsed.section_name.toLowerCase())) return;
 
-    const itemIds = parsed.indexes
-      .map((i) => candidates[i]?.id)
-      .filter((x): x is string => !!x);
+    const itemIds = parsed.indexes.map((i) => candidates[i]?.id).filter((x): x is string => !!x);
     if (itemIds.length < MIN_CLUSTER) return;
 
     const { data: inserted } = await admin

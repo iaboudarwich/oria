@@ -38,24 +38,42 @@ let uploadId = null;
 let itemId = null;
 try {
   // Temp user (owner of the workspace).
-  const created = await admin.auth.admin.createUser({ email, password: "Pw-" + randomUUID(), email_confirm: true });
+  const created = await admin.auth.admin.createUser({
+    email,
+    password: "Pw-" + randomUUID(),
+    email_confirm: true,
+  });
   userId = created.data.user?.id ?? null;
   check("temp user created", !!userId);
 
   // A workspace (office) org + owner membership.
   const orgRes = await admin
     .from("organizations")
-    .insert({ slug: `wsdel-${randomUUID().slice(0, 8)}`, name: "Delete Me Workspace", kind: "office", parent_kind: "work", created_by: userId })
+    .insert({
+      slug: `wsdel-${randomUUID().slice(0, 8)}`,
+      name: "Delete Me Workspace",
+      kind: "office",
+      parent_kind: "work",
+      created_by: userId,
+    })
     .select("id")
     .single();
   orgId = orgRes.data?.id ?? null;
   check("workspace (office) org created", !!orgId, orgRes.error?.message ?? "");
-  await admin.from("memberships").insert({ organization_id: orgId, user_id: userId, role: "owner" });
+  await admin
+    .from("memberships")
+    .insert({ organization_id: orgId, user_id: userId, role: "owner" });
 
   // Owned data: an upload and a memory_item.
   const up = await admin
     .from("uploads")
-    .insert({ organization_id: orgId, uploaded_by: userId, storage_path: `x/${randomUUID()}`, filename: "f.pdf", status: "received" })
+    .insert({
+      organization_id: orgId,
+      uploaded_by: userId,
+      storage_path: `x/${randomUUID()}`,
+      filename: "f.pdf",
+      status: "received",
+    })
     .select("id")
     .single();
   uploadId = up.data?.id ?? null;

@@ -128,9 +128,7 @@ const ANOMALY_MIN_HISTORY = 3;
  * shape the Analysis page renders. Everything runs in one query then we
  * aggregate in memory. for typical orgs (<10k items) this is fine.
  */
-export async function computeAnalysis(
-  windowMonths = 6,
-): Promise<AnalysisAggregates> {
+export async function computeAnalysis(windowMonths = 6): Promise<AnalysisAggregates> {
   const ctx = await requireContext();
   const supabase = await createClient();
 
@@ -175,10 +173,7 @@ export async function computeAnalysis(
   }
   const monthIndex = new Map(months.map((m, i) => [m.key, i]));
 
-  const merchantTotals = new Map<
-    string,
-    { total: number; currency: string | null }
-  >();
+  const merchantTotals = new Map<string, { total: number; currency: string | null }>();
   const merchantHistory = new Map<string, number[]>();
   const currencyCount = new Map<string, number>();
 
@@ -215,10 +210,7 @@ export async function computeAnalysis(
     txCount++;
 
     if (r.amount_currency) {
-      currencyCount.set(
-        r.amount_currency,
-        (currencyCount.get(r.amount_currency) ?? 0) + 1,
-      );
+      currencyCount.set(r.amount_currency, (currencyCount.get(r.amount_currency) ?? 0) + 1);
     }
 
     if (r.merchant) {
@@ -265,17 +257,14 @@ export async function computeAnalysis(
   const topMerchants = Array.from(merchantTotals.entries())
     .map(([key, v]) => {
       // Recover the original casing from the first row that matched.
-      const original =
-        rows.find((r) => (r.merchant ?? "").toLowerCase() === key)?.merchant ??
-        key;
+      const original = rows.find((r) => (r.merchant ?? "").toLowerCase() === key)?.merchant ?? key;
       return { merchant: original, total: v.total, currency: v.currency };
     })
     .sort((a, b) => b.total - a.total)
     .slice(0, 6);
 
   const dominantCurrency =
-    Array.from(currencyCount.entries()).sort((a, b) => b[1] - a[1])[0]?.[0] ??
-    null;
+    Array.from(currencyCount.entries()).sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
 
   return {
     months,
@@ -305,10 +294,7 @@ function inferDirection(r: {
   document_type: DocumentType | null;
 }): "inflow" | "outflow" | null {
   if (r.direction) return r.direction;
-  if (
-    r.document_type === "receipt" ||
-    r.document_type === "invoice"
-  ) {
+  if (r.document_type === "receipt" || r.document_type === "invoice") {
     return "outflow";
   }
   return null;

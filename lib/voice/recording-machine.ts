@@ -24,10 +24,7 @@ export type RecordingEvent =
   | { type: "FAIL" } // mic access or transcription failed
   | { type: "RESET" }; // clear a transient error back to idle
 
-export function nextRecordingState(
-  state: RecordingState,
-  event: RecordingEvent,
-): RecordingState {
+export function nextRecordingState(state: RecordingState, event: RecordingEvent): RecordingState {
   switch (state) {
     case "idle":
       if (event.type === "START") return "recording";

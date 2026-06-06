@@ -16,7 +16,7 @@ export function ContextTicker({ items, label }: { items: TickerItem[]; label: st
       tabIndex={0}
       role="group"
       aria-label={label}
-      className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+      className="flex [scrollbar-width:none] gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
     >
       {items.map((it, i) => (
         <span

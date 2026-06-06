@@ -19,10 +19,7 @@ export async function setAccountLanguage(lang: Locale): Promise<void> {
     data: { user },
   } = await supabase.auth.getUser();
   if (user) {
-    await supabase
-      .from("profiles")
-      .update({ preferred_language: lang })
-      .eq("id", user.id);
+    await supabase.from("profiles").update({ preferred_language: lang }).eq("id", user.id);
   }
 
   // Set cookie. next-intl reads this on every request
@@ -70,20 +67,13 @@ export async function setWorkspaceContentLanguage(
  * On workspace creation, inherit the creator's preferred_language as the
  * workspace's content_language.
  */
-export async function inheritLanguageForOrg(
-  organizationId: string,
-  userId: string,
-): Promise<void> {
+export async function inheritLanguageForOrg(organizationId: string, userId: string): Promise<void> {
   const admin = createAdminClient();
   const { data: profile } = await admin
     .from("profiles")
     .select("preferred_language")
     .eq("id", userId)
     .maybeSingle();
-  const lang = (profile as { preferred_language?: string } | null)
-    ?.preferred_language ?? "en";
-  await admin
-    .from("organizations")
-    .update({ content_language: lang })
-    .eq("id", organizationId);
+  const lang = (profile as { preferred_language?: string } | null)?.preferred_language ?? "en";
+  await admin.from("organizations").update({ content_language: lang }).eq("id", organizationId);
 }

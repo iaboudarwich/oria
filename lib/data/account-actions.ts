@@ -8,9 +8,7 @@ import { logAuditEvent } from "@/lib/data/audit-log";
 
 const CONFIRMATION_PHRASE = "delete my account";
 
-export type DeleteAccountResult =
-  | { ok: true }
-  | { ok: false; error: string };
+export type DeleteAccountResult = { ok: true } | { ok: false; error: string };
 
 /**
  * Permanently delete the signed-in user.
@@ -27,9 +25,7 @@ export type DeleteAccountResult =
  *
  * Requires a typed confirmation matching CONFIRMATION_PHRASE.
  */
-export async function deleteAccount(
-  formData: FormData,
-): Promise<DeleteAccountResult> {
+export async function deleteAccount(formData: FormData): Promise<DeleteAccountResult> {
   const confirmation = String(formData.get("confirmation") ?? "").trim();
   if (confirmation.toLowerCase() !== CONFIRMATION_PHRASE) {
     return {
@@ -52,9 +48,7 @@ export async function deleteAccount(
     .from("memberships")
     .select("organization_id")
     .eq("user_id", user.id);
-  const orgIds = (myMemberships ?? []).map(
-    (m: { organization_id: string }) => m.organization_id,
-  );
+  const orgIds = (myMemberships ?? []).map((m: { organization_id: string }) => m.organization_id);
 
   for (const orgId of orgIds) {
     const { count } = await admin
@@ -103,9 +97,7 @@ export async function deleteAccount(
 
 const RESET_PHRASE = "reset my account";
 
-export type ResetAccountResult =
-  | { ok: true }
-  | { ok: false; error: string };
+export type ResetAccountResult = { ok: true } | { ok: false; error: string };
 
 /**
  * Wipe all user-generated content from the signed-in user's account
@@ -117,9 +109,7 @@ export type ResetAccountResult =
  *
  * Requires typed confirmation matching RESET_PHRASE.
  */
-export async function resetAccount(
-  formData: FormData,
-): Promise<ResetAccountResult> {
+export async function resetAccount(formData: FormData): Promise<ResetAccountResult> {
   const confirmation = String(formData.get("confirmation") ?? "").trim();
   if (confirmation.toLowerCase() !== RESET_PHRASE) {
     return {
@@ -143,9 +133,7 @@ export async function resetAccount(
     .from("memberships")
     .select("organization_id")
     .eq("user_id", user.id);
-  const orgIds = (myMemberships ?? []).map(
-    (m: { organization_id: string }) => m.organization_id,
-  );
+  const orgIds = (myMemberships ?? []).map((m: { organization_id: string }) => m.organization_id);
 
   // Identify personal orgs (sole member). safe to fully wipe.
   const personalOrgIds: string[] = [];
@@ -168,7 +156,10 @@ export async function resetAccount(
       .map((r: { storage_path: string }) => r.storage_path)
       .filter(Boolean);
     if (paths.length > 0) {
-      await admin.storage.from("uploads").remove(paths).catch(() => {});
+      await admin.storage
+        .from("uploads")
+        .remove(paths)
+        .catch(() => {});
     }
     await admin.from("uploads").delete().eq("organization_id", orgId);
   }
@@ -191,9 +182,7 @@ export async function resetAccount(
         .remove(sharedPaths)
         .catch(() => {});
     }
-    const sharedIds = (sharedUploads ?? []).map(
-      (r: { id: string }) => r.id,
-    );
+    const sharedIds = (sharedUploads ?? []).map((r: { id: string }) => r.id);
     if (sharedIds.length > 0) {
       await admin.from("uploads").delete().in("id", sharedIds);
     }
@@ -207,10 +196,7 @@ export async function resetAccount(
 
   // 5. Custom sections in personal orgs.
   if (personalOrgIds.length > 0) {
-    await admin
-      .from("custom_sections")
-      .delete()
-      .in("organization_id", personalOrgIds);
+    await admin.from("custom_sections").delete().in("organization_id", personalOrgIds);
   }
 
   // 6. Learning events attributed to this user.

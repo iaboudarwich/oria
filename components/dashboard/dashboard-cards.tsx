@@ -62,7 +62,7 @@ export function DashboardCards({
         <button
           type="button"
           onClick={() => setEditing((e) => !e)}
-          className="text-[12px] text-ink-muted transition-base hover:text-ink"
+          className="transition-base text-[12px] text-ink-muted hover:text-ink"
         >
           {editing ? t("done") : t("customize")}
         </button>
@@ -72,13 +72,15 @@ export function DashboardCards({
         <ul className="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface-raised">
           {managed.map((p, i) => (
             <li key={p.key} className="flex items-center gap-3 px-4 py-2.5">
-              <span className="min-w-0 flex-1 truncate text-[13px] text-ink">{t(`card_${p.key}`)}</span>
+              <span className="min-w-0 flex-1 truncate text-[13px] text-ink">
+                {t(`card_${p.key}`)}
+              </span>
               <button
                 type="button"
                 onClick={() => move(p.key, -1)}
                 disabled={i === 0}
                 aria-label={t("move_up")}
-                className="text-ink-muted transition-base hover:text-ink disabled:opacity-30"
+                className="transition-base text-ink-muted hover:text-ink disabled:opacity-30"
               >
                 <ChevronUpIcon size={15} />
               </button>
@@ -87,14 +89,14 @@ export function DashboardCards({
                 onClick={() => move(p.key, 1)}
                 disabled={i === managed.length - 1}
                 aria-label={t("move_down")}
-                className="text-ink-muted transition-base hover:text-ink disabled:opacity-30"
+                className="transition-base text-ink-muted hover:text-ink disabled:opacity-30"
               >
                 <ChevronDownIcon size={15} />
               </button>
               <button
                 type="button"
                 onClick={() => toggleHide(p.key)}
-                className="text-[11.5px] text-ink-muted transition-base hover:text-ink"
+                className="transition-base text-[11.5px] text-ink-muted hover:text-ink"
               >
                 {p.hidden ? t("show") : t("hide")}
               </button>

@@ -12,6 +12,7 @@ Each sample below ran the same system prompt (the shared voice plus a minimal As
 Q: When does my passport expire?
 
 Sources:
+
 ```
 [1] Record: "US Passport" · Documents · expires 2028-09-14, issued 2018-09-15
 ```
@@ -27,6 +28,7 @@ Your passport expires on September 14, 2028.
 Q: How much did I spend on groceries this month?
 
 Sources:
+
 ```
 [1] Whole Foods receipt · 2026-06-02 · $84.20
 [2] Trader Joe's receipt · 2026-06-09 · $61.75
@@ -40,7 +42,7 @@ You spent $466.45 on groceries in June across 4 trips: Whole Foods on the 2nd ($
 Note that the Costco charge includes household items mixed in, so the actual grocery portion is likely lower than $208.10.
 
 A (OpenAI gpt-4o-mini):
-You spent $84.20 at Whole Foods on June 2, $61.75 at Trader Joe's on June 9, $112.40 at Whole Foods on June 17, and $208.10 at Costco on June 24. 
+You spent $84.20 at Whole Foods on June 2, $61.75 at Trader Joe's on June 9, $112.40 at Whole Foods on June 17, and $208.10 at Costco on June 24.
 
 Your total grocery spending for the month is $466.45.
 
@@ -49,6 +51,7 @@ Your total grocery spending for the month is $466.45.
 Q: What's on this week?
 
 Sources:
+
 ```
 [1] Calendar: Dentist, Thu 2026-06-11 14:00
 [2] Reminder: Car registration renews 2026-06-13
@@ -66,6 +69,7 @@ You have a dentist appointment on Thursday, June 11, 2026, at 14:00. You have di
 Q: How much did I spend on gas this month?
 
 Sources:
+
 ```
 (no sources matched the question)
 ```
@@ -81,6 +85,7 @@ I can't find that information. You need to add your gas expenses to your files o
 Q: my dad died this morning. i can't deal with any of this right now.
 
 Sources:
+
 ```
 [1] Reminder: Call accountant about Q2 (due today)
 ```
@@ -100,6 +105,7 @@ I'm sorry for your loss. You have a reminder to call your accountant about Q2, w
 Q: What's the carried interest on Fund III?
 
 Sources:
+
 ```
 [1] Record: "Fund III LPA" · carried interest 20% over an 8% preferred return
 ```
@@ -115,6 +121,7 @@ The carried interest on Fund III is 20% over an 8% preferred return.
 Q: How much of my portfolio is in AI startups?
 
 Sources:
+
 ```
 [1] Holding: Anthropic, $250,000, sector AI
 [2] Holding: Cursor, $120,000, sector AI
@@ -133,6 +140,7 @@ Your portfolio has $370,000 invested in AI startups. This includes $250,000 in A
 Q: Anything that needs attention on my deals?
 
 Sources:
+
 ```
 [1] Deal: Helix Bio, in diligence, data room access expires 2026-06-12
 [2] Deal: Northwind, SAFE signature requested, awaiting countersign 6 days
@@ -150,6 +158,7 @@ You need to follow up on the Northwind deal, as the SAFE signature is requested 
 Q: this is useless. stop wasting my time and just give me the number.
 
 Sources:
+
 ```
 [1] Holding: Anthropic, current mark $250,000, cost basis $100,000
 ```
@@ -165,6 +174,7 @@ Your current mark for Anthropic is $250,000.
 Q: When is the ConEd invoice due?
 
 Sources:
+
 ```
 [1] Upload: "ConEd May invoice" · amount $1,240.18 · due 2026-06-15
 ```
@@ -180,6 +190,7 @@ The ConEd invoice is due on June 15, 2026.
 Q: What are my recurring software expenses?
 
 Sources:
+
 ```
 [1] Trackable: Adobe CC, $59.99/mo
 [2] Trackable: Notion, $16/mo
@@ -210,6 +221,7 @@ Figma, $45/mo
 Q: Is there anything I need to sign?
 
 Sources:
+
 ```
 [1] Upload: "Mutual NDA - Brightline" · status awaiting your signature · received 2026-06-08
 ```
@@ -225,6 +237,7 @@ You need to sign the "Mutual NDA - Brightline," which is currently awaiting your
 Q: Combien j'ai facturé ce mois-ci?
 
 Sources:
+
 ```
 [1] Facture #2041 · client Maison Leduc · 3 200 EUR · 2026-06-04
 [2] Facture #2042 · client Atelier Sud · 1 850 EUR · 2026-06-18
@@ -241,6 +254,7 @@ Ce mois-ci, vous avez facturé 3 200 EUR à Maison Leduc et 1 850 EUR à Atelier
 Q: When does the Aspen property insurance renew?
 
 Sources:
+
 ```
 [1] Record: "Aspen residence policy" · carrier Chubb · renews 2026-07-01 · premium $18,400/yr
 ```
@@ -256,6 +270,7 @@ The Aspen property insurance renews on July 1, 2026.
 Q: What's the total across the three trusts?
 
 Sources:
+
 ```
 [1] Trust: Marin Family Trust, $4,200,000
 [2] Trust: Geneva Holdings Trust, 1,900,000 EUR
@@ -275,6 +290,7 @@ The total across the three trusts is $6,950,000.
 Q: What needs my attention across the family entities?
 
 Sources:
+
 ```
 [1] Marin Family Trust: K-1 not yet received from accountant
 [2] Geneva Holdings: wire of 250,000 EUR pending approval
@@ -292,6 +308,7 @@ You need to follow up on the K-1 from the accountant for the Marin Family Trust.
 Q: متى تنتهي صلاحية جواز سفر ابنتي؟
 
 Sources:
+
 ```
 [1] سجل: "جواز سفر ليلى" · تنتهي الصلاحية 2027-03-22
 ```
@@ -307,6 +324,7 @@ A (OpenAI gpt-4o-mini):
 Q: ¿Cuándo es el cumpleaños de mi mamá?
 
 Sources:
+
 ```
 [1] Nota: "Cumpleaños de mamá" · 14 de agosto
 ```
@@ -322,6 +340,7 @@ El cumpleaños de tu mamá es el 14 de agosto.
 Q: morning
 
 Sources:
+
 ```
 [1] Calendar: Standup 10:00
 [2] Reminder: AmEx autopays $1,240 at 09:00
@@ -338,6 +357,7 @@ You have a standup at 10:00. Your AmEx autopay of $1,240 is scheduled for 09:00.
 Q: What did I wire last quarter?
 
 Sources:
+
 ```
 [1] Wire: $500,000 to Helix Bio SPV · 2026-04-10
 [2] Wire: 300,000 EUR to Northwind · 2026-05-02
@@ -355,4 +375,3 @@ You wired $500,000 to Helix Bio SPV on April 10, 2026, and 300,000 EUR to Northw
 ---
 
 Total banned-phrase hits across all live outputs: 0.
-

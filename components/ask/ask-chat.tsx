@@ -298,7 +298,13 @@ export function AskChat({
               } else if (evt.type === "setup_intent") {
                 // Reroute to the reshape engine: generate the patch inline.
                 const hadImage = evt.hasImage === true;
-                updateTurn(id, (t) => ({ ...t, setupIntent: true, setupHadImage: hadImage, patch: null, state: "done" }));
+                updateTurn(id, (t) => ({
+                  ...t,
+                  setupIntent: true,
+                  setupHadImage: hadImage,
+                  patch: null,
+                  state: "done",
+                }));
                 void reshapeGeneratePatch(EMPTY_USER_CONTEXT, evt.query).then((p) =>
                   updateTurn(id, (t) => ({ ...t, patch: p })),
                 );
@@ -314,10 +320,7 @@ export function AskChat({
                 settled = true;
                 // Capture server-assigned conversation id so follow-up
                 // turns are appended to the same conversation.
-                if (
-                  evt.conversationId &&
-                  !conversationIdRef.current
-                ) {
+                if (evt.conversationId && !conversationIdRef.current) {
                   conversationIdRef.current = evt.conversationId;
                 }
                 updateTurn(id, (t) => ({ ...t, state: "done" }));
@@ -337,9 +340,7 @@ export function AskChat({
         // Stream ended without a done/error frame. don't hang.
         if (!settled) {
           updateTurn(id, (t) =>
-            t.state === "streaming"
-              ? { ...t, state: "error", errorCode: "stream_incomplete" }
-              : t,
+            t.state === "streaming" ? { ...t, state: "error", errorCode: "stream_incomplete" } : t,
           );
         }
       } catch (e) {
@@ -494,9 +495,7 @@ export function AskChat({
   // Section-scoped chats sit inside a page (Diet, Bills, Section detail) so
   // they take a fixed compact height. The general /dashboard/ask page uses
   // the full viewport.
-  const containerHeight = scope
-    ? "min-h-[360px] max-h-[560px]"
-    : "h-[calc(100vh-160px)]";
+  const containerHeight = scope ? "min-h-[360px] max-h-[560px]" : "h-[calc(100vh-160px)]";
   return (
     <div className={`flex ${containerHeight} flex-col`}>
       <div ref={scrollRef} className="flex-1 overflow-y-auto pb-6">
@@ -530,11 +529,7 @@ export function AskChat({
       </div>
 
       {crossSpaceAvailable && !scope ? (
-        <ScopeControl
-          everywhere={crossSpace}
-          onChange={setCrossSpace}
-          spaceName={spaceName}
-        />
+        <ScopeControl everywhere={crossSpace} onChange={setCrossSpace} spaceName={spaceName} />
       ) : null}
 
       <Composer
@@ -574,7 +569,7 @@ function Lightbox({ attachment, onClose }: { attachment: Attachment; onClose: ()
       role="dialog"
       aria-modal="true"
       onClick={onClose}
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-ink/70 p-6 animate-fade-up"
+      className="animate-fade-up fixed inset-0 z-[100] flex items-center justify-center bg-ink/70 p-6"
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
@@ -587,7 +582,7 @@ function Lightbox({ attachment, onClose }: { attachment: Attachment; onClose: ()
         type="button"
         onClick={onClose}
         aria-label="Close"
-        className="absolute end-5 top-5 inline-flex h-9 w-9 items-center justify-center rounded-full bg-surface/90 text-ink shadow-lg transition-base hover:bg-surface"
+        className="transition-base absolute end-5 top-5 inline-flex h-9 w-9 items-center justify-center rounded-full bg-surface/90 text-ink shadow-lg hover:bg-surface"
       >
         <CloseIcon size={18} />
       </button>
@@ -657,10 +652,8 @@ function ScopeOption({
       aria-checked={active}
       title={info}
       onClick={onClick}
-      className={`rounded-md px-2.5 py-1 text-[13px] transition-base focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand ${
-        active
-          ? "bg-brand/12 font-medium text-ink"
-          : "text-ink-muted hover:text-ink"
+      className={`transition-base rounded-md px-2.5 py-1 text-[13px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand ${
+        active ? "bg-brand/12 font-medium text-ink" : "text-ink-muted hover:text-ink"
       }`}
     >
       {title}
@@ -671,7 +664,8 @@ function ScopeOption({
 // Words that signal the user wants to see where an answer came from.
 // When the question contains one of these, sources auto-expand;
 // otherwise they're tucked behind a small "Show sources" link.
-const SOURCE_INTENT = /\b(source|sources|file|files|where|which file|origin|proof|show me|attach|attachment|receipt|invoice|document|doc|pdf)\b/i;
+const SOURCE_INTENT =
+  /\b(source|sources|file|files|where|which file|origin|proof|show me|attach|attachment|receipt|invoice|document|doc|pdf)\b/i;
 
 function TurnView({
   turn,
@@ -714,12 +708,15 @@ function TurnView({
               <p className="mb-3 text-[13px] text-ink-soft">
                 {turn.setupHadImage ? t("setup_transition_image") : t("setup_transition")}
               </p>
-              <PatchPreview patch={turn.patch} onConfirm={() => onSetupConfirm(turn.patch as PlanPatch)} />
+              <PatchPreview
+                patch={turn.patch}
+                onConfirm={() => onSetupConfirm(turn.patch as PlanPatch)}
+              />
               <button
                 type="button"
                 onClick={onSetupDismiss}
                 disabled={busy}
-                className="mt-3 text-[12px] text-ink-faint transition-base hover:text-ink disabled:opacity-50"
+                className="transition-base mt-3 text-[12px] text-ink-faint hover:text-ink disabled:opacity-50"
               >
                 {turn.setupHadImage ? t("setup_dismiss_image") : t("setup_dismiss")}
               </button>
@@ -776,7 +773,7 @@ function TurnView({
           type="button"
           onClick={onReason}
           disabled={busy}
-          className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-accent/40 bg-accent-soft/20 px-3 py-1 text-[12px] text-ink transition-base hover:bg-accent-soft/40 disabled:opacity-50"
+          className="transition-base mt-2 inline-flex items-center gap-1.5 rounded-full border border-accent/40 bg-accent-soft/20 px-3 py-1 text-[12px] text-ink hover:bg-accent-soft/40 disabled:opacity-50"
         >
           <SparkIcon size={11} />
           {t("reasoning_offer")}
@@ -789,12 +786,12 @@ function TurnView({
           <button
             type="button"
             onClick={() => setReasoningOpen((o) => !o)}
-            className="text-[11.5px] text-ink-faint transition-base hover:text-ink"
+            className="transition-base text-[11.5px] text-ink-faint hover:text-ink"
           >
             {reasoningOpen ? t("hide_reasoning") : t("view_reasoning")}
           </button>
           {reasoningOpen ? (
-            <pre className="mt-1 max-h-64 overflow-auto whitespace-pre-wrap rounded-xl border border-line bg-canvas px-3 py-2 text-[12px] leading-relaxed text-ink-muted">
+            <pre className="mt-1 max-h-64 overflow-auto rounded-xl border border-line bg-canvas px-3 py-2 text-[12px] leading-relaxed whitespace-pre-wrap text-ink-muted">
               {turn.reasoning}
             </pre>
           ) : null}
@@ -806,13 +803,11 @@ function TurnView({
           {sourcesOpen ? (
             <>
               <div className="mb-2 flex items-baseline justify-between px-1">
-                <p className="text-eyebrow">
-                  Sources
-                </p>
+                <p className="text-eyebrow">Sources</p>
                 <button
                   type="button"
                   onClick={() => setSourcesOpen(false)}
-                  className="cursor-pointer text-[11px] text-ink-faint hover:text-ink transition-base"
+                  className="transition-base cursor-pointer text-[11px] text-ink-faint hover:text-ink"
                 >
                   Hide
                 </button>
@@ -829,7 +824,7 @@ function TurnView({
             <button
               type="button"
               onClick={() => setSourcesOpen(true)}
-              className="cursor-pointer text-[11.5px] text-ink-faint hover:text-ink transition-base"
+              className="transition-base cursor-pointer text-[11.5px] text-ink-faint hover:text-ink"
             >
               Show sources ({turn.sources.length})
             </button>
@@ -844,18 +839,12 @@ function TurnView({
  * Render the answer text with [N] citations rendered as small clickable chips
  * that scroll to the matching source card (and visually anchor the claim).
  */
-function AnswerText({
-  answer,
-  sources,
-}: {
-  answer: string;
-  sources: SourceItem[];
-}) {
+function AnswerText({ answer, sources }: { answer: string; sources: SourceItem[] }) {
   const sourceById = new Map(sources.map((s) => [s.id, s]));
   // Split on [N] tokens, preserving the tokens as separate parts.
   const parts = answer.split(/(\[\d+\])/g);
   return (
-    <p className="whitespace-pre-wrap text-[14px] leading-relaxed text-ink">
+    <p className="text-[14px] leading-relaxed whitespace-pre-wrap text-ink">
       {parts.map((part, i) => {
         const match = part.match(/^\[(\d+)\]$/);
         if (!match) return <span key={i}>{part}</span>;
@@ -866,7 +855,7 @@ function AnswerText({
           <a
             key={i}
             href={src.href}
-            className="mx-0.5 inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-md bg-canvas px-1.5 text-[10.5px] font-medium text-ink-soft transition-base hover:bg-ink hover:text-surface"
+            className="transition-base mx-0.5 inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-md bg-canvas px-1.5 text-[10.5px] font-medium text-ink-soft hover:bg-ink hover:text-surface"
             aria-label={`Open source ${n}: ${src.title}`}
           >
             {n}
@@ -898,7 +887,7 @@ function TurnImages({
           <button
             type="button"
             onClick={() => onImageClick(img)}
-            className="block h-16 w-16 overflow-hidden rounded-lg border border-line bg-canvas transition-base hover:border-line-strong focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+            className="transition-base block h-16 w-16 overflow-hidden rounded-lg border border-line bg-canvas hover:border-line-strong focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
             aria-label={img.name}
           >
             {isPaintable(img.mimeType) ? (
@@ -967,8 +956,7 @@ function ErrorMessage({
 
   let copy: string;
   if (code === "rate_limited" || code === "http_429") {
-    copy =
-      message ?? "You've asked a lot in a short window. Try again in a minute.";
+    copy = message ?? "You've asked a lot in a short window. Try again in a minute.";
   } else if (
     code.startsWith("http_5") ||
     code === "stream_failed" ||
@@ -986,7 +974,7 @@ function ErrorMessage({
         type="button"
         onClick={onRetry}
         disabled={busy}
-        className="inline-flex h-6 cursor-pointer items-center rounded-md border border-line bg-canvas px-2 text-[11.5px] text-ink-soft transition-base hover:border-line-strong hover:text-ink disabled:cursor-default disabled:opacity-40"
+        className="transition-base inline-flex h-6 cursor-pointer items-center rounded-md border border-line bg-canvas px-2 text-[11.5px] text-ink-soft hover:border-line-strong hover:text-ink disabled:cursor-default disabled:opacity-40"
       >
         Retry
       </button>
@@ -1012,7 +1000,7 @@ function EmptyState({
     ? `Scoped to ${scope.label}. Answers come from this section only.`
     : "Ask about anything you've uploaded, your reminders, or your calendar.";
   return (
-    <div className="mx-auto max-w-xl pt-6 text-center animate-fade-up">
+    <div className="animate-fade-up mx-auto max-w-xl pt-6 text-center">
       <h1 className="text-[22px] font-semibold tracking-tight text-ink sm:text-[24px]">
         {headline}
       </h1>
@@ -1020,16 +1008,14 @@ function EmptyState({
 
       {recentQuestions.length > 0 ? (
         <div className="mt-6 space-y-1.5">
-          <p className="text-eyebrow">
-            You&apos;ve asked before
-          </p>
+          <p className="text-eyebrow">You&apos;ve asked before</p>
           <ul className="flex flex-wrap justify-center gap-1.5">
             {recentQuestions.map((s) => (
               <li key={`recent-${s}`}>
                 <button
                   type="button"
                   onClick={() => onSuggest(s)}
-                  className="inline-flex h-8 items-center rounded-full border border-ink/30 bg-canvas px-3 text-[12px] text-ink transition-base hover:border-ink"
+                  className="transition-base inline-flex h-8 items-center rounded-full border border-ink/30 bg-canvas px-3 text-[12px] text-ink hover:border-ink"
                 >
                   {s}
                 </button>
@@ -1045,7 +1031,7 @@ function EmptyState({
             <button
               type="button"
               onClick={() => onSuggest(s)}
-              className="inline-flex h-8 items-center rounded-full border border-line bg-surface px-3 text-[12px] text-ink-soft transition-base hover:border-line-strong hover:text-ink"
+              className="transition-base inline-flex h-8 items-center rounded-full border border-line bg-surface px-3 text-[12px] text-ink-soft hover:border-line-strong hover:text-ink"
             >
               {s}
             </button>
@@ -1074,164 +1060,162 @@ type ComposerProps = {
   attachLabel?: string;
 };
 
-const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
-  function Composer(
-    {
-      value,
-      busy,
-      placeholder,
-      attachments,
-      notice,
-      onChange,
-      onKeyDown,
-      onSubmit,
-      onAddFiles,
-      onRemoveAttachment,
-      onReason,
-      reasonLabel,
-      reasonTooltip,
-      attachLabel,
-    },
-    ref,
-  ) {
-    const locale = useLocale() as Locale;
-    const fileInputRef = useRef<HTMLInputElement>(null);
-    const [dragOver, setDragOver] = useState(false);
-    const canSend = value.trim().length > 0 || attachments.length > 0;
+const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(function Composer(
+  {
+    value,
+    busy,
+    placeholder,
+    attachments,
+    notice,
+    onChange,
+    onKeyDown,
+    onSubmit,
+    onAddFiles,
+    onRemoveAttachment,
+    onReason,
+    reasonLabel,
+    reasonTooltip,
+    attachLabel,
+  },
+  ref,
+) {
+  const locale = useLocale() as Locale;
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [dragOver, setDragOver] = useState(false);
+  const canSend = value.trim().length > 0 || attachments.length > 0;
 
-    function onPaste(e: React.ClipboardEvent<HTMLTextAreaElement>) {
-      const files = Array.from(e.clipboardData.files);
-      if (files.length > 0) {
-        e.preventDefault();
-        onAddFiles(files);
-      }
+  function onPaste(e: React.ClipboardEvent<HTMLTextAreaElement>) {
+    const files = Array.from(e.clipboardData.files);
+    if (files.length > 0) {
+      e.preventDefault();
+      onAddFiles(files);
     }
+  }
 
-    return (
-      <form
-        onSubmit={(e) => {
+  return (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        onSubmit();
+      }}
+      className="sticky bottom-0 pt-3"
+      onDragOver={(e) => {
+        if (e.dataTransfer.types.includes("Files")) {
           e.preventDefault();
-          onSubmit();
-        }}
-        className="sticky bottom-0 pt-3"
-        onDragOver={(e) => {
-          if (e.dataTransfer.types.includes("Files")) {
-            e.preventDefault();
-            setDragOver(true);
-          }
-        }}
-        onDragLeave={() => setDragOver(false)}
-        onDrop={(e) => {
-          if (e.dataTransfer.files.length > 0) {
-            e.preventDefault();
-            setDragOver(false);
-            onAddFiles(Array.from(e.dataTransfer.files));
-          }
-        }}
+          setDragOver(true);
+        }
+      }}
+      onDragLeave={() => setDragOver(false)}
+      onDrop={(e) => {
+        if (e.dataTransfer.files.length > 0) {
+          e.preventDefault();
+          setDragOver(false);
+          onAddFiles(Array.from(e.dataTransfer.files));
+        }
+      }}
+    >
+      <div
+        className={`transition-base rounded-2xl border bg-surface-raised p-2 shadow-[0_1px_2px_rgba(28,26,23,0.04),0_2px_8px_-6px_rgba(28,26,23,0.10)] focus-within:border-line-strong focus-within:shadow-[0_2px_4px_rgba(28,26,23,0.05),0_8px_24px_-14px_rgba(28,26,23,0.30)] ${
+          dragOver ? "border-dashed border-brand" : "border-line"
+        }`}
       >
-        <div
-          className={`rounded-2xl border bg-surface-raised p-2 shadow-[0_1px_2px_rgba(28,26,23,0.04),0_2px_8px_-6px_rgba(28,26,23,0.10)] transition-base focus-within:border-line-strong focus-within:shadow-[0_2px_4px_rgba(28,26,23,0.05),0_8px_24px_-14px_rgba(28,26,23,0.30)] ${
-            dragOver ? "border-brand border-dashed" : "border-line"
-          }`}
-        >
-          {attachments.length > 0 ? (
-            <ul className="mb-2 flex flex-wrap gap-2 px-1 pt-1">
-              {attachments.map((a) => (
-                <li key={a.id} className="relative">
-                  <div className="h-14 w-14 overflow-hidden rounded-lg border border-line bg-canvas">
-                    {isPaintable(a.mimeType) ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={a.dataUrl} alt={a.name} className="h-full w-full object-cover" />
-                    ) : (
-                      <span className="flex h-full w-full items-center justify-center text-[9px] text-ink-faint">
-                        HEIC
-                      </span>
-                    )}
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => onRemoveAttachment(a.id)}
-                    aria-label={`Remove ${a.name}`}
-                    className="absolute -end-1.5 -top-1.5 inline-flex h-5 w-5 items-center justify-center rounded-full border border-line bg-surface text-ink-soft shadow-sm transition-base hover:text-ink"
-                  >
-                    <CloseIcon size={11} />
-                  </button>
-                </li>
-              ))}
-            </ul>
-          ) : null}
+        {attachments.length > 0 ? (
+          <ul className="mb-2 flex flex-wrap gap-2 px-1 pt-1">
+            {attachments.map((a) => (
+              <li key={a.id} className="relative">
+                <div className="h-14 w-14 overflow-hidden rounded-lg border border-line bg-canvas">
+                  {isPaintable(a.mimeType) ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={a.dataUrl} alt={a.name} className="h-full w-full object-cover" />
+                  ) : (
+                    <span className="flex h-full w-full items-center justify-center text-[9px] text-ink-faint">
+                      HEIC
+                    </span>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => onRemoveAttachment(a.id)}
+                  aria-label={`Remove ${a.name}`}
+                  className="transition-base absolute -end-1.5 -top-1.5 inline-flex h-5 w-5 items-center justify-center rounded-full border border-line bg-surface text-ink-soft shadow-sm hover:text-ink"
+                >
+                  <CloseIcon size={11} />
+                </button>
+              </li>
+            ))}
+          </ul>
+        ) : null}
 
-          <div className="flex items-end gap-2">
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept={ACCEPT_ATTR}
-              multiple
-              hidden
-              onChange={(e) => {
-                if (e.target.files) onAddFiles(Array.from(e.target.files));
-                e.target.value = "";
-              }}
-            />
+        <div className="flex items-end gap-2">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept={ACCEPT_ATTR}
+            multiple
+            hidden
+            onChange={(e) => {
+              if (e.target.files) onAddFiles(Array.from(e.target.files));
+              e.target.value = "";
+            }}
+          />
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={busy || attachments.length >= MAX_IMAGES}
+            title={attachLabel}
+            aria-label={attachLabel}
+            className="transition-base mb-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-line text-ink-soft hover:border-line-strong hover:text-ink disabled:opacity-40"
+          >
+            <PaperclipIcon size={16} />
+          </button>
+          <AutoGrowTextarea
+            ref={ref}
+            value={value}
+            onChange={onChange}
+            onKeyDown={onKeyDown}
+            onPaste={onPaste}
+            minRows={1}
+            maxRows={6}
+            autoFocus
+            placeholder={placeholder ?? "Ask Oria anything…"}
+            className="block min-h-[40px] flex-1 bg-transparent px-2 py-2 text-[14.5px] text-ink outline-none placeholder:text-ink-faint"
+          />
+          <MicButton
+            onTranscribed={(text) => onChange(value ? `${value} ${text}` : text)}
+            targetLanguage={locale}
+            size="sm"
+            className="mb-0.5"
+          />
+          {onReason ? (
             <button
               type="button"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={busy || attachments.length >= MAX_IMAGES}
-              title={attachLabel}
-              aria-label={attachLabel}
-              className="mb-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-line text-ink-soft transition-base hover:border-line-strong hover:text-ink disabled:opacity-40"
-            >
-              <PaperclipIcon size={16} />
-            </button>
-            <AutoGrowTextarea
-              ref={ref}
-              value={value}
-              onChange={onChange}
-              onKeyDown={onKeyDown}
-              onPaste={onPaste}
-              minRows={1}
-              maxRows={6}
-              autoFocus
-              placeholder={placeholder ?? "Ask Oria anything…"}
-              className="block min-h-[40px] flex-1 bg-transparent px-2 py-2 text-[14.5px] text-ink placeholder:text-ink-faint outline-none"
-            />
-            <MicButton
-              onTranscribed={(text) => onChange(value ? `${value} ${text}` : text)}
-              targetLanguage={locale}
-              size="sm"
-              className="mb-0.5"
-            />
-            {onReason ? (
-              <button
-                type="button"
-                onClick={onReason}
-                disabled={busy || !canSend}
-                title={reasonTooltip}
-                aria-label={reasonLabel}
-                className="mb-0.5 inline-flex h-10 shrink-0 items-center gap-1 rounded-xl border border-line px-2.5 text-[12px] text-ink-soft transition-base hover:border-line-strong hover:text-ink disabled:opacity-40"
-              >
-                <SparkIcon size={12} />
-                <span className="hidden sm:inline">{reasonLabel}</span>
-              </button>
-            ) : null}
-            <button
-              type="submit"
+              onClick={onReason}
               disabled={busy || !canSend}
-              className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-ink text-surface transition-base hover:bg-ink-soft disabled:opacity-40"
-              aria-label="Send question"
+              title={reasonTooltip}
+              aria-label={reasonLabel}
+              className="transition-base mb-0.5 inline-flex h-10 shrink-0 items-center gap-1 rounded-xl border border-line px-2.5 text-[12px] text-ink-soft hover:border-line-strong hover:text-ink disabled:opacity-40"
             >
-              <ArrowRightIcon size={14} />
+              <SparkIcon size={12} />
+              <span className="hidden sm:inline">{reasonLabel}</span>
             </button>
-          </div>
+          ) : null}
+          <button
+            type="submit"
+            disabled={busy || !canSend}
+            className="transition-base inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-ink text-surface hover:bg-ink-soft disabled:opacity-40"
+            aria-label="Send question"
+          >
+            <ArrowRightIcon size={14} />
+          </button>
         </div>
-        {notice ? (
-          <p className="mt-1.5 px-1 text-[11px] text-warning">{notice}</p>
-        ) : (
-          <p className="mt-1.5 px-1 text-[11px] text-ink-faint">
-            Enter to send, Shift + Enter for newline.
-          </p>
-        )}
-      </form>
-    );
-  },
-);
+      </div>
+      {notice ? (
+        <p className="mt-1.5 px-1 text-[11px] text-warning">{notice}</p>
+      ) : (
+        <p className="mt-1.5 px-1 text-[11px] text-ink-faint">
+          Enter to send, Shift + Enter for newline.
+        </p>
+      )}
+    </form>
+  );
+});

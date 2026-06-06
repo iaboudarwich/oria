@@ -14,15 +14,9 @@ import {
 import { ReminderCheckbox } from "./reminder-checkbox";
 import { ReminderActions } from "./reminder-actions";
 import { parseEventWhen } from "@/lib/utils/event-when";
-import type {
-  CalendarCategory,
-  CalendarEntry,
-} from "@/lib/data/calendar-types";
+import type { CalendarCategory, CalendarEntry } from "@/lib/data/calendar-types";
 
-export const CATEGORY_ICON: Record<
-  CalendarCategory,
-  React.ComponentType<{ size?: number }>
-> = {
+export const CATEGORY_ICON: Record<CalendarCategory, React.ComponentType<{ size?: number }>> = {
   reminders: CalendarIcon,
   finance: WalletIcon,
   travel: PlaneIcon,
@@ -140,8 +134,7 @@ export function formatDayLabel(d: Date): string {
 
 export function formatTime(iso: string): string {
   const d = new Date(iso);
-  const isAllDay =
-    d.getHours() === 0 && d.getMinutes() === 0 && d.getSeconds() === 0;
+  const isAllDay = d.getHours() === 0 && d.getMinutes() === 0 && d.getSeconds() === 0;
   if (isAllDay) return "All day";
   return d.toLocaleTimeString(undefined, {
     hour: "numeric",
@@ -182,9 +175,7 @@ export function formatEntryTime(e: CalendarEntry): string {
 }
 
 /** Bucket entries by yyyy-mm-dd; items without due_at omitted. */
-export function bucketByDay(
-  entries: CalendarEntry[],
-): Map<string, CalendarEntry[]> {
+export function bucketByDay(entries: CalendarEntry[]): Map<string, CalendarEntry[]> {
   const buckets = new Map<string, CalendarEntry[]>();
   for (const e of entries) {
     if (!e.due_at) continue;
@@ -215,7 +206,7 @@ export function CalendarRow({
 
   return (
     <li
-      className={`group flex items-start gap-3 rounded-lg px-3 py-2.5 transition-base hover:bg-surface-raised ${
+      className={`group transition-base flex items-start gap-3 rounded-lg px-3 py-2.5 hover:bg-surface-raised ${
         e.done ? "opacity-60" : ""
       }`}
     >
@@ -241,18 +232,14 @@ export function CalendarRow({
         {e.upload_id ? (
           <Link
             href={`/dashboard/uploads/${e.upload_id}`}
-            className={`text-[13.5px] transition-base ${
+            className={`transition-base text-[13.5px] ${
               e.done ? "text-ink-muted line-through" : "text-ink hover:text-ink-soft"
             }`}
           >
             {e.title}
           </Link>
         ) : (
-          <p
-            className={`text-[13.5px] ${
-              e.done ? "text-ink-muted line-through" : "text-ink"
-            }`}
-          >
+          <p className={`text-[13.5px] ${e.done ? "text-ink-muted line-through" : "text-ink"}`}>
             {e.title}
           </p>
         )}
@@ -267,12 +254,8 @@ export function CalendarRow({
             </span>
           ) : null}
           {/* Item-specific quiet meta: amount, location. */}
-          {!isReminder && e.meta?.amount_display ? (
-            <span>{e.meta.amount_display}</span>
-          ) : null}
-          {!isReminder && e.meta?.location ? (
-            <span>{e.meta.location}</span>
-          ) : null}
+          {!isReminder && e.meta?.amount_display ? <span>{e.meta.amount_display}</span> : null}
+          {!isReminder && e.meta?.location ? <span>{e.meta.location}</span> : null}
           {showSpacePill ? (
             <span className="inline-flex items-center gap-1 rounded-full bg-ink/[0.05] px-2 py-0.5 text-[10.5px] text-ink-muted">
               {e.space_name}

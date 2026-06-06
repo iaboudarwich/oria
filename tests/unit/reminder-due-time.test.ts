@@ -48,8 +48,6 @@ describe("localDateTimeToISO", () => {
   });
 
   it("falls back to UTC interpretation when the zone is missing", () => {
-    expect(localDateTimeToISO("2026-06-05", "14:00", null)).toBe(
-      "2026-06-05T14:00:00.000Z",
-    );
+    expect(localDateTimeToISO("2026-06-05", "14:00", null)).toBe("2026-06-05T14:00:00.000Z");
   });
 });

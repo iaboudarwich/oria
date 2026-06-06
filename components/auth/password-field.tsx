@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  useRef,
-  useState,
-  type InputHTMLAttributes,
-  type ReactNode,
-} from "react";
+import { useRef, useState, type InputHTMLAttributes, type ReactNode } from "react";
 import { EyeIcon, EyeOffIcon } from "@/components/ui/icon";
 
 type Props = {
@@ -23,13 +18,7 @@ type Props = {
 type Zxcvbn = (password: string) => { score: 0 | 1 | 2 | 3 | 4 };
 let zxcvbnModule: Zxcvbn | null = null;
 
-const BAR_COLORS = [
-  "bg-claret",
-  "bg-claret",
-  "bg-accent",
-  "bg-brand",
-  "bg-brand",
-];
+const BAR_COLORS = ["bg-claret", "bg-claret", "bg-accent", "bg-brand", "bg-brand"];
 
 /**
  * Password input with a small show/hide eye icon. Visual styling matches the
@@ -74,7 +63,7 @@ export function PasswordField({
             rest.onChange?.(e);
             if (showStrength) void evaluate(e.target.value);
           }}
-          className="block h-11 w-full rounded-xl border border-line-strong bg-surface-raised px-3.5 pr-11 text-[16px] text-ink placeholder:text-ink-faint outline-none transition-base focus:border-ink"
+          className="transition-base block h-11 w-full rounded-xl border border-line-strong bg-surface-raised px-3.5 pr-11 text-[16px] text-ink outline-none placeholder:text-ink-faint focus:border-ink"
         />
         <button
           type="button"
@@ -82,7 +71,7 @@ export function PasswordField({
           tabIndex={-1}
           aria-label={visible ? "Hide password" : "Show password"}
           aria-pressed={visible}
-          className="absolute inset-y-0 right-0 inline-flex w-10 items-center justify-center rounded-r-xl text-ink-faint transition-base hover:text-ink"
+          className="transition-base absolute inset-y-0 right-0 inline-flex w-10 items-center justify-center rounded-r-xl text-ink-faint hover:text-ink"
         >
           {visible ? <EyeOffIcon size={14} /> : <EyeIcon size={14} />}
         </button>
@@ -94,18 +83,14 @@ export function PasswordField({
             {[0, 1, 2, 3].map((i) => (
               <span
                 key={i}
-                className={`h-1 flex-1 rounded-full transition-base ${
-                  i <= score - 1 || (score === 0 && i === 0)
-                    ? BAR_COLORS[score]
-                    : "bg-line-strong"
+                className={`transition-base h-1 flex-1 rounded-full ${
+                  i <= score - 1 || (score === 0 && i === 0) ? BAR_COLORS[score] : "bg-line-strong"
                 }`}
               />
             ))}
           </div>
           {strengthLabels ? (
-            <p className="mt-1 text-[11.5px] text-ink-faint">
-              {strengthLabels[score]}
-            </p>
+            <p className="mt-1 text-[11.5px] text-ink-faint">{strengthLabels[score]}</p>
           ) : null}
         </div>
       ) : null}

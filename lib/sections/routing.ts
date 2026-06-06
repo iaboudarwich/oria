@@ -23,8 +23,16 @@ const BUILTIN_ROUTES: Record<string, Section> = {
 };
 
 const BUILTIN_SECTIONS = new Set<string>([
-  "household", "travel", "properties", "staff", "events",
-  "finance", "legal", "personal", "vendors", "health",
+  "household",
+  "travel",
+  "properties",
+  "staff",
+  "events",
+  "finance",
+  "legal",
+  "personal",
+  "vendors",
+  "health",
 ]);
 
 /** Domain from a raw "From" header, e.g. "Stripe <a@b.stripe.com>" -> "stripe.com". */
@@ -83,7 +91,8 @@ async function matchLearnedRule(input: {
     const hit = rules.find((r) => {
       if (r.match_type !== mt) return false;
       if (mt === "vendor") return !!vendor && r.match_value === vendor;
-      if (mt === "sender_domain") return !!input.senderDomain && r.match_value === input.senderDomain;
+      if (mt === "sender_domain")
+        return !!input.senderDomain && r.match_value === input.senderDomain;
       if (mt === "item_type") return r.match_value === input.itemType;
       if (mt === "keyword") return !!r.match_value && hay.includes(r.match_value.toLowerCase());
       return false;

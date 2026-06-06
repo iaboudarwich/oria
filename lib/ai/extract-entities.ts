@@ -2,22 +2,14 @@ import "server-only";
 
 import { getAnthropic, getModel } from "@/lib/ai/anthropic";
 import { createAdminClient } from "@/lib/supabase/admin";
-import {
-  DOC_TYPES,
-  SCHEMAS,
-  schemaDescription,
-  type DocType,
-} from "@/lib/ai/extraction-schemas";
+import { DOC_TYPES, SCHEMAS, schemaDescription, type DocType } from "@/lib/ai/extraction-schemas";
 
 const EXTRACTOR_VERSION = "v1";
 
 // ── Text helpers ─────────────────────────────────────────────────────────────
 
 /** Fetch the first N characters of concatenated chunk text for an upload. */
-async function getUploadText(
-  uploadId: string,
-  maxChars = 8000,
-): Promise<string | null> {
+async function getUploadText(uploadId: string, maxChars = 8000): Promise<string | null> {
   const admin = createAdminClient();
   const { data } = await admin
     .from("document_chunks")
@@ -27,9 +19,7 @@ async function getUploadText(
     .limit(40); // ~8000 chars across typical 200-char chunks
 
   if (!data || data.length === 0) return null;
-  const joined = (data as { content: string }[])
-    .map((r) => r.content)
-    .join("\n\n");
+  const joined = (data as { content: string }[]).map((r) => r.content).join("\n\n");
   return joined.slice(0, maxChars);
 }
 
@@ -37,10 +27,7 @@ async function getUploadText(
 
 type ClassifyResult = { doc_type: DocType; confidence: number };
 
-export async function classifyDocument(
-  text: string,
-  filename: string,
-): Promise<ClassifyResult> {
+export async function classifyDocument(text: string, filename: string): Promise<ClassifyResult> {
   const anthropic = getAnthropic();
   if (!anthropic) return { doc_type: "generic", confidence: 0.5 };
 
@@ -62,8 +49,7 @@ Use "generic" when the document doesn't clearly fit another category.`,
     ],
   });
 
-  const raw =
-    msg.content[0]?.type === "text" ? msg.content[0].text.trim() : "";
+  const raw = msg.content[0]?.type === "text" ? msg.content[0].text.trim() : "";
   try {
     const parsed = JSON.parse(raw) as { doc_type?: string; confidence?: number };
     const docType =
@@ -72,9 +58,7 @@ Use "generic" when the document doesn't clearly fit another category.`,
         ? (parsed.doc_type as DocType)
         : "generic";
     const confidence =
-      typeof parsed.confidence === "number"
-        ? Math.min(1, Math.max(0, parsed.confidence))
-        : 0.5;
+      typeof parsed.confidence === "number" ? Math.min(1, Math.max(0, parsed.confidence)) : 0.5;
     return { doc_type: docType, confidence };
   } catch {
     return { doc_type: "generic", confidence: 0.3 };
@@ -94,10 +78,16 @@ export async function extractFields(
   if (!anthropic) return { fields: {}, confidence: 0 };
 
   const schema = schemaDescription(docType);
-  const langNames: Record<string, string> = { en: "English", ar: "Arabic", fr: "French", es: "Spanish" };
-  const langHint = accountLanguage && langNames[accountLanguage]
-    ? `The user's primary language is ${langNames[accountLanguage]}. Extract text in the original document language. Use English keys for the schema.\n`
-    : "";
+  const langNames: Record<string, string> = {
+    en: "English",
+    ar: "Arabic",
+    fr: "French",
+    es: "Spanish",
+  };
+  const langHint =
+    accountLanguage && langNames[accountLanguage]
+      ? `The user's primary language is ${langNames[accountLanguage]}. Extract text in the original document language. Use English keys for the schema.\n`
+      : "";
 
   const attempt = async (extra = ""): Promise<string> => {
     const msg = await anthropic.messages.create({
@@ -124,7 +114,10 @@ Rules:
 
   let raw = await attempt();
   // Strip markdown code fences if present
-  raw = raw.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim();
+  raw = raw
+    .replace(/^```(?:json)?\s*/i, "")
+    .replace(/\s*```$/, "")
+    .trim();
 
   let parsed: Record<string, unknown> | null = null;
   try {
@@ -134,7 +127,10 @@ Rules:
     let retry = await attempt(
       "IMPORTANT: Your previous response was not valid JSON. Return ONLY a JSON object, no markdown, no explanation.",
     );
-    retry = retry.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim();
+    retry = retry
+      .replace(/^```(?:json)?\s*/i, "")
+      .replace(/\s*```$/, "")
+      .trim();
     try {
       parsed = JSON.parse(retry) as Record<string, unknown>;
     } catch {
@@ -146,9 +142,7 @@ Rules:
   // Validate against Zod schema, strip unknown keys, coerce optional fields
   const schema_zod = SCHEMAS[docType];
   const result = schema_zod.safeParse(parsed);
-  const fields = result.success
-    ? (result.data as Record<string, unknown>)
-    : (parsed ?? {});
+  const fields = result.success ? (result.data as Record<string, unknown>) : (parsed ?? {});
 
   return { fields, confidence: result.success ? 0.8 : 0.5 };
 }
@@ -211,10 +205,7 @@ export async function extractEntity(
   if (!text || text.trim().length < 50) return; // too little context
 
   // ── Classify ───────────────────────────────────────────────────────────
-  const { doc_type, confidence: classConf } = await classifyDocument(
-    text,
-    upload.filename,
-  );
+  const { doc_type, confidence: classConf } = await classifyDocument(text, upload.filename);
 
   // ── Extract ────────────────────────────────────────────────────────────
   let { fields, confidence: extractConf } = await extractFields(text, doc_type, accountLanguage);

@@ -5,13 +5,34 @@ import { recordAiCall } from "@/lib/ai/telemetry";
 
 // Validation lists so a hallucinated enum never reaches the DB.
 const VALID_SECTIONS = [
-  "household", "travel", "properties", "staff", "events",
-  "finance", "legal", "personal", "vendors", "health",
+  "household",
+  "travel",
+  "properties",
+  "staff",
+  "events",
+  "finance",
+  "legal",
+  "personal",
+  "vendors",
+  "health",
 ] as const;
 const VALID_DOC_TYPES = [
-  "receipt", "invoice", "boarding_pass", "ticket", "contract", "itinerary",
-  "schedule", "form", "handwritten_note", "sticky_note", "screenshot", "photo",
-  "scanned_document", "business_card", "resume", "unknown",
+  "receipt",
+  "invoice",
+  "boarding_pass",
+  "ticket",
+  "contract",
+  "itinerary",
+  "schedule",
+  "form",
+  "handwritten_note",
+  "sticky_note",
+  "screenshot",
+  "photo",
+  "scanned_document",
+  "business_card",
+  "resume",
+  "unknown",
 ] as const;
 
 export type GroupRecord = {
@@ -83,10 +104,12 @@ function sanitize(parsed: unknown, imageCount: number, forceMerge = false): Grou
       : [];
     const section = str(o.section);
     const docType = str(o.document_type);
-    const smart = o.smart_section === "diet" || o.smart_section === "bills" ? o.smart_section : null;
+    const smart =
+      o.smart_section === "diet" || o.smart_section === "bills" ? o.smart_section : null;
     records.push({
       title: str(o.title) || "Untitled",
-      document_type: docType && (VALID_DOC_TYPES as readonly string[]).includes(docType) ? docType : "unknown",
+      document_type:
+        docType && (VALID_DOC_TYPES as readonly string[]).includes(docType) ? docType : "unknown",
       section: section && (VALID_SECTIONS as readonly string[]).includes(section) ? section : null,
       smart_section: smart,
       summary: str(o.summary),
@@ -155,7 +178,11 @@ export async function extractImageGroup(
       },
     );
     if (!res?.content) return null;
-    const cleaned = res.content.trim().replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim();
+    const cleaned = res.content
+      .trim()
+      .replace(/^```(?:json)?\s*/i, "")
+      .replace(/\s*```$/, "")
+      .trim();
     return sanitize(JSON.parse(cleaned), images.length, opts.forceMerge ?? false);
   } catch {
     return null;

@@ -157,7 +157,7 @@ export function PreviewClient() {
         <div className="mt-6 space-y-5">
           {plan.spaces.map((space, si) => (
             <div key={si}>
-              <p className="text-[11.5px] font-semibold uppercase tracking-[0.08em] text-ink-faint">
+              <p className="text-[11.5px] font-semibold tracking-[0.08em] text-ink-faint uppercase">
                 {t(space.area === "work" ? "preview_work" : "preview_personal")} · {space.label}
               </p>
               <div className="mt-2 space-y-3">
@@ -173,7 +173,7 @@ export function PreviewClient() {
                       <button
                         type="button"
                         onClick={() => removeWorkspace(si, wi)}
-                        className="shrink-0 text-[12px] text-ink-faint transition-base hover:text-claret"
+                        className="transition-base shrink-0 text-[12px] text-ink-faint hover:text-claret"
                       >
                         {t("preview_remove")}
                       </button>
@@ -194,7 +194,7 @@ export function PreviewClient() {
                             type="button"
                             onClick={() => removeSection(si, wi, sj)}
                             aria-label={t("preview_remove")}
-                            className="shrink-0 text-[14px] leading-none text-ink-faint transition-base hover:text-claret"
+                            className="transition-base shrink-0 text-[14px] leading-none text-ink-faint hover:text-claret"
                           >
                             ×
                           </button>
@@ -212,7 +212,7 @@ export function PreviewClient() {
           type="button"
           onClick={build}
           disabled={plan.spaces.length === 0}
-          className="mt-7 w-full rounded-xl bg-ink px-5 py-3 text-[15px] font-medium text-surface transition-base hover:bg-ink-soft disabled:opacity-40"
+          className="transition-base mt-7 w-full rounded-xl bg-ink px-5 py-3 text-[15px] font-medium text-surface hover:bg-ink-soft disabled:opacity-40"
         >
           {t("preview_build")}
         </button>
@@ -227,7 +227,9 @@ function Shell({ children, wide }: { children: React.ReactNode; wide?: boolean }
       <header className="px-6 py-5 sm:px-8">
         <Wordmark />
       </header>
-      <main className={`flex flex-1 ${wide ? "items-start py-6" : "items-center"} justify-center px-6 pb-16`}>
+      <main
+        className={`flex flex-1 ${wide ? "items-start py-6" : "items-center"} justify-center px-6 pb-16`}
+      >
         {children}
       </main>
     </div>

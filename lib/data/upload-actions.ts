@@ -22,11 +22,7 @@ import { contentHashHex } from "./upload-reuse";
 import { logAuditEvent } from "./audit-log";
 import { rateLimit, RATE_PRESETS } from "@/lib/rate-limit";
 import { trackEvent } from "@/lib/analytics";
-import {
-  convertHeicToJpeg,
-  heicNameToJpeg,
-  isHeicLike,
-} from "@/lib/upload/heic";
+import { convertHeicToJpeg, heicNameToJpeg, isHeicLike } from "@/lib/upload/heic";
 import { formatBytes } from "@/lib/utils";
 import type { Section } from "@/lib/supabase/types";
 
@@ -57,9 +53,7 @@ const ALLOWED_MIME_EXACT = [
 // so users see our friendly message instead of a 413 from the framework.
 const MAX_BYTES = 50 * 1024 * 1024;
 
-type Result =
-  | { ok: true; id: string; warning?: string }
-  | { ok: false; error: string };
+type Result = { ok: true; id: string; warning?: string } | { ok: false; error: string };
 
 export async function uploadFile(formData: FormData): Promise<Result> {
   const file = formData.get("file");
@@ -115,7 +109,9 @@ export async function uploadFile(formData: FormData): Promise<Result> {
   // ("Lunch: chicken, rice, salad" / "Electricity bill for LA") without
   // needing a new column.
   const userDescription =
-    String(formData.get("description") ?? "").trim().slice(0, 500) || null;
+    String(formData.get("description") ?? "")
+      .trim()
+      .slice(0, 500) || null;
 
   // Smart Section routing. When a user uploads through /dashboard/diet or
   // /dashboard/bills, the dropzone tags the upload so the extractor classifies
@@ -123,9 +119,7 @@ export async function uploadFile(formData: FormData): Promise<Result> {
   // can read it without a second parameter pipeline.
   const smartHintRaw = String(formData.get("smart_section") ?? "").trim();
   const smartSectionHint: "diet" | "bills" | null =
-    smartHintRaw === "diet" || smartHintRaw === "bills"
-      ? (smartHintRaw as "diet" | "bills")
-      : null;
+    smartHintRaw === "diet" || smartHintRaw === "bills" ? (smartHintRaw as "diet" | "bills") : null;
 
   // Part of a multi-image set (one drop): the group extraction reads the whole
   // set together, so a grouped upload defers its per-file extraction.
@@ -196,8 +190,7 @@ export async function uploadFile(formData: FormData): Promise<Result> {
       void recordSystemEvent({
         kind: "upload.failed",
         severity: "error",
-        message:
-          err instanceof Error ? err.message : "HEIC conversion failed",
+        message: err instanceof Error ? err.message : "HEIC conversion failed",
         context: {
           stage: "heic_convert",
           filename: file.name,
@@ -230,12 +223,10 @@ export async function uploadFile(formData: FormData): Promise<Result> {
   const contentHash = contentHashHex(buffer);
 
   // 1. Upload bytes to storage.
-  const { error: storageError } = await supabase.storage
-    .from("uploads")
-    .upload(path, buffer, {
-      contentType: bodyMime,
-      upsert: false,
-    });
+  const { error: storageError } = await supabase.storage.from("uploads").upload(path, buffer, {
+    contentType: bodyMime,
+    upsert: false,
+  });
   if (storageError) {
     Sentry.captureException(new Error(storageError.message), {
       tags: { surface: "upload" },
@@ -257,9 +248,7 @@ export async function uploadFile(formData: FormData): Promise<Result> {
   }
 
   const finalCustomId = customSectionId ?? inferredCustomId;
-  const finalSection = finalCustomId
-    ? null
-    : (sectionHint as Section | null) ?? inferredBuiltin;
+  const finalSection = finalCustomId ? null : ((sectionHint as Section | null) ?? inferredBuiltin);
 
   // Cheap duplicate detection: same org, same filename + size, in the
   // last 24h. We don't block. testers genuinely do re-upload a file
@@ -300,9 +289,7 @@ export async function uploadFile(formData: FormData): Promise<Result> {
       content_hash: contentHash,
       ...(userDescription ? { user_description: userDescription } : {}),
       ...(smartSectionHint ? { smart_section_hint: smartSectionHint } : {}),
-      ...(dupOf
-        ? { duplicate_of: dupOf.id, duplicate_of_at: dupOf.created_at }
-        : {}),
+      ...(dupOf ? { duplicate_of: dupOf.id, duplicate_of_at: dupOf.created_at } : {}),
     },
   });
   if (dbError) {
@@ -311,7 +298,10 @@ export async function uploadFile(formData: FormData): Promise<Result> {
       extra: { stage: "db_insert", orgId: ctx.organization.id, uploadId },
     });
     // Best-effort cleanup of orphaned object.
-    await supabase.storage.from("uploads").remove([path]).catch(() => {});
+    await supabase.storage
+      .from("uploads")
+      .remove([path])
+      .catch(() => {});
     return { ok: false, error: dbError.message };
   }
 
@@ -396,7 +386,6 @@ export async function uploadFile(formData: FormData): Promise<Result> {
   return { ok: true, id: uploadId, warning };
 }
 
-
 export async function recordUploadOpened(uploadId: string): Promise<void> {
   const supabase = await createClient();
   await supabase.rpc("mark_upload_opened", { p_upload_id: uploadId });
@@ -417,9 +406,7 @@ export async function recordUploadOpened(uploadId: string): Promise<void> {
  * processUpload itself flips the upload back to status=processing
  * before running, then to filed or failed.
  */
-export async function retryUploadProcessing(
-  formData: FormData,
-): Promise<void> {
+export async function retryUploadProcessing(formData: FormData): Promise<void> {
   const id = String(formData.get("id") ?? "").trim();
   if (!id) return;
   const ctx = await requireContext();
@@ -530,9 +517,7 @@ export async function setUploadSection(formData: FormData): Promise<void> {
   // even before RLS runs.
   const cur = await supabase
     .from("uploads")
-    .select(
-      "id, uploaded_by, organization_id, section, custom_section_id, filename, title",
-    )
+    .select("id, uploaded_by, organization_id, section, custom_section_id, filename, title")
     .eq("id", id)
     .eq("organization_id", ctx.organization.id)
     .maybeSingle();
@@ -639,4 +624,3 @@ export async function setUploadSection(formData: FormData): Promise<void> {
     revalidatePath(`/dashboard/sections/${row.custom_section_id}`);
   }
 }
-

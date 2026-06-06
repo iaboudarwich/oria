@@ -66,15 +66,13 @@ const SECTIONS: Section[] = [
   },
   {
     heading: "Contact",
-    paragraphs: [
-      "Questions about these terms? Email us at legal@heyoria.com.",
-    ],
+    paragraphs: ["Questions about these terms? Email us at legal@heyoria.com."],
   },
 ];
 
 export default function TermsPage() {
   return (
-    <article className="prose prose-sm max-w-none text-ink-soft prose-headings:text-ink prose-headings:font-semibold prose-strong:text-ink prose-a:text-brand">
+    <article className="prose prose-sm max-w-none text-ink-soft prose-headings:font-semibold prose-headings:text-ink prose-a:text-brand prose-strong:text-ink">
       <p className="text-eyebrow">Terms of Service</p>
       <h1 className="text-display">Terms of Service</h1>
       <p className="text-body-sm text-ink-faint">Last updated: {LAST_UPDATED}</p>

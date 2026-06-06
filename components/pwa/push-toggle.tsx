@@ -13,13 +13,7 @@ import {
 } from "@/lib/pwa/push-client";
 import { isIos, isStandalone } from "@/lib/pwa/standalone";
 
-type Status =
-  | "loading"
-  | "unsupported"
-  | "ios_install"
-  | "unavailable"
-  | "blocked"
-  | "ready";
+type Status = "loading" | "unsupported" | "ios_install" | "unavailable" | "blocked" | "ready";
 
 /**
  * Settings toggle for Web Push. Permission is requested only when the user
@@ -91,12 +85,11 @@ export function PushToggle({ isAdmin }: { isAdmin: boolean }) {
     setBusy(false);
   }
 
-  const showTest =
-    subscribed && (process.env.NODE_ENV !== "production" || isAdmin);
+  const showTest = subscribed && (process.env.NODE_ENV !== "production" || isAdmin);
 
   return (
     <section>
-      <h2 className="mb-3 px-1 text-eyebrow">{t("push_title")}</h2>
+      <h2 className="text-eyebrow mb-3 px-1">{t("push_title")}</h2>
       <div className="overflow-hidden rounded-2xl border border-line bg-surface-raised px-4 py-4 shadow-[0_1px_2px_rgba(28,26,23,0.04)]">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-start gap-3">
@@ -126,7 +119,7 @@ export function PushToggle({ isAdmin }: { isAdmin: boolean }) {
               type="button"
               onClick={onToggle}
               disabled={busy}
-              className="inline-flex h-9 shrink-0 items-center rounded-lg bg-ink px-3 text-[12.5px] font-medium text-surface transition-base hover:bg-ink-soft disabled:opacity-50"
+              className="transition-base inline-flex h-9 shrink-0 items-center rounded-lg bg-ink px-3 text-[12.5px] font-medium text-surface hover:bg-ink-soft disabled:opacity-50"
             >
               {subscribed ? t("push_disable") : t("push_enable")}
             </button>
@@ -139,7 +132,7 @@ export function PushToggle({ isAdmin }: { isAdmin: boolean }) {
               type="button"
               onClick={onTest}
               disabled={busy}
-              className="inline-flex h-8 items-center rounded-lg border border-line px-3 text-[12px] text-ink-muted transition-base hover:text-ink disabled:opacity-50"
+              className="transition-base inline-flex h-8 items-center rounded-lg border border-line px-3 text-[12px] text-ink-muted hover:text-ink disabled:opacity-50"
             >
               {t("push_test")}
             </button>

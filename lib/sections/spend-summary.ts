@@ -32,17 +32,9 @@ function monthKey(d: Date): string {
  * @param now    the reference instant ("this month" is now's calendar month)
  * @param topN   how many named categories before the rest fold into "Other"
  */
-export function summarizeSpend(
-  bills: BillItem[],
-  now: Date,
-  topN = 6,
-): SpendSummary {
-  const thisKey = monthKey(
-    new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)),
-  );
-  const lastKey = monthKey(
-    new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1)),
-  );
+export function summarizeSpend(bills: BillItem[], now: Date, topN = 6): SpendSummary {
+  const thisKey = monthKey(new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)));
+  const lastKey = monthKey(new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1)));
 
   // The trailing 12 calendar months (oldest to newest).
   const months: Array<{ key: string; label: string }> = [];
@@ -103,8 +95,7 @@ export function summarizeSpend(
     });
   }
 
-  const deltaPct =
-    lastMonth > 0 ? Math.round(((thisMonth - lastMonth) / lastMonth) * 100) : null;
+  const deltaPct = lastMonth > 0 ? Math.round(((thisMonth - lastMonth) / lastMonth) * 100) : null;
 
   return {
     hasData: any,

@@ -32,24 +32,18 @@ export function CircleSettings({
 }) {
   return (
     <section>
-      <h2 className="mb-2 px-1 text-eyebrow">
+      <h2 className="text-eyebrow mb-2 px-1">
         {isWorkspace ? "Workspace settings" : "Circle settings"}
       </h2>
 
       <div className="overflow-hidden rounded-2xl border border-line bg-surface-raised shadow-[0_1px_2px_rgba(28,26,23,0.04),0_2px_8px_-6px_rgba(28,26,23,0.08)]">
         <ul className="divide-y divide-line">
-          {isOwner && candidates.length > 0 ? (
-            <TransferRow candidates={candidates} />
-          ) : null}
-          {!isOwner ? (
-            <LeaveRow circleName={circleName} isWorkspace={isWorkspace} />
-          ) : null}
+          {isOwner && candidates.length > 0 ? <TransferRow candidates={candidates} /> : null}
+          {!isOwner ? <LeaveRow circleName={circleName} isWorkspace={isWorkspace} /> : null}
           {isOwner && isSoloOwner ? (
             <LeaveRow circleName={circleName} isWorkspace={isWorkspace} solo />
           ) : null}
-          {isOwner ? (
-            <DeleteRow circleName={circleName} isWorkspace={isWorkspace} />
-          ) : null}
+          {isOwner ? <DeleteRow circleName={circleName} isWorkspace={isWorkspace} /> : null}
         </ul>
       </div>
     </section>
@@ -93,7 +87,7 @@ function TransferRow({ candidates }: { candidates: Candidate[] }) {
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
-          className="inline-flex h-8 items-center rounded-lg border border-line bg-surface px-3 text-[12px] text-ink-soft transition-base hover:border-line-strong hover:text-ink"
+          className="transition-base inline-flex h-8 items-center rounded-lg border border-line bg-surface px-3 text-[12px] text-ink-soft hover:border-line-strong hover:text-ink"
         >
           {open ? "Cancel" : "Transfer"}
         </button>
@@ -105,14 +99,12 @@ function TransferRow({ candidates }: { candidates: Candidate[] }) {
             className="flex flex-col gap-2 rounded-xl border border-line bg-canvas/60 p-3 sm:flex-row sm:items-center"
           >
             <label className="flex min-w-0 flex-1 flex-col gap-1">
-              <span className="text-[11.5px] text-ink-muted">
-                Who should be the new owner?
-              </span>
+              <span className="text-[11.5px] text-ink-muted">Who should be the new owner?</span>
               <select
                 name="membership_id"
                 value={target}
                 onChange={(e) => setTarget(e.target.value)}
-                className="h-9 rounded-lg border border-line-strong bg-surface px-2.5 text-[13px] text-ink outline-none transition-base focus:border-ink"
+                className="transition-base h-9 rounded-lg border border-line-strong bg-surface px-2.5 text-[13px] text-ink outline-none focus:border-ink"
               >
                 {candidates.map((c) => (
                   <option key={c.membership_id} value={c.membership_id}>
@@ -123,7 +115,7 @@ function TransferRow({ candidates }: { candidates: Candidate[] }) {
             </label>
             <button
               type="submit"
-              className="inline-flex h-9 items-center justify-center rounded-lg bg-ink px-3.5 text-[12.5px] text-surface hover:bg-ink-soft transition-base"
+              className="transition-base inline-flex h-9 items-center justify-center rounded-lg bg-ink px-3.5 text-[12.5px] text-surface hover:bg-ink-soft"
             >
               Make them the owner
             </button>
@@ -160,13 +152,13 @@ function LeaveRow({
             <button
               type="button"
               onClick={() => setArmed(false)}
-              className="inline-flex h-8 items-center rounded-lg border border-line bg-surface px-2.5 text-[11.5px] text-ink-muted hover:text-ink transition-base"
+              className="transition-base inline-flex h-8 items-center rounded-lg border border-line bg-surface px-2.5 text-[11.5px] text-ink-muted hover:text-ink"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="inline-flex h-8 items-center rounded-lg bg-claret/90 px-3 text-[12px] text-surface hover:bg-claret transition-base"
+              className="transition-base inline-flex h-8 items-center rounded-lg bg-claret/90 px-3 text-[12px] text-surface hover:bg-claret"
             >
               {solo ? `Close ${truncate(circleName)}` : "Yes, leave"}
             </button>
@@ -175,7 +167,7 @@ function LeaveRow({
           <button
             type="button"
             onClick={() => setArmed(true)}
-            className="inline-flex h-8 items-center rounded-lg border border-line bg-surface px-3 text-[12px] text-ink-soft transition-base hover:border-line-strong hover:text-ink"
+            className="transition-base inline-flex h-8 items-center rounded-lg border border-line bg-surface px-3 text-[12px] text-ink-soft hover:border-line-strong hover:text-ink"
           >
             {solo ? "Close" : "Leave"}
           </button>
@@ -185,13 +177,7 @@ function LeaveRow({
   );
 }
 
-function DeleteRow({
-  circleName,
-  isWorkspace,
-}: {
-  circleName: string;
-  isWorkspace: boolean;
-}) {
+function DeleteRow({ circleName, isWorkspace }: { circleName: string; isWorkspace: boolean }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [typed, setTyped] = useState("");
@@ -235,7 +221,7 @@ function DeleteRow({
             setTyped("");
             setError(null);
           }}
-          className="inline-flex h-8 items-center rounded-lg border border-line bg-surface px-3 text-[12px] text-ink-soft transition-base hover:border-line-strong hover:text-ink"
+          className="transition-base inline-flex h-8 items-center rounded-lg border border-line bg-surface px-3 text-[12px] text-ink-soft hover:border-line-strong hover:text-ink"
         >
           {open ? "Cancel" : "Delete"}
         </button>
@@ -247,9 +233,7 @@ function DeleteRow({
             className="flex flex-col gap-2 rounded-xl border border-claret/20 bg-claret/[0.04] p-3"
           >
             <label className="block">
-              <span className="block text-[12px] text-ink-muted">
-                Type the name to confirm
-              </span>
+              <span className="block text-[12px] text-ink-muted">Type the name to confirm</span>
               <input
                 type="text"
                 name="confirm_name"
@@ -261,7 +245,7 @@ function DeleteRow({
                 placeholder={circleName}
                 autoComplete="off"
                 spellCheck={false}
-                className="mt-1.5 block h-9 w-full rounded-lg border border-line-strong bg-surface px-3 text-[13px] text-ink placeholder:text-ink-faint outline-none transition-base focus:border-claret"
+                className="transition-base mt-1.5 block h-9 w-full rounded-lg border border-line-strong bg-surface px-3 text-[13px] text-ink outline-none placeholder:text-ink-faint focus:border-claret"
               />
             </label>
             {error ? (
@@ -273,7 +257,7 @@ function DeleteRow({
               type="submit"
               disabled={!matches || pending}
               aria-busy={pending}
-              className="inline-flex h-9 items-center justify-center rounded-lg bg-claret/90 px-3.5 text-[12.5px] text-surface transition-base hover:bg-claret disabled:opacity-40 disabled:hover:bg-claret/90"
+              className="transition-base inline-flex h-9 items-center justify-center rounded-lg bg-claret/90 px-3.5 text-[12.5px] text-surface hover:bg-claret disabled:opacity-40 disabled:hover:bg-claret/90"
             >
               {pending ? "Deleting…" : `Delete ${truncate(circleName)}`}
             </button>

@@ -43,7 +43,9 @@ export async function acceptAllSectionSuggestions(): Promise<{ accepted: number 
   const admin = createAdminClient();
 
   // Get the user's active org from context.
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return { accepted: 0 };
 
   // Find uploads with suggestions but no current section.
@@ -57,7 +59,11 @@ export async function acceptAllSectionSuggestions(): Promise<{ accepted: number 
   if (!uploads?.length) return { accepted: 0 };
 
   let accepted = 0;
-  for (const u of uploads as Array<{ id: string; auto_section: string | null; auto_custom_section_id: string | null }>) {
+  for (const u of uploads as Array<{
+    id: string;
+    auto_section: string | null;
+    auto_custom_section_id: string | null;
+  }>) {
     if (!u.auto_section && !u.auto_custom_section_id) continue;
     await admin
       .from("uploads")
@@ -80,9 +86,6 @@ export async function acceptAllSectionSuggestions(): Promise<{ accepted: number 
  */
 export async function markSectionUserAssigned(uploadId: string): Promise<void> {
   const supabase = await createClient();
-  await supabase
-    .from("uploads")
-    .update({ section_assigned_by: "user" })
-    .eq("id", uploadId);
+  await supabase.from("uploads").update({ section_assigned_by: "user" }).eq("id", uploadId);
   revalidatePath(`/dashboard/uploads/${uploadId}`);
 }

@@ -62,25 +62,25 @@ export function TwoFactorPrompt({ enrolled }: { enrolled: boolean }) {
       <div
         aria-hidden
         onClick={dismiss}
-        className="absolute inset-0 bg-ink/40 backdrop-blur-sm animate-fade-in"
+        className="animate-fade-in absolute inset-0 bg-ink/40 backdrop-blur-sm"
       />
-      <div className="relative z-[121] w-full max-w-md rounded-2xl border border-line bg-surface-raised p-6 shadow-xl animate-scale-in">
+      <div className="animate-scale-in relative z-[121] w-full max-w-md rounded-2xl border border-line bg-surface-raised p-6 shadow-xl">
         <h2 id="twofa-prompt-title" className="text-title text-ink">
           {t("title")}
         </h2>
-        <p className="mt-3 text-body text-ink-soft">{t("body")}</p>
+        <p className="text-body mt-3 text-ink-soft">{t("body")}</p>
         <div className="mt-6 flex items-center justify-end gap-3">
           <button
             type="button"
             onClick={dismiss}
-            className="text-[12.5px] text-ink-faint transition-base hover:text-ink"
+            className="transition-base text-[12.5px] text-ink-faint hover:text-ink"
           >
             {t("later")}
           </button>
           <button
             type="button"
             onClick={setUp}
-            className="inline-flex h-10 items-center justify-center rounded-xl bg-ink px-4 text-[13.5px] font-medium text-surface transition-base hover:bg-ink-soft"
+            className="transition-base inline-flex h-10 items-center justify-center rounded-xl bg-ink px-4 text-[13.5px] font-medium text-surface hover:bg-ink-soft"
           >
             {t("setup")}
           </button>

@@ -23,17 +23,17 @@ export function useToast() {
 }
 
 const LEVEL_CLASSES: Record<ToastLevel, string> = {
-  info:    "border-brand/20 bg-brand-soft text-brand",
+  info: "border-brand/20 bg-brand-soft text-brand",
   success: "border-success/20 bg-success-soft text-success",
   warning: "border-warning/20 bg-warning-soft text-warning",
-  danger:  "border-danger/20 bg-danger-soft text-danger",
+  danger: "border-danger/20 bg-danger-soft text-danger",
 };
 
 const AUTO_DISMISS: Record<ToastLevel, number | null> = {
-  info:    4000,
+  info: 4000,
   success: 4000,
   warning: 6000,
-  danger:  null, // manual dismiss only
+  danger: null, // manual dismiss only
 };
 
 export function ToastProvider({ children }: { children: ReactNode }) {
@@ -58,22 +58,22 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       {children}
       {/* Toast stack. bottom-right */}
       {toasts.length > 0 && (
-        <div className="fixed bottom-6 end-6 z-[100] flex flex-col gap-2 w-80 max-w-[calc(100vw-3rem)]">
+        <div className="fixed end-6 bottom-6 z-[100] flex w-80 max-w-[calc(100vw-3rem)] flex-col gap-2">
           {toasts.map((t) => (
             <div
               key={t.id}
               role="alert"
               className={[
                 "glass flex items-start gap-3 rounded-xl border px-4 py-3",
-                "shadow-lg animate-scale-in",
+                "animate-scale-in shadow-lg",
                 LEVEL_CLASSES[t.level],
               ].join(" ")}
             >
-              <p className="flex-1 text-[13px] font-medium leading-snug">{t.message}</p>
+              <p className="flex-1 text-[13px] leading-snug font-medium">{t.message}</p>
               <button
                 type="button"
                 onClick={() => dismiss(t.id)}
-                className="mt-0.5 shrink-0 text-current opacity-60 hover:opacity-100 transition-opacity"
+                className="mt-0.5 shrink-0 text-current opacity-60 transition-opacity hover:opacity-100"
                 aria-label="Dismiss"
               >
                 ×

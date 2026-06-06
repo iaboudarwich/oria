@@ -69,7 +69,9 @@ export async function GET(request: Request) {
       { error: providerError, aadsts },
       user.id,
     );
-    return settingsRedirect(adminConsent ? "notice=outlook_admin_consent" : "notice=outlook_failed");
+    return settingsRedirect(
+      adminConsent ? "notice=outlook_admin_consent" : "notice=outlook_failed",
+    );
   }
 
   // Verify the signed state: minted by us, for THIS user, unexpired, and (when
@@ -95,7 +97,9 @@ export async function GET(request: Request) {
     const message = (e as Error).message;
     const { adminConsent } = classifyMicrosoftError(null, message);
     await diagOutlook("token_exchange", { aadsts: aadstsOf(message) }, user.id);
-    return settingsRedirect(adminConsent ? "notice=outlook_admin_consent" : "notice=outlook_failed");
+    return settingsRedirect(
+      adminConsent ? "notice=outlook_admin_consent" : "notice=outlook_failed",
+    );
   }
 
   // Step: profile / email resolution.
@@ -153,12 +157,20 @@ export async function GET(request: Request) {
       metadata: { provider: "microsoft", service: cloudService, account_email: email },
     });
     if (cloudService === "outlook_calendar") {
-      after(syncUserOutlookCalendars(user.id).then(() => undefined).catch(() => undefined));
+      after(
+        syncUserOutlookCalendars(user.id)
+          .then(() => undefined)
+          .catch(() => undefined),
+      );
     }
     const notice = service === "onedrive" ? "onedrive_connected" : "outlook_calendar_connected";
     return settingsRedirect(`notice=${notice}`);
   } catch (e) {
-    await diagOutlook("db_write", { service, message: (e as Error).message.slice(0, 120) }, user.id);
+    await diagOutlook(
+      "db_write",
+      { service, message: (e as Error).message.slice(0, 120) },
+      user.id,
+    );
     return settingsRedirect("notice=outlook_failed");
   }
 }

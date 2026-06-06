@@ -74,9 +74,7 @@ export function useFocusNext<T extends HTMLElement = HTMLElement>(
       }
 
       if (focus) {
-        const nativelyFocusable = el.matches(
-          "a[href],button,input,textarea,select,[tabindex]",
-        );
+        const nativelyFocusable = el.matches("a[href],button,input,textarea,select,[tabindex]");
         if (!nativelyFocusable && !el.hasAttribute("tabindex")) {
           el.setAttribute("tabindex", "-1");
         }

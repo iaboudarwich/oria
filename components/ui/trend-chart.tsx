@@ -33,7 +33,7 @@ export function TrendChart({
       type="button"
       onClick={() => setLens(key)}
       aria-pressed={lens === key}
-      className={`rounded-lg px-2.5 py-1 text-[11.5px] font-medium transition-base ${
+      className={`transition-base rounded-lg px-2.5 py-1 text-[11.5px] font-medium ${
         lens === key ? "bg-ink text-surface" : "text-ink-muted hover:text-ink"
       }`}
     >

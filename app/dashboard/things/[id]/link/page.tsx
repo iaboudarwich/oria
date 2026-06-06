@@ -17,7 +17,9 @@ export default async function LinkUploadToEntityPage({ params }: Props) {
 
   const uploads = await listUploadsWithUploader({ limit: 50 });
   const relOptions = (entityType.relationship_options as string[]) ?? [
-    "document", "photo", "other",
+    "document",
+    "photo",
+    "other",
   ];
 
   async function handleLink(formData: FormData): Promise<void> {
@@ -32,13 +34,13 @@ export default async function LinkUploadToEntityPage({ params }: Props) {
   return (
     <>
       <Topbar title="Link Document" />
-      <div className="mx-auto max-w-lg animate-fade-up">
+      <div className="animate-fade-up mx-auto max-w-lg">
         <p className="mb-5 text-[13px] text-ink-muted">
           Link a document to <strong>{entity.name}</strong>.
         </p>
         <form action={handleLink} className="space-y-5">
           <div>
-            <label className="block text-[13px] text-ink mb-1">Document</label>
+            <label className="mb-1 block text-[13px] text-ink">Document</label>
             <select
               name="upload_id"
               required
@@ -53,7 +55,7 @@ export default async function LinkUploadToEntityPage({ params }: Props) {
             </select>
           </div>
           <div>
-            <label className="block text-[13px] text-ink mb-1">Relationship</label>
+            <label className="mb-1 block text-[13px] text-ink">Relationship</label>
             <select
               name="relationship"
               className="block h-11 w-full rounded-xl border border-line-strong bg-surface-raised px-3.5 text-[15px] text-ink outline-none focus:border-ink"
@@ -68,13 +70,13 @@ export default async function LinkUploadToEntityPage({ params }: Props) {
           <div className="flex items-center gap-3 pt-1">
             <button
               type="submit"
-              className="inline-flex h-11 items-center rounded-xl bg-ink px-5 text-[13.5px] text-surface hover:bg-ink-soft transition-base"
+              className="transition-base inline-flex h-11 items-center rounded-xl bg-ink px-5 text-[13.5px] text-surface hover:bg-ink-soft"
             >
               Link document
             </button>
             <Link
               href={`/dashboard/things/${id}`}
-              className="text-[13px] text-ink-muted hover:text-ink transition-base"
+              className="transition-base text-[13px] text-ink-muted hover:text-ink"
             >
               Cancel
             </Link>

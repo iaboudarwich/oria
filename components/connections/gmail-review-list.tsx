@@ -122,7 +122,11 @@ export function GmailReviewList({
     if (!iso) return "";
     const ms = Date.parse(iso);
     if (Number.isNaN(ms)) return "";
-    return new Date(ms).toLocaleDateString(locale, { year: "numeric", month: "short", day: "numeric" });
+    return new Date(ms).toLocaleDateString(locale, {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
   }
 
   function run(fn: () => Promise<unknown>) {
@@ -144,7 +148,7 @@ export function GmailReviewList({
               key={src}
               type="button"
               onClick={() => setActiveSource(src)}
-              className={`max-w-full truncate rounded-full px-3 py-1 text-[12px] transition-base ${
+              className={`transition-base max-w-full truncate rounded-full px-3 py-1 text-[12px] ${
                 activeSource === src
                   ? "bg-ink text-surface"
                   : "border border-line text-ink-muted hover:text-ink"
@@ -159,14 +163,15 @@ export function GmailReviewList({
       {/* Type tabs */}
       <div className="flex flex-wrap gap-1.5">
         {tabs.map((tab) => {
-          const count = tab === "all" ? items.length : items.filter((i) => i.itemType === tab).length;
+          const count =
+            tab === "all" ? items.length : items.filter((i) => i.itemType === tab).length;
           const label = tab === "all" ? t("tab_all") : t(TYPE_KEYS[tab] ?? "type_other");
           return (
             <button
               key={tab}
               type="button"
               onClick={() => setActiveTab(tab)}
-              className={`rounded-full px-3 py-1 text-[12.5px] transition-base ${
+              className={`transition-base rounded-full px-3 py-1 text-[12.5px] ${
                 activeTab === tab
                   ? "bg-ink text-surface"
                   : "border border-line text-ink-muted hover:text-ink"
@@ -183,7 +188,7 @@ export function GmailReviewList({
         <button
           type="button"
           onClick={selectAllVisible}
-          className="text-[12.5px] text-ink-muted transition-base hover:text-ink"
+          className="transition-base text-[12.5px] text-ink-muted hover:text-ink"
         >
           {t("select_all")}
         </button>
@@ -192,7 +197,7 @@ export function GmailReviewList({
           type="button"
           disabled={pending}
           onClick={() => run(() => approveItems([...selected]))}
-          className="rounded-lg bg-ink px-3 py-1.5 text-[12.5px] font-medium text-surface transition-base hover:bg-ink-soft disabled:opacity-50"
+          className="transition-base rounded-lg bg-ink px-3 py-1.5 text-[12.5px] font-medium text-surface hover:bg-ink-soft disabled:opacity-50"
         >
           {selectedInVisible > 0 ? t("approve_n", { count: selected.size }) : t("approve")}
         </button>
@@ -200,7 +205,7 @@ export function GmailReviewList({
           type="button"
           disabled={pending || selected.size === 0}
           onClick={() => run(() => dismissItems([...selected]))}
-          className="rounded-lg border border-line-strong px-3 py-1.5 text-[12.5px] font-medium text-ink transition-base hover:bg-surface-raised disabled:opacity-50"
+          className="transition-base rounded-lg border border-line-strong px-3 py-1.5 text-[12.5px] font-medium text-ink hover:bg-surface-raised disabled:opacity-50"
         >
           {t("dismiss_n", { count: selected.size })}
         </button>
@@ -215,7 +220,7 @@ export function GmailReviewList({
               ),
             )
           }
-          className="text-[12.5px] font-medium text-ink underline-offset-2 transition-base hover:underline disabled:opacity-50"
+          className="transition-base text-[12.5px] font-medium text-ink underline-offset-2 hover:underline disabled:opacity-50"
         >
           {t("suggest_high")}
         </button>
@@ -274,9 +279,15 @@ export function GmailReviewList({
                         {ex.origin} {"→"} {ex.destination}
                       </span>
                     ) : null}
-                    {ex.renewal_date ? <span>{t("renews_on", { date: fmtDate(ex.renewal_date) })}</span> : null}
-                    {ex.due_date ? <span>{t("due_on", { date: fmtDate(ex.due_date) })}</span> : null}
-                    {ex.event_date ? <span>{t("event_on", { date: fmtDate(ex.event_date) })}</span> : null}
+                    {ex.renewal_date ? (
+                      <span>{t("renews_on", { date: fmtDate(ex.renewal_date) })}</span>
+                    ) : null}
+                    {ex.due_date ? (
+                      <span>{t("due_on", { date: fmtDate(ex.due_date) })}</span>
+                    ) : null}
+                    {ex.event_date ? (
+                      <span>{t("event_on", { date: fmtDate(ex.event_date) })}</span>
+                    ) : null}
                     {ex.order_id ? <span>#{ex.order_id}</span> : null}
                   </div>
 
@@ -285,7 +296,7 @@ export function GmailReviewList({
                       type="button"
                       disabled={pending}
                       onClick={() => run(() => approveDetectedItem(item.id))}
-                      className="rounded-lg bg-ink px-3 py-1 text-[12px] font-medium text-surface transition-base hover:bg-ink-soft disabled:opacity-50"
+                      className="transition-base rounded-lg bg-ink px-3 py-1 text-[12px] font-medium text-surface hover:bg-ink-soft disabled:opacity-50"
                     >
                       {t("approve")}
                     </button>
@@ -293,14 +304,14 @@ export function GmailReviewList({
                       type="button"
                       disabled={pending}
                       onClick={() => run(() => dismissDetectedItem(item.id))}
-                      className="rounded-lg border border-line-strong px-3 py-1 text-[12px] font-medium text-ink transition-base hover:bg-surface disabled:opacity-50"
+                      className="transition-base rounded-lg border border-line-strong px-3 py-1 text-[12px] font-medium text-ink hover:bg-surface disabled:opacity-50"
                     >
                       {t("dismiss")}
                     </button>
                     <button
                       type="button"
                       onClick={() => setExpanded(isOpen ? null : item.id)}
-                      className="ml-auto text-[12px] text-ink-faint transition-base hover:text-ink"
+                      className="transition-base ml-auto text-[12px] text-ink-faint hover:text-ink"
                       aria-expanded={isOpen}
                     >
                       {isOpen ? t("hide_source") : t("view_source")}

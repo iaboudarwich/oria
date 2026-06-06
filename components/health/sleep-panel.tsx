@@ -56,7 +56,7 @@ export async function SleepPanel({
       // No performance score (only a duration) leaves the ring empty but still
       // shows the real hours in the center; never a fabricated percent.
       arcScore={score ?? 0}
-      displayValue={score != null ? `${score}` : hours ?? "·"}
+      displayValue={score != null ? `${score}` : (hours ?? "·")}
       unit={score != null ? "%" : undefined}
       colorVar={DATA_VAR.sleep}
       trackVar={DATA_TRACK.sleep}

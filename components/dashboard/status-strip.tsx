@@ -1,12 +1,6 @@
-import {
-  formatEventMessage,
-  listUserVisibleEvents,
-} from "@/lib/data/system-events";
+import { formatEventMessage, listUserVisibleEvents } from "@/lib/data/system-events";
 import { getCurrentContext } from "@/lib/data/organizations";
-import {
-  readLastStatusSeenId,
-  readStatusFlash,
-} from "@/lib/data/status-strip";
+import { readLastStatusSeenId, readStatusFlash } from "@/lib/data/status-strip";
 import { getTranslations } from "next-intl/server";
 import { StatusStripRow as StatusStripRowClient } from "./status-strip-row";
 
@@ -66,12 +60,8 @@ export async function StatusStrip() {
 function StatusStripFlashRow({ message }: { message: string }) {
   return (
     <div className="mt-2 flex items-center gap-3 rounded-lg border border-sage/30 bg-sage/[0.07] px-3 py-1.5 text-[12px] text-[#3f5240]">
-      <span
-        className="inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-sage"
-        aria-hidden
-      />
+      <span className="inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-sage" aria-hidden />
       <span className="min-w-0 flex-1 truncate">{message}</span>
     </div>
   );
 }
-

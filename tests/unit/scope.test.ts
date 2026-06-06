@@ -13,11 +13,7 @@ vi.mock("@/lib/data/system-events", () => ({
   recordSystemEvent,
 }));
 
-import {
-  enforceActiveOrg,
-  enforceAllowedOrgs,
-  requireActiveOrgId,
-} from "@/lib/data/scope";
+import { enforceActiveOrg, enforceAllowedOrgs, requireActiveOrgId } from "@/lib/data/scope";
 
 const ACTIVE = "00000000-0000-0000-0000-000000000001";
 const OTHER = "00000000-0000-0000-0000-000000000002";
@@ -110,9 +106,7 @@ describe("requireActiveOrgId", () => {
   });
 
   it("throws when ctx is null", () => {
-    expect(() => requireActiveOrgId(null)).toThrowError(
-      /no active organization/,
-    );
+    expect(() => requireActiveOrgId(null)).toThrowError(/no active organization/);
   });
 
   it("throws when organization.id is null", () => {

@@ -35,9 +35,11 @@ export async function SpendMiniCard({
   return (
     <Link
       href="/dashboard/bills?view=spend"
-      className="block rounded-card border border-line bg-surface p-4 shadow-soft transition-base hover:border-ink/20"
+      className="transition-base block rounded-card border border-line bg-surface p-4 shadow-soft hover:border-ink/20"
     >
-      <Eyebrow>{t("card_spend")} · {monthLabel}</Eyebrow>
+      <Eyebrow>
+        {t("card_spend")} · {monthLabel}
+      </Eyebrow>
       <div className="mt-2.5 flex items-center gap-3.5">
         <ScoreRing
           score={arc}
@@ -54,9 +56,7 @@ export async function SpendMiniCard({
           }
         />
         <div className="min-w-0">
-          <div className="num text-[19px] font-semibold text-ink">
-            {money(thisMonth, currency)}
-          </div>
+          <div className="num text-[19px] font-semibold text-ink">{money(thisMonth, currency)}</div>
           {lastMonth > 0 ? (
             <div className="text-[11.5px] text-ink-faint">
               {t("spend_vs_last", { amount: money(lastMonth, currency) })}
@@ -64,7 +64,7 @@ export async function SpendMiniCard({
           ) : null}
           {deltaPct != null ? (
             <span
-              className="mt-1.5 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold num"
+              className="num mt-1.5 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold"
               style={{
                 color: improved ? "var(--up)" : "var(--down)",
                 background: improved ? "var(--rec-t)" : "rgba(242,104,92,0.14)",

@@ -4,10 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
-import {
-  setUserPreferences,
-  resetUnderstanding,
-} from "@/lib/data/user-profile-actions";
+import { setUserPreferences, resetUnderstanding } from "@/lib/data/user-profile-actions";
 import type { UserPreferences } from "@/lib/data/user-profile";
 
 const LENGTHS: Array<UserPreferences["responseLength"]> = ["short", "medium", "long"];
@@ -102,7 +99,7 @@ function ResetButton() {
       <button
         type="button"
         onClick={() => setConfirming(true)}
-        className="text-[12.5px] text-ink-faint transition-base hover:text-ink"
+        className="transition-base text-[12.5px] text-ink-faint hover:text-ink"
       >
         Reset Oria&apos;s understanding
       </button>
@@ -158,7 +155,7 @@ function Choice<T extends string>({
             key={o}
             type="button"
             onClick={() => onChange(o)}
-            className={`rounded-md px-3 py-1.5 text-[12.5px] capitalize transition-base ${
+            className={`transition-base rounded-md px-3 py-1.5 text-[12.5px] capitalize ${
               value === o ? "bg-ink text-surface" : "text-ink-muted hover:text-ink"
             }`}
           >
@@ -192,7 +189,7 @@ function Field({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="block h-10 w-full max-w-lg rounded-lg border border-line-strong bg-surface px-3 text-[13px] text-ink placeholder:text-ink-faint outline-none focus:border-ink"
+        className="block h-10 w-full max-w-lg rounded-lg border border-line-strong bg-surface px-3 text-[13px] text-ink outline-none placeholder:text-ink-faint focus:border-ink"
       />
       <span className="mt-1 block text-[11.5px] text-ink-faint">{hint}</span>
     </label>

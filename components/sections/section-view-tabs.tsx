@@ -19,9 +19,9 @@ export function SectionViewTabs({
         <Link
           key={t.key}
           href={t.href}
-          className={`-mb-px border-b-2 px-3 py-2 text-body-sm transition-base ${
+          className={`text-body-sm transition-base -mb-px border-b-2 px-3 py-2 ${
             active === t.key
-              ? "border-ink text-ink font-medium"
+              ? "border-ink font-medium text-ink"
               : "border-transparent text-ink-muted hover:text-ink"
           }`}
         >

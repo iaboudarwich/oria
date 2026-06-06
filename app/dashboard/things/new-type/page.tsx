@@ -7,7 +7,7 @@ export default function NewEntityTypePage() {
   return (
     <>
       <Topbar title="New entity type" />
-      <div className="mx-auto max-w-xl animate-fade-up">
+      <div className="animate-fade-up mx-auto max-w-xl">
         <NewEntityTypeForm />
       </div>
     </>

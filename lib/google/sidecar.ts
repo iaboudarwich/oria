@@ -22,10 +22,7 @@ export type DriveFileMeta = {
 };
 
 /** Fetch metadata + a short text excerpt for each picked Drive file. */
-export async function driveIndex(
-  accessToken: string,
-  fileIds: string[],
-): Promise<DriveFileMeta[]> {
+export async function driveIndex(accessToken: string, fileIds: string[]): Promise<DriveFileMeta[]> {
   const out = await postSidecar<{ files: DriveFileMeta[] }>(
     "/cloud/drive/index",
     { access_token: accessToken, file_ids: fileIds },

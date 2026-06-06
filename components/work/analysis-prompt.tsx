@@ -5,14 +5,36 @@ import { useRouter } from "next/navigation";
 import { ArrowRightIcon } from "@/components/ui/icon";
 
 const QUICK_PROMPTS: Array<{ label: string; prompt: string }> = [
-  { label: "Revenue vs costs", prompt: "Analyze revenue vs costs this quarter. Highlight margin and the biggest cost drivers." },
-  { label: "Top vendors", prompt: "Show top vendors by total spend. Include each vendor's share of total expenses." },
-  { label: "Recurring expenses", prompt: "List recurring expenses with average amount and cadence." },
+  {
+    label: "Revenue vs costs",
+    prompt: "Analyze revenue vs costs this quarter. Highlight margin and the biggest cost drivers.",
+  },
+  {
+    label: "Top vendors",
+    prompt: "Show top vendors by total spend. Include each vendor's share of total expenses.",
+  },
+  {
+    label: "Recurring expenses",
+    prompt: "List recurring expenses with average amount and cadence.",
+  },
   { label: "Late payments", prompt: "List late payments. Tenant, days late, amount." },
-  { label: "Lease expirations", prompt: "Which leases expire in the next 6 months? Tenant, date, monthly rent." },
-  { label: "Forecast utilities", prompt: "Forecast next quarter's utilities based on recent months." },
-  { label: "Monthly trend", prompt: "Show monthly revenue and expense trend for the last 12 months." },
-  { label: "Cost ratios", prompt: "Compute key cost ratios (utilities / revenue, maintenance / revenue) and flag anything moving." },
+  {
+    label: "Lease expirations",
+    prompt: "Which leases expire in the next 6 months? Tenant, date, monthly rent.",
+  },
+  {
+    label: "Forecast utilities",
+    prompt: "Forecast next quarter's utilities based on recent months.",
+  },
+  {
+    label: "Monthly trend",
+    prompt: "Show monthly revenue and expense trend for the last 12 months.",
+  },
+  {
+    label: "Cost ratios",
+    prompt:
+      "Compute key cost ratios (utilities / revenue, maintenance / revenue) and flag anything moving.",
+  },
 ];
 
 /**
@@ -26,9 +48,7 @@ const QUICK_PROMPTS: Array<{ label: string; prompt: string }> = [
  * row above the canned QUICK_PROMPTS, so a user who repeatedly asks
  * about parking revenue sees that prompt one click away.
  */
-export function AnalysisPrompt({
-  recentQuestions = [],
-}: { recentQuestions?: string[] } = {}) {
+export function AnalysisPrompt({ recentQuestions = [] }: { recentQuestions?: string[] } = {}) {
   const router = useRouter();
   const [prompt, setPrompt] = useState("");
   const [pending, startTransition] = useTransition();
@@ -62,15 +82,12 @@ export function AnalysisPrompt({
         }
         if (res.status === 429) {
           setError(
-            detail ??
-              "Daily analysis limit hit. Try again tomorrow or shorten the question.",
+            detail ?? "Daily analysis limit hit. Try again tomorrow or shorten the question.",
           );
         } else if (res.status === 401 || res.status === 403) {
           setError("Your session expired. Refresh the page and try again.");
         } else if (res.status >= 500) {
-          setError(
-            "Analysis service is briefly unreachable. Try again in a moment.",
-          );
+          setError("Analysis service is briefly unreachable. Try again in a moment.");
         } else {
           setError(detail ?? "Couldn't start analysis.");
         }
@@ -86,13 +103,11 @@ export function AnalysisPrompt({
 
   return (
     <section>
-      <h2 className="mb-2 px-1 text-eyebrow">
-        Custom analysis
-      </h2>
-      <div className="rounded-2xl border border-line bg-surface-raised p-4 space-y-3">
+      <h2 className="text-eyebrow mb-2 px-1">Custom analysis</h2>
+      <div className="space-y-3 rounded-2xl border border-line bg-surface-raised p-4">
         <p className="text-[12.5px] text-ink-muted">
-          Ask in plain English. Oria pulls the relevant uploads and
-          generates a structured analysis with the right visual.
+          Ask in plain English. Oria pulls the relevant uploads and generates a structured analysis
+          with the right visual.
         </p>
         <form
           onSubmit={(e) => {
@@ -103,9 +118,7 @@ export function AnalysisPrompt({
         >
           {recentQuestions.length > 0 ? (
             <div className="space-y-1.5">
-              <p className="text-eyebrow">
-                You&apos;ve asked before
-              </p>
+              <p className="text-eyebrow">You&apos;ve asked before</p>
               <div className="flex flex-wrap gap-1.5">
                 {recentQuestions.map((q) => (
                   <button
@@ -113,7 +126,7 @@ export function AnalysisPrompt({
                     type="button"
                     onClick={() => pickChip(q)}
                     title={q}
-                    className="max-w-[260px] truncate rounded-full border border-ink/30 bg-canvas px-2.5 py-1 text-[11.5px] text-ink transition-base hover:border-ink"
+                    className="transition-base max-w-[260px] truncate rounded-full border border-ink/30 bg-canvas px-2.5 py-1 text-[11.5px] text-ink hover:border-ink"
                   >
                     {q}
                   </button>
@@ -127,7 +140,7 @@ export function AnalysisPrompt({
                 key={q.label}
                 type="button"
                 onClick={() => pickChip(q.prompt)}
-                className="rounded-full border border-line bg-canvas px-2.5 py-1 text-[11.5px] text-ink-muted transition-base hover:border-line-strong hover:text-ink"
+                className="transition-base rounded-full border border-line bg-canvas px-2.5 py-1 text-[11.5px] text-ink-muted hover:border-line-strong hover:text-ink"
               >
                 {q.label}
               </button>
@@ -142,12 +155,12 @@ export function AnalysisPrompt({
                 setError(null);
               }}
               placeholder="e.g. ‘Compare parking revenue vs maintenance costs for Building A this quarter.’"
-              className="block h-10 flex-1 rounded-xl border border-line bg-canvas/40 px-3 text-[13px] text-ink placeholder:text-ink-faint outline-none transition-base focus:border-line-strong"
+              className="transition-base block h-10 flex-1 rounded-xl border border-line bg-canvas/40 px-3 text-[13px] text-ink outline-none placeholder:text-ink-faint focus:border-line-strong"
             />
             <button
               type="submit"
               disabled={pending || prompt.trim().length === 0}
-              className="cta inline-flex h-10 items-center gap-1.5 rounded-xl bg-ink px-3.5 text-[12.5px] text-surface transition-base hover:bg-ink-soft disabled:cursor-default disabled:opacity-50"
+              className="cta transition-base inline-flex h-10 items-center gap-1.5 rounded-xl bg-ink px-3.5 text-[12.5px] text-surface hover:bg-ink-soft disabled:cursor-default disabled:opacity-50"
             >
               {pending ? "Analyzing" : "Run analysis"}
               <ArrowRightIcon size={12} />
@@ -157,8 +170,7 @@ export function AnalysisPrompt({
             <p className="text-[11.5px] text-claret">{error}</p>
           ) : queued ? (
             <p className="text-[11.5px] text-ink-muted">
-              Queued. The new analysis will appear below as soon as Oria
-              finishes reading.
+              Queued. The new analysis will appear below as soon as Oria finishes reading.
             </p>
           ) : null}
         </form>

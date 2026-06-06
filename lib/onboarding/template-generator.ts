@@ -65,8 +65,23 @@ async function tailorWithReasoning(system: string, user: string): Promise<string
 const LANG: Record<string, string> = { en: "English", ar: "Arabic", fr: "French", es: "Spanish" };
 
 const ALLOWED_ICONS = new Set([
-  "home", "travel", "properties", "staff", "events", "finance", "legal",
-  "personal", "vendors", "health", "wallet", "scales", "tag", "heart", "chart", "plane", "person",
+  "home",
+  "travel",
+  "properties",
+  "staff",
+  "events",
+  "finance",
+  "legal",
+  "personal",
+  "vendors",
+  "health",
+  "wallet",
+  "scales",
+  "tag",
+  "heart",
+  "chart",
+  "plane",
+  "person",
 ]);
 
 /**
@@ -117,7 +132,10 @@ Return JSON ONLY:
 
   try {
     const raw = (await tailorWithReasoning(system, user))?.trim() || "{}";
-    const cleaned = raw.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim();
+    const cleaned = raw
+      .replace(/^```(?:json)?\s*/i, "")
+      .replace(/\s*```$/, "")
+      .trim();
     const parsed = JSON.parse(cleaned) as { spaces?: unknown };
     const plan = sanitizePlan(parsed.spaces);
     return plan.spaces.length > 0 ? plan : fallbackPlan(ctx);
@@ -161,7 +179,10 @@ Return JSON ONLY in the setup-plan shape:
       { tier: "premium", maxTokens: 1500 },
     );
     const raw = msg?.content.trim() || "{}";
-    const cleaned = raw.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim();
+    const cleaned = raw
+      .replace(/^```(?:json)?\s*/i, "")
+      .replace(/\s*```$/, "")
+      .trim();
     const parsed = JSON.parse(cleaned) as { spaces?: unknown };
     return sanitizePlan(parsed.spaces);
   } catch {
@@ -181,15 +202,21 @@ function sanitizePlan(spaces: unknown): SetupPlan {
       const wp = w as Record<string, unknown>;
       const name = str(wp.name);
       if (!name) continue;
-      const kind =
-        wp.kind === "office" ? "office" : wp.kind === "circle" ? "circle" : "personal";
+      const kind = wp.kind === "office" ? "office" : wp.kind === "circle" ? "circle" : "personal";
       const sectionsRaw = Array.isArray(wp.sections) ? wp.sections : [];
       const sections = sectionsRaw.slice(0, 12).map((sec, i) => {
         const secO = sec as Record<string, unknown>;
         const title = str(secO.title) || `Section ${i + 1}`;
-        const icon = typeof secO.icon === "string" && ALLOWED_ICONS.has(secO.icon) ? secO.icon : "tag";
+        const icon =
+          typeof secO.icon === "string" && ALLOWED_ICONS.has(secO.icon) ? secO.icon : "tag";
         return {
-          key: str(secO.key) || title.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "") || `s${i}`,
+          key:
+            str(secO.key) ||
+            title
+              .toLowerCase()
+              .replace(/[^a-z0-9]+/g, "_")
+              .replace(/^_|_$/g, "") ||
+            `s${i}`,
           title,
           icon,
           priority: typeof secO.priority === "number" ? secO.priority : i,
@@ -199,7 +226,10 @@ function sanitizePlan(spaces: unknown): SetupPlan {
         name,
         kind,
         description: str(wp.description),
-        accent_color: typeof wp.accent_color === "string" && /^#[0-9a-fA-F]{6}$/.test(wp.accent_color) ? wp.accent_color : null,
+        accent_color:
+          typeof wp.accent_color === "string" && /^#[0-9a-fA-F]{6}$/.test(wp.accent_color)
+            ? wp.accent_color
+            : null,
         sections,
         ask_oria_starters: Array.isArray(wp.ask_oria_starters)
           ? wp.ask_oria_starters.filter((x): x is string => typeof x === "string").slice(0, 4)
@@ -207,7 +237,12 @@ function sanitizePlan(spaces: unknown): SetupPlan {
         template_id: str(wp.template_id) || "custom",
       });
     }
-    if (workspaces.length) out.push({ label: str(sp.label) || (area === "work" ? "Work" : "Personal"), area, workspaces });
+    if (workspaces.length)
+      out.push({
+        label: str(sp.label) || (area === "work" ? "Work" : "Personal"),
+        area,
+        workspaces,
+      });
   }
   return { spaces: out };
 }
@@ -230,9 +265,9 @@ function fallbackPlan(ctx: UserContext): SetupPlan {
       best = t;
     }
   }
-  const sections = (best.sections.length ? best.sections : TEMPLATES.find((t) => t.id === "renter")!.sections).map(
-    (s) => ({ key: s.key, title: s.title, icon: s.icon, priority: s.priority }),
-  );
+  const sections = (
+    best.sections.length ? best.sections : TEMPLATES.find((t) => t.id === "renter")!.sections
+  ).map((s) => ({ key: s.key, title: s.title, icon: s.icon, priority: s.priority }));
   return {
     spaces: [
       {

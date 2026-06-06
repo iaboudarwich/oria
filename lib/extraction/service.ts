@@ -17,9 +17,7 @@ import { sidecarAuthHeaders } from "@/lib/google/shared/sidecar-auth";
 import { redactFilename } from "@/lib/log/redact";
 import type { ExtractionServiceResult } from "./types";
 
-const BASE_URL =
-  process.env.PYTHON_EXTRACTION_URL?.replace(/\/$/, "") ??
-  "http://localhost:8000";
+const BASE_URL = process.env.PYTHON_EXTRACTION_URL?.replace(/\/$/, "") ?? "http://localhost:8000";
 
 const TIMEOUT_MS = 60_000; // 60 s. Docling on large docs can be slow
 
@@ -52,7 +50,7 @@ export async function isServiceAvailable(): Promise<boolean> {
 export async function extractViaService(
   buffer: Buffer,
   mimeType: string,
-  filename: string
+  filename: string,
 ): Promise<ExtractionServiceResult | null> {
   const available = await isServiceAvailable();
   if (!available) return null;
@@ -73,7 +71,7 @@ export async function extractViaService(
 
     if (!res.ok) {
       console.warn(
-        `[extraction/service] HTTP ${res.status} from /extract for ${redactFilename(filename)}`
+        `[extraction/service] HTTP ${res.status} from /extract for ${redactFilename(filename)}`,
       );
       return null;
     }
@@ -110,9 +108,7 @@ export async function extractViaService(
  * Embed a list of text strings via the Python service.
  * Returns null on failure.
  */
-export async function embedViaService(
-  texts: string[]
-): Promise<number[][] | null> {
+export async function embedViaService(texts: string[]): Promise<number[][] | null> {
   const available = await isServiceAvailable();
   if (!available || texts.length === 0) return null;
 
@@ -141,9 +137,7 @@ export async function embedViaService(
  * Embed a single query string for semantic search.
  * Returns null on failure.
  */
-export async function embedQueryViaService(
-  query: string
-): Promise<number[] | null> {
+export async function embedQueryViaService(query: string): Promise<number[] | null> {
   const available = await isServiceAvailable();
   if (!available) return null;
 

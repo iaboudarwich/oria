@@ -16,11 +16,9 @@ export default async function WorkInvoicesPage() {
         Incoming and outgoing invoices for this Workspace.
       </div>
 
-      <div className="space-y-8 animate-fade-up">
+      <div className="animate-fade-up space-y-8">
         <section>
-          <h2 className="mb-3 px-1 text-[13px] font-medium text-ink-muted">
-            Add an invoice
-          </h2>
+          <h2 className="mb-3 px-1 text-[13px] font-medium text-ink-muted">Add an invoice</h2>
           <Dropzone
             heading="Drop an invoice"
             subheading="Add a short note for context (vendor, project). Click to browse."
@@ -28,9 +26,7 @@ export default async function WorkInvoicesPage() {
         </section>
 
         <section>
-          <h2 className="mb-3 px-1 text-[13px] font-medium text-ink-muted">
-            All invoices
-          </h2>
+          <h2 className="mb-3 px-1 text-[13px] font-medium text-ink-muted">All invoices</h2>
           <WorkFeed
             items={items}
             emptyTitle="No invoices yet."

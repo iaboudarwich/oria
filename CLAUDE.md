@@ -89,6 +89,7 @@ These hold across every round, every commit, every file. No exceptions unless th
 ## 4. Standing protocol — every round, every time
 
 ### Pre-flight (before writing any code)
+
 1. `pwd` — must be `~/Projects/oria`.
 2. `git status` — must be clean, on `main`, up to date.
 3. Kill stray shells, dev servers, watchers from prior rounds. One terminal, one focus.
@@ -96,12 +97,14 @@ These hold across every round, every commit, every file. No exceptions unless th
 5. If the round modifies the DB: pull the current schema (`supabase db pull` or inspect via dashboard) and confirm assumptions match reality before writing any migration.
 
 ### During the round
+
 - Stay scoped. The round prompt is the contract.
 - Run the dev server. Visually verify what you build as you build it, do not assume.
 - Run `npm test` after every significant change, not just at the end.
 - If you discover something the round prompt didn't anticipate (broken assumption, missing migration, hostile interaction with another feature), stop and surface it. Don't silently rewrite scope.
 
 ### Pre-commit
+
 1. `npm run build` — must pass.
 2. `npm test` — must pass.
 3. `npm run lint` — must pass (this includes the em-dash rule and the banned-phrase rule).
@@ -111,10 +114,12 @@ These hold across every round, every commit, every file. No exceptions unless th
 7. **Clean-clone check (from Round 16's deploy failure):** `git status` must show NO untracked source the build imports. A local build passes against files on disk even when they were never committed; the Vercel clone has only what's committed. Before declaring done, stage every new source file and confirm the Vercel deploy reaches READY, not just the local build.
 
 ### Commit
+
 - Format: `type(scope): one sentence summary`. Types: `feat`, `fix`, `chore`, `refactor`, `docs`, `test`, `perf`, `i18n`.
-- Body explains the *why* if non-obvious. Diff explains the *what*.
+- Body explains the _why_ if non-obvious. Diff explains the _what_.
 
 ### Final report (standard format)
+
 At the end of every round, output a report with these exact sections:
 
 ```
@@ -158,19 +163,19 @@ NEXT STEP
 
 Canonical terms. Synonyms fail lint.
 
-| Use | Don't use |
-|---|---|
-| Ask Oria | chat, chatbot, assistant |
-| connector | integration, plugin |
-| Records (people/vehicles/properties area, /dashboard/things) | item, entity, thing |
-| Trackables (renewals/subscriptions/expiries, /dashboard/trackables) | item, entity, thing |
-| Today | dashboard, home, feed |
-| Circle | group, team, household |
-| context (Personal/Investor/Business/Family Office) | template, persona |
-| routine | automation, workflow |
-| suggestion | recommendation, tip |
-| write-back | action, sync-out |
-| BYO | bring-your-own, custom AI |
+| Use                                                                 | Don't use                 |
+| ------------------------------------------------------------------- | ------------------------- |
+| Ask Oria                                                            | chat, chatbot, assistant  |
+| connector                                                           | integration, plugin       |
+| Records (people/vehicles/properties area, /dashboard/things)        | item, entity, thing       |
+| Trackables (renewals/subscriptions/expiries, /dashboard/trackables) | item, entity, thing       |
+| Today                                                               | dashboard, home, feed     |
+| Circle                                                              | group, team, household    |
+| context (Personal/Investor/Business/Family Office)                  | template, persona         |
+| routine                                                             | automation, workflow      |
+| suggestion                                                          | recommendation, tip       |
+| write-back                                                          | action, sync-out          |
+| BYO                                                                 | bring-your-own, custom AI |
 
 The banned-phrase lint guard (`npm run lint` -> `scripts/check-i18n-banned.mjs`)
 fails the build on any em-dash, on item/entity/thing (and the per-locale
@@ -201,6 +206,7 @@ together. Infrastructure AI (extraction, classifiers) is NOT voice-bearing and
 deliberately does not import the voice block. Read the doc before editing voice.
 
 Hard bans (these never appear in user-facing copy from any model):
+
 - em-dashes
 - "I'm here to help"
 - "As an AI"
@@ -223,6 +229,7 @@ Tone: direct, warm, unsentimental. Never performative. Reads like a calm friend 
 Read `docs/trust/messaging.md` before editing any privacy, onboarding, or settings copy.
 
 Non-negotiables:
+
 - Privacy step appears **before** the first Connect prompt.
 - The onboarding privacy slide is two columns: what we do / what we don't do. Plain English, four languages.
 - `/trust` page lives at heyoria.com/trust. `/trust/subprocessors` lists every third party.
@@ -267,10 +274,11 @@ cream field at 0.66 of the frame for the square icons and 0.56 for the maskable
 apple-touch 180) plus `app/favicon.ico` (16/32/48). Re-run after a brand change.
 The monogram itself (and the wordmark lockup) is re-extracted from the live
 Newsreader outlines by `scripts/build-brand-assets.mjs` (dev-only: needs network
-+ `npm i --no-save opentype.js`; it writes `monogram.svg`, the `public/logo.svg`
-lockup, and `lib/brand/wordmark-path.ts`). The full wordmark is the in-app
-`Wordmark` component (now serif, §17), used only in lockup contexts; the square
-contexts use this monogram.
+
+- `npm i --no-save opentype.js`; it writes `monogram.svg`, the `public/logo.svg`
+  lockup, and `lib/brand/wordmark-path.ts`). The full wordmark is the in-app
+  `Wordmark` component (now serif, §17), used only in lockup contexts; the square
+  contexts use this monogram.
 
 **Icon cache-busting.** Filenames stay constant across logo changes, so a `?v=`
 query busts stale copies. `lib/brand/icon-version.ts` (`ICON_VERSION` +
@@ -335,7 +343,7 @@ is missing, push disables gracefully (no crash).
 `next start` server and checks: SW control, navigation, installability (Chrome's
 own criteria; Lighthouse 13 removed the PWA category), the Cache Storage privacy
 audit, the VAPID-signed send path, and SW push handling. On-device notification
-*display* is not exercisable headless (no notification platform); confirm that
+_display_ is not exercisable headless (no notification platform); confirm that
 final step on a real device.
 
 ---
@@ -735,6 +743,7 @@ gate. Password reset (`/auth/reset`), 2FA disable, and session revoke still step
 up / re-auth exactly as before (none consult `isTrustedDevice`).
 
 **Deferred to a clean follow-up (judgment call, large round):**
+
 - Sensitive-action re-confirm step-up (export everything, delete workspace,
   in-app password change which has no surface yet). The existing `oria_reauth`
   HMAC window already protects 2FA-disable + session-revoke; wiring a dedicated

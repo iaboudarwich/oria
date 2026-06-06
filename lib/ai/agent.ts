@@ -167,8 +167,7 @@ ${BASE_RULES}`;
  */
 function formatSource(s: RetrievedSource): string {
   const state = s.processing_state === "pending" ? "PENDING" : "READY";
-  const kindLabel =
-    s.kind === "upload" ? "Upload" : s.kind === "reminder" ? "Reminder" : "Memory";
+  const kindLabel = s.kind === "upload" ? "Upload" : s.kind === "reminder" ? "Reminder" : "Memory";
   const head = `[${s.id}] (${state}) ${kindLabel}: "${s.title}" · ${s.meta.space_name}${s.meta.section_label ? ` · ${s.meta.section_label}` : ""}${s.meta.date_label ? ` · ${s.meta.date_label}` : ""}`;
   return `${head}\n<source_content>\n${s.snippet}\n</source_content>`;
 }

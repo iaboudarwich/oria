@@ -24,10 +24,7 @@ function monthBounds(now = new Date()): { start: string; prevStart: string } {
 
 type EntityRow = { doc_type: string; fields: Record<string, unknown> };
 
-async function extractedByDocType(
-  orgId: string,
-  docTypes: string[],
-): Promise<EntityRow[]> {
+async function extractedByDocType(orgId: string, docTypes: string[]): Promise<EntityRow[]> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("extracted_entities")
@@ -362,10 +359,7 @@ export async function genericSummary(
 
     const latest = rows[0].created_at;
     const oldest = rows[rows.length - 1].created_at;
-    const span =
-      rows.length > 1
-        ? `${fmtDate(oldest)} to ${fmtDate(latest)}`
-        : fmtDate(latest);
+    const span = rows.length > 1 ? `${fmtDate(oldest)} to ${fmtDate(latest)}` : fmtDate(latest);
 
     return {
       headline: { value: String(rows.length), label: rows.length === 1 ? "item" : "items" },

@@ -24,9 +24,8 @@ export default async function OnboardingLinkPage() {
     getAiConnection(user.id),
     supabase.from("profiles").select("connect_privacy_ack_at").eq("id", user.id).maybeSingle(),
   ]);
-  const privacyAcknowledged = !!(
-    profile.data as { connect_privacy_ack_at: string | null } | null
-  )?.connect_privacy_ack_at;
+  const privacyAcknowledged = !!(profile.data as { connect_privacy_ack_at: string | null } | null)
+    ?.connect_privacy_ack_at;
   return (
     <LinkClient
       gmailConnected={gmail.length > 0}

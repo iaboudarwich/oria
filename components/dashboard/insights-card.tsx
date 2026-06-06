@@ -17,34 +17,27 @@ export function InsightsCard({ insights }: { insights: Insight[] }) {
   if (insights.length === 0) return null;
   return (
     <section>
-      <h2 className="mb-2 px-1 text-eyebrow">
-        From Oria
-      </h2>
-      <ul className="rounded-2xl border border-line bg-surface-raised divide-y divide-line">
+      <h2 className="text-eyebrow mb-2 px-1">From Oria</h2>
+      <ul className="divide-y divide-line rounded-2xl border border-line bg-surface-raised">
         {insights.map((i) => (
-          <li
-            key={i.id}
-            className="flex items-center gap-3 px-4 py-2.5"
-          >
+          <li key={i.id} className="flex items-center gap-3 px-4 py-2.5">
             <SparkIcon size={11} />
             {i.href ? (
               <Link
                 href={i.href}
-                className="min-w-0 flex-1 truncate text-[13px] text-ink transition-base hover:text-ink-soft"
+                className="transition-base min-w-0 flex-1 truncate text-[13px] text-ink hover:text-ink-soft"
               >
                 {i.message}
               </Link>
             ) : (
-              <p className="min-w-0 flex-1 truncate text-[13px] text-ink">
-                {i.message}
-              </p>
+              <p className="min-w-0 flex-1 truncate text-[13px] text-ink">{i.message}</p>
             )}
             <form action={dismissInsight}>
               <input type="hidden" name="id" value={i.id} />
               <button
                 type="submit"
                 aria-label="Dismiss"
-                className="cursor-pointer text-[11.5px] text-ink-faint transition-base hover:text-ink"
+                className="transition-base cursor-pointer text-[11.5px] text-ink-faint hover:text-ink"
               >
                 Dismiss
               </button>

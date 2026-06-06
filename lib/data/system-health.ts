@@ -167,27 +167,18 @@ export async function getSystemHealth(): Promise<SystemHealth> {
   const orgs = (orgsRes.data ?? []) as OrgRow[];
   const orgById = new Map(orgs.map((o) => [o.id, o] as const));
 
-  const [
-    ai,
-    email,
-    storage,
-    db,
-    failedUploads,
-    failedReports,
-    vercelLive,
-    jobs,
-    scopeViolations,
-  ] = await Promise.all([
-    collectAiUsage(admin),
-    collectEmailStats(),
-    collectStorage(admin, orgById),
-    collectDbStats(admin),
-    collectFailedUploads(admin, orgById),
-    collectFailedReports(admin, orgById),
-    collectVercelLive(),
-    getJobsHealth(),
-    collectScopeViolations(),
-  ]);
+  const [ai, email, storage, db, failedUploads, failedReports, vercelLive, jobs, scopeViolations] =
+    await Promise.all([
+      collectAiUsage(admin),
+      collectEmailStats(),
+      collectStorage(admin, orgById),
+      collectDbStats(admin),
+      collectFailedUploads(admin, orgById),
+      collectFailedReports(admin, orgById),
+      collectVercelLive(),
+      getJobsHealth(),
+      collectScopeViolations(),
+    ]);
 
   const env = collectEnvStatus();
   const deploy = collectDeployInfo();
@@ -306,13 +297,7 @@ async function collectAiUsage(admin: AdminClient): Promise<AiUsage> {
   // previously three separate limit(5000) pulls of the exact same
   // ai.request rows. At a few thousand events that's the difference
   // between a snappy admin page and 3–5 seconds of blocking I/O.
-  const [
-    errorsToday,
-    errors7d,
-    aiTotals,
-    recentErrors,
-    reused30d,
-  ] = await Promise.all([
+  const [errorsToday, errors7d, aiTotals, recentErrors, reused30d] = await Promise.all([
     countEvents({ kind: "ai.error", sinceISO: todayStart() }),
     countEvents({ kind: "ai.error", sinceISO: sinceDays(7) }),
     sumEventContextFields({
@@ -413,9 +398,7 @@ async function collectStorage(
       .select("id, email, full_name")
       .in("id", ids);
     type ProfileRow = { id: string; email: string; full_name: string | null };
-    const byId = new Map(
-      ((profiles ?? []) as ProfileRow[]).map((p) => [p.id, p] as const),
-    );
+    const byId = new Map(((profiles ?? []) as ProfileRow[]).map((p) => [p.id, p] as const));
     topUsers = topUserIds.map(([id, v]) => {
       const p = byId.get(id);
       return {
@@ -494,9 +477,7 @@ function collectDeployInfo(): DeployInfo {
     env: process.env.VERCEL_ENV ?? null,
     branch: process.env.VERCEL_GIT_COMMIT_REF ?? null,
     commitSha: process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? null,
-    commitMessage:
-      process.env.VERCEL_GIT_COMMIT_MESSAGE?.split("\n")[0]?.slice(0, 120) ??
-      null,
+    commitMessage: process.env.VERCEL_GIT_COMMIT_MESSAGE?.split("\n")[0]?.slice(0, 120) ?? null,
     deploymentId: process.env.VERCEL_DEPLOYMENT_ID ?? null,
     region: process.env.VERCEL_REGION ?? null,
     url: process.env.VERCEL_URL ?? null,
@@ -656,36 +637,56 @@ function collectWarnings(args: {
     out.push("ANTHROPIC_API_KEY missing. Ask Oria and extraction will degrade to the no-AI path.");
   }
   if (!args.env.hasResendKey || !args.env.hasResendFrom) {
-    out.push("Resend not fully configured. invite emails won't send. Owners can still copy the link/code.");
+    out.push(
+      "Resend not fully configured. invite emails won't send. Owners can still copy the link/code.",
+    );
   }
   if (!args.env.hasSupabaseServiceKey) {
-    out.push("SUPABASE_SERVICE_ROLE_KEY missing. admin client features (bootstrap, this page) won't work.");
+    out.push(
+      "SUPABASE_SERVICE_ROLE_KEY missing. admin client features (bootstrap, this page) won't work.",
+    );
   }
   if (args.env.adminEmailCount === 0) {
-    out.push("ADMIN_EMAILS is empty. nobody can reach this page in production (you're seeing it locally / by env override).");
+    out.push(
+      "ADMIN_EMAILS is empty. nobody can reach this page in production (you're seeing it locally / by env override).",
+    );
   }
   if (args.storage.pendingCount > 5) {
-    out.push(`${args.storage.pendingCount} uploads stuck in processing. background extraction may be lagging.`);
+    out.push(
+      `${args.storage.pendingCount} uploads stuck in processing. background extraction may be lagging.`,
+    );
   }
   if (args.failedUploads.length >= 5) {
-    out.push(`${args.failedUploads.length}+ uploads failed extraction recently. see Recent failed uploads below.`);
+    out.push(
+      `${args.failedUploads.length}+ uploads failed extraction recently. see Recent failed uploads below.`,
+    );
   }
   if (args.failedReports.length >= 3) {
-    out.push(`${args.failedReports.length}+ Work reports failed recently. check the report detail for the model error.`);
+    out.push(
+      `${args.failedReports.length}+ Work reports failed recently. check the report detail for the model error.`,
+    );
   }
   if (args.ai.errorsToday >= 5) {
-    out.push(`${args.ai.errorsToday} AI errors today. check Claude key, rate limits, and the Recent AI errors list.`);
+    out.push(
+      `${args.ai.errorsToday} AI errors today. check Claude key, rate limits, and the Recent AI errors list.`,
+    );
   }
   if (args.email.failed7d >= 3 && args.email.sent7d === 0) {
-    out.push(`${args.email.failed7d} email failures and zero successes in the past week. Resend likely misconfigured.`);
+    out.push(
+      `${args.email.failed7d} email failures and zero successes in the past week. Resend likely misconfigured.`,
+    );
   }
 
   // Background-job pressure signals.
   if (args.jobs.stuckNow > 0) {
-    out.push(`${args.jobs.stuckNow} background job${args.jobs.stuckNow === 1 ? "" : "s"} stuck in processing for over 5 minutes. likely OOM, timeout, or deploy mid-flight.`);
+    out.push(
+      `${args.jobs.stuckNow} background job${args.jobs.stuckNow === 1 ? "" : "s"} stuck in processing for over 5 minutes. likely OOM, timeout, or deploy mid-flight.`,
+    );
   }
   if (args.jobs.failed24h >= 5) {
-    out.push(`${args.jobs.failed24h} background jobs failed in the past 24h. check Recent job failures below.`);
+    out.push(
+      `${args.jobs.failed24h} background jobs failed in the past 24h. check Recent job failures below.`,
+    );
   }
 
   // Scope-violation signal. this should ALWAYS be zero. Any number
@@ -693,26 +694,32 @@ function collectWarnings(args: {
   // wrong org and the runtime guard caught it. Investigate the call
   // site listed in the system_event context.
   if (args.scopeViolations.count7d > 0) {
-    out.push(`${args.scopeViolations.count7d} scope.violation event${args.scopeViolations.count7d === 1 ? "" : "s"} in the past 7 days. a query returned a row from the wrong organization. See Recent scope violations below.`);
+    out.push(
+      `${args.scopeViolations.count7d} scope.violation event${args.scopeViolations.count7d === 1 ? "" : "s"} in the past 7 days. a query returned a row from the wrong organization. See Recent scope violations below.`,
+    );
   }
 
   // Storage cap signals (per-user).
   const userCap = args.storage.userCapBytes;
   if (userCap > 0) {
     const atCap = args.storage.topUsers.filter((u) => u.capRatio >= 1);
-    const approaching = args.storage.topUsers.filter(
-      (u) => u.capRatio >= 0.8 && u.capRatio < 1,
-    );
+    const approaching = args.storage.topUsers.filter((u) => u.capRatio >= 0.8 && u.capRatio < 1);
     if (atCap.length > 0) {
-      out.push(`${atCap.length} user${atCap.length === 1 ? "" : "s"} at or over the ${formatGb(userCap)} storage cap. they can't upload until they delete files or you raise ORIA_USER_STORAGE_BYTES.`);
+      out.push(
+        `${atCap.length} user${atCap.length === 1 ? "" : "s"} at or over the ${formatGb(userCap)} storage cap. they can't upload until they delete files or you raise ORIA_USER_STORAGE_BYTES.`,
+      );
     } else if (approaching.length > 0) {
-      out.push(`${approaching.length} user${approaching.length === 1 ? "" : "s"} above 80% of the ${formatGb(userCap)} storage cap.`);
+      out.push(
+        `${approaching.length} user${approaching.length === 1 ? "" : "s"} above 80% of the ${formatGb(userCap)} storage cap.`,
+      );
     }
   }
 
   // AI cost signal. visible nudge if estimated 30d spend is starting to matter.
   if (args.ai.estimatedCostUsd30d >= 20) {
-    out.push(`Estimated Claude spend over the past 30 days is $${args.ai.estimatedCostUsd30d.toFixed(2)}. confirm against console.anthropic.com if it looks off.`);
+    out.push(
+      `Estimated Claude spend over the past 30 days is $${args.ai.estimatedCostUsd30d.toFixed(2)}. confirm against console.anthropic.com if it looks off.`,
+    );
   }
 
   return out;

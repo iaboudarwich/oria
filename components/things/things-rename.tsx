@@ -16,7 +16,7 @@ export function ThingsRename({ label }: { label: string }) {
       <button
         type="button"
         onClick={() => setEditing(true)}
-        className="text-[11.5px] text-ink-faint transition-base hover:text-ink"
+        className="transition-base text-[11.5px] text-ink-faint hover:text-ink"
       >
         Rename
       </button>

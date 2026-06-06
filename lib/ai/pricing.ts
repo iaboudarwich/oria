@@ -27,15 +27,9 @@ function rateFor(model: string): Rate {
   return FALLBACK;
 }
 
-export function estimatedCostUSD(
-  model: string,
-  inputTokens: number,
-  outputTokens: number,
-): number {
+export function estimatedCostUSD(model: string, inputTokens: number, outputTokens: number): number {
   const r = rateFor(model);
-  const cost =
-    (inputTokens / 1_000_000) * r.input +
-    (outputTokens / 1_000_000) * r.output;
+  const cost = (inputTokens / 1_000_000) * r.input + (outputTokens / 1_000_000) * r.output;
   // Round to four decimals, admin page displays as $0.0123.
   return Math.round(cost * 10000) / 10000;
 }

@@ -18,33 +18,22 @@ export default async function SignupPage({ searchParams }: Props) {
   const { error, email, next } = await searchParams;
   const t = await getTranslations("legal");
   const ta = await getTranslations("auth");
-  const strengthLabels = ta.raw("pw_strength") as [
-    string,
-    string,
-    string,
-    string,
-    string,
-  ];
+  const strengthLabels = ta.raw("pw_strength") as [string, string, string, string, string];
 
   return (
     <div className="min-h-screen bg-canvas">
       <header className="border-b border-line">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4 sm:px-8">
           <Wordmark />
-          <Link
-            href="/"
-            className="text-[13px] text-ink-muted hover:text-ink transition-base"
-          >
+          <Link href="/" className="transition-base text-[13px] text-ink-muted hover:text-ink">
             Back
           </Link>
         </div>
       </header>
 
       <main className="flex min-h-[calc(100vh-72px)] items-center justify-center px-6 py-12">
-        <div className="w-full max-w-[360px] animate-fade-up">
-          <h1 className="text-[26px] font-semibold tracking-tight text-ink">
-            Create your account
-          </h1>
+        <div className="animate-fade-up w-full max-w-[360px]">
+          <h1 className="text-[26px] font-semibold tracking-tight text-ink">Create your account</h1>
           <p className="mt-1 text-[13px] text-ink-muted">
             A private workspace, kept for the long run. Nothing gets lost.
           </p>
@@ -105,12 +94,7 @@ export default async function SignupPage({ searchParams }: Props) {
                 })}
               </span>
             </label>
-            <Button
-              type="submit"
-              variant="primary"
-              size="lg"
-              className="mt-1 w-full"
-            >
+            <Button type="submit" variant="primary" size="lg" className="mt-1 w-full">
               Create account <ArrowRightIcon size={14} />
             </Button>
           </form>
@@ -136,7 +120,7 @@ function Field({
       <span className="mb-1.5 block text-[12px] text-ink-muted">{label}</span>
       <input
         {...rest}
-        className="block h-11 w-full rounded-xl border border-line-strong bg-surface-raised px-3.5 text-[16px] text-ink placeholder:text-ink-faint outline-none transition-base focus:border-ink"
+        className="transition-base block h-11 w-full rounded-xl border border-line-strong bg-surface-raised px-3.5 text-[16px] text-ink outline-none placeholder:text-ink-faint focus:border-ink"
       />
     </label>
   );

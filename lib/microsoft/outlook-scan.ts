@@ -57,17 +57,20 @@ export async function startOutlookScan(input: {
 
   const { data: connRow } = await admin
     .from("email_connections")
-    .select("exclude_keywords, exclude_senders, exclude_with_attachments, workspace_routing, routing_mode, routing_target_org_ids")
+    .select(
+      "exclude_keywords, exclude_senders, exclude_with_attachments, workspace_routing, routing_mode, routing_target_org_ids",
+    )
     .eq("id", input.connectionId)
     .maybeSingle();
-  const conn = (connRow as {
-    exclude_keywords?: string[];
-    exclude_senders?: string[];
-    exclude_with_attachments?: boolean;
-    workspace_routing?: WorkspaceRouting;
-    routing_mode?: "auto" | "fixed";
-    routing_target_org_ids?: string[];
-  } | null) ?? {};
+  const conn =
+    (connRow as {
+      exclude_keywords?: string[];
+      exclude_senders?: string[];
+      exclude_with_attachments?: boolean;
+      workspace_routing?: WorkspaceRouting;
+      routing_mode?: "auto" | "fixed";
+      routing_target_org_ids?: string[];
+    } | null) ?? {};
   const filters: Filters = {
     excludeKeywords: conn.exclude_keywords ?? [],
     excludeSenders: conn.exclude_senders ?? [],
@@ -76,7 +79,12 @@ export async function startOutlookScan(input: {
 
   const { data: jobRow } = await admin
     .from("email_scan_jobs")
-    .insert({ connection_id: input.connectionId, user_id: input.userId, timeframe_months: 6, status: "running" })
+    .insert({
+      connection_id: input.connectionId,
+      user_id: input.userId,
+      timeframe_months: 6,
+      status: "running",
+    })
     .select("id")
     .single();
   const jobId = (jobRow as { id: string } | null)?.id;
@@ -95,7 +103,11 @@ export async function startOutlookScan(input: {
         routingMode: conn.routing_mode ?? "auto",
         routingTargets: conn.routing_target_org_ids ?? [],
         fetch: () =>
-          fetchOutlookMessages({ accessToken: token.accessToken, sinceIso: input.sinceIso ?? null, filters }),
+          fetchOutlookMessages({
+            accessToken: token.accessToken,
+            sinceIso: input.sinceIso ?? null,
+            filters,
+          }),
       }),
   };
 }
@@ -122,7 +134,8 @@ export async function syncAllOutlookConnections(): Promise<OutlookSyncResult> {
     .select("id, user_id, last_synced_at")
     .eq("provider", "outlook")
     .eq("status", "active");
-  const conns = (data as { id: string; user_id: string; last_synced_at: string | null }[] | null) ?? [];
+  const conns =
+    (data as { id: string; user_id: string; last_synced_at: string | null }[] | null) ?? [];
 
   const oneHourAgo = Date.now() - 60 * 60 * 1000;
   let skipped = 0;

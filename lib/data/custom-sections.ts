@@ -15,9 +15,7 @@ export async function listCustomSections(): Promise<CustomSection[]> {
   return (data ?? []) as CustomSection[];
 }
 
-export async function getCustomSectionById(
-  id: string,
-): Promise<CustomSection | null> {
+export async function getCustomSectionById(id: string): Promise<CustomSection | null> {
   const ctx = await requireContext();
   const supabase = await createClient();
   const { data } = await supabase
@@ -30,9 +28,7 @@ export async function getCustomSectionById(
   return (data as CustomSection | null) ?? null;
 }
 
-export async function countCustomSectionUploads(
-  customSectionId: string,
-): Promise<number> {
+export async function countCustomSectionUploads(customSectionId: string): Promise<number> {
   const ctx = await requireContext();
   const supabase = await createClient();
   const { count } = await supabase

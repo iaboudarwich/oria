@@ -5,8 +5,16 @@ import { sectionLabel } from "@/lib/sections-meta";
 import type { Section } from "@/lib/supabase/types";
 
 const BUILTIN_SECTIONS = new Set<string>([
-  "household", "travel", "properties", "staff", "events",
-  "finance", "legal", "personal", "vendors", "health",
+  "household",
+  "travel",
+  "properties",
+  "staff",
+  "events",
+  "finance",
+  "legal",
+  "personal",
+  "vendors",
+  "health",
 ]);
 
 export type LearnedRuleView = {
@@ -20,10 +28,7 @@ export type LearnedRuleView = {
  * List the user's active (user-confirmed) learned routing rules for an org,
  * with the target section resolved to a display name. Suppressions are hidden.
  */
-export async function listLearnedRules(
-  userId: string,
-  orgId: string,
-): Promise<LearnedRuleView[]> {
+export async function listLearnedRules(userId: string, orgId: string): Promise<LearnedRuleView[]> {
   const admin = createAdminClient();
   const { data } = await admin
     .from("learned_routing_rules")
@@ -32,15 +37,14 @@ export async function listLearnedRules(
     .eq("organization_id", orgId)
     .eq("source", "user_confirmed")
     .order("created_at", { ascending: false });
-  const rows = (data as
-    | { id: string; match_type: string; match_value: string; target_section_key: string }[]
-    | null) ?? [];
+  const rows =
+    (data as
+      | { id: string; match_type: string; match_value: string; target_section_key: string }[]
+      | null) ?? [];
   if (rows.length === 0) return [];
 
   // Resolve any custom-section ids to names in one query.
-  const customIds = rows
-    .map((r) => r.target_section_key)
-    .filter((k) => !BUILTIN_SECTIONS.has(k));
+  const customIds = rows.map((r) => r.target_section_key).filter((k) => !BUILTIN_SECTIONS.has(k));
   const nameById = new Map<string, string>();
   if (customIds.length > 0) {
     const { data: secs } = await admin
@@ -59,6 +63,6 @@ export async function listLearnedRules(
     matchValue: r.match_value,
     sectionName: BUILTIN_SECTIONS.has(r.target_section_key)
       ? sectionLabel(r.target_section_key as Section)
-      : nameById.get(r.target_section_key) ?? r.target_section_key,
+      : (nameById.get(r.target_section_key) ?? r.target_section_key),
   }));
 }

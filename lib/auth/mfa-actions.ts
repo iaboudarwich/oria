@@ -37,9 +37,7 @@ import {
  * preset stays alongside the rest of the MFA surface.
  */
 
-type ActionOk<T> = T extends undefined
-  ? { ok: true }
-  : { ok: true } & T;
+type ActionOk<T> = T extends undefined ? { ok: true } : { ok: true } & T;
 type ActionErr = { ok: false; error: string };
 type ActionResult<T = undefined> = ActionOk<T> | ActionErr;
 
@@ -142,9 +140,7 @@ export async function enrollVerify(
  * On success: unenroll the factor in Supabase, clear backup codes,
  * clear profiles.mfa_enrolled_at.
  */
-export async function disable(
-  formData: FormData,
-): Promise<ActionResult> {
+export async function disable(formData: FormData): Promise<ActionResult> {
   const password = String(formData.get("password") ?? "");
   const code = String(formData.get("code") ?? "").trim();
   if (!password || !code) {
@@ -214,12 +210,12 @@ export async function disable(
 export async function verifyAtSignIn(formData: FormData): Promise<void> {
   const code = String(formData.get("code") ?? "").trim();
   const next = String(formData.get("next") ?? "/dashboard");
-  const safeNext = next.startsWith("/") && !next.startsWith("//")
-    ? next
-    : "/dashboard";
+  const safeNext = next.startsWith("/") && !next.startsWith("//") ? next : "/dashboard";
 
   if (!code) {
-    redirect(`/login/mfa?error=${encodeURIComponent("Enter your 6-digit code.")}&next=${encodeURIComponent(safeNext)}`);
+    redirect(
+      `/login/mfa?error=${encodeURIComponent("Enter your 6-digit code.")}&next=${encodeURIComponent(safeNext)}`,
+    );
   }
 
   const supabase = await createClient();
@@ -231,7 +227,9 @@ export async function verifyAtSignIn(formData: FormData): Promise<void> {
     ...RATE_PRESETS.mfaVerify(),
   });
   if (!burst.ok) {
-    redirect(`/login/mfa?error=${encodeURIComponent(burst.message)}&next=${encodeURIComponent(safeNext)}`);
+    redirect(
+      `/login/mfa?error=${encodeURIComponent(burst.message)}&next=${encodeURIComponent(safeNext)}`,
+    );
   }
 
   const status = await readMfaStatus();

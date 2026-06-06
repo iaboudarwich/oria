@@ -9,8 +9,8 @@ interface CardProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 const VARIANT_CLASSES: Record<CardVariant, string> = {
-  flat:     "border border-line bg-surface-raised",
-  raised:   "bg-surface-raised shadow-sm",
+  flat: "border border-line bg-surface-raised",
+  raised: "bg-surface-raised shadow-sm",
   floating: "bg-surface-floating border border-line shadow-md",
 };
 

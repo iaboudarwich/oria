@@ -53,9 +53,7 @@ const SUMMARY_COLS =
   "id, service, account_email, status, routing_mode, routing_target_org_ids, last_sync_at, last_error, created_at";
 
 /** All of the user's cloud connections (RLS-scoped), oldest first. */
-export async function listCloudConnections(
-  userId: string,
-): Promise<CloudConnectionSummary[]> {
+export async function listCloudConnections(userId: string): Promise<CloudConnectionSummary[]> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("cloud_connections")
@@ -234,10 +232,6 @@ export async function deleteCloudConnection(
     }
   }
 
-  await admin
-    .from("cloud_connections")
-    .delete()
-    .eq("id", connectionId)
-    .eq("user_id", userId);
+  await admin.from("cloud_connections").delete().eq("id", connectionId).eq("user_id", userId);
   return true;
 }

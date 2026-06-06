@@ -29,10 +29,7 @@ export type UserSpace = {
  * Cached per render so multiple server components can call it cheaply.
  */
 export const getCurrentContext = cache(async (): Promise<CurrentContext | null> => {
-  if (
-    !process.env.NEXT_PUBLIC_SUPABASE_URL ||
-    !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  ) {
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
     return null;
   }
   const supabase = await createClient();
@@ -54,8 +51,7 @@ export const getCurrentContext = cache(async (): Promise<CurrentContext | null> 
   if (memberships.length > 0) {
     const activeCookie = await getActiveSpaceCookie();
     const active =
-      (activeCookie &&
-        memberships.find((m) => m.organization_id === activeCookie)) ||
+      (activeCookie && memberships.find((m) => m.organization_id === activeCookie)) ||
       memberships[0];
 
     const [orgRes, profileRes] = await Promise.all([
@@ -136,7 +132,10 @@ async function bootstrapPersonalSpace(
     .single();
   if (profileError || !profile) return null;
 
-  const localPart = email.split("@")[0].toLowerCase().replace(/[^a-z0-9-]/g, "-");
+  const localPart = email
+    .split("@")[0]
+    .toLowerCase()
+    .replace(/[^a-z0-9-]/g, "-");
   const slug = `${localPart || "space"}-${userId.slice(0, 8)}`;
   const { data: org, error: orgError } = await admin
     .from("organizations")
@@ -191,7 +190,5 @@ export async function requireContext(): Promise<CurrentContext> {
  * crossSpace flag, the Calendar "Everywhere" toggle) MUST consult this.
  */
 export function isAccountOwnerInPersonal(ctx: CurrentContext): boolean {
-  return (
-    ctx.organization.kind === "personal" && ctx.membership.role === "owner"
-  );
+  return ctx.organization.kind === "personal" && ctx.membership.role === "owner";
 }

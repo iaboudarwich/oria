@@ -39,14 +39,23 @@ function SiteHeader() {
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4 sm:px-8">
         <Wordmark />
         <nav className="hidden items-center gap-7 md:flex">
-          <Link href="#features" className="text-[13.5px] text-ink-muted hover:text-ink transition-base">
+          <Link
+            href="#features"
+            className="transition-base text-[13.5px] text-ink-muted hover:text-ink"
+          >
             Features
           </Link>
-          <Link href="#for-everyone" className="text-[13.5px] text-ink-muted hover:text-ink transition-base">
+          <Link
+            href="#for-everyone"
+            className="transition-base text-[13.5px] text-ink-muted hover:text-ink"
+          >
             Who it&apos;s for
           </Link>
           {DEMO_ENABLED ? (
-            <Link href="/demo" className="text-[13.5px] text-ink-muted hover:text-ink transition-base">
+            <Link
+              href="/demo"
+              className="transition-base text-[13.5px] text-ink-muted hover:text-ink"
+            >
               Demo
             </Link>
           ) : null}
@@ -54,7 +63,7 @@ function SiteHeader() {
         <div className="flex items-center gap-2">
           <Link
             href="/login"
-            className="hidden sm:inline text-[13.5px] text-ink-muted hover:text-ink transition-base"
+            className="transition-base hidden text-[13.5px] text-ink-muted hover:text-ink sm:inline"
           >
             Sign in
           </Link>
@@ -71,7 +80,7 @@ function Hero() {
   return (
     <section className="border-b border-line">
       <div className="mx-auto max-w-3xl px-6 pt-20 pb-20 text-center sm:px-8">
-        <h1 className="text-[40px] font-semibold leading-[1.05] tracking-tight text-ink text-balance sm:text-[56px]">
+        <h1 className="text-[40px] leading-[1.05] font-semibold tracking-tight text-balance text-ink sm:text-[56px]">
           Drop anything into Oria.
         </h1>
         <p className="mx-auto mt-4 max-w-xl text-[16px] leading-[1.55] text-ink-muted">
@@ -104,7 +113,7 @@ function UploadShowcase() {
   return (
     <section className="border-b border-line bg-surface/50">
       <div className="mx-auto max-w-4xl px-6 py-16 sm:px-8">
-        <div className="rounded-2xl border border-dashed border-line-strong bg-surface-raised/70 p-10 sm:p-14 text-center">
+        <div className="rounded-2xl border border-dashed border-line-strong bg-surface-raised/70 p-10 text-center sm:p-14">
           <span className="inline-flex h-12 w-12 items-center justify-center rounded-xl border border-line bg-canvas text-ink-muted">
             <UploadIcon size={18} />
           </span>
@@ -132,12 +141,18 @@ function UploadShowcase() {
 
 function FeatureGrid() {
   const features = [
-    { title: "Upload anything", body: "PDFs, receipts, screenshots, voice notes. Nothing gets lost." },
+    {
+      title: "Upload anything",
+      body: "PDFs, receipts, screenshots, voice notes. Nothing gets lost.",
+    },
     { title: "Find anything", body: "Search past trips, receipts, contractors, and uploads." },
     { title: "Auto sections", body: "Household, Travel, Finance, Legal. Sorted for you." },
     { title: "Reminders", body: "Dates and follow-ups surfaced when they matter." },
     { title: "Share with people", body: "Family, assistants, contractors. Scoped views." },
-    { title: "Long-term memory", body: "A full record of every upload and decision, kept for the long run." },
+    {
+      title: "Long-term memory",
+      body: "A full record of every upload and decision, kept for the long run.",
+    },
   ];
   return (
     <section id="features" className="border-b border-line">
@@ -149,9 +164,7 @@ function FeatureGrid() {
           {features.map((f) => (
             <article key={f.title} className="bg-surface-raised p-6">
               <h3 className="text-[15px] font-semibold text-ink">{f.title}</h3>
-              <p className="mt-1.5 text-[13.5px] leading-[1.55] text-ink-muted">
-                {f.body}
-              </p>
+              <p className="mt-1.5 text-[13.5px] leading-[1.55] text-ink-muted">{f.body}</p>
             </article>
           ))}
         </div>
@@ -177,14 +190,9 @@ function ForEveryone() {
         </h2>
         <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {groups.map((g) => (
-            <div
-              key={g.label}
-              className="rounded-xl border border-line bg-surface-raised p-5"
-            >
+            <div key={g.label} className="rounded-xl border border-line bg-surface-raised p-5">
               <p className="text-[14px] font-semibold text-ink">{g.label}</p>
-              <p className="mt-1 text-[13px] leading-[1.55] text-ink-muted">
-                {g.body}
-              </p>
+              <p className="mt-1 text-[13px] leading-[1.55] text-ink-muted">{g.body}</p>
             </div>
           ))}
         </div>
@@ -207,11 +215,10 @@ function TrustSection() {
           Built with privacy in mind.
         </h2>
         <p className="mt-4 text-[15px] leading-[1.6] text-ink-muted">
-          Oria reads your email and documents to find what matters: subscriptions,
-          bills, flights, appointments. Everything is encrypted at rest and in
-          transit. We never send, delete, or modify your email. We do not sell your
-          data, ever. Disconnect any time and your data is gone within seconds.
-          Built by one person who uses Oria every day.
+          Oria reads your email and documents to find what matters: subscriptions, bills, flights,
+          appointments. Everything is encrypted at rest and in transit. We never send, delete, or
+          modify your email. We do not sell your data, ever. Disconnect any time and your data is
+          gone within seconds. Built by one person who uses Oria every day.
         </p>
         <div className="mt-6 grid gap-2 sm:grid-cols-2">
           {badges.map((b) => (
@@ -227,7 +234,7 @@ function TrustSection() {
         <Link
           href="/security"
           prefetch={false}
-          className="mt-6 inline-flex items-center gap-1.5 text-[13.5px] font-medium text-brand hover:opacity-80 transition-base"
+          className="transition-base mt-6 inline-flex items-center gap-1.5 text-[13.5px] font-medium text-brand hover:opacity-80"
         >
           Read our security and privacy approach <ArrowRightIcon size={13} />
         </Link>
@@ -240,7 +247,7 @@ function CTA() {
   return (
     <section className="border-b border-line">
       <div className="mx-auto max-w-3xl px-6 py-20 text-center sm:px-8">
-        <h2 className="text-[28px] font-semibold tracking-tight text-ink text-balance sm:text-[34px]">
+        <h2 className="text-[28px] font-semibold tracking-tight text-balance text-ink sm:text-[34px]">
           Upload anything. Find it years later.
         </h2>
         <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
@@ -264,10 +271,18 @@ function SiteFooter() {
       <div className="mx-auto flex max-w-6xl flex-col gap-6 px-6 py-10 text-[12.5px] text-ink-muted sm:flex-row sm:items-center sm:justify-between sm:px-8">
         <Wordmark />
         <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
-          <Link href="/privacy" className="hover:text-ink transition-base">Privacy</Link>
-          <Link href="/security" className="hover:text-ink transition-base" prefetch={false}>Security</Link>
-          <Link href="/terms" className="hover:text-ink transition-base">Terms</Link>
-          <Link href="mailto:hi@heyoria.com" className="hover:text-ink transition-base">Contact</Link>
+          <Link href="/privacy" className="transition-base hover:text-ink">
+            Privacy
+          </Link>
+          <Link href="/security" className="transition-base hover:text-ink" prefetch={false}>
+            Security
+          </Link>
+          <Link href="/terms" className="transition-base hover:text-ink">
+            Terms
+          </Link>
+          <Link href="mailto:hi@heyoria.com" className="transition-base hover:text-ink">
+            Contact
+          </Link>
         </div>
         <p className="text-ink-faint">© {new Date().getFullYear()} Oria</p>
       </div>

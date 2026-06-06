@@ -41,10 +41,7 @@ export function MonthGrid({
     <div className="overflow-hidden rounded-2xl border border-line bg-surface-raised">
       <div className="grid grid-cols-7 border-b border-line">
         {WEEKDAY_LABELS.map((d, i) => (
-          <div
-            key={i}
-            className="px-2 py-2 text-center text-eyebrow"
-          >
+          <div key={i} className="text-eyebrow px-2 py-2 text-center">
             {d}
           </div>
         ))}
@@ -59,19 +56,13 @@ export function MonthGrid({
               key={i}
               type="button"
               onClick={() => onPickDay(d)}
-              className={`flex min-h-[56px] flex-col items-stretch gap-1 border-b border-r border-line p-1.5 text-left transition-base hover:bg-canvas/60 last:border-r-0 sm:aspect-square sm:min-h-[78px] ${
+              className={`transition-base flex min-h-[56px] flex-col items-stretch gap-1 border-r border-b border-line p-1.5 text-left last:border-r-0 hover:bg-canvas/60 sm:aspect-square sm:min-h-[78px] ${
                 (i + 1) % 7 === 0 ? "border-r-0" : ""
-              } ${i >= 35 ? "border-b-0" : ""} ${
-                !isCurrentMonth ? "bg-canvas/30" : ""
-              }`}
+              } ${i >= 35 ? "border-b-0" : ""} ${!isCurrentMonth ? "bg-canvas/30" : ""}`}
             >
               <span
                 className={`inline-flex h-5 w-5 items-center justify-center self-start rounded-full text-[11px] ${
-                  isToday
-                    ? "bg-ink text-surface"
-                    : isCurrentMonth
-                      ? "text-ink"
-                      : "text-ink-faint"
+                  isToday ? "bg-ink text-surface" : isCurrentMonth ? "text-ink" : "text-ink-faint"
                 }`}
               >
                 {d.getDate()}
@@ -88,9 +79,7 @@ export function MonthGrid({
                       />
                     ))}
                     {items.length > 3 ? (
-                      <span className="text-[10px] text-ink-faint">
-                        +{items.length - 3}
-                      </span>
+                      <span className="text-[10px] text-ink-faint">+{items.length - 3}</span>
                     ) : null}
                   </div>
                   {/* sm+: short labels + dots. */}
@@ -105,15 +94,11 @@ export function MonthGrid({
                           className={`inline-block h-1.5 w-1.5 shrink-0 rounded-full ${CATEGORY_DOT[e.category]}`}
                           aria-hidden
                         />
-                        <span className="truncate text-ink-soft">
-                          {shortLabel(e)}
-                        </span>
+                        <span className="truncate text-ink-soft">{shortLabel(e)}</span>
                       </span>
                     ))}
                     {items.length > 2 ? (
-                      <span className="text-[10px] text-ink-faint">
-                        +{items.length - 2} more
-                      </span>
+                      <span className="text-[10px] text-ink-faint">+{items.length - 2} more</span>
                     ) : null}
                   </div>
                 </>
@@ -145,12 +130,7 @@ export function YearGrid({
   return (
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
       {Array.from({ length: 12 }, (_, m) => (
-        <MiniMonth
-          key={m}
-          month={new Date(year, m, 1)}
-          buckets={buckets}
-          onPick={onPickMonth}
-        />
+        <MiniMonth key={m} month={new Date(year, m, 1)} buckets={buckets} onPick={onPickMonth} />
       ))}
     </div>
   );
@@ -177,7 +157,7 @@ function MiniMonth({
     <button
       type="button"
       onClick={() => onPick(month)}
-      className="rounded-xl border border-line bg-surface-raised p-3 text-left transition-base hover:border-line-strong hover:bg-canvas/40"
+      className="transition-base rounded-xl border border-line bg-surface-raised p-3 text-left hover:border-line-strong hover:bg-canvas/40"
     >
       <p className="mb-2 text-[12.5px] font-medium text-ink">
         {month.toLocaleDateString(undefined, { month: "long" })}
@@ -196,11 +176,7 @@ function MiniMonth({
             <span
               key={i}
               className={`flex flex-col items-center gap-0.5 text-[10px] ${
-                isToday
-                  ? "text-ink"
-                  : inMonth
-                    ? "text-ink-soft"
-                    : "text-ink-faint/50"
+                isToday ? "text-ink" : inMonth ? "text-ink-soft" : "text-ink-faint/50"
               }`}
             >
               <span

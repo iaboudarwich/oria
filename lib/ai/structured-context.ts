@@ -78,10 +78,7 @@ export function formatStructuredFields(
  * Compose the final upload snippet: structured fields first (clean,
  * authoritative), then the raw OCR snippet (background, possibly noisy).
  */
-export function composeUploadSnippet(
-  structuredBlock: string,
-  rawSnippet: string,
-): string {
+export function composeUploadSnippet(structuredBlock: string, rawSnippet: string): string {
   if (!structuredBlock) return rawSnippet;
   if (!rawSnippet) return structuredBlock;
   return `${structuredBlock}\n\n${rawSnippet}`;

@@ -12,9 +12,7 @@ async function getCurrentUserId(): Promise<string | null> {
   return user?.id ?? null;
 }
 
-export async function deleteConversationAction(
-  conversationId: string
-): Promise<void> {
+export async function deleteConversationAction(conversationId: string): Promise<void> {
   const userId = await getCurrentUserId();
   if (!userId) return;
   // RLS ensures the row belongs to this user before soft-deleting
@@ -24,7 +22,7 @@ export async function deleteConversationAction(
 
 export async function starConversationAction(
   conversationId: string,
-  starred: boolean
+  starred: boolean,
 ): Promise<void> {
   const userId = await getCurrentUserId();
   if (!userId) return;

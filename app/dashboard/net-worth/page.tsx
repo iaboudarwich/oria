@@ -10,11 +10,7 @@ import { CardStack, CardStackItem } from "@/components/ui/card-stack";
 import { type NetWorthPoint } from "@/components/finance/net-worth-chart";
 import { TrendChart } from "@/components/ui/trend-chart";
 import { ManualAssetsPanel } from "@/components/finance/manual-assets-panel";
-import {
-  listManualAssets,
-  currentNetWorth,
-  listNetWorthSnapshots,
-} from "@/lib/data/net-worth";
+import { listManualAssets, currentNetWorth, listNetWorthSnapshots } from "@/lib/data/net-worth";
 import { allocationSlices } from "@/lib/net-worth/compute";
 
 export const metadata = { title: "Net worth" };
@@ -82,12 +78,17 @@ export default async function NetWorthPage() {
               </div>
               <div className="mt-2 flex flex-wrap gap-x-5 gap-y-1 text-[12.5px] text-ink-muted">
                 <span>
-                  {t("assets")}: <span className="tabular-nums text-ink-soft">{money(nw.totalAssets, nw.currency)}</span>
+                  {t("assets")}:{" "}
+                  <span className="text-ink-soft tabular-nums">
+                    {money(nw.totalAssets, nw.currency)}
+                  </span>
                 </span>
                 {nw.totalLiabilities > 0 ? (
                   <span>
                     {t("liabilities")}:{" "}
-                    <span className="tabular-nums text-ink-soft">{money(nw.totalLiabilities, nw.currency)}</span>
+                    <span className="text-ink-soft tabular-nums">
+                      {money(nw.totalLiabilities, nw.currency)}
+                    </span>
                   </span>
                 ) : null}
                 {nw.otherCurrencies.length > 0 ? (
@@ -134,7 +135,7 @@ export default async function NetWorthPage() {
                             />
                             <span className="text-eyebrow">{KIND_LABEL[s.kind]}</span>
                           </span>
-                          <p className="mt-2 text-[19px] font-semibold tabular-nums text-ink">
+                          <p className="mt-2 text-[19px] font-semibold text-ink tabular-nums">
                             {money(s.value, nw.currency)}
                           </p>
                           <p className="text-[12px] text-ink-faint tabular-nums">

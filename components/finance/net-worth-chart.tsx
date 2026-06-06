@@ -6,13 +6,7 @@
  */
 export type NetWorthPoint = { date: string; value: number; label: string };
 
-export function NetWorthChart({
-  points,
-  caption,
-}: {
-  points: NetWorthPoint[];
-  caption?: string;
-}) {
+export function NetWorthChart({ points, caption }: { points: NetWorthPoint[]; caption?: string }) {
   if (!points.length) return null;
 
   const W = 640;

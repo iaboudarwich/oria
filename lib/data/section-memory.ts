@@ -15,9 +15,7 @@ export type SectionMemory = {
  * Read every saved memory for a section in the active org. The section AI
  * weaves these into its system prompt; the memory panel renders them.
  */
-export async function listSectionMemories(
-  scope: SectionScope,
-): Promise<SectionMemory[]> {
+export async function listSectionMemories(scope: SectionScope): Promise<SectionMemory[]> {
   const ctx = await requireContext();
   const supabase = await createClient();
 

@@ -28,9 +28,7 @@ const SectionsEditorClient = dynamic(
   },
 );
 
-export function SectionsEditorLazy(
-  props: ComponentProps<typeof SectionsEditorType>,
-) {
+export function SectionsEditorLazy(props: ComponentProps<typeof SectionsEditorType>) {
   return <SectionsEditorClient {...props} />;
 }
 
@@ -47,7 +45,7 @@ function SectionsEditorSkeleton() {
         <li key={i} className="flex items-center gap-2 px-2 py-2">
           <span className="inline-block h-7 w-7 rounded-md bg-canvas" />
           <span className="inline-block h-7 w-7 rounded-md bg-canvas" />
-          <span className="block h-3 flex-1 rounded skeleton" />
+          <span className="skeleton block h-3 flex-1 rounded" />
         </li>
       ))}
     </ul>

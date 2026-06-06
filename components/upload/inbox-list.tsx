@@ -46,7 +46,9 @@ export function InboxList({
         const q = query.toLowerCase();
         return (
           (it.title ?? it.filename).toLowerCase().includes(q) ||
-          sectionLabel(it.section as Section | null).toLowerCase().includes(q)
+          sectionLabel(it.section as Section | null)
+            .toLowerCase()
+            .includes(q)
         );
       })
     : items;
@@ -63,23 +65,19 @@ export function InboxList({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search uploads..."
-          className="block h-9 w-full rounded-xl border border-line bg-surface-raised pl-8 pr-16 text-[13.5px] text-ink placeholder:text-ink-faint outline-none focus:border-ink-soft"
+          className="block h-9 w-full rounded-xl border border-line bg-surface-raised pr-16 pl-8 text-[13.5px] text-ink outline-none placeholder:text-ink-faint focus:border-ink-soft"
         />
         <div className="absolute inset-y-0 right-2 flex items-center gap-1">
           {query && (
             <button
               type="button"
               onClick={() => setQuery("")}
-              className="text-ink-faint text-[11px] hover:text-ink"
+              className="text-[11px] text-ink-faint hover:text-ink"
             >
               Clear
             </button>
           )}
-          <MicButton
-            onTranscribed={(text) => setQuery(text)}
-            targetLanguage={locale}
-            size="sm"
-          />
+          <MicButton onTranscribed={(text) => setQuery(text)} targetLanguage={locale} size="sm" />
         </div>
       </div>
 
@@ -92,7 +90,7 @@ export function InboxList({
           {filtered.map((it) => (
             <li
               key={it.id}
-              className="group flex items-center gap-3 rounded-lg px-3 py-2 transition-base hover:bg-surface-raised"
+              className="group transition-base flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-surface-raised"
             >
               <Link
                 href={`/dashboard/uploads/${it.id}`}
@@ -120,8 +118,7 @@ export function InboxList({
                     <UploadStatusPill status={it.status} />
                   </p>
                   <p className="truncate text-[11px] text-ink-faint">
-                    {sectionLabel(it.section as Section | null)}{" "}
-                    · {relativeTime(it.created_at)}
+                    {sectionLabel(it.section as Section | null)} · {relativeTime(it.created_at)}
                   </p>
                 </div>
               </Link>

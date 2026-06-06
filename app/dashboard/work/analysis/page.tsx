@@ -26,7 +26,7 @@ export default async function AnalysisPage() {
       <Topbar title="Analysis" />
       <ReportPoller pending={hasPending} />
 
-      <div className="space-y-8 animate-fade-up">
+      <div className="animate-fade-up space-y-8">
         {!data.hasData ? <EmptyState /> : <AnalysisBoard data={data} />}
         <AnalysisPrompt recentQuestions={recentQuestions} />
         {analyses.length > 0 ? <AnalysisList analyses={analyses} /> : null}
@@ -42,22 +42,17 @@ function AnalysisList({
 }) {
   return (
     <section>
-      <h2 className="mb-2 px-1 text-eyebrow">
-        Recent analyses
-      </h2>
+      <h2 className="text-eyebrow mb-2 px-1">Recent analyses</h2>
       <ul className="space-y-2">
         {analyses.map((a) => (
           <li
             key={a.id}
-            className="group flex items-start gap-3 rounded-xl border border-line bg-surface-raised px-4 py-3 transition-base hover:border-line-strong hover:bg-canvas/40"
+            className="group transition-base flex items-start gap-3 rounded-xl border border-line bg-surface-raised px-4 py-3 hover:border-line-strong hover:bg-canvas/40"
           >
             <span className="mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-canvas text-ink-soft">
               <ChartIcon size={14} />
             </span>
-            <Link
-              href={`/dashboard/work/agent/reports/${a.id}`}
-              className="min-w-0 flex-1"
-            >
+            <Link href={`/dashboard/work/agent/reports/${a.id}`} className="min-w-0 flex-1">
               <p className="truncate text-[13.5px] text-ink">{a.title}</p>
               <p className="mt-0.5 truncate text-[11.5px] text-ink-faint">
                 {a.kind} · {new Date(a.created_at).toLocaleString()}
@@ -84,7 +79,7 @@ function AnalysisList({
                   <input type="hidden" name="id" value={a.id} />
                   <button
                     type="submit"
-                    className="mt-1 inline-flex items-center rounded-md border border-line bg-canvas px-1.5 py-0.5 text-[10.5px] text-ink-muted transition-base hover:border-line-strong hover:text-ink"
+                    className="transition-base mt-1 inline-flex items-center rounded-md border border-line bg-canvas px-1.5 py-0.5 text-[10.5px] text-ink-muted hover:border-line-strong hover:text-ink"
                   >
                     Retry
                   </button>
@@ -146,42 +141,28 @@ function AnalysisBoard({ data }: { data: AnalysisAggregates }) {
   const totalIn = data.totals.inflow;
   const currency = data.totals.currency;
   const net = totalIn - totalOut;
-  const margin =
-    totalIn > 0 ? Math.round(((totalIn - totalOut) / totalIn) * 1000) / 10 : null;
-  const costRevenue =
-    totalIn > 0 ? Math.round((totalOut / totalIn) * 1000) / 10 : null;
+  const margin = totalIn > 0 ? Math.round(((totalIn - totalOut) / totalIn) * 1000) / 10 : null;
+  const costRevenue = totalIn > 0 ? Math.round((totalOut / totalIn) * 1000) / 10 : null;
 
   // Forecast: simple average of last 3 months of outflow.
   const recent = data.months.slice(-3);
   const forecastOut =
     recent.length > 0
-      ? Math.round(
-          (recent.reduce((a, b) => a + b.outflow, 0) / recent.length) * 100,
-        ) / 100
+      ? Math.round((recent.reduce((a, b) => a + b.outflow, 0) / recent.length) * 100) / 100
       : 0;
   const forecastIn =
     recent.length > 0
-      ? Math.round(
-          (recent.reduce((a, b) => a + b.inflow, 0) / recent.length) * 100,
-        ) / 100
+      ? Math.round((recent.reduce((a, b) => a + b.inflow, 0) / recent.length) * 100) / 100
       : 0;
 
   return (
-    <div className="space-y-8 animate-fade-up">
+    <div className="animate-fade-up space-y-8">
       {/* Ratio strip */}
       <section>
-        <h2 className="mb-3 px-1 text-[13px] font-medium text-ink-muted">
-          At a glance
-        </h2>
+        <h2 className="mb-3 px-1 text-[13px] font-medium text-ink-muted">At a glance</h2>
         <ul className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-          <RatioCard
-            label="Revenue"
-            value={formatAmount(totalIn, currency)}
-          />
-          <RatioCard
-            label="Expenses"
-            value={formatAmount(totalOut, currency)}
-          />
+          <RatioCard label="Revenue" value={formatAmount(totalIn, currency)} />
+          <RatioCard label="Expenses" value={formatAmount(totalOut, currency)} />
           <RatioCard
             label="Net"
             value={formatAmount(net, currency)}
@@ -189,11 +170,7 @@ function AnalysisBoard({ data }: { data: AnalysisAggregates }) {
           />
           <RatioCard
             label={costRevenue !== null ? "Cost / revenue" : "Transactions"}
-            value={
-              costRevenue !== null
-                ? `${costRevenue}%`
-                : String(data.totals.transactions)
-            }
+            value={costRevenue !== null ? `${costRevenue}%` : String(data.totals.transactions)}
           />
         </ul>
       </section>
@@ -219,11 +196,9 @@ function AnalysisBoard({ data }: { data: AnalysisAggregates }) {
 
         {/* Forecast next month */}
         <aside>
-          <h2 className="mb-3 px-1 text-[13px] font-medium text-ink-muted">
-            Next month forecast
-          </h2>
+          <h2 className="mb-3 px-1 text-[13px] font-medium text-ink-muted">Next month forecast</h2>
           <div className="rounded-2xl border border-line bg-surface-raised p-5">
-            <p className="text-[11.5px] uppercase tracking-[0.12em] text-ink-faint">
+            <p className="text-[11.5px] tracking-[0.12em] text-ink-faint uppercase">
               Expected expenses
             </p>
             <p className="mt-1 text-[28px] font-semibold tracking-tight text-ink">
@@ -232,22 +207,18 @@ function AnalysisBoard({ data }: { data: AnalysisAggregates }) {
             {totalIn > 0 ? (
               <>
                 <hr className="my-4 border-line" />
-                <p className="text-[11.5px] uppercase tracking-[0.12em] text-ink-faint">
+                <p className="text-[11.5px] tracking-[0.12em] text-ink-faint uppercase">
                   Expected revenue
                 </p>
                 <p className="mt-1 text-[28px] font-semibold tracking-tight text-ink">
                   {formatAmountTight(forecastIn, currency)}
                 </p>
                 {margin !== null ? (
-                  <p className="mt-1 text-[12px] text-ink-muted">
-                    Recent margin: {margin}%
-                  </p>
+                  <p className="mt-1 text-[12px] text-ink-muted">Recent margin: {margin}%</p>
                 ) : null}
               </>
             ) : (
-              <p className="mt-1 text-[12px] text-ink-faint">
-                3-month rolling average
-              </p>
+              <p className="mt-1 text-[12px] text-ink-faint">3-month rolling average</p>
             )}
           </div>
         </aside>
@@ -256,14 +227,10 @@ function AnalysisBoard({ data }: { data: AnalysisAggregates }) {
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Top spend by merchant */}
         <section>
-          <h2 className="mb-3 px-1 text-[13px] font-medium text-ink-muted">
-            Top spend by vendor
-          </h2>
+          <h2 className="mb-3 px-1 text-[13px] font-medium text-ink-muted">Top spend by vendor</h2>
           {data.topMerchants.length === 0 ? (
             <div className="rounded-2xl border border-line bg-surface-raised p-5">
-              <p className="text-[12.5px] text-ink-faint">
-                No merchants identified yet.
-              </p>
+              <p className="text-[12.5px] text-ink-faint">No merchants identified yet.</p>
             </div>
           ) : (
             <div className="rounded-2xl border border-line bg-surface-raised p-5">
@@ -274,18 +241,15 @@ function AnalysisBoard({ data }: { data: AnalysisAggregates }) {
 
         {/* Anomalies */}
         <section>
-          <h2 className="mb-3 px-1 text-[13px] font-medium text-ink-muted">
-            Anomalies
-          </h2>
+          <h2 className="mb-3 px-1 text-[13px] font-medium text-ink-muted">Anomalies</h2>
           {data.anomalies.length === 0 ? (
             <div className="rounded-2xl border border-line bg-surface-raised p-5">
               <p className="text-[12.5px] text-ink-faint">
-                Nothing flagged. Oria surfaces items more than 2x a vendor&apos;s
-                rolling average.
+                Nothing flagged. Oria surfaces items more than 2x a vendor&apos;s rolling average.
               </p>
             </div>
           ) : (
-            <ul className="rounded-2xl border border-line bg-surface-raised divide-y divide-line">
+            <ul className="divide-y divide-line rounded-2xl border border-line bg-surface-raised">
               {data.anomalies.map((a) => (
                 <li key={a.id} className="flex items-start gap-3 px-4 py-3">
                   <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-claret/10 text-claret">
@@ -295,7 +259,7 @@ function AnalysisBoard({ data }: { data: AnalysisAggregates }) {
                     {a.upload_id ? (
                       <Link
                         href={`/dashboard/uploads/${a.upload_id}`}
-                        className="block truncate text-[13px] text-ink transition-base hover:text-ink-soft"
+                        className="transition-base block truncate text-[13px] text-ink hover:text-ink-soft"
                       >
                         {a.title}
                       </Link>
@@ -303,8 +267,8 @@ function AnalysisBoard({ data }: { data: AnalysisAggregates }) {
                       <p className="truncate text-[13px] text-ink">{a.title}</p>
                     )}
                     <p className="mt-0.5 text-[11.5px] text-ink-faint">
-                      {a.merchant} · {formatAmount(a.amount, currency)} (
-                      {a.multiple.toFixed(1)}x vs ~{formatAmount(a.avg, currency)})
+                      {a.merchant} · {formatAmount(a.amount, currency)} ({a.multiple.toFixed(1)}x vs
+                      ~{formatAmount(a.avg, currency)})
                     </p>
                   </div>
                 </li>
@@ -323,49 +287,28 @@ function AnalysisBoard({ data }: { data: AnalysisAggregates }) {
 
 /* ----- pieces ------------------------------------------------------------ */
 
-function RatioCard({
-  label,
-  value,
-  tint,
-}: {
-  label: string;
-  value: string;
-  tint?: string;
-}) {
+function RatioCard({ label, value, tint }: { label: string; value: string; tint?: string }) {
   return (
     <li className="rounded-2xl border border-line bg-surface-raised p-4">
-      <p className="text-[11px] uppercase tracking-[0.10em] text-ink-faint">
-        {label}
-      </p>
-      <p
-        className={`mt-1 text-[22px] font-semibold tracking-tight ${
-          tint ?? "text-ink"
-        }`}
-      >
+      <p className="text-[11px] tracking-[0.10em] text-ink-faint uppercase">{label}</p>
+      <p className={`mt-1 text-[22px] font-semibold tracking-tight ${tint ?? "text-ink"}`}>
         {value}
       </p>
     </li>
   );
 }
 
-function FlowsChart({
-  months,
-}: {
-  months: AnalysisAggregates["months"];
-}) {
+function FlowsChart({ months }: { months: AnalysisAggregates["months"] }) {
   const W = 480;
   const H = 160;
   const padX = 24;
   const padY = 16;
   const all = months.flatMap((m) => [m.inflow, m.outflow]);
   const max = Math.max(...all, 1);
-  const x = (i: number) =>
-    padX + (i * (W - 2 * padX)) / Math.max(1, months.length - 1);
+  const x = (i: number) => padX + (i * (W - 2 * padX)) / Math.max(1, months.length - 1);
   const y = (v: number) => H - padY - (v / max) * (H - 2 * padY);
   const path = (key: "inflow" | "outflow") =>
-    months
-      .map((m, i) => `${i === 0 ? "M" : "L"} ${x(i)} ${y(m[key])}`)
-      .join(" ");
+    months.map((m, i) => `${i === 0 ? "M" : "L"} ${x(i)} ${y(m[key])}`).join(" ");
   const hasInflow = months.some((m) => m.inflow > 0);
   return (
     <svg
@@ -419,11 +362,7 @@ function FlowsChart({
   );
 }
 
-function MerchantBars({
-  rows,
-}: {
-  rows: AnalysisAggregates["topMerchants"];
-}) {
+function MerchantBars({ rows }: { rows: AnalysisAggregates["topMerchants"] }) {
   const max = Math.max(...rows.map((r) => r.total), 1);
   return (
     <ul className="space-y-3">
@@ -431,15 +370,10 @@ function MerchantBars({
         <li key={r.merchant}>
           <div className="mb-1 flex items-baseline justify-between">
             <p className="truncate text-[12.5px] text-ink-soft">{r.merchant}</p>
-            <p className="text-[12px] text-ink-muted">
-              {formatAmount(r.total, r.currency)}
-            </p>
+            <p className="text-[12px] text-ink-muted">{formatAmount(r.total, r.currency)}</p>
           </div>
           <div className="h-2 w-full overflow-hidden rounded-full bg-canvas">
-            <div
-              className="h-full bg-accent"
-              style={{ width: `${(r.total / max) * 100}%` }}
-            />
+            <div className="h-full bg-accent" style={{ width: `${(r.total / max) * 100}%` }} />
           </div>
         </li>
       ))}
@@ -465,7 +399,5 @@ function formatAmount(value: number, currency: string | null): string {
 
 function formatAmountTight(value: number, currency: string | null): string {
   const v = Math.round(value);
-  return currency
-    ? `${v.toLocaleString()} ${currency}`
-    : v.toLocaleString();
+  return currency ? `${v.toLocaleString()} ${currency}` : v.toLocaleString();
 }

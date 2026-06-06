@@ -62,20 +62,18 @@ function SuggestionRow({
   return (
     <div className="rounded-xl border border-line bg-canvas px-3 py-2.5">
       <p className="text-[13px] text-ink">{suggestion.title}</p>
-      <p className="mt-0.5 text-[11.5px] text-ink-faint">
-        {formatDate(suggestion.target_date)}
-      </p>
+      <p className="mt-0.5 text-[11.5px] text-ink-faint">{formatDate(suggestion.target_date)}</p>
 
       {mode === "idle" ? (
-        <div className="mt-2 flex items-center gap-2 flex-wrap">
-          <p className="text-[11px] text-ink-faint mr-1">
+        <div className="mt-2 flex flex-wrap items-center gap-2">
+          <p className="mr-1 text-[11px] text-ink-faint">
             Notify {suggestion.default_lead_days}d before
           </p>
           <button
             type="button"
             onClick={() => handleAccept(suggestion.default_lead_days)}
             disabled={pending}
-            className="inline-flex h-6 items-center rounded-md bg-ink px-2.5 text-[11px] text-surface transition-base hover:bg-ink-soft disabled:opacity-50"
+            className="transition-base inline-flex h-6 items-center rounded-md bg-ink px-2.5 text-[11px] text-surface hover:bg-ink-soft disabled:opacity-50"
           >
             {pending ? "Adding…" : "Yes"}
           </button>
@@ -83,7 +81,7 @@ function SuggestionRow({
             type="button"
             onClick={() => setMode("customize")}
             disabled={pending}
-            className="inline-flex h-6 items-center rounded-md border border-line px-2.5 text-[11px] text-ink-muted transition-base hover:border-line-strong hover:text-ink"
+            className="transition-base inline-flex h-6 items-center rounded-md border border-line px-2.5 text-[11px] text-ink-muted hover:border-line-strong hover:text-ink"
           >
             Customize
           </button>
@@ -91,7 +89,7 @@ function SuggestionRow({
             type="button"
             onClick={handleDismiss}
             disabled={pending}
-            className="text-[11px] text-ink-faint transition-base hover:text-ink"
+            className="transition-base text-[11px] text-ink-faint hover:text-ink"
           >
             Dismiss
           </button>
@@ -105,7 +103,9 @@ function SuggestionRow({
               min={0}
               max={365}
               value={leadDays}
-              onChange={(e) => setLeadDays(Math.max(0, Math.min(365, parseInt(e.target.value, 10) || 0)))}
+              onChange={(e) =>
+                setLeadDays(Math.max(0, Math.min(365, parseInt(e.target.value, 10) || 0)))
+              }
               className="w-16 rounded border border-line bg-canvas px-2 py-0.5 text-[12px] text-ink outline-none focus:border-ink-soft"
             />
             <span className="text-[11.5px] text-ink-faint">days before</span>
@@ -115,7 +115,7 @@ function SuggestionRow({
               type="button"
               onClick={() => handleAccept(leadDays)}
               disabled={pending}
-              className="inline-flex h-6 items-center rounded-md bg-ink px-2.5 text-[11px] text-surface transition-base hover:bg-ink-soft disabled:opacity-50"
+              className="transition-base inline-flex h-6 items-center rounded-md bg-ink px-2.5 text-[11px] text-surface hover:bg-ink-soft disabled:opacity-50"
             >
               {pending ? "Adding…" : "Add reminder"}
             </button>
@@ -153,9 +153,7 @@ export function SuggestedRemindersPanel({
 
   return (
     <section>
-      <h2 className="mb-2 px-1 text-eyebrow">
-        Suggested reminders
-      </h2>
+      <h2 className="text-eyebrow mb-2 px-1">Suggested reminders</h2>
       <div className="space-y-2">
         {visible.map((s) => (
           <SuggestionRow

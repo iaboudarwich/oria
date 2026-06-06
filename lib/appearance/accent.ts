@@ -28,13 +28,41 @@ export type AccentPreset = {
  * exactly, so the shipped look is unchanged until a user chooses otherwise.
  */
 export const ACCENT_PRESETS: AccentPreset[] = [
-  { key: "mint",   dark: { accent: "#4FE3AC", ink: "#04130D" }, light: { accent: "#0E9E70", ink: "#FFFFFF" } },
-  { key: "teal",   dark: { accent: "#3FD0E3", ink: "#04181C" }, light: { accent: "#0E8F9E", ink: "#FFFFFF" } },
-  { key: "indigo", dark: { accent: "#9D9DFF", ink: "#0B0B2A" }, light: { accent: "#4F46E5", ink: "#FFFFFF" } },
-  { key: "violet", dark: { accent: "#C39DFF", ink: "#1E0B33" }, light: { accent: "#7C3AED", ink: "#FFFFFF" } },
-  { key: "amber",  dark: { accent: "#F2B441", ink: "#1A1303" }, light: { accent: "#B5790C", ink: "#FFFFFF" } },
-  { key: "coral",  dark: { accent: "#F2685C", ink: "#2A0A07" }, light: { accent: "#D8493C", ink: "#FFFFFF" } },
-  { key: "slate",  dark: { accent: "#A8AEB8", ink: "#0B0D10" }, light: { accent: "#5C6470", ink: "#FFFFFF" } },
+  {
+    key: "mint",
+    dark: { accent: "#4FE3AC", ink: "#04130D" },
+    light: { accent: "#0E9E70", ink: "#FFFFFF" },
+  },
+  {
+    key: "teal",
+    dark: { accent: "#3FD0E3", ink: "#04181C" },
+    light: { accent: "#0E8F9E", ink: "#FFFFFF" },
+  },
+  {
+    key: "indigo",
+    dark: { accent: "#9D9DFF", ink: "#0B0B2A" },
+    light: { accent: "#4F46E5", ink: "#FFFFFF" },
+  },
+  {
+    key: "violet",
+    dark: { accent: "#C39DFF", ink: "#1E0B33" },
+    light: { accent: "#7C3AED", ink: "#FFFFFF" },
+  },
+  {
+    key: "amber",
+    dark: { accent: "#F2B441", ink: "#1A1303" },
+    light: { accent: "#B5790C", ink: "#FFFFFF" },
+  },
+  {
+    key: "coral",
+    dark: { accent: "#F2685C", ink: "#2A0A07" },
+    light: { accent: "#D8493C", ink: "#FFFFFF" },
+  },
+  {
+    key: "slate",
+    dark: { accent: "#A8AEB8", ink: "#0B0D10" },
+    light: { accent: "#5C6470", ink: "#FFFFFF" },
+  },
 ];
 
 export const DEFAULT_ACCENT = "mint";
@@ -115,7 +143,8 @@ const ACCENT_MIN = 3;
 export function validateAccentHex(hex: string): AccentValidation {
   if (!isHex6(hex)) return { ok: false, reason: "format" };
   if (contrastRatio(hex, SURFACE.dark) < ACCENT_MIN) return { ok: false, reason: "dark_contrast" };
-  if (contrastRatio(hex, SURFACE.light) < ACCENT_MIN) return { ok: false, reason: "light_contrast" };
+  if (contrastRatio(hex, SURFACE.light) < ACCENT_MIN)
+    return { ok: false, reason: "light_contrast" };
   const bestInk = Math.max(contrastRatio(hex, "#0A0A0A"), contrastRatio(hex, "#FFFFFF"));
   if (bestInk < ACCENT_MIN) return { ok: false, reason: "no_ink" };
   return { ok: true };

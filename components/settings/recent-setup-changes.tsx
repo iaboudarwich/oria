@@ -61,7 +61,9 @@ export function RecentSetupChanges({ changes }: { changes: SetupChange[] }) {
                   </span>
                 ))
               )}
-              {reverted ? <span className="ml-2 text-ink-faint">{t("changes_reverted")}</span> : null}
+              {reverted ? (
+                <span className="ml-2 text-ink-faint">{t("changes_reverted")}</span>
+              ) : null}
             </span>
             {!reverted && c.undoable ? (
               confirmId === c.id ? (
@@ -69,7 +71,7 @@ export function RecentSetupChanges({ changes }: { changes: SetupChange[] }) {
                   type="button"
                   onClick={() => undo(c.id, true)}
                   disabled={pending}
-                  className="shrink-0 text-[12px] font-medium text-claret transition-base hover:underline disabled:opacity-50"
+                  className="transition-base shrink-0 text-[12px] font-medium text-claret hover:underline disabled:opacity-50"
                 >
                   {t("changes_undo_confirm")}
                 </button>
@@ -78,7 +80,7 @@ export function RecentSetupChanges({ changes }: { changes: SetupChange[] }) {
                   type="button"
                   onClick={() => undo(c.id, false)}
                   disabled={pending}
-                  className="shrink-0 text-[12px] text-ink-faint transition-base hover:text-ink disabled:opacity-50"
+                  className="transition-base shrink-0 text-[12px] text-ink-faint hover:text-ink disabled:opacity-50"
                 >
                   {t("changes_undo")}
                 </button>

@@ -77,9 +77,13 @@ export async function DietPanel({ burnKcal }: { burnKcal: number | null }) {
       />
 
       <section>
-        <DailyStrip total={todayTotals} hasData={todayMeals.length > 0} mealCount={todayMeals.length} />
+        <DailyStrip
+          total={todayTotals}
+          hasData={todayMeals.length > 0}
+          mealCount={todayMeals.length}
+        />
         {todayMeals.length === 0 ? null : (
-          <ul className="mt-3 rounded-2xl border border-line bg-surface-raised divide-y divide-line">
+          <ul className="mt-3 divide-y divide-line rounded-2xl border border-line bg-surface-raised">
             {todayMeals.map((m) => (
               <MealRow key={m.id} meal={m} />
             ))}
@@ -89,9 +93,9 @@ export async function DietPanel({ burnKcal }: { burnKcal: number | null }) {
 
       {yesterdayMeals.length > 0 ? (
         <section>
-          <h2 className="mb-2 px-1 text-eyebrow">Yesterday</h2>
+          <h2 className="text-eyebrow mb-2 px-1">Yesterday</h2>
           <DaySummary total={yesterdayTotals} mealCount={yesterdayMeals.length} />
-          <ul className="mt-3 rounded-2xl border border-line bg-surface-raised divide-y divide-line">
+          <ul className="mt-3 divide-y divide-line rounded-2xl border border-line bg-surface-raised">
             {yesterdayMeals.map((m) => (
               <MealRow key={m.id} meal={m} />
             ))}
@@ -101,7 +105,7 @@ export async function DietPanel({ burnKcal }: { burnKcal: number | null }) {
 
       {weekTotals.calories > 0 ? (
         <section>
-          <h2 className="mb-2 px-1 text-eyebrow">Last 7 days, totals</h2>
+          <h2 className="text-eyebrow mb-2 px-1">Last 7 days, totals</h2>
           <div className="rounded-2xl border border-line bg-surface-raised p-4">
             <div className="flex flex-wrap items-baseline gap-x-5 gap-y-1">
               <span className="text-[26px] font-semibold tracking-tight text-ink">
@@ -114,7 +118,9 @@ export async function DietPanel({ burnKcal }: { burnKcal: number | null }) {
               </span>
             </div>
             <div className="mt-2 flex flex-wrap items-baseline gap-x-5 gap-y-1 text-[12.5px] text-ink-muted">
-              {weekTotals.protein_g > 0 ? <span>{Math.round(weekTotals.protein_g)}g protein</span> : null}
+              {weekTotals.protein_g > 0 ? (
+                <span>{Math.round(weekTotals.protein_g)}g protein</span>
+              ) : null}
               {weekTotals.carbs_g > 0 ? <span>{Math.round(weekTotals.carbs_g)}g carbs</span> : null}
               {weekTotals.fat_g > 0 ? <span>{Math.round(weekTotals.fat_g)}g fat</span> : null}
             </div>
@@ -123,7 +129,7 @@ export async function DietPanel({ burnKcal }: { burnKcal: number | null }) {
       ) : null}
 
       <section>
-        <h2 className="mb-2 px-1 text-eyebrow">Last 7 days</h2>
+        <h2 className="text-eyebrow mb-2 px-1">Last 7 days</h2>
         <div className="rounded-2xl border border-line bg-surface-raised p-4">
           {week.every((d) => d.calories === 0) ? (
             <p className="px-1 text-[12.5px] text-ink-faint">
@@ -132,7 +138,8 @@ export async function DietPanel({ burnKcal }: { burnKcal: number | null }) {
           ) : (
             <ul className="flex h-[100px] items-end gap-2">
               {week.map((d, i) => {
-                const h = d.calories === 0 ? 4 : Math.max(8, Math.round((d.calories / weekMax) * 100));
+                const h =
+                  d.calories === 0 ? 4 : Math.max(8, Math.round((d.calories / weekMax) * 100));
                 const isToday = i === week.length - 1;
                 return (
                   <li key={d.label + i} className="flex flex-1 flex-col items-center gap-1.5">
@@ -155,7 +162,7 @@ export async function DietPanel({ burnKcal }: { burnKcal: number | null }) {
       </section>
 
       <section>
-        <h2 className="mb-2 px-1 text-eyebrow">Ask Diet</h2>
+        <h2 className="text-eyebrow mb-2 px-1">Ask Diet</h2>
         <div className="rounded-2xl border border-line bg-surface-raised p-3">
           <AskChat scope={SCOPE} suggestions={SUGGESTIONS} recentQuestions={recentQuestions} />
         </div>
@@ -212,7 +219,7 @@ function MealRow({ meal: m }: { meal: DietMeal }) {
         {m.upload_id ? (
           <Link
             href={`/dashboard/uploads/${m.upload_id}`}
-            className="block truncate text-[13.5px] text-ink transition-base hover:text-ink-soft"
+            className="transition-base block truncate text-[13.5px] text-ink hover:text-ink-soft"
           >
             {m.title}
           </Link>
@@ -227,7 +234,8 @@ function MealRow({ meal: m }: { meal: DietMeal }) {
         ) : null}
         {m.protein_g !== null || m.carbs_g !== null || m.fat_g !== null ? (
           <p className="text-[11px] text-ink-faint">
-            {Math.round(m.protein_g ?? 0)}p · {Math.round(m.carbs_g ?? 0)}c · {Math.round(m.fat_g ?? 0)}f
+            {Math.round(m.protein_g ?? 0)}p · {Math.round(m.carbs_g ?? 0)}c ·{" "}
+            {Math.round(m.fat_g ?? 0)}f
           </p>
         ) : null}
       </div>

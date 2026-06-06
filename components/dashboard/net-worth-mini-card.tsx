@@ -27,7 +27,7 @@ export async function NetWorthMiniCard({ nw }: { nw: NetWorth }) {
   return (
     <Link
       href="/dashboard/net-worth"
-      className="block rounded-2xl border border-line bg-surface-raised p-4 transition-base hover:border-ink/20"
+      className="transition-base block rounded-2xl border border-line bg-surface-raised p-4 hover:border-ink/20"
     >
       <Eyebrow>{t("net_worth_eyebrow")}</Eyebrow>
       <div className="mt-1">

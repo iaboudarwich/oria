@@ -2,10 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import {
-  inviteToCircle,
-  type EmailOutcome,
-} from "@/lib/data/circle-actions";
+import { inviteToCircle, type EmailOutcome } from "@/lib/data/circle-actions";
 import { ArrowRightIcon } from "@/components/ui/icon";
 import { EmailStatusLine } from "./email-status-line";
 
@@ -78,11 +75,8 @@ export function InviteCreator({
 }) {
   const router = useRouter();
   const titleSuggestions =
-    orgKind === "office"
-      ? WORKSPACE_TITLE_SUGGESTIONS
-      : CIRCLE_TITLE_SUGGESTIONS;
-  const titleFieldLabel =
-    orgKind === "office" ? "Role or title" : "Relationship or title";
+    orgKind === "office" ? WORKSPACE_TITLE_SUGGESTIONS : CIRCLE_TITLE_SUGGESTIONS;
+  const titleFieldLabel = orgKind === "office" ? "Role or title" : "Relationship or title";
   const titlePlaceholder =
     orgKind === "office"
       ? "e.g. Property manager, Lawyer, Accountant"
@@ -107,10 +101,7 @@ export function InviteCreator({
     <div className="space-y-4">
       {confirmation ? (
         <div className="rounded-xl border border-line bg-canvas/40 px-3 py-2">
-          <EmailStatusLine
-            outcome={confirmation.outcome}
-            recipient={confirmation.recipient}
-          />
+          <EmailStatusLine outcome={confirmation.outcome} recipient={confirmation.recipient} />
           <p className="mt-1 text-[11.5px] text-ink-faint">
             The invite is in your list below. Open it to copy the code or link.
           </p>
@@ -125,8 +116,7 @@ export function InviteCreator({
             const result = await inviteToCircle(formData);
             if (result.ok) {
               setConfirmation({
-                recipient:
-                  result.data.invite.display_name || result.data.invite.email,
+                recipient: result.data.invite.display_name || result.data.invite.email,
                 outcome: result.data.emailOutcome,
               });
               resetForm();
@@ -145,7 +135,7 @@ export function InviteCreator({
               name="email"
               required
               placeholder="alex@example.com"
-              className="block h-10 w-full rounded-lg border border-line-strong bg-canvas px-3 text-[13px] text-ink placeholder:text-ink-faint outline-none focus:border-ink"
+              className="block h-10 w-full rounded-lg border border-line-strong bg-canvas px-3 text-[13px] text-ink outline-none placeholder:text-ink-faint focus:border-ink"
             />
           </Field>
           <Field label="Display name" hint="Optional.">
@@ -154,15 +144,12 @@ export function InviteCreator({
               name="display_name"
               maxLength={80}
               placeholder="Alex"
-              className="block h-10 w-full rounded-lg border border-line-strong bg-canvas px-3 text-[13px] text-ink placeholder:text-ink-faint outline-none focus:border-ink"
+              className="block h-10 w-full rounded-lg border border-line-strong bg-canvas px-3 text-[13px] text-ink outline-none placeholder:text-ink-faint focus:border-ink"
             />
           </Field>
         </div>
 
-        <Field
-          label={titleFieldLabel}
-          hint="Optional. Pick a suggestion or type your own."
-        >
+        <Field label={titleFieldLabel} hint="Optional. Pick a suggestion or type your own.">
           <input
             type="text"
             name="title"
@@ -170,7 +157,7 @@ export function InviteCreator({
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder={titlePlaceholder}
-            className="block h-10 w-full rounded-lg border border-line-strong bg-canvas px-3 text-[13px] text-ink placeholder:text-ink-faint outline-none focus:border-ink"
+            className="block h-10 w-full rounded-lg border border-line-strong bg-canvas px-3 text-[13px] text-ink outline-none placeholder:text-ink-faint focus:border-ink"
           />
           <ul className="mt-2 flex flex-wrap gap-1.5">
             {titleSuggestions.map((s) => {
@@ -180,7 +167,7 @@ export function InviteCreator({
                   <button
                     type="button"
                     onClick={() => setTitle(s)}
-                    className={`cursor-pointer rounded-full border px-2.5 py-0.5 text-[11px] transition-base ${
+                    className={`transition-base cursor-pointer rounded-full border px-2.5 py-0.5 text-[11px] ${
                       active
                         ? "border-ink bg-ink text-surface"
                         : "border-line bg-canvas text-ink-muted hover:border-line-strong hover:text-ink"
@@ -195,14 +182,12 @@ export function InviteCreator({
         </Field>
 
         <fieldset>
-          <legend className="mb-2 text-[12.5px] text-ink-muted">
-            What can they see?
-          </legend>
+          <legend className="mb-2 text-[12.5px] text-ink-muted">What can they see?</legend>
           <div className="space-y-1.5">
             {ACCESS_OPTIONS.map((opt) => (
               <label
                 key={opt.value}
-                className="flex cursor-pointer items-start gap-2.5 rounded-lg border border-line bg-canvas/60 px-3 py-2 transition-base hover:border-line-strong has-[:checked]:border-ink has-[:checked]:bg-canvas"
+                className="transition-base flex cursor-pointer items-start gap-2.5 rounded-lg border border-line bg-canvas/60 px-3 py-2 hover:border-line-strong has-[:checked]:border-ink has-[:checked]:bg-canvas"
               >
                 <input
                   type="radio"
@@ -214,9 +199,7 @@ export function InviteCreator({
                 />
                 <span className="min-w-0">
                   <span className="block text-[13px] text-ink">{opt.label}</span>
-                  <span className="block text-[11.5px] text-ink-faint">
-                    {opt.blurb}
-                  </span>
+                  <span className="block text-[11.5px] text-ink-faint">{opt.blurb}</span>
                 </span>
               </label>
             ))}
@@ -226,9 +209,7 @@ export function InviteCreator({
         {access === "limited" ? (
           <fieldset>
             <div className="mb-2 flex items-baseline gap-3">
-              <legend className="text-[12.5px] text-ink-muted">
-                Section permissions
-              </legend>
+              <legend className="text-[12.5px] text-ink-muted">Section permissions</legend>
               <span className="ml-auto text-[10.5px] text-ink-faint">Read</span>
               <span className="text-[10.5px] text-ink-faint">Write</span>
             </div>
@@ -244,7 +225,7 @@ export function InviteCreator({
                   return (
                     <div
                       key={`${s.ref.kind}-${s.ref.key}`}
-                      className="flex items-center gap-3 rounded-md px-2 py-1.5 transition-base hover:bg-canvas/60"
+                      className="transition-base flex items-center gap-3 rounded-md px-2 py-1.5 hover:bg-canvas/60"
                     >
                       <span className="min-w-0 flex-1 text-[12.5px] text-ink">{s.name}</span>
                       {/* Read checkbox. presence of this key = read access */}
@@ -282,14 +263,12 @@ export function InviteCreator({
           <button
             type="submit"
             disabled={pending}
-            className="inline-flex h-10 cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-ink px-4 text-[13px] text-surface transition-base hover:bg-ink-soft disabled:cursor-default disabled:opacity-50"
+            className="transition-base inline-flex h-10 cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-ink px-4 text-[13px] text-surface hover:bg-ink-soft disabled:cursor-default disabled:opacity-50"
           >
             {pending ? "Creating invite" : "Create invite"}
             <ArrowRightIcon size={12} />
           </button>
-          {error ? (
-            <p className="text-[12.5px] text-claret">{error}</p>
-          ) : null}
+          {error ? <p className="text-[12.5px] text-claret">{error}</p> : null}
         </div>
       </form>
     </div>
@@ -308,9 +287,7 @@ function Field({
   return (
     <label className="block">
       <span className="mb-1.5 block text-[12.5px] text-ink">{label}</span>
-      {hint ? (
-        <span className="mb-1.5 block text-[11.5px] text-ink-faint">{hint}</span>
-      ) : null}
+      {hint ? <span className="mb-1.5 block text-[11.5px] text-ink-faint">{hint}</span> : null}
       {children}
     </label>
   );

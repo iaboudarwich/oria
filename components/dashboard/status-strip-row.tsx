@@ -75,7 +75,7 @@ export function StatusStripRow({
       <span className="min-w-0 flex-1 truncate">{message}</span>
       <Link
         href="/dashboard/timeline"
-        className="shrink-0 text-[11.5px] text-ink-faint underline-offset-2 transition-base hover:text-ink hover:underline"
+        className="transition-base shrink-0 text-[11.5px] text-ink-faint underline-offset-2 hover:text-ink hover:underline"
       >
         {historyLabel}
       </Link>
@@ -83,7 +83,7 @@ export function StatusStripRow({
         type="button"
         onClick={dismiss}
         aria-label="Dismiss"
-        className="shrink-0 text-[13px] leading-none text-ink-faint transition-base hover:text-ink"
+        className="transition-base shrink-0 text-[13px] leading-none text-ink-faint hover:text-ink"
       >
         ×
       </button>

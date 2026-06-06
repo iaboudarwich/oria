@@ -100,7 +100,12 @@ describe("sanitizeGroupExtraction", () => {
       {
         merged: false,
         records: [
-          { title: "X", document_type: "photo", section: "personal", image_indexes: [0, 9, -1, 1.5, 2] },
+          {
+            title: "X",
+            document_type: "photo",
+            section: "personal",
+            image_indexes: [0, 9, -1, 1.5, 2],
+          },
         ],
       },
       3,
@@ -121,8 +126,20 @@ describe("sanitizeGroupExtraction", () => {
         merged: false,
         reason: "model still saw two",
         records: [
-          { title: "Low", document_type: "screenshot", section: "travel", confidence: 0.4, image_indexes: [0] },
-          { title: "High", document_type: "ticket", section: "travel", confidence: 0.95, image_indexes: [1, 2] },
+          {
+            title: "Low",
+            document_type: "screenshot",
+            section: "travel",
+            confidence: 0.4,
+            image_indexes: [0],
+          },
+          {
+            title: "High",
+            document_type: "ticket",
+            section: "travel",
+            confidence: 0.95,
+            image_indexes: [1, 2],
+          },
         ],
       },
       3,
@@ -137,7 +154,10 @@ describe("sanitizeGroupExtraction", () => {
 
   it("supplies a title when the model omits it", () => {
     const out = sanitizeGroupExtraction(
-      { merged: true, records: [{ document_type: "receipt", section: "finance", image_indexes: [0] }] },
+      {
+        merged: true,
+        records: [{ document_type: "receipt", section: "finance", image_indexes: [0] }],
+      },
       1,
     );
     expect(out!.records[0].title).toBe("Untitled");

@@ -16,27 +16,23 @@ export default function NewCirclePage() {
     <>
       <Topbar title="Create a circle" />
 
-      <div className="mx-auto max-w-xl animate-fade-up">
+      <div className="animate-fade-up mx-auto max-w-xl">
         <Steps current={1} />
 
-        <p className="mb-7 mt-5 px-1 text-[13px] text-ink-muted">
-          A circle is a small, trusted group. Family, partner, roommates, an
-          assistant. Anything you share here stays inside the circle. Your
-          personal space never leaks in.
+        <p className="mt-5 mb-7 px-1 text-[13px] text-ink-muted">
+          A circle is a small, trusted group. Family, partner, roommates, an assistant. Anything you
+          share here stays inside the circle. Your personal space never leaks in.
         </p>
 
         <form action={createCircle} className="space-y-7">
-          <Field
-            label="Name this circle"
-            hint="A short, human name. You can change it later."
-          >
+          <Field label="Name this circle" hint="A short, human name. You can change it later.">
             <input
               type="text"
               name="name"
               required
               maxLength={60}
               placeholder="e.g. Family, Roommates, Mom & Dad, Travel Group"
-              className="block h-11 w-full rounded-xl border border-line-strong bg-surface-raised px-3.5 text-[16px] text-ink placeholder:text-ink-faint outline-none transition-base focus:border-ink"
+              className="transition-base block h-11 w-full rounded-xl border border-line-strong bg-surface-raised px-3.5 text-[16px] text-ink outline-none placeholder:text-ink-faint focus:border-ink"
               autoFocus
             />
           </Field>
@@ -50,7 +46,7 @@ export default function NewCirclePage() {
               rows={3}
               maxLength={280}
               placeholder={PURPOSE_EXAMPLES.join("  ·  ")}
-              className="block w-full rounded-xl border border-line-strong bg-surface-raised px-3.5 py-2.5 text-[16px] text-ink placeholder:text-ink-faint outline-none transition-base focus:border-ink"
+              className="transition-base block w-full rounded-xl border border-line-strong bg-surface-raised px-3.5 py-2.5 text-[16px] text-ink outline-none placeholder:text-ink-faint focus:border-ink"
             />
             <ul className="mt-2 flex flex-wrap gap-1.5">
               {PURPOSE_EXAMPLES.map((p) => (
@@ -67,13 +63,13 @@ export default function NewCirclePage() {
           <div className="flex items-center gap-3 pt-1">
             <button
               type="submit"
-              className="inline-flex h-11 items-center rounded-xl bg-ink px-5 text-[13.5px] text-surface hover:bg-ink-soft transition-base"
+              className="transition-base inline-flex h-11 items-center rounded-xl bg-ink px-5 text-[13.5px] text-surface hover:bg-ink-soft"
             >
               Continue
             </button>
             <Link
               href="/dashboard"
-              className="text-[13px] text-ink-muted hover:text-ink transition-base"
+              className="transition-base text-[13px] text-ink-muted hover:text-ink"
             >
               Cancel
             </Link>
@@ -106,9 +102,7 @@ function Steps({ current }: { current: 1 | 2 }) {
               {done ? "✓" : n}
             </span>
             <span className={active ? "text-ink" : ""}>{label}</span>
-            {i < labels.length - 1 ? (
-              <span className="ml-1 h-px w-6 bg-line" />
-            ) : null}
+            {i < labels.length - 1 ? <span className="ml-1 h-px w-6 bg-line" /> : null}
           </li>
         );
       })}
@@ -128,9 +122,7 @@ function Field({
   return (
     <label className="block">
       <span className="mb-1.5 block text-[13px] text-ink">{label}</span>
-      {hint ? (
-        <span className="mb-2 block text-[12px] text-ink-faint">{hint}</span>
-      ) : null}
+      {hint ? <span className="mb-2 block text-[12px] text-ink-faint">{hint}</span> : null}
       {children}
     </label>
   );

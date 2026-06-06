@@ -1,11 +1,7 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { EmptyState } from "@/components/ui/empty-state";
-import {
-  actionLabel,
-  summariseUserAgent,
-  type AuditEvent,
-} from "@/lib/data/audit-log";
+import { actionLabel, summariseUserAgent, type AuditEvent } from "@/lib/data/audit-log";
 
 type AuditFilter = "all" | "email";
 
@@ -29,8 +25,7 @@ type Props = {
  */
 export async function AuditActivity({ events, filter = "all" }: Props) {
   const t = await getTranslations("empty");
-  const shown =
-    filter === "email" ? events.filter((e) => e.action.startsWith("email.")) : events;
+  const shown = filter === "email" ? events.filter((e) => e.action.startsWith("email.")) : events;
   const filters: { key: AuditFilter; label: string }[] = [
     { key: "all", label: "All activity" },
     { key: "email", label: "Email" },
@@ -40,10 +35,9 @@ export async function AuditActivity({ events, filter = "all" }: Props) {
       <div>
         <h2 className="text-[15px] font-semibold text-ink">Recent activity</h2>
         <p className="mt-1 text-[13px] text-ink-muted">
-          The last {events.length === 100 ? "100" : events.length} sensitive
-          events on your account. We log sign-ins, sensitive settings changes,
-          and document actions. See something you don&apos;t recognise? Change
-          your password and turn on 2FA.
+          The last {events.length === 100 ? "100" : events.length} sensitive events on your account.
+          We log sign-ins, sensitive settings changes, and document actions. See something you
+          don&apos;t recognise? Change your password and turn on 2FA.
         </p>
       </div>
 
@@ -53,7 +47,7 @@ export async function AuditActivity({ events, filter = "all" }: Props) {
             key={f.key}
             href={`/dashboard/settings?tab=security&audit=${f.key}`}
             scroll={false}
-            className={`rounded-full px-3 py-1 text-[12px] transition-base ${
+            className={`transition-base rounded-full px-3 py-1 text-[12px] ${
               filter === f.key
                 ? "bg-ink text-surface"
                 : "border border-line text-ink-muted hover:text-ink"
@@ -70,7 +64,7 @@ export async function AuditActivity({ events, filter = "all" }: Props) {
         <div className="overflow-hidden rounded-2xl border border-line bg-surface-raised">
           <table className="w-full text-[12.5px]">
             <thead className="bg-canvas">
-              <tr className="text-left text-[11px] uppercase tracking-[0.06em] text-ink-muted">
+              <tr className="text-left text-[11px] tracking-[0.06em] text-ink-muted uppercase">
                 <th className="px-3 py-2 font-medium">When</th>
                 <th className="px-3 py-2 font-medium">Action</th>
                 <th className="px-3 py-2 font-medium">From</th>
@@ -79,22 +73,18 @@ export async function AuditActivity({ events, filter = "all" }: Props) {
             <tbody className="divide-y divide-line">
               {shown.map((e) => (
                 <tr key={e.id} className="align-top">
-                  <td className="whitespace-nowrap px-3 py-2 text-ink-soft tabular-nums">
+                  <td className="px-3 py-2 whitespace-nowrap text-ink-soft tabular-nums">
                     {formatStamp(e.created_at)}
                   </td>
                   <td className="px-3 py-2 text-ink">
                     {actionLabel(e.action)}
                     {e.resource_type ? (
-                      <span className="ml-2 text-[11.5px] text-ink-faint">
-                        · {e.resource_type}
-                      </span>
+                      <span className="ml-2 text-[11.5px] text-ink-faint">· {e.resource_type}</span>
                     ) : null}
                   </td>
                   <td className="px-3 py-2 text-ink-muted">
                     {e.ip_address ? (
-                      <span className="font-mono text-[12px] text-ink-soft">
-                        {e.ip_address}
-                      </span>
+                      <span className="font-mono text-[12px] text-ink-soft">{e.ip_address}</span>
                     ) : (
                       <span className="text-ink-faint">unknown</span>
                     )}
@@ -111,7 +101,7 @@ export async function AuditActivity({ events, filter = "all" }: Props) {
 
       <Link
         href="/api/account/audit-export"
-        className="inline-flex text-[12.5px] text-brand hover:opacity-80 transition-base"
+        className="transition-base inline-flex text-[12.5px] text-brand hover:opacity-80"
         prefetch={false}
       >
         Download full log (JSON)

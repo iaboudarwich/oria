@@ -30,7 +30,7 @@ export function WorkFeed({
     );
   }
   return (
-    <ul className="rounded-2xl border border-line bg-surface-raised divide-y divide-line">
+    <ul className="divide-y divide-line rounded-2xl border border-line bg-surface-raised">
       {items.map((it) => (
         <FeedRow key={it.id} item={it} />
       ))}
@@ -39,8 +39,7 @@ export function WorkFeed({
 }
 
 function FeedRow({ item: it }: { item: WorkFeedItem }) {
-  const Icon =
-    (it.document_type && ICON_FOR_DOC_TYPE[it.document_type]) ?? DocumentIcon;
+  const Icon = (it.document_type && ICON_FOR_DOC_TYPE[it.document_type]) ?? DocumentIcon;
   const amount =
     it.amount_value !== null
       ? it.amount_currency
@@ -63,18 +62,15 @@ function FeedRow({ item: it }: { item: WorkFeedItem }) {
         {it.upload_id ? (
           <Link
             href={`/dashboard/uploads/${it.upload_id}`}
-            className="block truncate text-[13.5px] text-ink transition-base hover:text-ink-soft"
+            className="transition-base block truncate text-[13.5px] text-ink hover:text-ink-soft"
           >
             {it.merchant || it.title}
           </Link>
         ) : (
-          <p className="truncate text-[13.5px] text-ink">
-            {it.merchant || it.title}
-          </p>
+          <p className="truncate text-[13.5px] text-ink">{it.merchant || it.title}</p>
         )}
         <p className="truncate text-[11.5px] text-ink-faint">
-          {[it.location, it.category, it.summary].filter(Boolean).join(" · ") ||
-            it.title}
+          {[it.location, it.category, it.summary].filter(Boolean).join(" · ") || it.title}
         </p>
       </div>
       <div className="text-right">

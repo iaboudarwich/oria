@@ -7,12 +7,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { requireContext } from "./organizations";
 import { generateWorkReport } from "@/lib/ai/work-report";
 import { recordSystemEvent } from "./system-events";
-import {
-  createJob,
-  markJobCompleted,
-  markJobFailed,
-  markJobStarted,
-} from "./jobs";
+import { createJob, markJobCompleted, markJobFailed, markJobStarted } from "./jobs";
 
 /**
  * Re-run a failed workspace report. Mirrors the upload-retry pattern:

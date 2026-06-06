@@ -3,15 +3,11 @@ import { resolveThingsLabel } from "@/lib/data/things-label";
 
 describe("resolveThingsLabel", () => {
   it("uses a custom label when set", () => {
-    expect(
-      resolveThingsLabel({ things_label: "Stuff", template_key: "investor" }),
-    ).toBe("Stuff");
+    expect(resolveThingsLabel({ things_label: "Stuff", template_key: "investor" })).toBe("Stuff");
   });
 
   it("trims and ignores blank custom labels", () => {
-    expect(
-      resolveThingsLabel({ things_label: "  ", template_key: "investor" }),
-    ).toBe("Assets");
+    expect(resolveThingsLabel({ things_label: "  ", template_key: "investor" })).toBe("Assets");
   });
 
   it("defaults to Assets for the asset-heavy investor template", () => {

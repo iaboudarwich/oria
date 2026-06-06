@@ -43,7 +43,9 @@ describe("classifyIntent", () => {
   });
 
   it("prefers family_office over investor when both could match", () => {
-    expect(classifyIntent("I run our family office and invest the portfolio")).toBe("family_office");
+    expect(classifyIntent("I run our family office and invest the portfolio")).toBe(
+      "family_office",
+    );
   });
 });
 
@@ -99,7 +101,13 @@ describe("different intents -> different provisioned setup", () => {
   it("the (tree, templateKey, archetype) tuple is distinct across archetypes", () => {
     const tuple = (i: OnboardingIntent) =>
       `${questionTreeKey(i)}|${provisioningFor(i).templateKey}|${provisioningFor(i).archetype}`;
-    const sample: OnboardingIntent[] = ["investor", "family_office", "founder", "parent", "personal"];
+    const sample: OnboardingIntent[] = [
+      "investor",
+      "family_office",
+      "founder",
+      "parent",
+      "personal",
+    ];
     const tuples = sample.map(tuple);
     expect(new Set(tuples).size).toBe(sample.length);
   });

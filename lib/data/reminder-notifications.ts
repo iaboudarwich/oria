@@ -45,9 +45,7 @@ export async function sendDueReminderNotifications(): Promise<NotificationBatchR
 
   const { data: rows, error } = await admin
     .from("reminders")
-    .select(
-      "id, title, due_at, lead_days, upload_id, created_by, assigned_to, organization_id",
-    )
+    .select("id, title, due_at, lead_days, upload_id, created_by, assigned_to, organization_id")
     .eq("done", false)
     .is("notified_at", null)
     .not("due_at", "is", null)
@@ -115,10 +113,8 @@ export async function sendDueReminderNotifications(): Promise<NotificationBatchR
         .eq("id", reminder.upload_id)
         .maybeSingle();
       uploadTitle =
-        (upload as { title?: string | null; filename?: string | null } | null)
-          ?.title ??
-        (upload as { title?: string | null; filename?: string | null } | null)
-          ?.filename ??
+        (upload as { title?: string | null; filename?: string | null } | null)?.title ??
+        (upload as { title?: string | null; filename?: string | null } | null)?.filename ??
         null;
     }
 
@@ -140,10 +136,7 @@ export async function sendDueReminderNotifications(): Promise<NotificationBatchR
     });
 
     if (result.status === "sent") {
-      await admin
-        .from("reminders")
-        .update({ notified_at: nowISO })
-        .eq("id", reminder.id);
+      await admin.from("reminders").update({ notified_at: nowISO }).eq("id", reminder.id);
       void recordSystemEvent({
         kind: "reminder.notified",
         severity: "info",

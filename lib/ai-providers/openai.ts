@@ -16,9 +16,9 @@ import type {
 } from "./types";
 
 /** Convert one message's content to OpenAI's content (string or parts). */
-function toOpenAIContent(content: string | ContentPart[]):
-  | string
-  | OpenAI.Chat.Completions.ChatCompletionContentPart[] {
+function toOpenAIContent(
+  content: string | ContentPart[],
+): string | OpenAI.Chat.Completions.ChatCompletionContentPart[] {
   if (typeof content === "string") return content;
   return content.map((p) =>
     p.type === "text"
@@ -31,7 +31,9 @@ function toOpenAIContent(content: string | ContentPart[]):
 }
 
 /** Map our messages to OpenAI chat messages (system role is supported). */
-function toOpenAIMessages(messages: Message[]): OpenAI.Chat.Completions.ChatCompletionMessageParam[] {
+function toOpenAIMessages(
+  messages: Message[],
+): OpenAI.Chat.Completions.ChatCompletionMessageParam[] {
   return messages.map((m) => {
     if (m.role === "system") {
       return { role: "system", content: typeof m.content === "string" ? m.content : "" };
@@ -91,7 +93,7 @@ export class OpenAIAdapter implements ProviderAdapter {
         options.toolChoice === "auto"
           ? ("auto" as const)
           : options.toolChoice
-            ? ({ type: "function" as const, function: { name: options.toolChoice.name } })
+            ? { type: "function" as const, function: { name: options.toolChoice.name } }
             : undefined;
       params = {
         model,
@@ -109,8 +111,9 @@ export class OpenAIAdapter implements ProviderAdapter {
     const msg = res.choices[0]?.message;
     const content = msg?.content ?? "";
     const toolCalls: ToolCall[] = (msg?.tool_calls ?? [])
-      .filter((c): c is OpenAI.Chat.Completions.ChatCompletionMessageToolCall & { type: "function" } =>
-        c.type === "function",
+      .filter(
+        (c): c is OpenAI.Chat.Completions.ChatCompletionMessageToolCall & { type: "function" } =>
+          c.type === "function",
       )
       .map((c) => ({ id: c.id, name: c.function.name, input: safeJson(c.function.arguments) }));
 

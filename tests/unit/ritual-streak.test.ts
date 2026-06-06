@@ -71,7 +71,13 @@ describe("ritual streak", () => {
   it("weekday-only cadence: misses on unscheduled days never break", () => {
     // Mon/Wed/Fri = [1,3,5]. Scheduled in window: 06-01,06-03,06-05,06-08,06-10.
     const days = [1, 3, 5];
-    const completed = new Set(["2026-06-01", "2026-06-03", "2026-06-05", "2026-06-08", "2026-06-10"]);
+    const completed = new Set([
+      "2026-06-01",
+      "2026-06-03",
+      "2026-06-05",
+      "2026-06-08",
+      "2026-06-10",
+    ]);
     const r = computeStreak({
       cadence: "weekly",
       days,

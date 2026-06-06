@@ -14,10 +14,7 @@ import { listCloudConnections } from "@/lib/google/cloud-connections";
 import { listOutlookConnections } from "@/lib/microsoft/connections";
 import { TimezoneCookie } from "@/components/section/timezone-cookie";
 import { OrgThemeApplier } from "@/components/dashboard/org-theme-applier";
-import {
-  getCurrentContext,
-  listUserSpaces,
-} from "@/lib/data/organizations";
+import { getCurrentContext, listUserSpaces } from "@/lib/data/organizations";
 import { listAllSections } from "@/lib/data/all-sections";
 import { countReviewUploads } from "@/lib/data/sections";
 import {
@@ -47,13 +44,9 @@ export const metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function DashboardLayout({ children }: { children: ReactNode }) {
-  if (
-    !process.env.NEXT_PUBLIC_SUPABASE_URL ||
-    !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  ) {
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
     redirect(
-      "/login?notice=" +
-        encodeURIComponent("Add Supabase keys to .env.local to use the app."),
+      "/login?notice=" + encodeURIComponent("Add Supabase keys to .env.local to use the app."),
     );
   }
   const ctx = await getCurrentContext();
@@ -156,10 +149,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
         href: s.href,
         kind: s.ref.kind,
         key: s.ref.key,
-        badge:
-          s.ref.kind === "review" && reviewCount > 0
-            ? String(reviewCount)
-            : undefined,
+        badge: s.ref.kind === "review" && reviewCount > 0 ? String(reviewCount) : undefined,
       })),
   ])
     // Dedupe BEFORE limiting so a dropped duplicate frees a real slot.
@@ -194,9 +184,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
   const ownsAnyWorkspace = userSpaces.some(
     (s) => s.organization.kind === "office" && s.membership.role === "owner",
   );
-  const mfaEnrolled = ownsAnyWorkspace
-    ? !!(await readMfaEnrolledAt(ctx.profile.id))
-    : true; // never compute / never render the banner for non-owners
+  const mfaEnrolled = ownsAnyWorkspace ? !!(await readMfaEnrolledAt(ctx.profile.id)) : true; // never compute / never render the banner for non-owners
 
   // Beta disclaimer: shown once per account on first dashboard load.
   // Cheap admin read; null means we've never recorded an ack so the
@@ -208,9 +196,8 @@ export default async function DashboardLayout({ children }: { children: ReactNod
     .select("beta_disclaimer_acknowledged_at")
     .eq("id", ctx.profile.id)
     .maybeSingle();
-  const showBetaDisclaimer = !(
-    ackRow as { beta_disclaimer_acknowledged_at: string | null } | null
-  )?.beta_disclaimer_acknowledged_at;
+  const showBetaDisclaimer = !(ackRow as { beta_disclaimer_acknowledged_at: string | null } | null)
+    ?.beta_disclaimer_acknowledged_at;
 
   // Per-space theme: override the brand/shadow CSS vars on the dashboard
   // subtree so the whole UI adopts the active space's accent without any
@@ -221,9 +208,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
   // alone so the user's chosen accent shows through, instead of the old
   // per-area default (which would mask the v3 mint / the user's pick).
   const hasSpaceAccent = isHex6(ctx.organization.accent_color);
-  const themeVars = hasSpaceAccent
-    ? themeCssVars(resolveSpaceTheme(ctx.organization))
-    : {};
+  const themeVars = hasSpaceAccent ? themeCssVars(resolveSpaceTheme(ctx.organization)) : {};
 
   return (
     <div
@@ -252,10 +237,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
         initialWidth={sidebarWidth}
         sidebarProps={sidebarProps}
       >
-        <MfaBanner
-          ownsAnyWorkspace={ownsAnyWorkspace}
-          mfaEnrolled={mfaEnrolled}
-        />
+        <MfaBanner ownsAnyWorkspace={ownsAnyWorkspace} mfaEnrolled={mfaEnrolled} />
         {children}
       </SidebarShell>
       <CommandPalette
@@ -269,7 +251,8 @@ export default async function DashboardLayout({ children }: { children: ReactNod
         initialOpen={
           !showReveal &&
           !!(ctx.profile as unknown as { has_completed_guided_onboarding?: boolean })
-            .has_completed_guided_onboarding && !seenHints.has("feature_tour")
+            .has_completed_guided_onboarding &&
+          !seenHints.has("feature_tour")
         }
       />
       {showReveal ? (
@@ -282,9 +265,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
       <AiFallbackToast notice={aiNotice} />
       <VersionWatcher
         buildVersion={
-          process.env.VERCEL_GIT_COMMIT_SHA ??
-          process.env.VERCEL_DEPLOYMENT_ID ??
-          "dev"
+          process.env.VERCEL_GIT_COMMIT_SHA ?? process.env.VERCEL_DEPLOYMENT_ID ?? "dev"
         }
       />
     </div>

@@ -1,9 +1,5 @@
 import Link from "next/link";
-import {
-  CalendarIcon,
-  SearchIcon,
-  UploadIcon,
-} from "@/components/ui/icon";
+import { CalendarIcon, SearchIcon, UploadIcon } from "@/components/ui/icon";
 
 /**
  * Quick-action tiles shown on the dashboard home.
@@ -39,14 +35,12 @@ export function QuickActions() {
           href={a.href}
           className="group flex flex-col items-start gap-3 rounded-2xl border border-line bg-surface-raised p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-brand/30 hover:shadow-md"
         >
-          <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-brand-soft text-brand transition-base group-hover:bg-brand group-hover:text-white">
+          <span className="transition-base inline-flex h-9 w-9 items-center justify-center rounded-xl bg-brand-soft text-brand group-hover:bg-brand group-hover:text-white">
             {a.icon}
           </span>
           <div>
             <p className="text-[13.5px] font-semibold text-ink">{a.label}</p>
-            <p className="mt-0.5 text-[11.5px] text-ink-muted hidden sm:block">
-              {a.description}
-            </p>
+            <p className="mt-0.5 hidden text-[11.5px] text-ink-muted sm:block">{a.description}</p>
           </div>
         </Link>
       ))}

@@ -26,13 +26,11 @@ export function MfaBanner({ ownsAnyWorkspace, mfaEnrolled }: Props) {
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
         <p className="text-[12.5px] text-ink">
           <span className="font-medium">Add two-factor authentication</span>{" "}
-          <span className="text-ink-muted">
-            to protect this Workspace. Recommended for owners.
-          </span>
+          <span className="text-ink-muted">to protect this Workspace. Recommended for owners.</span>
         </p>
         <Link
           href="/dashboard/settings?tab=security"
-          className="text-[12.5px] font-medium text-brand hover:opacity-80 transition-base"
+          className="transition-base text-[12.5px] font-medium text-brand hover:opacity-80"
         >
           Set up 2FA →
         </Link>

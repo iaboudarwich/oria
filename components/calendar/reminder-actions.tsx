@@ -73,7 +73,7 @@ export function ReminderActions({
               type="button"
               onClick={doDelete}
               disabled={pending}
-              className="text-[11.5px] font-medium text-claret transition-base hover:underline disabled:opacity-50"
+              className="transition-base text-[11.5px] font-medium text-claret hover:underline disabled:opacity-50"
             >
               {t("ra_delete_confirm")}
             </button>
@@ -81,7 +81,7 @@ export function ReminderActions({
               type="button"
               onClick={() => setConfirming(false)}
               disabled={pending}
-              className="text-[11.5px] text-ink-faint transition-base hover:text-ink"
+              className="transition-base text-[11.5px] text-ink-faint hover:text-ink"
             >
               {t("rd_cancel")}
             </button>
@@ -93,7 +93,7 @@ export function ReminderActions({
                 type="button"
                 onClick={keep}
                 disabled={pending}
-                className="text-[11.5px] text-ink-muted transition-base hover:text-ink disabled:opacity-50"
+                className="transition-base text-[11.5px] text-ink-muted hover:text-ink disabled:opacity-50"
               >
                 {t("ra_keep")}
               </button>
@@ -101,7 +101,7 @@ export function ReminderActions({
             <button
               type="button"
               onClick={() => setEditing(true)}
-              className="text-[11.5px] text-ink-muted transition-base hover:text-ink"
+              className="transition-base text-[11.5px] text-ink-muted hover:text-ink"
             >
               {t("ra_edit")}
             </button>
@@ -109,7 +109,7 @@ export function ReminderActions({
               type="button"
               onClick={() => setConfirming(true)}
               aria-label={t("ra_delete")}
-              className="text-[11.5px] text-ink-faint transition-base hover:text-claret"
+              className="transition-base text-[11.5px] text-ink-faint hover:text-claret"
             >
               {t("ra_delete")}
             </button>
@@ -118,11 +118,7 @@ export function ReminderActions({
       </div>
 
       {editing ? (
-        <ReminderFormModal
-          mode="edit"
-          initial={initial}
-          onClose={() => setEditing(false)}
-        />
+        <ReminderFormModal mode="edit" initial={initial} onClose={() => setEditing(false)} />
       ) : null}
     </>
   );

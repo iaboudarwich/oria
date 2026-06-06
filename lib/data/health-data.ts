@@ -53,10 +53,7 @@ export function latestMetric(rows: HealthMetric[]): HealthMetric | null {
 }
 
 /** Most recent row that has a non-null value for one field. */
-export function latestWith(
-  rows: HealthMetric[],
-  field: keyof HealthMetric,
-): HealthMetric | null {
+export function latestWith(rows: HealthMetric[], field: keyof HealthMetric): HealthMetric | null {
   for (const r of rows) {
     if (r[field] !== null && r[field] !== undefined) return r;
   }

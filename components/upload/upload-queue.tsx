@@ -56,14 +56,9 @@ export function useUploadQueue(opts: {
     optsRef.current = opts;
   });
 
-  const setPhase = useCallback(
-    (id: string, phase: TaskPhase, message?: string) => {
-      setTasks((prev) =>
-        prev.map((t) => (t.id === id ? { ...t, phase, message } : t)),
-      );
-    },
-    [],
-  );
+  const setPhase = useCallback((id: string, phase: TaskPhase, message?: string) => {
+    setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, phase, message } : t)));
+  }, []);
 
   const pollUntilDone = useCallback(
     (uploadId: string) =>
@@ -189,15 +184,13 @@ export function useUploadQueue(opts: {
   );
 
   const activeCount = tasks.filter(
-    (t) =>
-      t.phase === "pending" || t.phase === "uploading" || t.phase === "reading",
+    (t) => t.phase === "pending" || t.phase === "uploading" || t.phase === "reading",
   ).length;
 
   // Expose in-flight upload count globally so the deploy VersionWatcher can
   // suppress auto-refresh while a batch is uploading.
   useEffect(() => {
-    (window as unknown as { __oriaUploadsActive?: number }).__oriaUploadsActive =
-      activeCount;
+    (window as unknown as { __oriaUploadsActive?: number }).__oriaUploadsActive = activeCount;
     return () => {
       (window as unknown as { __oriaUploadsActive?: number }).__oriaUploadsActive = 0;
     };
@@ -205,12 +198,7 @@ export function useUploadQueue(opts: {
 
   const clear = useCallback(() => {
     setTasks((prev) =>
-      prev.filter(
-        (t) =>
-          t.phase === "pending" ||
-          t.phase === "uploading" ||
-          t.phase === "reading",
-      ),
+      prev.filter((t) => t.phase === "pending" || t.phase === "uploading" || t.phase === "reading"),
     );
   }, []);
 
@@ -250,7 +238,7 @@ export function UploadQueue({
           <button
             type="button"
             onClick={onClear}
-            className="text-[11.5px] text-ink-faint transition-base hover:text-ink"
+            className="transition-base text-[11.5px] text-ink-faint hover:text-ink"
           >
             Clear
           </button>
@@ -259,18 +247,14 @@ export function UploadQueue({
       <ul className="divide-y divide-line">
         {tasks.map((t) => (
           <li key={t.id} className="flex items-center gap-2.5 px-3 py-2">
-            <span className="min-w-0 flex-1 truncate text-[12.5px] text-ink">
-              {t.name}
-            </span>
+            <span className="min-w-0 flex-1 truncate text-[12.5px] text-ink">{t.name}</span>
             {t.phase === "done" ? (
               <span className="inline-flex items-center gap-1 text-[11.5px] text-ink-muted">
                 <CheckIcon size={12} />
                 {PHASE_LABEL.done}
               </span>
             ) : t.phase === "error" ? (
-              <span className="text-[11.5px] text-claret">
-                {t.message ?? PHASE_LABEL.error}
-              </span>
+              <span className="text-[11.5px] text-claret">{t.message ?? PHASE_LABEL.error}</span>
             ) : (
               <span className="inline-flex items-center gap-1.5 text-[11.5px] text-ink-faint">
                 <span className="relative flex h-1.5 w-1.5">

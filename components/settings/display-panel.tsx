@@ -63,9 +63,7 @@ export function DisplayPanel({
       </div>
 
       <fieldset>
-        <legend className="mb-2 text-[12.5px] font-medium text-ink">
-          {t("font_size_label")}
-        </legend>
+        <legend className="mb-2 text-[12.5px] font-medium text-ink">{t("font_size_label")}</legend>
         <div className="inline-flex flex-wrap rounded-lg border border-line-strong bg-surface p-0.5">
           {FONT_SIZE_VALUES.map((v) => {
             const active = fontSize === v;
@@ -75,7 +73,7 @@ export function DisplayPanel({
                 type="button"
                 onClick={() => pickFont(v)}
                 aria-pressed={active}
-                className={`min-h-[44px] rounded-md px-3.5 text-[12.5px] transition-base ${
+                className={`transition-base min-h-[44px] rounded-md px-3.5 text-[12.5px] ${
                   active ? "bg-ink text-surface" : "text-ink-muted hover:text-ink"
                 }`}
               >
@@ -87,9 +85,7 @@ export function DisplayPanel({
       </fieldset>
 
       <fieldset>
-        <legend className="mb-2 text-[12.5px] font-medium text-ink">
-          {t("density_label")}
-        </legend>
+        <legend className="mb-2 text-[12.5px] font-medium text-ink">{t("density_label")}</legend>
         <div className="inline-flex rounded-lg border border-line-strong bg-surface p-0.5">
           {DENSITY_VALUES.map((v) => {
             const active = density === v;
@@ -99,7 +95,7 @@ export function DisplayPanel({
                 type="button"
                 onClick={() => pickDensity(v)}
                 aria-pressed={active}
-                className={`min-h-[44px] rounded-md px-3.5 text-[12.5px] transition-base ${
+                className={`transition-base min-h-[44px] rounded-md px-3.5 text-[12.5px] ${
                   active ? "bg-ink text-surface" : "text-ink-muted hover:text-ink"
                 }`}
               >

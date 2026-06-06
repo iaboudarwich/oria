@@ -1,10 +1,5 @@
 import Image from "next/image";
-import {
-  ChatIcon,
-  DocumentIcon,
-  MicIcon,
-  PaperclipIcon,
-} from "@/components/ui/icon";
+import { ChatIcon, DocumentIcon, MicIcon, PaperclipIcon } from "@/components/ui/icon";
 import { classifyMime } from "@/lib/utils";
 
 type ThumbnailProps = {

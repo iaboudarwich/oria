@@ -59,8 +59,21 @@ export const BANNED_TERMS = {
 // amounts like "$500"). Raw provider errors are kept out of the UI at the
 // source instead (mapped to plain copy in code), not only by this lint.
 export const JARGON_TERMS = [
-  "mfa", "aal2", "totp", "oauth", "sso", "jwt", "rls", "csrf",
-  "ssl", "tls", "cors", "webhook", "token", "null", "undefined",
+  "mfa",
+  "aal2",
+  "totp",
+  "oauth",
+  "sso",
+  "jwt",
+  "rls",
+  "csrf",
+  "ssl",
+  "tls",
+  "cors",
+  "webhook",
+  "token",
+  "null",
+  "undefined",
 ];
 
 // Opt-in technical sections (privacy/security fine print, developer/BYO docs)
@@ -162,7 +175,9 @@ function run() {
     );
     process.exit(1);
   }
-  console.log("✓ i18n banned-phrase check passed (em-dash + domain-noun synonyms + plain-language jargon)");
+  console.log(
+    "✓ i18n banned-phrase check passed (em-dash + domain-noun synonyms + plain-language jargon)",
+  );
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {

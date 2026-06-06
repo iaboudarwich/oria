@@ -67,7 +67,13 @@
         "id": "inv_chaos",
         "type": "multiple_choice",
         "base": "What is hardest to stay on top of right now?",
-        "options": ["Deal flow", "Portfolio updates", "LP reports", "Capital calls", "Honestly, all of it"],
+        "options": [
+          "Deal flow",
+          "Portfolio updates",
+          "LP reports",
+          "Capital calls",
+          "Honestly, all of it"
+        ],
         "field": "chaos_areas"
       },
       {
@@ -95,7 +101,13 @@
         "id": "fo_chaos",
         "type": "multiple_choice",
         "base": "What needs the most attention?",
-        "options": ["Trusts and estate", "Properties", "The family's calendars", "Reporting to principals", "All of it"],
+        "options": [
+          "Trusts and estate",
+          "Properties",
+          "The family's calendars",
+          "Reporting to principals",
+          "All of it"
+        ],
         "field": "chaos_areas"
       },
       {
@@ -151,7 +163,13 @@
         "id": "job_chaos",
         "type": "multiple_choice",
         "base": "What is hardest to keep straight?",
-        "options": ["Tracking applications", "Prepping for interviews", "My resume and docs", "Follow-up deadlines", "All of it"],
+        "options": [
+          "Tracking applications",
+          "Prepping for interviews",
+          "My resume and docs",
+          "Follow-up deadlines",
+          "All of it"
+        ],
         "field": "chaos_areas"
       },
       {
@@ -200,7 +218,13 @@
         "id": "par_coordinate",
         "type": "multiple_choice",
         "base": "What takes the most coordinating?",
-        "options": ["School", "Health and appointments", "Activities", "Family events", "All of it"],
+        "options": [
+          "School",
+          "Health and appointments",
+          "Activities",
+          "Family events",
+          "All of it"
+        ],
         "field": "chaos_areas"
       },
       {
@@ -228,7 +252,13 @@
         "id": "chaos",
         "type": "multiple_choice",
         "base": "What feels most chaotic right now?",
-        "options": ["Email overflow", "Bills and finances", "Documents everywhere", "Calendar and appointments", "Honestly, all of it"],
+        "options": [
+          "Email overflow",
+          "Bills and finances",
+          "Documents everywhere",
+          "Calendar and appointments",
+          "Honestly, all of it"
+        ],
         "field": "chaos_areas"
       },
       {

@@ -36,19 +36,18 @@ export function TrustedDevicesPanel({ devices }: { devices: TrustedDeviceRow[] }
       <div>
         <h2 className="text-[15px] font-semibold text-ink">Trusted devices</h2>
         <p className="mt-1 text-[13px] text-ink-muted">
-          On a trusted device you skip the extra confirmation step when you sign
-          in. Remove any device you no longer use; it will have to confirm again
-          next time.
+          On a trusted device you skip the extra confirmation step when you sign in. Remove any
+          device you no longer use; it will have to confirm again next time.
         </p>
       </div>
 
       {visible.length === 0 ? (
         <p className="rounded-2xl border border-line bg-canvas p-4 text-[13px] text-ink-faint">
-          No trusted devices yet. When you sign in and choose to remember this
-          device, it will show up here.
+          No trusted devices yet. When you sign in and choose to remember this device, it will show
+          up here.
         </p>
       ) : (
-        <ul className="overflow-hidden rounded-2xl border border-line bg-surface-raised divide-y divide-line">
+        <ul className="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface-raised">
           {visible.map((d) => (
             <li key={d.id} className="flex items-center gap-3 px-4 py-3">
               <div className="min-w-0 flex-1">
@@ -67,7 +66,7 @@ export function TrustedDevicesPanel({ devices }: { devices: TrustedDeviceRow[] }
               <button
                 type="button"
                 onClick={() => remove(d.id)}
-                className="shrink-0 rounded-lg border border-line bg-surface px-2.5 py-1 text-[12px] text-ink-soft transition-base hover:border-line-strong hover:text-ink"
+                className="transition-base shrink-0 rounded-lg border border-line bg-surface px-2.5 py-1 text-[12px] text-ink-soft hover:border-line-strong hover:text-ink"
               >
                 Remove
               </button>

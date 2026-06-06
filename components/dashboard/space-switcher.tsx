@@ -3,12 +3,7 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {
-  ChevronDownIcon,
-  HeartIcon,
-  HomeIcon,
-  LockIcon,
-} from "@/components/ui/icon";
+import { ChevronDownIcon, HeartIcon, HomeIcon, LockIcon } from "@/components/ui/icon";
 import { switchSpace } from "@/lib/data/space-actions";
 import { useDismissable } from "@/lib/hooks/use-dismissable";
 import type { OrgKind } from "@/lib/supabase/types";
@@ -83,8 +78,7 @@ export function SpaceSwitcher({ active, spaces }: Props) {
     setPendingId(null);
   }
 
-  const displayed =
-    pendingId ? spaces.find((s) => s.id === pendingId) ?? active : active;
+  const displayed = pendingId ? (spaces.find((s) => s.id === pendingId) ?? active) : active;
   const DisplayedIcon = KIND_ICON[displayed.kind] ?? HomeIcon;
   // Show "Switching…" only while the React transition is actually in
   // flight (server action + client navigation). Once useTransition's
@@ -99,7 +93,7 @@ export function SpaceSwitcher({ active, spaces }: Props) {
         onClick={toggle}
         aria-expanded={open}
         disabled={pending}
-        className={`flex w-full cursor-pointer items-center gap-2.5 rounded-xl border bg-canvas/60 px-3 py-2.5 text-left transition-base disabled:opacity-80 hover:border-line-strong ${
+        className={`transition-base flex w-full cursor-pointer items-center gap-2.5 rounded-xl border bg-canvas/60 px-3 py-2.5 text-left hover:border-line-strong disabled:opacity-80 ${
           open ? "border-line-strong" : "border-line"
         }`}
       >
@@ -116,15 +110,13 @@ export function SpaceSwitcher({ active, spaces }: Props) {
         </span>
         <ChevronDownIcon
           size={13}
-          className={`text-ink-muted transition-transform duration-150 ${
-            open ? "rotate-180" : ""
-          }`}
+          className={`text-ink-muted transition-transform duration-150 ${open ? "rotate-180" : ""}`}
         />
       </button>
 
       {open ? (
         <div
-          className="absolute left-0 right-0 top-full z-30 mt-2 overflow-hidden rounded-xl border border-line bg-surface-raised shadow-[0_10px_30px_-15px_rgba(28,26,23,0.18)] animate-fade-up"
+          className="animate-fade-up absolute top-full right-0 left-0 z-30 mt-2 overflow-hidden rounded-xl border border-line bg-surface-raised shadow-[0_10px_30px_-15px_rgba(28,26,23,0.18)]"
           role="menu"
         >
           <ul className="py-1">
@@ -137,18 +129,16 @@ export function SpaceSwitcher({ active, spaces }: Props) {
                     type="button"
                     onClick={() => handleSwitch(s)}
                     disabled={isActive}
-                    className={`flex w-full items-center gap-2.5 px-3 py-2 text-left text-[13px] transition-base ${
+                    className={`transition-base flex w-full items-center gap-2.5 px-3 py-2 text-left text-[13px] ${
                       isActive
-                        ? "bg-canvas/60 text-ink cursor-default"
+                        ? "cursor-default bg-canvas/60 text-ink"
                         : "text-ink-soft hover:bg-canvas/60 hover:text-ink"
                     }`}
                   >
                     <Icon size={13} />
                     <span className="flex-1 truncate">{s.name}</span>
                     {isActive ? (
-                      <span className="text-[10.5px] text-ink-faint">
-                        Active
-                      </span>
+                      <span className="text-[10.5px] text-ink-faint">Active</span>
                     ) : (
                       <span className="text-[10.5px] text-ink-faint">
                         {kindLabel(s.kind).toLowerCase()}
@@ -164,7 +154,7 @@ export function SpaceSwitcher({ active, spaces }: Props) {
               <Link
                 href="/dashboard/work/spaces/new"
                 onClick={() => setOpen(false)}
-                className="flex items-center gap-2.5 px-3 py-2 text-[13px] text-ink-soft transition-base hover:bg-canvas/60 hover:text-ink"
+                className="transition-base flex items-center gap-2.5 px-3 py-2 text-[13px] text-ink-soft hover:bg-canvas/60 hover:text-ink"
               >
                 <span className="inline-flex h-4 w-4 items-center justify-center text-[14px] leading-none text-ink-muted">
                   +
@@ -176,7 +166,7 @@ export function SpaceSwitcher({ active, spaces }: Props) {
                 <Link
                   href="/dashboard/circles/new"
                   onClick={() => setOpen(false)}
-                  className="flex items-center gap-2.5 px-3 py-2 text-[13px] text-ink-soft transition-base hover:bg-canvas/60 hover:text-ink"
+                  className="transition-base flex items-center gap-2.5 px-3 py-2 text-[13px] text-ink-soft hover:bg-canvas/60 hover:text-ink"
                 >
                   <span className="inline-flex h-4 w-4 items-center justify-center text-[14px] leading-none text-ink-muted">
                     +
@@ -186,7 +176,7 @@ export function SpaceSwitcher({ active, spaces }: Props) {
                 <Link
                   href="/invite/code"
                   onClick={() => setOpen(false)}
-                  className="flex items-center gap-2.5 px-3 py-2 text-[13px] text-ink-soft transition-base hover:bg-canvas/60 hover:text-ink"
+                  className="transition-base flex items-center gap-2.5 px-3 py-2 text-[13px] text-ink-soft hover:bg-canvas/60 hover:text-ink"
                 >
                   <span className="inline-flex h-4 w-4 items-center justify-center text-ink-muted">
                     <svg

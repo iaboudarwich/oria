@@ -23,7 +23,7 @@ export default async function ReportPage({ params }: Props) {
       <div className="mb-4 flex items-center gap-2">
         <Link
           href="/dashboard/work/agent"
-          className="inline-flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-[12.5px] text-ink-muted transition-base hover:bg-surface-raised hover:text-ink"
+          className="transition-base inline-flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-[12.5px] text-ink-muted hover:bg-surface-raised hover:text-ink"
         >
           <span className="-ml-0.5">←</span> Back to AI
         </Link>
@@ -49,9 +49,7 @@ export default async function ReportPage({ params }: Props) {
 
       {report.status === "pending" ? (
         <div className="rounded-2xl border border-line bg-surface-raised p-6">
-          <p className="text-[13.5px] text-ink">
-            Oria is generating this report.
-          </p>
+          <p className="text-[13.5px] text-ink">Oria is generating this report.</p>
           <p className="mt-1 text-[12px] text-ink-faint">
             This usually takes 10 to 30 seconds. Refresh the page to check.
           </p>
@@ -60,9 +58,7 @@ export default async function ReportPage({ params }: Props) {
 
       {report.status === "failed" ? (
         <div className="rounded-2xl border border-line bg-surface-raised p-6">
-          <p className="text-[13.5px] text-ink">
-            The report didn&apos;t generate.
-          </p>
+          <p className="text-[13.5px] text-ink">The report didn&apos;t generate.</p>
           <p className="mt-1 text-[12px] text-ink-muted">
             {report.error_message ?? "Try again with a different brief."}
           </p>
@@ -72,26 +68,19 @@ export default async function ReportPage({ params }: Props) {
       {report.status === "ready" && report.payload ? (
         <article className="animate-fade-up space-y-7">
           <section className="rounded-2xl border border-line bg-surface-raised p-5">
-            <p className="text-[13.5px] leading-[1.55] text-ink">
-              {report.payload.summary}
-            </p>
+            <p className="text-[13.5px] leading-[1.55] text-ink">{report.payload.summary}</p>
             {report.payload.key_metrics && report.payload.key_metrics.length > 0 ? (
               <ul className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
                 {report.payload.key_metrics.map((m, i) => (
-                  <li
-                    key={i}
-                    className="rounded-xl border border-line bg-canvas/40 p-3"
-                  >
-                    <p className="text-[10.5px] uppercase tracking-[0.1em] text-ink-faint">
+                  <li key={i} className="rounded-xl border border-line bg-canvas/40 p-3">
+                    <p className="text-[10.5px] tracking-[0.1em] text-ink-faint uppercase">
                       {m.label}
                     </p>
                     <p className="mt-1 text-[18px] font-semibold tracking-tight text-ink">
                       {m.value}
                     </p>
                     {m.delta ? (
-                      <p className="mt-0.5 text-[11.5px] text-ink-muted">
-                        {m.delta}
-                      </p>
+                      <p className="mt-0.5 text-[11.5px] text-ink-muted">{m.delta}</p>
                     ) : null}
                   </li>
                 ))}
@@ -101,22 +90,17 @@ export default async function ReportPage({ params }: Props) {
 
           {report.payload.sections.map((s, i) => (
             <section key={i}>
-              <h2 className="mb-2 px-1 text-[13px] font-medium text-ink-muted">
-                {s.heading}
-              </h2>
+              <h2 className="mb-2 px-1 text-[13px] font-medium text-ink-muted">{s.heading}</h2>
               <div className="space-y-3 rounded-2xl border border-line bg-surface-raised p-5">
                 {s.body ? (
-                  <p className="whitespace-pre-wrap text-[13.5px] leading-[1.55] text-ink">
+                  <p className="text-[13.5px] leading-[1.55] whitespace-pre-wrap text-ink">
                     {s.body}
                   </p>
                 ) : null}
                 {s.bullets && s.bullets.length > 0 ? (
                   <ul className="space-y-1.5">
                     {s.bullets.map((b, bi) => (
-                      <li
-                        key={bi}
-                        className="flex items-start gap-2 text-[13px] text-ink"
-                      >
+                      <li key={bi} className="flex items-start gap-2 text-[13px] text-ink">
                         <span className="mt-2 inline-block h-1 w-1 shrink-0 rounded-full bg-accent" />
                         <span>{b}</span>
                       </li>
@@ -131,14 +115,14 @@ export default async function ReportPage({ params }: Props) {
       ) : null}
 
       <details className="mt-12 max-w-md border-t border-line pt-6">
-        <summary className="cursor-pointer text-[12.5px] text-ink-faint transition-base hover:text-claret">
+        <summary className="transition-base cursor-pointer text-[12.5px] text-ink-faint hover:text-claret">
           Delete this report
         </summary>
         <form action={deleteWorkspaceReport} className="mt-3">
           <input type="hidden" name="id" value={report.id} />
           <button
             type="submit"
-            className="inline-flex h-9 cursor-pointer items-center rounded-lg bg-claret px-3.5 text-[12.5px] text-surface transition-base hover:opacity-90"
+            className="transition-base inline-flex h-9 cursor-pointer items-center rounded-lg bg-claret px-3.5 text-[12.5px] text-surface hover:opacity-90"
           >
             Delete
           </button>

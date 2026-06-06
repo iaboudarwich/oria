@@ -84,7 +84,10 @@ export class GeminiAdapter implements ProviderAdapter {
     });
     const content = res.response.text();
     const usage = res.response.usageMetadata;
-    const tokensUsed = { input: usage?.promptTokenCount ?? 0, output: usage?.candidatesTokenCount ?? 0 };
+    const tokensUsed = {
+      input: usage?.promptTokenCount ?? 0,
+      output: usage?.candidatesTokenCount ?? 0,
+    };
     options.onUsage?.({ tokens: tokensUsed, model: modelName, provider: "gemini" });
     return { content, tokensUsed, model: modelName, provider: "gemini" };
   }

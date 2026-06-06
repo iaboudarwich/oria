@@ -75,7 +75,7 @@ export class AnthropicAdapter implements ProviderAdapter {
     // budget, and temperature is fixed to 1 (omit any override).
     const maxTokens = reasoning
       ? ANTHROPIC_THINKING_BUDGET + (options.maxTokens ?? 1024)
-      : options.maxTokens ?? 1024;
+      : (options.maxTokens ?? 1024);
 
     const res = await this.client.messages.create({
       model,
@@ -123,7 +123,7 @@ export class AnthropicAdapter implements ProviderAdapter {
     const { system, msgs } = splitMessages(messages);
     const maxTokens = reasoning
       ? ANTHROPIC_THINKING_BUDGET + (options.maxTokens ?? 1024)
-      : options.maxTokens ?? 1024;
+      : (options.maxTokens ?? 1024);
     const stream = this.client.messages.stream({
       model,
       max_tokens: maxTokens,

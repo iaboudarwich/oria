@@ -26,9 +26,7 @@ export function SectionSummaryCard({ data }: { data: SummaryData }) {
         {data.headline ? (
           <div className="min-w-0">
             <p className="text-display text-ink">{data.headline.value}</p>
-            <p className="mt-0.5 text-body-sm text-ink-muted">
-              {data.headline.label}
-            </p>
+            <p className="text-body-sm mt-0.5 text-ink-muted">{data.headline.label}</p>
           </div>
         ) : null}
 
@@ -46,16 +44,14 @@ export function SectionSummaryCard({ data }: { data: SummaryData }) {
         ) : null}
       </div>
 
-      {data.note ? (
-        <p className="mt-3 text-body text-ink-soft">{data.note}</p>
-      ) : null}
+      {data.note ? <p className="text-body mt-3 text-ink-soft">{data.note}</p> : null}
 
       {data.badges && data.badges.length > 0 ? (
         <div className="mt-3 flex flex-wrap gap-1.5">
           {data.badges.map((b, i) => (
             <span
               key={i}
-              className={`inline-flex items-center rounded-full px-2.5 py-1 text-body-sm font-medium ${BADGE_TONE[b.tone]}`}
+              className={`text-body-sm inline-flex items-center rounded-full px-2.5 py-1 font-medium ${BADGE_TONE[b.tone]}`}
             >
               {b.text}
             </span>

@@ -2,11 +2,7 @@ import "server-only";
 
 import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
-import {
-  isAccountOwnerInPersonal,
-  listUserSpaces,
-  requireContext,
-} from "@/lib/data/organizations";
+import { isAccountOwnerInPersonal, listUserSpaces, requireContext } from "@/lib/data/organizations";
 import { sectionLabel } from "@/lib/sections-meta";
 import { listSectionMemories } from "@/lib/data/section-memory";
 import { searchChunks, searchChunksCrossOrg } from "@/lib/embedding/search";
@@ -227,10 +223,22 @@ export function detectAggregateIntent(query: string): AggregateIntent {
 // questions ("spent on travel and food") so an unscoped query can pull standing
 // context from each relevant section, not just rely on keyword-matched rows.
 const SECTION_THEME_PATTERNS: Array<{ section: Section; re: RegExp }> = [
-  { section: "travel", re: /\b(travel|trip|trips|flight|flights|hotel|hotels|booking|bookings|vacation|itinerary)\b/i },
-  { section: "finance", re: /\b(bill|bills|spend|spent|spending|subscription|subscriptions|receipt|receipts|invoice|invoices|payment|payments|expense|expenses|food|dining|restaurant|restaurants|grocery|groceries)\b/i },
-  { section: "health", re: /\b(health|medical|doctor|appointment|appointments|prescription|prescriptions|insurance)\b/i },
-  { section: "properties", re: /\b(property|properties|home|house|rent|lease|mortgage|utilities)\b/i },
+  {
+    section: "travel",
+    re: /\b(travel|trip|trips|flight|flights|hotel|hotels|booking|bookings|vacation|itinerary)\b/i,
+  },
+  {
+    section: "finance",
+    re: /\b(bill|bills|spend|spent|spending|subscription|subscriptions|receipt|receipts|invoice|invoices|payment|payments|expense|expenses|food|dining|restaurant|restaurants|grocery|groceries)\b/i,
+  },
+  {
+    section: "health",
+    re: /\b(health|medical|doctor|appointment|appointments|prescription|prescriptions|insurance)\b/i,
+  },
+  {
+    section: "properties",
+    re: /\b(property|properties|home|house|rent|lease|mortgage|utilities)\b/i,
+  },
   { section: "legal", re: /\b(legal|contract|contracts|agreement|nda|policy)\b/i },
 ];
 
@@ -277,18 +285,11 @@ export async function retrieveForQuery(
   // Roll-up + review questions need a bigger pool of source rows so the
   // agent can actually sum or list. Single-target lookups stay tight to
   // keep the prompt fast and the answer focused.
-  const maxSources =
-    opts.maxSources ?? (intent.isAggregate || reviewIntent ? 20 : 8);
+  const maxSources = opts.maxSources ?? (intent.isAggregate || reviewIntent ? 20 : 8);
   // Aggregate / review queries don't depend on keywords, they need the
   // candidate set itself. We still bail when there's literally nothing
   // to work with (no keywords, no scope, no intent).
-  if (
-    keywords.length === 0 &&
-    !scope &&
-    !intent.isAggregate &&
-    !reviewIntent
-  )
-    return [];
+  if (keywords.length === 0 && !scope && !intent.isAggregate && !reviewIntent) return [];
 
   const supabase = await createClient();
   const ctx = await requireContext();
@@ -319,9 +320,7 @@ export async function retrieveForQuery(
     allowedOrgIds = [activeOrgId];
   }
 
-  const spaceById = new Map(
-    userSpacesList.map((s) => [s.organization.id, s.organization]),
-  );
+  const spaceById = new Map(userSpacesList.map((s) => [s.organization.id, s.organization]));
 
   // When scoped to a section, also pull section-memories for the section
   // so Claude sees the user's standing context.
@@ -406,24 +405,19 @@ export async function retrieveForQuery(
 
   let uploadsQ = supabase
     .from("uploads")
-    .select(
-      "id, title, filename, section, custom_section_id, organization_id, created_at",
-    )
+    .select("id, title, filename, section, custom_section_id, organization_id, created_at")
     .is("deleted_at", null)
     .in("organization_id", allowedOrgIds);
   if (keywords.length > 0) uploadsQ = uploadsQ.or(uploadFilters);
   if (scope) {
     if (scope.kind === "builtin") uploadsQ = uploadsQ.eq("section", scope.key);
-    else if (scope.kind === "custom")
-      uploadsQ = uploadsQ.eq("custom_section_id", scope.key);
+    else if (scope.kind === "custom") uploadsQ = uploadsQ.eq("custom_section_id", scope.key);
     // For smart scope, uploads don't carry smart_section directly, we
     // depend on memory_items below to do that filtering and skip uploads.
     if (scope.kind === "smart")
       uploadsQ = uploadsQ.eq("id", "00000000-0000-0000-0000-000000000000");
   }
-  const uploadsRes = await uploadsQ
-    .order("created_at", { ascending: false })
-    .limit(40);
+  const uploadsRes = await uploadsQ.order("created_at", { ascending: false }).limit(40);
 
   type UploadRow = {
     id: string;
@@ -454,11 +448,7 @@ export async function retrieveForQuery(
     : await supabase
         .from("extractions")
         .select("upload_id, raw_text")
-        .or(
-          keywords
-            .map((k) => `raw_text.ilike.*${k.replace(/[%,]/g, "")}*`)
-            .join(","),
-        )
+        .or(keywords.map((k) => `raw_text.ilike.*${k.replace(/[%,]/g, "")}*`).join(","))
         .limit(80);
 
   const extractionMatches = (extractionMatchRes.data ?? []) as ExtractionRow[];
@@ -467,9 +457,7 @@ export async function retrieveForQuery(
   // RLS already prevents reads of other orgs' extractions for non-members,
   // but the user IS a member of multiple orgs. Filter strictly by upload's
   // organization_id below.
-  const extractionUploadIds = Array.from(
-    new Set(extractionMatches.map((e) => e.upload_id)),
-  );
+  const extractionUploadIds = Array.from(new Set(extractionMatches.map((e) => e.upload_id)));
   const allowedExtractionUploadIds = new Set<string>();
   if (extractionUploadIds.length > 0) {
     const verifyRes = await supabase
@@ -495,15 +483,11 @@ export async function retrieveForQuery(
 
   // Fetch the upload rows referenced only by extraction matches.
   const uploadIdsKnown = new Set(uploads.map((u) => u.id));
-  const extraOnly = Array.from(extractionByUpload.keys()).filter(
-    (id) => !uploadIdsKnown.has(id),
-  );
+  const extraOnly = Array.from(extractionByUpload.keys()).filter((id) => !uploadIdsKnown.has(id));
   if (extraOnly.length > 0) {
     const more = await supabase
       .from("uploads")
-      .select(
-        "id, title, filename, section, custom_section_id, organization_id, created_at",
-      )
+      .select("id, title, filename, section, custom_section_id, organization_id, created_at")
       .in("id", extraOnly)
       .in("organization_id", allowedOrgIds)
       .is("deleted_at", null);
@@ -516,9 +500,7 @@ export async function retrieveForQuery(
   // snippet shown to Claude carries actual content, not just a name. We
   // can fetch by upload_id directly, those uploads were already org-
   // verified above.
-  const missingExtractionIds = uploads
-    .map((u) => u.id)
-    .filter((id) => !extractionByUpload.has(id));
+  const missingExtractionIds = uploads.map((u) => u.id).filter((id) => !extractionByUpload.has(id));
   if (missingExtractionIds.length > 0) {
     const more = await supabase
       .from("extractions")
@@ -562,8 +544,7 @@ export async function retrieveForQuery(
   // diary." Use keywords only when there's no scope (global Ask).
   if (scope) {
     if (scope.kind === "builtin") itemsQ = itemsQ.eq("section", scope.key);
-    else if (scope.kind === "custom")
-      itemsQ = itemsQ.eq("custom_section_id", scope.key);
+    else if (scope.kind === "custom") itemsQ = itemsQ.eq("custom_section_id", scope.key);
     else itemsQ = itemsQ.eq("smart_section", scope.key);
   } else if (keywords.length > 0) {
     itemsQ = itemsQ.or(itemFilter);
@@ -643,8 +624,7 @@ export async function retrieveForQuery(
   // Render due times in the user's timezone (oria_tz) so Ask reads the same
   // clock time the Calendar shows.
   const reminderTz = (await cookies()).get("oria_tz")?.value ?? null;
-  const REMINDER_COLS =
-    "id, title, due_at, upload_id, organization_id, done, created_at";
+  const REMINDER_COLS = "id, title, due_at, upload_id, organization_id, done, created_at";
   type ReminderRow = {
     id: string;
     title: string;
@@ -664,9 +644,7 @@ export async function retrieveForQuery(
       .not("due_at", "is", null)
       .order("due_at", { ascending: true })
       .limit(15);
-    const reminderFilter = keywords
-      .map((k) => `title.ilike.*${k.replace(/[%,]/g, "")}*`)
-      .join(",");
+    const reminderFilter = keywords.map((k) => `title.ilike.*${k.replace(/[%,]/g, "")}*`).join(",");
     const matchedP =
       keywords.length > 0
         ? supabase
@@ -708,11 +686,7 @@ export async function retrieveForQuery(
       user_edited_fields: Record<string, unknown> | null;
       user_verified: boolean;
     }>) {
-      const resolved = resolveFields(
-        e.fields,
-        e.user_edited_fields,
-        e.user_verified,
-      );
+      const resolved = resolveFields(e.fields, e.user_edited_fields, e.user_verified);
       const block = formatStructuredFields(e.doc_type, resolved, 800);
       if (block) structuredByUpload.set(e.upload_id, block);
     }
@@ -726,9 +700,7 @@ export async function retrieveForQuery(
     // Defence in depth: skip anything that somehow snuck through. Cheap.
     if (!allowedOrgSet.has(u.organization_id)) continue;
     const extractedText = extractionByUpload.get(u.id) ?? "";
-    const haystack = [u.title ?? "", u.filename, extractedText]
-      .join(" ")
-      .toLowerCase();
+    const haystack = [u.title ?? "", u.filename, extractedText].join(" ").toLowerCase();
     let score = 0;
     for (const kw of keywords) if (haystack.includes(kw)) score += kw.length;
     if (score === 0) continue;
@@ -742,16 +714,11 @@ export async function retrieveForQuery(
         title: u.title || u.filename,
         snippet: isPending
           ? "Oria is still reading this file. Details aren't available yet."
-          : composeUploadSnippet(
-              structuredBlock,
-              buildUploadSnippet(extractedText, keywords),
-            ),
+          : composeUploadSnippet(structuredBlock, buildUploadSnippet(extractedText, keywords)),
         href: `/dashboard/uploads/${u.id}`,
         processing_state: isPending ? "pending" : "ready",
         meta: {
-          section_label: u.section
-            ? sectionLabel(u.section as Section)
-            : null,
+          section_label: u.section ? sectionLabel(u.section as Section) : null,
           space_name: space?.name ?? ctx.organization.name,
           date_label: friendlyDate(u.created_at),
         },
@@ -779,7 +746,11 @@ export async function retrieveForQuery(
     if (score === 0 && intent.isAggregate) {
       const hasAmount = typeof it.amount_value === "string" && it.amount_value.length > 0;
       const hasMacros = typeof it.calories === "number" && it.calories > 0;
-      if ((intent.wantsAmounts && hasAmount) || (intent.wantsMacros && hasMacros) || (hasAmount && !intent.wantsMacros)) {
+      if (
+        (intent.wantsAmounts && hasAmount) ||
+        (intent.wantsMacros && hasMacros) ||
+        (hasAmount && !intent.wantsMacros)
+      ) {
         score = 3; // base relevance for roll-up
       }
     }
@@ -811,18 +782,12 @@ export async function retrieveForQuery(
         kind: "upload",
         title: it.title,
         snippet: buildItemSnippet(it, keywords),
-        href: it.upload_id
-          ? `/dashboard/uploads/${it.upload_id}`
-          : "/dashboard",
+        href: it.upload_id ? `/dashboard/uploads/${it.upload_id}` : "/dashboard",
         processing_state: "ready",
         meta: {
-          section_label: it.section
-            ? sectionLabel(it.section as Section)
-            : it.category,
+          section_label: it.section ? sectionLabel(it.section as Section) : it.category,
           space_name: space?.name ?? ctx.organization.name,
-          date_label: it.occurred_at
-            ? friendlyDate(it.occurred_at)
-            : friendlyDate(it.created_at),
+          date_label: it.occurred_at ? friendlyDate(it.occurred_at) : friendlyDate(it.created_at),
         },
       },
     });
@@ -850,9 +815,7 @@ export async function retrieveForQuery(
           : r.due_at
             ? `Due ${friendlyDateTime(r.due_at, reminderTz)}`
             : "No date set",
-        href: r.upload_id
-          ? `/dashboard/uploads/${r.upload_id}`
-          : "/dashboard/calendar",
+        href: r.upload_id ? `/dashboard/uploads/${r.upload_id}` : "/dashboard/calendar",
         processing_state: "ready",
         meta: {
           section_label: null,
@@ -880,9 +843,7 @@ export async function retrieveForQuery(
       )
       .in("organization_id", allowedOrgIds)
       .is("deleted_at", null)
-      .or(
-        "section.is.null,status.eq.failed",
-      )
+      .or("section.is.null,status.eq.failed")
       .order("created_at", { ascending: false })
       .limit(20);
     type ReviewUploadRow = {
@@ -938,7 +899,12 @@ export async function retrieveForQuery(
   // De-duplicate: if a chunk's uploadId already appeared in the keyword
   // results, boost the existing entry's score instead of adding a duplicate.
   try {
-    type AnyChunk = { uploadId: string; content: string; similarity: number; organizationId?: string };
+    type AnyChunk = {
+      uploadId: string;
+      content: string;
+      similarity: number;
+      organizationId?: string;
+    };
 
     let semanticChunks: AnyChunk[] = [];
     if (crossSpace && isAccountOwnerInPersonal(ctx)) {
@@ -968,15 +934,13 @@ export async function retrieveForQuery(
             const match = s.src.href.match(/\/uploads\/([a-f0-9-]{36})/);
             return match?.[1] ?? null;
           })
-          .filter(Boolean) as string[]
+          .filter(Boolean) as string[],
       );
 
       const newUploadIds = Array.from(
         new Set(
-          semanticChunks
-            .map((c) => c.uploadId)
-            .filter((id) => !alreadyScoredUploadIds.has(id))
-        )
+          semanticChunks.map((c) => c.uploadId).filter((id) => !alreadyScoredUploadIds.has(id)),
+        ),
       );
 
       // Fetch upload rows for new IDs
@@ -1150,11 +1114,7 @@ function buildItemSnippet(it: ItemSnippetSource, keywords: string[]): string {
   const parts: string[] = [];
   if (it.merchant) parts.push(it.merchant);
   if (it.amount_value) {
-    parts.push(
-      it.amount_currency
-        ? `${it.amount_value} ${it.amount_currency}`
-        : it.amount_value,
-    );
+    parts.push(it.amount_currency ? `${it.amount_value} ${it.amount_currency}` : it.amount_value);
   }
   if (it.occurred_at) parts.push(friendlyDate(it.occurred_at));
   if (it.location) parts.push(it.location);
@@ -1167,20 +1127,15 @@ function buildItemSnippet(it: ItemSnippetSource, keywords: string[]): string {
       tags.push(`${Math.round(it.calories)} cal`);
     }
     const macros: string[] = [];
-    if (typeof it.protein_g === "number")
-      macros.push(`${Math.round(it.protein_g)}g protein`);
-    if (typeof it.carbs_g === "number")
-      macros.push(`${Math.round(it.carbs_g)}g carbs`);
-    if (typeof it.fat_g === "number")
-      macros.push(`${Math.round(it.fat_g)}g fat`);
+    if (typeof it.protein_g === "number") macros.push(`${Math.round(it.protein_g)}g protein`);
+    if (typeof it.carbs_g === "number") macros.push(`${Math.round(it.carbs_g)}g carbs`);
+    if (typeof it.fat_g === "number") macros.push(`${Math.round(it.fat_g)}g fat`);
     if (macros.length > 0) tags.push(macros.join(", "));
   }
   if (it.smart_section === "bills" || it.is_recurring) {
     if (it.is_recurring) {
       tags.push(
-        it.recurring_interval
-          ? `recurring ${it.recurring_interval.toLowerCase()}`
-          : "recurring",
+        it.recurring_interval ? `recurring ${it.recurring_interval.toLowerCase()}` : "recurring",
       );
     }
     if (it.direction) tags.push(it.direction);
@@ -1271,13 +1226,10 @@ async function buildAggregateQuery(args: {
     .not(args.field, "is", null);
   if (args.scope) {
     if (args.scope.kind === "builtin") q = q.eq("section", args.scope.key);
-    else if (args.scope.kind === "custom")
-      q = q.eq("custom_section_id", args.scope.key);
+    else if (args.scope.kind === "custom") q = q.eq("custom_section_id", args.scope.key);
     else q = q.eq("smart_section", args.scope.key);
   }
   if (args.sinceISO) q = q.gte("occurred_at", args.sinceISO);
-  const { data } = await q
-    .order("occurred_at", { ascending: false, nullsFirst: false })
-    .limit(60);
+  const { data } = await q.order("occurred_at", { ascending: false, nullsFirst: false }).limit(60);
   return (data ?? []) as AggregateRow[];
 }

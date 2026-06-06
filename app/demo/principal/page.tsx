@@ -9,8 +9,7 @@ export default function PrincipalRolePage() {
     <>
       <DemoTopbar title="Today" />
 
-
-      <div className="space-y-6 animate-fade-up">
+      <div className="animate-fade-up space-y-6">
         <Stats />
         <Approvals />
         <Suggestion />
@@ -40,20 +39,35 @@ function Stats() {
 
 function Approvals() {
   const items = [
-    { label: "Stradivarius restoration", meta: "9 days waiting, CHF 48,200", tone: "claret" as const, tag: "Overdue" },
-    { label: "Art transit insurance", meta: "Binds tomorrow, CHF 12,400", tone: "champagne" as const, tag: "Tomorrow" },
-    { label: "Mendez May overtime", meta: "Seasonal, CHF 3,180", tone: "neutral" as const, tag: "48h" },
+    {
+      label: "Stradivarius restoration",
+      meta: "9 days waiting, CHF 48,200",
+      tone: "claret" as const,
+      tag: "Overdue",
+    },
+    {
+      label: "Art transit insurance",
+      meta: "Binds tomorrow, CHF 12,400",
+      tone: "champagne" as const,
+      tag: "Tomorrow",
+    },
+    {
+      label: "Mendez May overtime",
+      meta: "Seasonal, CHF 3,180",
+      tone: "neutral" as const,
+      tag: "48h",
+    },
   ];
   return (
     <section>
       <div className="mb-3 flex items-center justify-between px-1">
         <h2 className="text-[14px] font-semibold text-ink">Needs your signature</h2>
       </div>
-      <ul className="rounded-xl border border-line bg-surface-raised divide-y divide-line">
+      <ul className="divide-y divide-line rounded-xl border border-line bg-surface-raised">
         {items.map((it) => (
           <li
             key={it.label}
-            className="flex flex-wrap items-center gap-3 px-4 py-3 transition-base hover:bg-canvas/60"
+            className="transition-base flex flex-wrap items-center gap-3 px-4 py-3 hover:bg-canvas/60"
           >
             <div className="min-w-0 flex-1">
               <p className="text-[13.5px] text-ink">{it.label}</p>
@@ -61,10 +75,10 @@ function Approvals() {
             </div>
             <Badge tone={it.tone}>{it.tag}</Badge>
             <div className="flex items-center gap-2">
-              <button className="inline-flex h-8 items-center rounded-lg bg-ink px-3 text-[12px] text-surface hover:bg-ink-soft transition-base">
+              <button className="transition-base inline-flex h-8 items-center rounded-lg bg-ink px-3 text-[12px] text-surface hover:bg-ink-soft">
                 Approve
               </button>
-              <button className="inline-flex h-8 items-center rounded-lg border border-line bg-surface-raised px-3 text-[12px] text-ink-muted hover:text-ink hover:border-line-strong transition-base">
+              <button className="transition-base inline-flex h-8 items-center rounded-lg border border-line bg-surface-raised px-3 text-[12px] text-ink-muted hover:border-line-strong hover:text-ink">
                 Defer
               </button>
             </div>
@@ -79,14 +93,14 @@ function Suggestion() {
   return (
     <div className="rounded-xl border border-line bg-surface-raised p-5">
       <p className="text-[11.5px] text-ink-faint">Suggestion</p>
-      <p className="mt-1.5 text-[14.5px] text-ink leading-snug">
+      <p className="mt-1.5 text-[14.5px] leading-snug text-ink">
         Mme Dubois&apos; birthday is June 9. Last year you sent peonies. Prepare the same?
       </p>
       <div className="mt-3 flex items-center gap-3">
-        <button className="inline-flex h-8 items-center gap-1 rounded-lg bg-ink px-3 text-[12px] text-surface hover:bg-ink-soft transition-base">
+        <button className="transition-base inline-flex h-8 items-center gap-1 rounded-lg bg-ink px-3 text-[12px] text-surface hover:bg-ink-soft">
           Prepare <ArrowRightIcon size={11} />
         </button>
-        <button className="text-[12px] text-ink-muted hover:text-ink transition-base">
+        <button className="transition-base text-[12px] text-ink-muted hover:text-ink">
           Other ideas
         </button>
       </div>
@@ -100,7 +114,7 @@ function Houses() {
       <div className="mb-3 flex items-center justify-between px-1">
         <h2 className="text-[14px] font-semibold text-ink">Houses</h2>
       </div>
-      <ul className="rounded-xl border border-line bg-surface-raised divide-y divide-line">
+      <ul className="divide-y divide-line rounded-xl border border-line bg-surface-raised">
         {[
           { name: "Le Chalet, Gstaad", note: "Ready", tone: "sage" as const },
           { name: "Hôtel Particulier, Paris", note: "Caretaker only", tone: "neutral" as const },

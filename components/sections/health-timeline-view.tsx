@@ -27,13 +27,7 @@ function categoryOf(docType: string | null): string {
  * with the date on the left, plus a coarse type filter (?htype=). Each entry
  * links to its source upload when there is one. Server-rendered.
  */
-export async function HealthTimelineView({
-  orgId,
-  filter,
-}: {
-  orgId: string;
-  filter?: string;
-}) {
+export async function HealthTimelineView({ orgId, filter }: { orgId: string; filter?: string }) {
   const supabase = await createClient();
   const { data } = await supabase
     .from("memory_items")
@@ -48,8 +42,7 @@ export async function HealthTimelineView({
   if (rows.length === 0) {
     return (
       <p className="px-1 text-[13px] text-ink-faint">
-        Health timeline will fill in as you add appointments, prescriptions, and
-        results.
+        Health timeline will fill in as you add appointments, prescriptions, and results.
       </p>
     );
   }
@@ -69,10 +62,8 @@ export async function HealthTimelineView({
           <Link
             key={c}
             href={c === "All" ? base : `${base}&htype=${encodeURIComponent(c)}`}
-            className={`rounded-full px-2.5 py-1 text-body-sm transition-base ${
-              active === c
-                ? "bg-ink text-surface"
-                : "bg-canvas text-ink-muted hover:text-ink"
+            className={`text-body-sm transition-base rounded-full px-2.5 py-1 ${
+              active === c ? "bg-ink text-surface" : "bg-canvas text-ink-muted hover:text-ink"
             }`}
           >
             {c}
@@ -84,12 +75,10 @@ export async function HealthTimelineView({
         {shown.map((r) => {
           const date = r.occurred_at ?? r.created_at;
           const inner = (
-            <div className="flex gap-3 rounded-lg px-3 py-2 transition-base hover:bg-surface-raised">
-              <span className="w-24 shrink-0 text-body-sm text-ink-faint">
-                {fmt(date)}
-              </span>
+            <div className="transition-base flex gap-3 rounded-lg px-3 py-2 hover:bg-surface-raised">
+              <span className="text-body-sm w-24 shrink-0 text-ink-faint">{fmt(date)}</span>
               <span className="min-w-0 flex-1">
-                <span className="block truncate text-body text-ink">{r.title}</span>
+                <span className="text-body block truncate text-ink">{r.title}</span>
                 <span className="text-caption text-ink-faint">{r.cat}</span>
               </span>
             </div>

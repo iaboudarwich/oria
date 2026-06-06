@@ -55,7 +55,7 @@ export function SectionSuggestionBanner({ suggestion }: { suggestion: Suggestion
           type="button"
           onClick={dismiss}
           disabled={pending}
-          className="text-[12.5px] text-ink-faint transition-base hover:text-ink disabled:opacity-50"
+          className="transition-base text-[12.5px] text-ink-faint hover:text-ink disabled:opacity-50"
         >
           {t("dismiss")}
         </button>
@@ -63,7 +63,7 @@ export function SectionSuggestionBanner({ suggestion }: { suggestion: Suggestion
           type="button"
           onClick={accept}
           disabled={pending}
-          className="rounded-lg bg-ink px-3 py-1.5 text-[12.5px] font-medium text-surface transition-base hover:bg-ink-soft disabled:opacity-50"
+          className="transition-base rounded-lg bg-ink px-3 py-1.5 text-[12.5px] font-medium text-surface hover:bg-ink-soft disabled:opacity-50"
         >
           {t("create")}
         </button>

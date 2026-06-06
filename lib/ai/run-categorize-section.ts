@@ -29,7 +29,7 @@ export async function runCategorizeSection(uploadId: string): Promise<void> {
   if (upload.status !== "filed") return;
 
   // Don't overwrite user's own section choice.
-  const assignedBy = (upload as Record<string, unknown>).section_assigned_by as string ?? "user";
+  const assignedBy = ((upload as Record<string, unknown>).section_assigned_by as string) ?? "user";
   const hasSection = !!(upload.section || upload.custom_section_id);
   if (hasSection && assignedBy === "user") return;
 

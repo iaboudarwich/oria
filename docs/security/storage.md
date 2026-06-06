@@ -26,12 +26,12 @@ predicate. There is no path that bypasses it.
 Database table `public.uploads` has had a four-tier visibility model
 since migration 0012 (`uploads_read_v2` policy):
 
-| Tier        | What the tier can see                                                  |
-| ----------- | ---------------------------------------------------------------------- |
-| **uploader**| Their own uploads, always, regardless of org settings.                 |
-| **owner / full** | Every non-private upload in the org.                              |
-| **limited** | Only `circle`-visibility uploads in their assigned sections, plus `specific`-visibility uploads explicitly shared with them. |
-| **assigned**| Only `specific`-visibility uploads explicitly shared with them.        |
+| Tier             | What the tier can see                                                                                                        |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| **uploader**     | Their own uploads, always, regardless of org settings.                                                                       |
+| **owner / full** | Every non-private upload in the org.                                                                                         |
+| **limited**      | Only `circle`-visibility uploads in their assigned sections, plus `specific`-visibility uploads explicitly shared with them. |
+| **assigned**     | Only `specific`-visibility uploads explicitly shared with them.                                                              |
 
 `private` uploads are visible to the uploader alone.
 

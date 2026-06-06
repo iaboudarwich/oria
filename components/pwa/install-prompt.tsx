@@ -96,7 +96,7 @@ export function InstallPrompt() {
       <div
         role="complementary"
         aria-label={t("install_title")}
-        className="fixed bottom-4 left-1/2 z-50 w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 animate-fade-up"
+        className="animate-fade-up fixed bottom-4 left-1/2 z-50 w-[calc(100%-2rem)] max-w-sm -translate-x-1/2"
       >
         <div className="flex items-start gap-3 rounded-2xl border border-line bg-surface-floating p-3 shadow-raised">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -118,14 +118,14 @@ export function InstallPrompt() {
               <button
                 type="button"
                 onClick={handleAction}
-                className="inline-flex h-8 items-center rounded-lg bg-ink px-3 text-[12.5px] font-medium text-surface transition-base hover:bg-ink-soft"
+                className="transition-base inline-flex h-8 items-center rounded-lg bg-ink px-3 text-[12.5px] font-medium text-surface hover:bg-ink-soft"
               >
                 {ios ? t("ios_show_how") : t("install_action")}
               </button>
               <button
                 type="button"
                 onClick={persistDismiss}
-                className="inline-flex h-8 items-center rounded-lg px-2.5 text-[12.5px] text-ink-muted transition-base hover:text-ink"
+                className="transition-base inline-flex h-8 items-center rounded-lg px-2.5 text-[12.5px] text-ink-muted hover:text-ink"
               >
                 {t("install_dismiss")}
               </button>
@@ -135,7 +135,7 @@ export function InstallPrompt() {
             type="button"
             onClick={persistDismiss}
             aria-label={t("install_dismiss")}
-            className="shrink-0 rounded-md p-1 text-ink-faint transition-base hover:text-ink"
+            className="transition-base shrink-0 rounded-md p-1 text-ink-faint hover:text-ink"
           >
             <CloseIcon size={16} />
           </button>
@@ -144,14 +144,14 @@ export function InstallPrompt() {
 
       {sheet ? (
         <div
-          className="fixed inset-0 z-[60] flex items-end justify-center bg-ink/30 p-4 animate-fade-in sm:items-center"
+          className="animate-fade-in fixed inset-0 z-[60] flex items-end justify-center bg-ink/30 p-4 sm:items-center"
           role="dialog"
           aria-modal="true"
           aria-label={t("ios_title")}
           onClick={persistDismiss}
         >
           <div
-            className="w-full max-w-sm rounded-2xl border border-line bg-surface-floating p-5 shadow-raised animate-fade-up"
+            className="animate-fade-up w-full max-w-sm rounded-2xl border border-line bg-surface-floating p-5 shadow-raised"
             onClick={(e) => e.stopPropagation()}
           >
             <h2 className="text-[16px] font-semibold text-ink">{t("ios_title")}</h2>
@@ -169,7 +169,7 @@ export function InstallPrompt() {
             <button
               type="button"
               onClick={persistDismiss}
-              className="mt-4 inline-flex h-9 w-full items-center justify-center rounded-lg bg-ink px-3 text-[13px] font-medium text-surface transition-base hover:bg-ink-soft"
+              className="transition-base mt-4 inline-flex h-9 w-full items-center justify-center rounded-lg bg-ink px-3 text-[13px] font-medium text-surface hover:bg-ink-soft"
             >
               {t("ios_done")}
             </button>

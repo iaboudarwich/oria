@@ -84,9 +84,7 @@ function expiryIso(expiresInSeconds: number): string {
   return new Date(Date.now() + Math.max(0, expiresInSeconds - 30) * 1000).toISOString();
 }
 
-export async function exchangeCodeForGoogleTokens(
-  code: string,
-): Promise<GoogleTokenResponse> {
+export async function exchangeCodeForGoogleTokens(code: string): Promise<GoogleTokenResponse> {
   const res = await fetch(TOKEN_ENDPOINT, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },

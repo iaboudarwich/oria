@@ -101,12 +101,7 @@ function makeIcon(
         : "oria-icon-dir"
       : className;
     return (
-      <Glyph
-        size={size}
-        strokeWidth={strokeWidth ?? strokeFor(size)}
-        className={cls}
-        {...rest}
-      />
+      <Glyph size={size} strokeWidth={strokeWidth ?? strokeFor(size)} className={cls} {...rest} />
     );
   };
   Wrapped.displayName = displayName;

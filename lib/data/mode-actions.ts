@@ -11,9 +11,7 @@ import { kindsForMode, type Mode } from "./mode";
 import { applyTemplate, type TemplateKey } from "./workspace-templates";
 import type { OrgKind } from "@/lib/supabase/types";
 
-export type SwitchModeResult =
-  | { ok: true; href: string }
-  | { ok: false };
+export type SwitchModeResult = { ok: true; href: string } | { ok: false };
 
 const ONE_YEAR_SECONDS = 60 * 60 * 24 * 365;
 
@@ -132,9 +130,7 @@ export async function switchMode(mode: Mode): Promise<SwitchModeResult> {
  * on failure. Best-effort; the caller falls back to the named-setup
  * flow if this returns null.
  */
-async function bootstrapPrivateWorkSpace(
-  userId: string,
-): Promise<string | null> {
+async function bootstrapPrivateWorkSpace(userId: string): Promise<string | null> {
   try {
     const admin = createAdminClient();
     const slug = `work-${userId.slice(0, 8)}`;
@@ -179,10 +175,14 @@ async function bootstrapPrivateWorkSpace(
  * schema change required.
  */
 export async function createWorkSpace(formData: FormData): Promise<void> {
-  const rawName = String(formData.get("name") ?? "").trim().slice(0, 60);
+  const rawName = String(formData.get("name") ?? "")
+    .trim()
+    .slice(0, 60);
   if (!rawName) return;
 
-  const purpose = String(formData.get("purpose") ?? "").trim().slice(0, 40);
+  const purpose = String(formData.get("purpose") ?? "")
+    .trim()
+    .slice(0, 40);
   const stores = formData
     .getAll("stores")
     .map((v) => String(v).trim())

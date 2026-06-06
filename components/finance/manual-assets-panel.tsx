@@ -72,7 +72,7 @@ export function ManualAssetsPanel({ assets }: { assets: ManualAsset[] }) {
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
-          className="text-[12.5px] text-ink-muted transition-base hover:text-ink"
+          className="transition-base text-[12.5px] text-ink-muted hover:text-ink"
         >
           {open ? t("close") : t("add_holding")}
         </button>
@@ -164,7 +164,7 @@ function AssetRow({ asset, onChange }: { asset: ManualAsset; onChange: () => voi
         </p>
         <p className="text-[11.5px] text-ink-faint">{KIND_LABEL[asset.kind]}</p>
       </div>
-      <span className="tabular-nums text-[13px] text-ink">
+      <span className="text-[13px] text-ink tabular-nums">
         {amount} {asset.currency}
       </span>
       <div className="flex items-center gap-2">
@@ -177,7 +177,7 @@ function AssetRow({ asset, onChange }: { asset: ManualAsset; onChange: () => voi
               onChange();
             })
           }
-          className="text-[11.5px] text-ink-muted transition-base hover:text-ink"
+          className="transition-base text-[11.5px] text-ink-muted hover:text-ink"
         >
           {asset.exclude_from_insights ? t("count") : t("exclude")}
         </button>
@@ -190,7 +190,7 @@ function AssetRow({ asset, onChange }: { asset: ManualAsset; onChange: () => voi
               onChange();
             })
           }
-          className="text-[11.5px] text-ink-muted transition-base hover:text-claret"
+          className="transition-base text-[11.5px] text-ink-muted hover:text-claret"
         >
           {t("remove")}
         </button>

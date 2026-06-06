@@ -54,9 +54,7 @@ export function inviteEmailText(d: InviteEmailData): string {
  * email-client compatibility, no images, light card on a calm background.
  */
 export function inviteEmailHtml(d: InviteEmailData): string {
-  const greeting = d.recipientName
-    ? `Hi ${escapeHtml(d.recipientName)},`
-    : "Hi,";
+  const greeting = d.recipientName ? `Hi ${escapeHtml(d.recipientName)},` : "Hi,";
   const titleChip = d.title
     ? `<span style="display:inline-block;margin-left:6px;padding:2px 8px;border-radius:6px;background:#f1ede4;color:#6b6258;font-size:12px;">${escapeHtml(d.title)}</span>`
     : "";

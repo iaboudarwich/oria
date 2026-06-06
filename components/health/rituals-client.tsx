@@ -55,7 +55,7 @@ export function RitualsClient({ rituals }: { rituals: RitualVM[] }) {
               setEditing(null);
               setCreating(true);
             }}
-            className="cta inline-flex h-9 items-center rounded-xl bg-ink px-3 text-[12.5px] text-surface transition-base hover:bg-ink-soft"
+            className="cta transition-base inline-flex h-9 items-center rounded-xl bg-ink px-3 text-[12.5px] text-surface hover:bg-ink-soft"
           >
             {t("new_ritual")}
           </button>
@@ -89,7 +89,7 @@ export function RitualsClient({ rituals }: { rituals: RitualVM[] }) {
       ) : null}
 
       <div>
-        <h2 className="mb-2 px-1 text-eyebrow">{t("log_ritual_label")}</h2>
+        <h2 className="text-eyebrow mb-2 px-1">{t("log_ritual_label")}</h2>
         <RitualVoiceLog />
       </div>
 
@@ -126,11 +126,17 @@ function RitualRow({ ritual, onEdit }: { ritual: RitualVM; onEdit: () => void })
         onClick={toggle}
         aria-pressed={done}
         aria-label={done ? t("done_today") : t("mark_done")}
-        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border transition-base ${
-          done ? "border-sage bg-sage/15 text-sage" : "border-line text-ink-faint hover:border-ink/30"
+        className={`transition-base flex h-9 w-9 shrink-0 items-center justify-center rounded-full border ${
+          done
+            ? "border-sage bg-sage/15 text-sage"
+            : "border-line text-ink-faint hover:border-ink/30"
         }`}
       >
-        {done ? <CheckCircleIcon size={20} /> : <span className="h-4 w-4 rounded-full border border-current" />}
+        {done ? (
+          <CheckCircleIcon size={20} />
+        ) : (
+          <span className="h-4 w-4 rounded-full border border-current" />
+        )}
       </button>
 
       <div className="min-w-0 flex-1">
@@ -147,7 +153,7 @@ function RitualRow({ ritual, onEdit }: { ritual: RitualVM; onEdit: () => void })
       </div>
 
       <div className="shrink-0 text-right">
-        <p className="text-[14px] font-semibold tabular-nums text-ink">
+        <p className="text-[14px] font-semibold text-ink tabular-nums">
           {t("streak_value", { n: ritual.current })}
         </p>
         <p className="text-[11px] text-ink-faint tabular-nums">
@@ -158,7 +164,7 @@ function RitualRow({ ritual, onEdit }: { ritual: RitualVM; onEdit: () => void })
       <button
         type="button"
         onClick={onEdit}
-        className="shrink-0 rounded-lg px-2 py-1 text-[12px] text-ink-faint transition-base hover:text-ink"
+        className="transition-base shrink-0 rounded-lg px-2 py-1 text-[12px] text-ink-faint hover:text-ink"
       >
         {t("edit")}
       </button>

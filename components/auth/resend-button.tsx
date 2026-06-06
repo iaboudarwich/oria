@@ -16,10 +16,7 @@ export function ResendButton({ email }: { email: string }) {
 
   useEffect(() => {
     if (cooldown <= 0) return;
-    const id = window.setInterval(
-      () => setCooldown((c) => Math.max(0, c - 1)),
-      1000,
-    );
+    const id = window.setInterval(() => setCooldown((c) => Math.max(0, c - 1)), 1000);
     return () => window.clearInterval(id);
   }, [cooldown]);
 
@@ -40,7 +37,7 @@ export function ResendButton({ email }: { email: string }) {
         type="button"
         onClick={resend}
         disabled={disabled}
-        className="inline-flex h-10 items-center justify-center rounded-xl border border-line-strong bg-surface-raised px-4 text-[13.5px] font-medium text-ink transition-base hover:border-ink-muted disabled:opacity-50"
+        className="transition-base inline-flex h-10 items-center justify-center rounded-xl border border-line-strong bg-surface-raised px-4 text-[13.5px] font-medium text-ink hover:border-ink-muted disabled:opacity-50"
       >
         {cooldown > 0 ? t("verify_cooldown", { seconds: cooldown }) : t("verify_resend")}
       </button>

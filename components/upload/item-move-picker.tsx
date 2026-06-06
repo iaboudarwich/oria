@@ -75,9 +75,8 @@ export function ItemMovePicker({ itemId, currentRef, sections }: Props) {
 
   const isReview = currentRef.kind === "review";
   const currentLabel =
-    sections.find(
-      (s) => s.ref.kind === currentRef.kind && s.ref.key === currentRef.key,
-    )?.name ?? (isReview ? "Unsorted" : "Move");
+    sections.find((s) => s.ref.kind === currentRef.kind && s.ref.key === currentRef.key)?.name ??
+    (isReview ? "Unsorted" : "Move");
 
   return (
     <div ref={ref} className="relative">
@@ -86,7 +85,7 @@ export function ItemMovePicker({ itemId, currentRef, sections }: Props) {
         onClick={toggle}
         aria-expanded={open}
         disabled={pending}
-        className={`inline-flex h-7 items-center gap-1.5 rounded-md border px-2.5 text-[11.5px] transition-base disabled:opacity-50 ${
+        className={`transition-base inline-flex h-7 items-center gap-1.5 rounded-md border px-2.5 text-[11.5px] disabled:opacity-50 ${
           open
             ? "border-line-strong bg-canvas text-ink"
             : isReview
@@ -97,9 +96,7 @@ export function ItemMovePicker({ itemId, currentRef, sections }: Props) {
         {pending ? "Moving" : currentLabel}
         <ChevronDownIcon
           size={11}
-          className={`transition-transform duration-150 ${
-            open ? "rotate-180" : ""
-          }`}
+          className={`transition-transform duration-150 ${open ? "rotate-180" : ""}`}
         />
       </button>
 
@@ -114,7 +111,7 @@ export function ItemMovePicker({ itemId, currentRef, sections }: Props) {
       ) : null}
 
       {offer ? (
-        <div className="absolute right-0 top-9 z-30 w-64 rounded-xl border border-line bg-surface-raised p-3 shadow-xl animate-scale-in">
+        <div className="animate-scale-in absolute top-9 right-0 z-30 w-64 rounded-xl border border-line bg-surface-raised p-3 shadow-xl">
           <p className="text-[12px] text-ink-soft">
             {t("prompt", { vendor: offer.vendor, section: offer.sectionName })}
           </p>
@@ -123,7 +120,7 @@ export function ItemMovePicker({ itemId, currentRef, sections }: Props) {
               type="button"
               onClick={() => resolveOffer("yes")}
               disabled={pending}
-              className="rounded-lg bg-ink px-2.5 py-1 text-[11.5px] font-medium text-surface transition-base hover:bg-ink-soft disabled:opacity-50"
+              className="transition-base rounded-lg bg-ink px-2.5 py-1 text-[11.5px] font-medium text-surface hover:bg-ink-soft disabled:opacity-50"
             >
               {t("yes")}
             </button>
@@ -131,7 +128,7 @@ export function ItemMovePicker({ itemId, currentRef, sections }: Props) {
               type="button"
               onClick={() => resolveOffer("no")}
               disabled={pending}
-              className="rounded-lg border border-line-strong px-2.5 py-1 text-[11.5px] font-medium text-ink transition-base hover:bg-surface disabled:opacity-50"
+              className="transition-base rounded-lg border border-line-strong px-2.5 py-1 text-[11.5px] font-medium text-ink hover:bg-surface disabled:opacity-50"
             >
               {t("no")}
             </button>
@@ -139,7 +136,7 @@ export function ItemMovePicker({ itemId, currentRef, sections }: Props) {
               type="button"
               onClick={() => resolveOffer("later")}
               disabled={pending}
-              className="ml-auto text-[11.5px] text-ink-faint transition-base hover:text-ink disabled:opacity-50"
+              className="transition-base ml-auto text-[11.5px] text-ink-faint hover:text-ink disabled:opacity-50"
             >
               {t("later")}
             </button>

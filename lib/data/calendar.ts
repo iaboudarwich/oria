@@ -1,18 +1,9 @@
 import "server-only";
 
 import { createClient } from "@/lib/supabase/server";
-import {
-  getCurrentContext,
-  isAccountOwnerInPersonal,
-  listUserSpaces,
-} from "./organizations";
+import { getCurrentContext, isAccountOwnerInPersonal, listUserSpaces } from "./organizations";
 import { recordSystemEvent } from "./system-events";
-import type {
-  DocumentType,
-  MemoryItem,
-  Reminder,
-  Section,
-} from "@/lib/supabase/types";
+import type { DocumentType, MemoryItem, Reminder, Section } from "@/lib/supabase/types";
 import type {
   CalendarCategory,
   CalendarEntry,
@@ -26,10 +17,7 @@ export type {
   CalendarSpace,
   CalendarTopic,
 } from "./calendar-types";
-export {
-  CALENDAR_CATEGORY_LABEL,
-  CALENDAR_TOPIC_LABEL,
-} from "./calendar-types";
+export { CALENDAR_CATEGORY_LABEL, CALENDAR_TOPIC_LABEL } from "./calendar-types";
 
 /**
  * Map a section onto one of our handful of human calendar categories. Sections
@@ -73,31 +61,22 @@ function deriveCalendarTopic(input: {
   }
 
   // 2. Travel. doc_type is the strongest signal.
-  if (
-    input.documentType === "boarding_pass" ||
-    /\bflight\b|\bboarding\b/.test(titleLower)
-  ) {
+  if (input.documentType === "boarding_pass" || /\bflight\b|\bboarding\b/.test(titleLower)) {
     return "flight";
   }
-  if (
-    input.documentType === "ticket" ||
-    input.documentType === "itinerary"
-  ) {
+  if (input.documentType === "ticket" || input.documentType === "itinerary") {
     return "travel";
   }
   if (input.category === "travel") return "travel";
 
   // 3. Specific document types worth their own label.
   if (/\blease\b|\btenant\b|\brent\b/.test(titleLower)) return "lease";
-  if (/\binsurance\b|\bpolicy\b|\bpremium\b/.test(titleLower))
-    return "insurance";
+  if (/\binsurance\b|\bpolicy\b|\bpremium\b/.test(titleLower)) return "insurance";
   if (input.documentType === "contract") {
-    if (/\brenew/.test(titleLower) || /\bexpir/.test(titleLower))
-      return "renewal";
+    if (/\brenew/.test(titleLower) || /\bexpir/.test(titleLower)) return "renewal";
     return "contract";
   }
-  if (input.documentType === "invoice" || /\binvoice\b/.test(titleLower))
-    return "invoice";
+  if (input.documentType === "invoice" || /\binvoice\b/.test(titleLower)) return "invoice";
 
   // 4. Renewals not caught above (e.g. reminders titled "X renewal due").
   if (/\brenew/.test(titleLower) || /\bexpir/.test(titleLower)) {
@@ -106,10 +85,7 @@ function deriveCalendarTopic(input: {
 
   // 5. Recurring + payment buckets.
   if (input.isRecurring === true) return "recurring";
-  if (
-    /\bpay\b|\bbill\b|\bpayment\b/.test(titleLower) ||
-    input.category === "finance"
-  ) {
+  if (/\bpay\b|\bbill\b|\bpayment\b/.test(titleLower) || input.category === "finance") {
     return "payment";
   }
 
@@ -138,9 +114,7 @@ function deriveCalendarTopic(input: {
  * are also passed through `enforceAllowedOrgs` as a runtime safety net
  * so a bad query can never widen the blast radius.
  */
-export async function loadCalendar(
-  opts: { crossSpace?: boolean } = {},
-): Promise<{
+export async function loadCalendar(opts: { crossSpace?: boolean } = {}): Promise<{
   entries: CalendarEntry[];
   spaces: CalendarSpace[];
   scopeMode: "active" | "cross-space";
@@ -157,15 +131,10 @@ export async function loadCalendar(
   // Decide effective scope. Cross-space is opt-in AND gated by
   // Personal-owner-in-Personal. exactly the same rule that gates Ask
   // Oria's God's Eye toggle.
-  const allowCross =
-    opts.crossSpace === true && isAccountOwnerInPersonal(ctx);
-  const scopeMode: "active" | "cross-space" = allowCross
-    ? "cross-space"
-    : "active";
+  const allowCross = opts.crossSpace === true && isAccountOwnerInPersonal(ctx);
+  const scopeMode: "active" | "cross-space" = allowCross ? "cross-space" : "active";
 
-  const orgIds = allowCross
-    ? allSpaces.map((s) => s.id)
-    : [ctx.organization.id];
+  const orgIds = allowCross ? allSpaces.map((s) => s.id) : [ctx.organization.id];
   const allowedOrgSet = new Set(orgIds);
   if (orgIds.length === 0) {
     return { entries: [], spaces: allSpaces, scopeMode };
@@ -247,11 +216,7 @@ export async function loadCalendar(
   // e.g. a reminder spawned from an invoice should classify as
   // "invoice", a contract → "contract"/"renewal").
   const uploadIds = Array.from(
-    new Set(
-      reminders
-        .map((r) => r.upload_id)
-        .filter((id): id is string => !!id),
-    ),
+    new Set(reminders.map((r) => r.upload_id).filter((id): id is string => !!id)),
   );
 
   type UploadHint = {
@@ -367,9 +332,9 @@ export async function loadCalendar(
   for (const ev of calendarEvents) {
     const space = spaceById.get(ev.organization_id);
     if (!space || !ev.starts_at) continue;
-    const category = (ev.category && CATEGORIES.has(ev.category)
-      ? ev.category
-      : "events") as CalendarEntry["category"];
+    const category = (
+      ev.category && CATEGORIES.has(ev.category) ? ev.category : "events"
+    ) as CalendarEntry["category"];
     eventEntries.push({
       id: `event:${ev.id}`,
       kind: "event",

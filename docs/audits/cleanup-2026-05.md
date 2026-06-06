@@ -11,20 +11,20 @@ This document is the deliverable for Feature 1 of the May 2026 cleanup pass. Fea
 
 ## 0. Summary table
 
-| Category | High-confidence actions | Needs review | Skipped (intentional) |
-|---|---|---|---|
-| Dead code | 2 files (1 module fully unused, 1 orphaned helper file) | 4 files (recent F2 UI primitives, browser-client) | 0 |
-| Unused imports | 0 (ESLint already passes) | 0 | n/a |
-| Console statements | 0 to remove | 0 | 17 intentional `.warn`/`.error` in catch blocks |
-| Duplicate code | 0 qualifying under strict rule | 6 pairs (behavioral variants) | All — none are *literally* the same |
-| Migrations | 0 stale | 0 | 38 migrations, all sequential, all live in remote |
-| Unused deps (depcheck) | 0 to remove | 1 (`@upstash/redis` — used by a script) | 5 dev-deps flagged as false positives |
-| Env vars | 6 to add to `.env.local.example` | 0 | n/a |
-| DB indexes | 5 missing | 0 | — schema-level analysis only; no live `EXPLAIN ANALYZE` |
-| Bundle | 1 below-the-fold lazy-load candidate | 0 | Most heavy deps are already server-only |
-| Images | 0 to convert | 0 | All 5 plain `<img>` have eslint-disable + legitimate reasons |
-| ISR opportunities | 0 to apply this round | 3 candidates (`/demo/*`) | `/login` and `/signup` would risk a behavior change |
-| Fonts | 0 changes | 0 | Inter + JetBrains_Mono configured optimally |
+| Category               | High-confidence actions                                 | Needs review                                      | Skipped (intentional)                                        |
+| ---------------------- | ------------------------------------------------------- | ------------------------------------------------- | ------------------------------------------------------------ |
+| Dead code              | 2 files (1 module fully unused, 1 orphaned helper file) | 4 files (recent F2 UI primitives, browser-client) | 0                                                            |
+| Unused imports         | 0 (ESLint already passes)                               | 0                                                 | n/a                                                          |
+| Console statements     | 0 to remove                                             | 0                                                 | 17 intentional `.warn`/`.error` in catch blocks              |
+| Duplicate code         | 0 qualifying under strict rule                          | 6 pairs (behavioral variants)                     | All — none are _literally_ the same                          |
+| Migrations             | 0 stale                                                 | 0                                                 | 38 migrations, all sequential, all live in remote            |
+| Unused deps (depcheck) | 0 to remove                                             | 1 (`@upstash/redis` — used by a script)           | 5 dev-deps flagged as false positives                        |
+| Env vars               | 6 to add to `.env.local.example`                        | 0                                                 | n/a                                                          |
+| DB indexes             | 5 missing                                               | 0                                                 | — schema-level analysis only; no live `EXPLAIN ANALYZE`      |
+| Bundle                 | 1 below-the-fold lazy-load candidate                    | 0                                                 | Most heavy deps are already server-only                      |
+| Images                 | 0 to convert                                            | 0                                                 | All 5 plain `<img>` have eslint-disable + legitimate reasons |
+| ISR opportunities      | 0 to apply this round                                   | 3 candidates (`/demo/*`)                          | `/login` and `/signup` would risk a behavior change          |
+| Fonts                  | 0 changes                                               | 0                                                 | Inter + JetBrains_Mono configured optimally                  |
 
 **Estimated impact if F2–F5 land as planned:** ~80 lines removed, 5 new DB indexes (eliminates seq-scans on per-org reads as orgs grow), `@dnd-kit` deferred off the synchronous bundle of `/dashboard/settings`. Lighthouse will need to be captured manually (see §11).
 
@@ -35,6 +35,7 @@ This document is the deliverable for Feature 1 of the May 2026 cleanup pass. Fea
 For each entry: confirmed via exhaustive grep across `app/ components/ lib/ hooks/ scripts/` for both filepath imports and all exported identifiers; checked that nothing references via `import()`, `require()`, or string lookup; not a Next.js convention file; not a test fixture; not referenced by config.
 
 ### 1.1 `lib/data/scoped-query.ts` — whole file
+
 - **Exports:** `scopedFrom()`, `multiOrgFrom()` — query builders that were meant to be the "compile-time safety net" for org-scoped Supabase queries.
 - **Verification:**
   - `grep -rn "scoped-query\|scopedFrom\|multiOrgFrom"` → only self-references inside the file.
@@ -43,6 +44,7 @@ For each entry: confirmed via exhaustive grep across `app/ components/ lib/ hook
 - **Recommendation:** **REMOVE** (F3).
 
 ### 1.2 `lib/data/reminders.ts` — whole file
+
 - **Exports:** `listReminders(limit=50)`, `listOpenReminders(limit=10)`.
 - **Verification:**
   - `grep -rn "listReminders\|listOpenReminders"` → only self-references; nobody else imports them.
@@ -56,22 +58,26 @@ For each entry: confirmed via exhaustive grep across `app/ components/ lib/ hook
 ## 2. Dead code — NEEDS REVIEW (do not remove this round)
 
 ### 2.1 `components/ui/toast.tsx`
+
 - **Exports:** `useToast()` hook + `ToastProvider` context.
 - **Why it looks dead:** zero non-self imports.
 - **Why I'm not removing:** Added 2026-05-29 (`b313683`, "feat(components): unified component library") as part of the F2 design-system roll-out. The commit message frames it as a primitive intended for adoption. The cost of keeping is one file; the cost of removing-then-readding is real work and a potential merge conflict. **LEAVE.**
 
 ### 2.2 `components/ui/card.tsx`
+
 - **Exports:** `Card`, `CardProps` — flat/raised/floating variants with optional `hoverable`.
 - **Same provenance as 2.1** (same commit, same intent).
 - **Recommendation:** **LEAVE** until the design-system rollout adopts it or you explicitly decide to drop it.
 
 ### 2.3 `lib/supabase/client.ts`
+
 - **Exports:** `createClient()` returning `createBrowserClient(...)` from `@supabase/ssr`.
 - **Why it looks dead:** zero direct imports of `@/lib/supabase/client`.
 - **Why I'm not removing:** It's a standard Next.js + Supabase architectural primitive (the browser client). The current codebase happens to route all client-side mutations through Server Actions, but adding any client-side Supabase usage in the future would expect this file to exist. 9 lines of code; the architectural signal is more valuable than the line savings.
 - **Recommendation:** **LEAVE.**
 
 ### 2.4 `@upstash/redis` npm dependency
+
 - **Why depcheck flags it:** zero `import` from `@upstash/redis` in `app/ components/ lib/`.
 - **Why I'm not removing:** `scripts/verify-redis.ts` uses it for the Redis health-check script, and `lib/cache/dedup.ts` talks to the same Upstash endpoint via raw `fetch` (so the env vars `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` are live in production). Removing the dep would break the verification script.
 - **Recommendation:** **LEAVE** for now. Reconsider if `lib/cache/dedup.ts` migrates to the SDK or the verify script is retired.
@@ -108,40 +114,47 @@ Both pass clean. ESLint (with `@typescript-eslint/no-unused-vars`) and TypeScrip
 The F4 spec says: "function A and function B do literally the same thing, replace all uses of B with A, delete B." I verified every duplicate the audit flagged. None qualifies:
 
 ### 5.1 `relativeTime` — `lib/utils.ts:9` vs `components/ask/conversation-sidebar.tsx:13`
+
 - `lib/utils.ts` returns `"5s ago"` for under-a-minute deltas.
 - `conversation-sidebar.tsx` returns `"just now"` instead.
 - **Different output.** Replacing one with the other changes what the user sees.
 - **Recommendation:** **LEAVE.** Worth a follow-up to standardise the wording, but that's a UX decision, not a mechanical cleanup.
 
 ### 5.2 `formatBytes` — `lib/utils.ts:1` vs `components/upload/dropzone.tsx:364`
+
 - `lib/utils.ts` handles B → KB → MB → GB with 2-decimal GB.
 - `dropzone.tsx` caps at MB (the dropzone never shows a multi-GB upload — there's a 50 MB hard cap).
 - **Different range.** The dropzone version is intentionally simpler.
 - **Recommendation:** **LEAVE.**
 
 ### 5.3 `formatTime` — `components/calendar/calendar-shared.tsx:143` vs `components/dashboard/today-pulse.tsx:193`
+
 - The today-pulse version compares against "today" and substitutes `"All day"` / a relative string; calendar-shared is straight time-of-day.
 - **Different behavior.**
 - **Recommendation:** **LEAVE.**
 
 ### 5.4 `formatDate` — `components/upload/suggested-reminders-panel.tsx:7` vs `components/upload/extracted-entities-panel.tsx:47`
+
 - One is defensive (try/catch around the parse), one isn't.
 - One forces UTC, the other uses the browser locale.
 - **Different output.**
 - **Recommendation:** **LEAVE.**
 
 ### 5.5 `friendlyDate` — `components/calendar/coming-up.tsx:59` vs `components/upload/item-review-panel.tsx:204`
+
 - Same output format, **different input types** (`string` vs `Date`).
 - A consolidation would have to change a signature, which the F4 spec calls out specifically as off-limits ("Changing function signatures").
 - **Recommendation:** **LEAVE.**
 
 ### 5.6 `SmartSection` type — `lib/supabase/types.ts:247` vs `lib/ai/extract.ts:44`
+
 - Both declare `export type SmartSection = "diet" | "bills";` byte-identically.
 - This is the **only** literal duplicate I found.
 - **Why I'm still not consolidating:** `lib/ai/extract.ts` is marked `import "server-only"`. Re-exporting `SmartSection` from extract into types.ts would taint types.ts with server-only on the type-resolution graph. Going the other way (delete from extract, import from types) is fine but introduces a cross-module type dependency for one literal line saved.
 - **Recommendation:** **LEAVE.** Documented for your call.
 
 ### 5.7 `AgentMessage` / `AgentTelemetry` — `lib/ai/agent.ts:8,16` vs `lib/ai/work-agent.ts:8,16`
+
 - Byte-identical type declarations across both server-only agent modules. Added in the May 28 telemetry pass (`af23f78`).
 - **Why I'm not consolidating:** intentional domain isolation between the Ask agent and the Work agent. They could share a `lib/ai/agent-types.ts` but that's the "reorganize for elegance" the spec rules out.
 - **Recommendation:** **LEAVE.**
@@ -169,14 +182,14 @@ Unused devDependencies: @tailwindcss/postcss, @types/react-dom, playwright, tail
 
 Per-finding verification:
 
-| Finding | Verdict | Why |
-|---|---|---|
-| `@upstash/redis` | **KEEP** | Used by `scripts/verify-redis.ts`. Production paths talk to Upstash via raw fetch (`lib/cache/dedup.ts`), not the SDK. |
-| `@tailwindcss/postcss` (dev) | **KEEP** | Active PostCSS plugin used at build time. depcheck doesn't see PostCSS config. |
-| `tailwindcss` (dev) | **KEEP** | Tailwind core used by every styled component. depcheck doesn't see CSS imports. |
-| `@types/react-dom` (dev) | **KEEP** | TypeScript types for React DOM; used implicitly by `tsc`. |
-| `playwright` (dev) | **KEEP** | `scripts/test-scope-isolation.mts` and `mobile-test.mts` use it. |
-| `tsx` (dev) | **KEEP** | Used to run `.ts` / `.mts` scripts (e.g. `npx tsx scripts/verify-redis.ts`). |
+| Finding                      | Verdict  | Why                                                                                                                    |
+| ---------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `@upstash/redis`             | **KEEP** | Used by `scripts/verify-redis.ts`. Production paths talk to Upstash via raw fetch (`lib/cache/dedup.ts`), not the SDK. |
+| `@tailwindcss/postcss` (dev) | **KEEP** | Active PostCSS plugin used at build time. depcheck doesn't see PostCSS config.                                         |
+| `tailwindcss` (dev)          | **KEEP** | Tailwind core used by every styled component. depcheck doesn't see CSS imports.                                        |
+| `@types/react-dom` (dev)     | **KEEP** | TypeScript types for React DOM; used implicitly by `tsc`.                                                              |
+| `playwright` (dev)           | **KEEP** | `scripts/test-scope-isolation.mts` and `mobile-test.mts` use it.                                                       |
+| `tsx` (dev)                  | **KEEP** | Used to run `.ts` / `.mts` scripts (e.g. `npx tsx scripts/verify-redis.ts`).                                           |
 
 depcheck produces only false positives on this repo. **Recommendation: no removals.**
 
@@ -185,19 +198,21 @@ depcheck produces only false positives on this repo. **Recommendation: no remova
 ## 8. Environment variables
 
 ### 8.1 In `.env.local.example` but never read in code
+
 - None. Every documented var has a `process.env.X` consumer.
 
 ### 8.2 Read in code but missing from `.env.local.example`
+
 The following 6 variables are referenced in source but undocumented:
 
-| Var | Used at | Note |
-|---|---|---|
-| `PYTHON_EXTRACTION_URL` | `lib/extraction/service.ts:20` | URL of the Python sidecar. |
-| `ORIA_SIDECAR_SECRET` | `lib/extraction/service.ts:36` | HMAC signing secret for sidecar requests. Optional in dev. |
-| `ORIA_TEXT_EXTRACTION_MODEL` | `lib/ai/extract.ts` (model routing for typed quick-logs) | Optional override; defaults to Haiku. |
-| `SENTRY_DSN` | `sentry.server.config.ts`, `sentry.edge.config.ts` | Server / edge error reporting. |
-| `NEXT_PUBLIC_SENTRY_DSN` | `sentry.client.config.ts` | Client error reporting. |
-| `CRON_SECRET` | `vercel.json` cron + auth check in the cron route handlers | Bearer-token gate for `/api/cron/*`. |
+| Var                          | Used at                                                    | Note                                                       |
+| ---------------------------- | ---------------------------------------------------------- | ---------------------------------------------------------- |
+| `PYTHON_EXTRACTION_URL`      | `lib/extraction/service.ts:20`                             | URL of the Python sidecar.                                 |
+| `ORIA_SIDECAR_SECRET`        | `lib/extraction/service.ts:36`                             | HMAC signing secret for sidecar requests. Optional in dev. |
+| `ORIA_TEXT_EXTRACTION_MODEL` | `lib/ai/extract.ts` (model routing for typed quick-logs)   | Optional override; defaults to Haiku.                      |
+| `SENTRY_DSN`                 | `sentry.server.config.ts`, `sentry.edge.config.ts`         | Server / edge error reporting.                             |
+| `NEXT_PUBLIC_SENTRY_DSN`     | `sentry.client.config.ts`                                  | Client error reporting.                                    |
+| `CRON_SECRET`                | `vercel.json` cron + auth check in the cron route handlers | Bearer-token gate for `/api/cron/*`.                       |
 
 `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` are already documented (mentioned in the `lib/cache/dedup.ts` header comment, and read by `scripts/verify-redis.ts`); confirm they're in `.env.local.example`.
 
@@ -231,13 +246,13 @@ Postgres does **not** auto-index foreign-key referencing columns, so a column be
 
 ### 10.1 Missing org-scoped indexes (HIGH impact as orgs grow)
 
-| Table | Column(s) | Used at (example) | Today's plan |
-|---|---|---|---|
-| `custom_sections` | `organization_id` | sidebar build, every dashboard page | seq scan |
-| `section_settings` | `organization_id, builtin_section` | sidebar order / visibility | seq scan |
-| `memberships` | `organization_id` | circle/office member lists, invites | seq scan |
-| `reminders` | `organization_id, due_at` | calendar, "what's coming up" rollups | seq scan + sort |
-| `document_chunks` | `organization_id` | semantic search org-scoping | seq scan |
+| Table              | Column(s)                          | Used at (example)                    | Today's plan    |
+| ------------------ | ---------------------------------- | ------------------------------------ | --------------- |
+| `custom_sections`  | `organization_id`                  | sidebar build, every dashboard page  | seq scan        |
+| `section_settings` | `organization_id, builtin_section` | sidebar order / visibility           | seq scan        |
+| `memberships`      | `organization_id`                  | circle/office member lists, invites  | seq scan        |
+| `reminders`        | `organization_id, due_at`          | calendar, "what's coming up" rollups | seq scan + sort |
+| `document_chunks`  | `organization_id`                  | semantic search org-scoping          | seq scan        |
 
 Existing `0023_perf_indexes.sql` already indexes `uploads.uploaded_by`, `uploads (uploaded_by) where deleted_at is null`, `learning_events (actor_id, kind, created_at)`, and `background_jobs (started_at) where status='processing'` — those are good and not duplicated below.
 
@@ -276,16 +291,16 @@ Turbopack doesn't print per-route bundle sizes the way Webpack did, so route-lev
 
 Mapped every `package.json` dep to its import sites and whether the consuming file is `"use client"` or server-only:
 
-| Dep | Client? | Note |
-|---|---|---|
-| `@anthropic-ai/sdk` | **No** | Only in `lib/ai/*` and `lib/extraction/*` — server-only. Zero bundle. |
-| `@sentry/nextjs` | **Yes** (split) | Already split via `sentry.{client,server,edge}.config.ts`. Tree-shaken by the Sentry plugin. Leave. |
-| `@dnd-kit/core`, `@dnd-kit/sortable`, `@dnd-kit/utilities` | **Yes** | One consumer: `components/settings/sections-editor.tsx`. Currently ships synchronously on `/dashboard/settings` and `/dashboard/settings/sections`. **Candidate for `next/dynamic` with a skeleton fallback** — it's below the fold on `/dashboard/settings`. |
-| `next-intl` | **Yes** | Required globally for i18n. Leave. |
-| `next-themes` | **Yes** | Small; needed for dark mode. Leave. |
-| `heic-convert`, `mammoth`, `pdf-parse` | **No** | Server-only (extraction). Zero bundle. |
-| `resend` | **No** | Server-only (email send). Zero bundle. |
-| `xlsx` | — | Confirmed REMOVED in the recent security pass. Not in `package.json`. |
+| Dep                                                        | Client?         | Note                                                                                                                                                                                                                                                          |
+| ---------------------------------------------------------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@anthropic-ai/sdk`                                        | **No**          | Only in `lib/ai/*` and `lib/extraction/*` — server-only. Zero bundle.                                                                                                                                                                                         |
+| `@sentry/nextjs`                                           | **Yes** (split) | Already split via `sentry.{client,server,edge}.config.ts`. Tree-shaken by the Sentry plugin. Leave.                                                                                                                                                           |
+| `@dnd-kit/core`, `@dnd-kit/sortable`, `@dnd-kit/utilities` | **Yes**         | One consumer: `components/settings/sections-editor.tsx`. Currently ships synchronously on `/dashboard/settings` and `/dashboard/settings/sections`. **Candidate for `next/dynamic` with a skeleton fallback** — it's below the fold on `/dashboard/settings`. |
+| `next-intl`                                                | **Yes**         | Required globally for i18n. Leave.                                                                                                                                                                                                                            |
+| `next-themes`                                              | **Yes**         | Small; needed for dark mode. Leave.                                                                                                                                                                                                                           |
+| `heic-convert`, `mammoth`, `pdf-parse`                     | **No**          | Server-only (extraction). Zero bundle.                                                                                                                                                                                                                        |
+| `resend`                                                   | **No**          | Server-only (email send). Zero bundle.                                                                                                                                                                                                                        |
+| `xlsx`                                                     | —               | Confirmed REMOVED in the recent security pass. Not in `package.json`.                                                                                                                                                                                         |
 
 ### 11.3 Layout-imported heavy components
 
@@ -299,13 +314,13 @@ Walked `app/layout.tsx` and `app/dashboard/layout.tsx`. The only client wrappers
 
 Found **5** plain `<img>` tags. **Every one** has an `eslint-disable-next-line @next/next/no-img-element` comment AND a legitimate reason not to be a `next/image`:
 
-| File | Line | Source | Reason to keep `<img>` |
-|---|---|---|---|
-| `app/dashboard/things/[id]/page.tsx` | 147 | Signed Supabase URL (32×32 thumb) | Dynamic signed URL, fixed container |
-| `components/search/live-search.tsx` | 432 | Signed Supabase URL (32×32 thumb) | Same pattern |
-| `components/upload/dropzone.tsx` | 349 | `URL.createObjectURL(file)` blob | next/image can't serve blob URLs |
-| `components/upload/preview.tsx` | 26 | Signed URL, unknown intrinsic dims, `max-h-[720px] w-auto` | Documented "leave as plain `<img>`" in the previous session |
-| `components/upload/dropzone-compact.tsx` | 194 | Blob preview, same as dropzone | next/image can't serve blob URLs |
+| File                                     | Line | Source                                                     | Reason to keep `<img>`                                      |
+| ---------------------------------------- | ---- | ---------------------------------------------------------- | ----------------------------------------------------------- |
+| `app/dashboard/things/[id]/page.tsx`     | 147  | Signed Supabase URL (32×32 thumb)                          | Dynamic signed URL, fixed container                         |
+| `components/search/live-search.tsx`      | 432  | Signed Supabase URL (32×32 thumb)                          | Same pattern                                                |
+| `components/upload/dropzone.tsx`         | 349  | `URL.createObjectURL(file)` blob                           | next/image can't serve blob URLs                            |
+| `components/upload/preview.tsx`          | 26   | Signed URL, unknown intrinsic dims, `max-h-[720px] w-auto` | Documented "leave as plain `<img>`" in the previous session |
+| `components/upload/dropzone-compact.tsx` | 194  | Blob preview, same as dropzone                             | next/image can't serve blob URLs                            |
 
 **Recommendation:** **no conversions.** Each `<img>` is intentional.
 
@@ -367,14 +382,14 @@ const jetbrainsMono = JetBrains_Mono({
 
 ## 16. Expected impact (pre-cleanup forecast)
 
-| Metric | Estimate |
-|---|---|
-| Lines of code removed (F3) | ~80 (2 small files) |
-| Files removed | 2 |
-| `.next/static` size reduction | Marginal — the only client-removable change is `@dnd-kit` deferral; the SDK was already only shipping to settings routes. Expect 0 → ~30 KB synchronous reduction on `/dashboard/settings` first paint. |
-| DB query improvements | Eliminates seq scans on `custom_sections.organization_id`, `section_settings.organization_id`, `memberships.organization_id`, `reminders.organization_id + due_at`, `document_chunks.organization_id` — most noticeable as orgs accumulate rows. |
-| Env-var documentation | 6 vars added to `.env.local.example`. |
-| Lighthouse delta | Capture manually (§13). |
+| Metric                        | Estimate                                                                                                                                                                                                                                         |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Lines of code removed (F3)    | ~80 (2 small files)                                                                                                                                                                                                                              |
+| Files removed                 | 2                                                                                                                                                                                                                                                |
+| `.next/static` size reduction | Marginal — the only client-removable change is `@dnd-kit` deferral; the SDK was already only shipping to settings routes. Expect 0 → ~30 KB synchronous reduction on `/dashboard/settings` first paint.                                          |
+| DB query improvements         | Eliminates seq scans on `custom_sections.organization_id`, `section_settings.organization_id`, `memberships.organization_id`, `reminders.organization_id + due_at`, `document_chunks.organization_id` — most noticeable as orgs accumulate rows. |
+| Env-var documentation         | 6 vars added to `.env.local.example`.                                                                                                                                                                                                            |
+| Lighthouse delta              | Capture manually (§13).                                                                                                                                                                                                                          |
 
 ---
 
@@ -394,32 +409,32 @@ Listed here so you can override.
 
 ## 18. Results (filled after F2–F5)
 
-| Metric | Before | After | Delta |
-|---|---|---|---|
-| Tests passing | 127/127 | 127/127 | unchanged ✓ |
-| `npm run lint` | clean | clean | unchanged ✓ |
-| `tsc --noEmit` | clean | clean | unchanged ✓ |
-| `next build` | success | success | unchanged ✓ |
-| `.next/static` total | 1904 KB | 1904 KB | unchanged — `next/dynamic` defers, doesn't shrink total |
-| `.next/static/chunks` total | 1564 KB | 1564 KB | unchanged — same |
-| Synchronous load on `/dashboard/settings` | included `@dnd-kit/*` (~25–35 KB minified) | excludes `@dnd-kit/*` until "Sections" tab opens | deferred |
-| Files removed | 0 | 2 | `lib/data/scoped-query.ts`, `lib/data/reminders.ts` |
-| Lines removed | 0 | 100 | 62 (scoped-query) + 38 (reminders) |
-| Files added | 0 | 2 | `supabase/migrations/0039_org_scoped_indexes.sql`, `components/settings/sections-editor-lazy.tsx` |
-| New env-var docs in `.env.local.example` | 0 | 8 | PYTHON_EXTRACTION_URL, ORIA_SIDECAR_SECRET, ORIA_TEXT_EXTRACTION_MODEL, UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN, SENTRY_DSN, NEXT_PUBLIC_SENTRY_DSN, CRON_SECRET |
-| New migrations | 0 | 1 | `0039_org_scoped_indexes.sql` — 5 indexes |
-| DB indexes added | 0 | **3 newly created, 2 already present** | `supabase db push` reported `NOTICE 42P07` (already exists) for `custom_sections_org_idx` and `memberships_org_idx` — those were already in production. `section_settings_org_idx`, `reminders_org_due_idx`, `document_chunks_org_idx` were created fresh. The `if not exists` guard made the redundant statements no-ops, which is exactly why the migration was written that way. |
-| Lighthouse — Performance | _capture manually before_ | _capture manually after_ | run `npx lighthouse https://heyoria.com --only-categories=performance` |
-| Lighthouse — Accessibility | _capture manually before_ | _capture manually after_ | — |
-| Lighthouse — Best Practices | _capture manually before_ | _capture manually after_ | — |
-| Lighthouse — SEO | _capture manually before_ | _capture manually after_ | — |
+| Metric                                    | Before                                     | After                                            | Delta                                                                                                                                                                                                                                                                                                                                                                               |
+| ----------------------------------------- | ------------------------------------------ | ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Tests passing                             | 127/127                                    | 127/127                                          | unchanged ✓                                                                                                                                                                                                                                                                                                                                                                         |
+| `npm run lint`                            | clean                                      | clean                                            | unchanged ✓                                                                                                                                                                                                                                                                                                                                                                         |
+| `tsc --noEmit`                            | clean                                      | clean                                            | unchanged ✓                                                                                                                                                                                                                                                                                                                                                                         |
+| `next build`                              | success                                    | success                                          | unchanged ✓                                                                                                                                                                                                                                                                                                                                                                         |
+| `.next/static` total                      | 1904 KB                                    | 1904 KB                                          | unchanged — `next/dynamic` defers, doesn't shrink total                                                                                                                                                                                                                                                                                                                             |
+| `.next/static/chunks` total               | 1564 KB                                    | 1564 KB                                          | unchanged — same                                                                                                                                                                                                                                                                                                                                                                    |
+| Synchronous load on `/dashboard/settings` | included `@dnd-kit/*` (~25–35 KB minified) | excludes `@dnd-kit/*` until "Sections" tab opens | deferred                                                                                                                                                                                                                                                                                                                                                                            |
+| Files removed                             | 0                                          | 2                                                | `lib/data/scoped-query.ts`, `lib/data/reminders.ts`                                                                                                                                                                                                                                                                                                                                 |
+| Lines removed                             | 0                                          | 100                                              | 62 (scoped-query) + 38 (reminders)                                                                                                                                                                                                                                                                                                                                                  |
+| Files added                               | 0                                          | 2                                                | `supabase/migrations/0039_org_scoped_indexes.sql`, `components/settings/sections-editor-lazy.tsx`                                                                                                                                                                                                                                                                                   |
+| New env-var docs in `.env.local.example`  | 0                                          | 8                                                | PYTHON_EXTRACTION_URL, ORIA_SIDECAR_SECRET, ORIA_TEXT_EXTRACTION_MODEL, UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN, SENTRY_DSN, NEXT_PUBLIC_SENTRY_DSN, CRON_SECRET                                                                                                                                                                                                           |
+| New migrations                            | 0                                          | 1                                                | `0039_org_scoped_indexes.sql` — 5 indexes                                                                                                                                                                                                                                                                                                                                           |
+| DB indexes added                          | 0                                          | **3 newly created, 2 already present**           | `supabase db push` reported `NOTICE 42P07` (already exists) for `custom_sections_org_idx` and `memberships_org_idx` — those were already in production. `section_settings_org_idx`, `reminders_org_due_idx`, `document_chunks_org_idx` were created fresh. The `if not exists` guard made the redundant statements no-ops, which is exactly why the migration was written that way. |
+| Lighthouse — Performance                  | _capture manually before_                  | _capture manually after_                         | run `npx lighthouse https://heyoria.com --only-categories=performance`                                                                                                                                                                                                                                                                                                              |
+| Lighthouse — Accessibility                | _capture manually before_                  | _capture manually after_                         | —                                                                                                                                                                                                                                                                                                                                                                                   |
+| Lighthouse — Best Practices               | _capture manually before_                  | _capture manually after_                         | —                                                                                                                                                                                                                                                                                                                                                                                   |
+| Lighthouse — SEO                          | _capture manually before_                  | _capture manually after_                         | —                                                                                                                                                                                                                                                                                                                                                                                   |
 
 ### Commits applied
 
-| Feature | Commit | What landed |
-|---|---|---|
-| F1 — audit doc | `ee622de` | This document. |
-| F2 — safe cleanup | `3cdedf4` | 8 missing env vars added to `.env.local.example` (PYTHON_EXTRACTION_URL, ORIA_SIDECAR_SECRET, ORIA_TEXT_EXTRACTION_MODEL, UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN, SENTRY_DSN, NEXT_PUBLIC_SENTRY_DSN, CRON_SECRET). No unused-import removals (codebase already clean). No console-statement removals (all 17 are intentional). No type/dep removals (audit found no qualifying targets). |
-| F3 — dead code removal | `f9cc770` | `lib/data/scoped-query.ts` and `lib/data/reminders.ts` deleted. Both re-verified to have only self-references before deletion. Build + tests green after each. 100 lines removed. |
-| F4 — consolidation | _no commit_ | No qualifying consolidations under the strict spec rule. Every flagged duplicate either has behavioral variants or crosses the server-only boundary in a way the spec rules out. See §5 + §17.4. |
-| F5 — performance | _filled by next commit_ | Migration `0039_org_scoped_indexes.sql` (5 org-scoped indexes — see §10.1) + `components/settings/sections-editor-lazy.tsx` (`next/dynamic` wrapper deferring `@dnd-kit/*` off the synchronous `/dashboard/settings` bundle). |
+| Feature                | Commit                  | What landed                                                                                                                                                                                                                                                                                                                                                                                         |
+| ---------------------- | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| F1 — audit doc         | `ee622de`               | This document.                                                                                                                                                                                                                                                                                                                                                                                      |
+| F2 — safe cleanup      | `3cdedf4`               | 8 missing env vars added to `.env.local.example` (PYTHON_EXTRACTION_URL, ORIA_SIDECAR_SECRET, ORIA_TEXT_EXTRACTION_MODEL, UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN, SENTRY_DSN, NEXT_PUBLIC_SENTRY_DSN, CRON_SECRET). No unused-import removals (codebase already clean). No console-statement removals (all 17 are intentional). No type/dep removals (audit found no qualifying targets). |
+| F3 — dead code removal | `f9cc770`               | `lib/data/scoped-query.ts` and `lib/data/reminders.ts` deleted. Both re-verified to have only self-references before deletion. Build + tests green after each. 100 lines removed.                                                                                                                                                                                                                   |
+| F4 — consolidation     | _no commit_             | No qualifying consolidations under the strict spec rule. Every flagged duplicate either has behavioral variants or crosses the server-only boundary in a way the spec rules out. See §5 + §17.4.                                                                                                                                                                                                    |
+| F5 — performance       | _filled by next commit_ | Migration `0039_org_scoped_indexes.sql` (5 org-scoped indexes — see §10.1) + `components/settings/sections-editor-lazy.tsx` (`next/dynamic` wrapper deferring `@dnd-kit/*` off the synchronous `/dashboard/settings` bundle).                                                                                                                                                                       |

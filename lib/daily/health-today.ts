@@ -61,7 +61,10 @@ export async function loadHealthToday(
   const todayRow = metrics.find((m) => m.metric_date === todayKey);
   const burnKcal = todayRow ? kjToKcal(todayRow.day_kilojoule) : null;
 
-  const meals = (dietRes.data ?? []) as Array<{ calories: number | null; occurred_at: string | null }>;
+  const meals = (dietRes.data ?? []) as Array<{
+    calories: number | null;
+    occurred_at: string | null;
+  }>;
   const todayMeals = meals.filter((m) =>
     m.occurred_at ? sameDayInTz(new Date(m.occurred_at), now, zone) : false,
   );

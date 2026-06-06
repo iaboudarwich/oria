@@ -5,12 +5,12 @@ import { suggestSchemaAction, createEntityType } from "@/lib/data/entity-actions
 import type { FieldDef, FieldType } from "@/lib/data/entities";
 
 const FIELD_TYPES: { value: FieldType; label: string }[] = [
-  { value: "text",      label: "Text" },
-  { value: "number",    label: "Number" },
-  { value: "date",      label: "Date" },
-  { value: "currency",  label: "Currency" },
-  { value: "enum",      label: "Options list" },
-  { value: "boolean",   label: "Yes / No" },
+  { value: "text", label: "Text" },
+  { value: "number", label: "Number" },
+  { value: "date", label: "Date" },
+  { value: "currency", label: "Currency" },
+  { value: "enum", label: "Options list" },
+  { value: "boolean", label: "Yes / No" },
   { value: "long_text", label: "Long text" },
 ];
 
@@ -64,9 +64,7 @@ export function NewEntityTypeForm() {
           <p className="mb-4 text-[13px] text-ink-muted">
             Tell Oria what kind of thing you want to track. Give it a plural name.
           </p>
-          <label className="block text-[13px] text-ink mb-1">
-            What are you tracking? (plural)
-          </label>
+          <label className="mb-1 block text-[13px] text-ink">What are you tracking? (plural)</label>
           <input
             type="text"
             value={pluralName}
@@ -74,11 +72,11 @@ export function NewEntityTypeForm() {
             placeholder='e.g. "Race Cars", "Wineries", "Music Equipment"'
             required
             autoFocus
-            className="block h-11 w-full rounded-xl border border-line-strong bg-surface-raised px-3.5 text-[16px] text-ink placeholder:text-ink-faint outline-none focus:border-ink"
+            className="block h-11 w-full rounded-xl border border-line-strong bg-surface-raised px-3.5 text-[16px] text-ink outline-none placeholder:text-ink-faint focus:border-ink"
           />
         </div>
         <div>
-          <label className="block text-[13px] text-ink-muted mb-1">
+          <label className="mb-1 block text-[13px] text-ink-muted">
             Describe it (optional, helps AI suggest better fields)
           </label>
           <textarea
@@ -86,13 +84,13 @@ export function NewEntityTypeForm() {
             onChange={(e) => setDescription(e.target.value)}
             rows={2}
             placeholder='e.g. "Cars I own and want to track maintenance and insurance for"'
-            className="block w-full rounded-xl border border-line bg-surface-raised px-3.5 py-2.5 text-[15px] text-ink placeholder:text-ink-faint outline-none focus:border-ink"
+            className="block w-full rounded-xl border border-line bg-surface-raised px-3.5 py-2.5 text-[15px] text-ink outline-none placeholder:text-ink-faint focus:border-ink"
           />
         </div>
         <button
           type="submit"
           disabled={!pluralName.trim() || suggesting}
-          className="inline-flex h-10 items-center rounded-xl bg-ink px-4 text-[13px] text-surface hover:bg-ink-soft disabled:opacity-50 transition-base"
+          className="transition-base inline-flex h-10 items-center rounded-xl bg-ink px-4 text-[13px] text-surface hover:bg-ink-soft disabled:opacity-50"
         >
           {suggesting ? "Thinking..." : "Suggest fields with AI →"}
         </button>
@@ -134,10 +132,12 @@ export function NewEntityTypeForm() {
               className="h-7 rounded-md border border-line bg-surface-raised px-1.5 text-[11.5px] text-ink-muted outline-none"
             >
               {FIELD_TYPES.map((t) => (
-                <option key={t.value} value={t.value}>{t.label}</option>
+                <option key={t.value} value={t.value}>
+                  {t.label}
+                </option>
               ))}
             </select>
-            <label className="flex items-center gap-1 text-[11px] text-ink-faint cursor-pointer">
+            <label className="flex cursor-pointer items-center gap-1 text-[11px] text-ink-faint">
               <input
                 type="checkbox"
                 checked={f.required ?? false}
@@ -149,7 +149,7 @@ export function NewEntityTypeForm() {
             <button
               type="button"
               onClick={() => removeField(i)}
-              className="text-[11px] text-ink-faint hover:text-claret transition-base"
+              className="transition-base text-[11px] text-ink-faint hover:text-claret"
             >
               ✕
             </button>
@@ -159,7 +159,7 @@ export function NewEntityTypeForm() {
         <button
           type="button"
           onClick={addField}
-          className="flex items-center gap-1.5 rounded-lg border border-dashed border-line px-3 py-1.5 text-[12px] text-ink-faint hover:border-line-strong hover:text-ink transition-base"
+          className="transition-base flex items-center gap-1.5 rounded-lg border border-dashed border-line px-3 py-1.5 text-[12px] text-ink-faint hover:border-line-strong hover:text-ink"
         >
           + Add field
         </button>
@@ -169,14 +169,14 @@ export function NewEntityTypeForm() {
         <button
           type="submit"
           disabled={fields.length === 0 || saving}
-          className="inline-flex h-10 items-center rounded-xl bg-ink px-4 text-[13px] text-surface hover:bg-ink-soft disabled:opacity-50 transition-base"
+          className="transition-base inline-flex h-10 items-center rounded-xl bg-ink px-4 text-[13px] text-surface hover:bg-ink-soft disabled:opacity-50"
         >
           {saving ? "Saving..." : `Create ${pluralName}`}
         </button>
         <button
           type="button"
           onClick={() => setStep("name")}
-          className="text-[12.5px] text-ink-muted hover:text-ink transition-base"
+          className="transition-base text-[12.5px] text-ink-muted hover:text-ink"
         >
           Back
         </button>

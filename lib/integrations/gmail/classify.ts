@@ -74,9 +74,7 @@ const TYPES = "receipt, bill, subscription, flight, booking, appointment, other"
  * notifications come back is_relevant=false.
  * Never throws; returns null on any failure so a scan keeps going.
  */
-export async function classifyEmail(
-  email: ScannedEmail,
-): Promise<EmailClassification | null> {
+export async function classifyEmail(email: ScannedEmail): Promise<EmailClassification | null> {
   const anthropic = getAnthropic();
   if (!anthropic) return null;
 
@@ -139,8 +137,7 @@ Return ONLY valid JSON with these keys (use null when unknown):
       max_tokens: 700,
       messages: [{ role: "user", content: prompt }],
     });
-    const raw =
-      msg.content[0]?.type === "text" ? msg.content[0].text.trim() : "{}";
+    const raw = msg.content[0]?.type === "text" ? msg.content[0].text.trim() : "{}";
     const cleaned = raw
       .replace(/^```(?:json)?\s*/i, "")
       .replace(/\s*```$/, "")

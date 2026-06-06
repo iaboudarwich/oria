@@ -1,335 +1,1064 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en" data-theme="dark">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Oria — home target</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-  :root{
-    --bg:#08090B; --canvas:#101216;
-    --surface:#15181C; --surface-2:#1B1F24; --surface-3:#23282E;
-    --border:rgba(255,255,255,.07); --border-2:rgba(255,255,255,.13);
-    --text:#F2F2F0; --muted:#9CA1A8; --faint:#686D74;
-    --accent:#4FE3AC; --accent-ink:#04130D; --accent-dim:rgba(79,227,172,.13);
-    --rec:#54D98C; --rec-t:rgba(84,217,140,.16);
-    --sleep:#8C8CFF; --sleep-t:rgba(140,140,255,.16);
-    --strain:#46CBE0; --strain-t:rgba(70,203,224,.16);
-    --spend:#F2B441; --spend-t:rgba(242,180,65,.16);
-    --down:#F2685C; --up:#54D98C;
-    --shadow:0 1px 0 rgba(255,255,255,.03) inset, 0 8px 24px -12px rgba(0,0,0,.7);
-  }
-  [data-theme="light"]{
-    --bg:#ECEAE4; --canvas:#E4E2DB;
-    --surface:#FFFFFF; --surface-2:#FBFAF7; --surface-3:#F1F0EB;
-    --border:rgba(20,22,26,.09); --border-2:rgba(20,22,26,.16);
-    --text:#14171B; --muted:#5C616A; --faint:#90949C;
-    --accent:#0E9E70; --accent-ink:#FFFFFF; --accent-dim:rgba(14,158,112,.12);
-    --rec:#1AA559; --rec-t:rgba(26,165,89,.14);
-    --sleep:#5557E0; --sleep-t:rgba(85,87,224,.13);
-    --strain:#0E9CB2; --strain-t:rgba(14,156,178,.13);
-    --spend:#C5860F; --spend-t:rgba(197,134,15,.14);
-    --down:#D8493C; --up:#1AA559;
-    --shadow:0 1px 2px rgba(20,22,26,.04), 0 12px 30px -16px rgba(20,22,26,.22);
-  }
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{background:var(--bg);font-family:"Hanken Grotesk",system-ui,sans-serif;color:var(--text);
-    min-height:100vh;display:flex;flex-direction:column;align-items:center;gap:18px;
-    padding:34px 16px 56px;transition:background .35s ease}
-  .num{font-variant-numeric:tabular-nums;letter-spacing:-.01em}
-  .pagehead{display:flex;align-items:center;gap:14px;color:var(--muted);font-size:13px}
-  .pagehead b{color:var(--text);font-weight:500}
-  .tgl{display:inline-flex;border:1px solid var(--border-2);border-radius:999px;overflow:hidden;background:var(--canvas)}
-  .tgl button{appearance:none;border:0;background:transparent;color:var(--muted);font:inherit;font-size:12px;
-    padding:6px 13px;cursor:pointer;display:flex;align-items:center;gap:6px}
-  .tgl button.on{background:var(--text);color:var(--bg)}
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Oria — home target</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Hanken+Grotesk:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #08090b;
+        --canvas: #101216;
+        --surface: #15181c;
+        --surface-2: #1b1f24;
+        --surface-3: #23282e;
+        --border: rgba(255, 255, 255, 0.07);
+        --border-2: rgba(255, 255, 255, 0.13);
+        --text: #f2f2f0;
+        --muted: #9ca1a8;
+        --faint: #686d74;
+        --accent: #4fe3ac;
+        --accent-ink: #04130d;
+        --accent-dim: rgba(79, 227, 172, 0.13);
+        --rec: #54d98c;
+        --rec-t: rgba(84, 217, 140, 0.16);
+        --sleep: #8c8cff;
+        --sleep-t: rgba(140, 140, 255, 0.16);
+        --strain: #46cbe0;
+        --strain-t: rgba(70, 203, 224, 0.16);
+        --spend: #f2b441;
+        --spend-t: rgba(242, 180, 65, 0.16);
+        --down: #f2685c;
+        --up: #54d98c;
+        --shadow: 0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 8px 24px -12px rgba(0, 0, 0, 0.7);
+      }
+      [data-theme="light"] {
+        --bg: #eceae4;
+        --canvas: #e4e2db;
+        --surface: #ffffff;
+        --surface-2: #fbfaf7;
+        --surface-3: #f1f0eb;
+        --border: rgba(20, 22, 26, 0.09);
+        --border-2: rgba(20, 22, 26, 0.16);
+        --text: #14171b;
+        --muted: #5c616a;
+        --faint: #90949c;
+        --accent: #0e9e70;
+        --accent-ink: #ffffff;
+        --accent-dim: rgba(14, 158, 112, 0.12);
+        --rec: #1aa559;
+        --rec-t: rgba(26, 165, 89, 0.14);
+        --sleep: #5557e0;
+        --sleep-t: rgba(85, 87, 224, 0.13);
+        --strain: #0e9cb2;
+        --strain-t: rgba(14, 156, 178, 0.13);
+        --spend: #c5860f;
+        --spend-t: rgba(197, 134, 15, 0.14);
+        --down: #d8493c;
+        --up: #1aa559;
+        --shadow: 0 1px 2px rgba(20, 22, 26, 0.04), 0 12px 30px -16px rgba(20, 22, 26, 0.22);
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background: var(--bg);
+        font-family: "Hanken Grotesk", system-ui, sans-serif;
+        color: var(--text);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 18px;
+        padding: 34px 16px 56px;
+        transition: background 0.35s ease;
+      }
+      .num {
+        font-variant-numeric: tabular-nums;
+        letter-spacing: -0.01em;
+      }
+      .pagehead {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .pagehead b {
+        color: var(--text);
+        font-weight: 500;
+      }
+      .tgl {
+        display: inline-flex;
+        border: 1px solid var(--border-2);
+        border-radius: 999px;
+        overflow: hidden;
+        background: var(--canvas);
+      }
+      .tgl button {
+        appearance: none;
+        border: 0;
+        background: transparent;
+        color: var(--muted);
+        font: inherit;
+        font-size: 12px;
+        padding: 6px 13px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .tgl button.on {
+        background: var(--text);
+        color: var(--bg);
+      }
 
-  .phone{width:392px;max-width:100%;background:var(--canvas);border:1px solid var(--border);
-    border-radius:42px;padding:12px;box-shadow:0 40px 90px -30px rgba(0,0,0,.6);transition:background .35s ease}
-  .screen{background:var(--bg);border-radius:32px;overflow:hidden;transition:background .35s ease}
-  .scroll{height:792px;overflow:hidden;padding:0 18px 96px;position:relative}
+      .phone {
+        width: 392px;
+        max-width: 100%;
+        background: var(--canvas);
+        border: 1px solid var(--border);
+        border-radius: 42px;
+        padding: 12px;
+        box-shadow: 0 40px 90px -30px rgba(0, 0, 0, 0.6);
+        transition: background 0.35s ease;
+      }
+      .screen {
+        background: var(--bg);
+        border-radius: 32px;
+        overflow: hidden;
+        transition: background 0.35s ease;
+      }
+      .scroll {
+        height: 792px;
+        overflow: hidden;
+        padding: 0 18px 96px;
+        position: relative;
+      }
 
-  .statusbar{display:flex;justify-content:space-between;align-items:center;padding:14px 4px 4px;font-size:13px;color:var(--muted)}
-  .statusbar .dots{display:flex;gap:5px;align-items:center}
-  .statusbar .dots i{width:4px;height:4px;border-radius:50%;background:var(--muted);display:block}
+      .statusbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px 4px 4px;
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .statusbar .dots {
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+      .statusbar .dots i {
+        width: 4px;
+        height: 4px;
+        border-radius: 50%;
+        background: var(--muted);
+        display: block;
+      }
 
-  .topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 4px 6px}
-  .brand{display:flex;align-items:center;gap:10px}
-  .wordmark{font-family:"Fraunces",serif;font-weight:500;font-size:23px;letter-spacing:-.01em}
-  .space{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);
-    background:var(--surface);border:1px solid var(--border);padding:5px 10px;border-radius:999px}
-  .space .dot{width:7px;height:7px;border-radius:50%;background:var(--accent)}
-  .avatar{width:34px;height:34px;border-radius:50%;background:var(--surface-3);border:1px solid var(--border-2);
-    display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px;color:var(--text)}
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 4px 6px;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .wordmark {
+        font-family: "Fraunces", serif;
+        font-weight: 500;
+        font-size: 23px;
+        letter-spacing: -0.01em;
+      }
+      .space {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 12px;
+        color: var(--muted);
+        background: var(--surface);
+        border: 1px solid var(--border);
+        padding: 5px 10px;
+        border-radius: 999px;
+      }
+      .space .dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--accent);
+      }
+      .avatar {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: var(--surface-3);
+        border: 1px solid var(--border-2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 13px;
+        color: var(--text);
+      }
 
-  .greet{padding:14px 4px 4px}
-  .greet h1{font-family:"Fraunces",serif;font-weight:500;font-size:27px;letter-spacing:-.015em;line-height:1.1}
-  .greet p{color:var(--muted);font-size:13px;margin-top:5px}
+      .greet {
+        padding: 14px 4px 4px;
+      }
+      .greet h1 {
+        font-family: "Fraunces", serif;
+        font-weight: 500;
+        font-size: 27px;
+        letter-spacing: -0.015em;
+        line-height: 1.1;
+      }
+      .greet p {
+        color: var(--muted);
+        font-size: 13px;
+        margin-top: 5px;
+      }
 
-  .capture{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);
-    border-radius:16px;padding:13px 14px;margin:14px 0 18px;box-shadow:var(--shadow)}
-  .capture .ph{flex:1;color:var(--faint);font-size:14px}
-  .capture .cbtn{width:34px;height:34px;border-radius:10px;background:var(--surface-3);border:1px solid var(--border);
-    display:flex;align-items:center;justify-content:center;color:var(--muted)}
-  .capture .cbtn svg{width:17px;height:17px}
+      .capture {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 13px 14px;
+        margin: 14px 0 18px;
+        box-shadow: var(--shadow);
+      }
+      .capture .ph {
+        flex: 1;
+        color: var(--faint);
+        font-size: 14px;
+      }
+      .capture .cbtn {
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+        background: var(--surface-3);
+        border: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--muted);
+      }
+      .capture .cbtn svg {
+        width: 17px;
+        height: 17px;
+      }
 
-  .sechead{display:flex;align-items:center;justify-content:space-between;margin:0 2px 11px}
-  .sechead h2,.sechead h2 *{all:unset}
-  .lbl{font-size:11px;font-weight:600;letter-spacing:.13em;text-transform:uppercase;color:var(--faint)}
-  .seelink{font-size:12px;color:var(--muted)}
+      .sechead {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin: 0 2px 11px;
+      }
+      .sechead h2,
+      .sechead h2 * {
+        all: unset;
+      }
+      .lbl {
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.13em;
+        text-transform: uppercase;
+        color: var(--faint);
+      }
+      .seelink {
+        font-size: 12px;
+        color: var(--muted);
+      }
 
-  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  .tile{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:16px;box-shadow:var(--shadow);position:relative}
-  .tile .tlbl{font-size:12px;color:var(--muted);font-weight:500}
-  .tile .sub{font-size:11.5px;color:var(--faint);margin-top:3px}
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+      .tile {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: 16px;
+        box-shadow: var(--shadow);
+        position: relative;
+      }
+      .tile .tlbl {
+        font-size: 12px;
+        color: var(--muted);
+        font-weight: 500;
+      }
+      .tile .sub {
+        font-size: 11.5px;
+        color: var(--faint);
+        margin-top: 3px;
+      }
 
-  .dialwrap{display:flex;align-items:center;gap:14px}
-  .dial{position:relative;flex:none}
-  .dial .ctr{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
-  .dial .ctr .v{font-weight:600;font-size:20px}
-  .dial .ctr .u{font-size:10px;color:var(--muted);margin-top:-2px}
+      .dialwrap {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+      .dial {
+        position: relative;
+        flex: none;
+      }
+      .dial .ctr {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+      .dial .ctr .v {
+        font-weight: 600;
+        font-size: 20px;
+      }
+      .dial .ctr .u {
+        font-size: 10px;
+        color: var(--muted);
+        margin-top: -2px;
+      }
 
-  .smallrow{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
-  .stile{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:13px 12px;
-    display:flex;flex-direction:column;align-items:center;gap:8px;box-shadow:var(--shadow)}
-  .stile .tlbl{font-size:11px}
-  .minidial .v{font-size:15px}
+      .smallrow {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 12px;
+      }
+      .stile {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        padding: 13px 12px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        box-shadow: var(--shadow);
+      }
+      .stile .tlbl {
+        font-size: 11px;
+      }
+      .minidial .v {
+        font-size: 15px;
+      }
 
-  .nw{display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:6px;text-align:left}
-  .nw .big{font-weight:600;font-size:19px}
-  .pill{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:600;padding:2px 7px;border-radius:999px}
-  .pill.up{color:var(--up);background:var(--rec-t)} .pill.down{color:var(--down);background:rgba(242,104,92,.14)}
+      .nw {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: flex-start;
+        gap: 6px;
+        text-align: left;
+      }
+      .nw .big {
+        font-weight: 600;
+        font-size: 19px;
+      }
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        font-size: 11px;
+        font-weight: 600;
+        padding: 2px 7px;
+        border-radius: 999px;
+      }
+      .pill.up {
+        color: var(--up);
+        background: var(--rec-t);
+      }
+      .pill.down {
+        color: var(--down);
+        background: rgba(242, 104, 92, 0.14);
+      }
 
-  .wide{grid-column:1 / -1}
-  .rem{display:flex;align-items:center;gap:14px}
-  .remnum{font-weight:600;font-size:30px;line-height:1;flex:none}
-  .remnext{flex:1;border-left:1px solid var(--border);padding-left:14px}
-  .remnext .t{font-weight:500;font-size:14px} .remnext .when{font-size:12px;color:var(--muted);margin-top:2px}
+      .wide {
+        grid-column: 1 / -1;
+      }
+      .rem {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+      .remnum {
+        font-weight: 600;
+        font-size: 30px;
+        line-height: 1;
+        flex: none;
+      }
+      .remnext {
+        flex: 1;
+        border-left: 1px solid var(--border);
+        padding-left: 14px;
+      }
+      .remnext .t {
+        font-weight: 500;
+        font-size: 14px;
+      }
+      .remnext .when {
+        font-size: 12px;
+        color: var(--muted);
+        margin-top: 2px;
+      }
 
-  .talk{grid-column:1 / -1;background:var(--accent);color:var(--accent-ink);border:0;border-radius:18px;
-    padding:14px 16px;display:flex;align-items:center;gap:12px;box-shadow:0 10px 26px -12px var(--accent)}
-  .talk .mic{width:38px;height:38px;border-radius:12px;background:rgba(0,0,0,.14);display:flex;align-items:center;justify-content:center}
-  [data-theme="light"] .talk .mic{background:rgba(255,255,255,.22)}
-  .talk .mic svg{width:19px;height:19px}
-  .talk .tt{font-weight:600;font-size:15px} .talk .ts{font-size:12px;opacity:.8;margin-top:1px}
+      .talk {
+        grid-column: 1 / -1;
+        background: var(--accent);
+        color: var(--accent-ink);
+        border: 0;
+        border-radius: 18px;
+        padding: 14px 16px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        box-shadow: 0 10px 26px -12px var(--accent);
+      }
+      .talk .mic {
+        width: 38px;
+        height: 38px;
+        border-radius: 12px;
+        background: rgba(0, 0, 0, 0.14);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      [data-theme="light"] .talk .mic {
+        background: rgba(255, 255, 255, 0.22);
+      }
+      .talk .mic svg {
+        width: 19px;
+        height: 19px;
+      }
+      .talk .tt {
+        font-weight: 600;
+        font-size: 15px;
+      }
+      .talk .ts {
+        font-size: 12px;
+        opacity: 0.8;
+        margin-top: 1px;
+      }
 
-  .brief{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:16px 17px;
-    margin-top:22px;box-shadow:var(--shadow);position:relative;overflow:hidden}
-  .brief::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent)}
-  .brief .bh{display:flex;align-items:center;gap:7px;margin-bottom:9px}
-  .brief .bh .ic{color:var(--accent)} .brief .bh .ic svg{width:15px;height:15px;display:block}
-  .brief p{font-size:14px;line-height:1.55;color:var(--text)}
-  .brief p .dim{color:var(--muted)}
+      .brief {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: 16px 17px;
+        margin-top: 22px;
+        box-shadow: var(--shadow);
+        position: relative;
+        overflow: hidden;
+      }
+      .brief::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 3px;
+        background: var(--accent);
+      }
+      .brief .bh {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        margin-bottom: 9px;
+      }
+      .brief .bh .ic {
+        color: var(--accent);
+      }
+      .brief .bh .ic svg {
+        width: 15px;
+        height: 15px;
+        display: block;
+      }
+      .brief p {
+        font-size: 14px;
+        line-height: 1.55;
+        color: var(--text);
+      }
+      .brief p .dim {
+        color: var(--muted);
+      }
 
-  .week{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:16px 17px;margin-top:14px;box-shadow:var(--shadow)}
-  .bars{display:flex;align-items:flex-end;justify-content:space-between;gap:8px;height:84px;margin:6px 2px 8px}
-  .bars .col{flex:1;display:flex;flex-direction:column;align-items:center;gap:7px;height:100%;justify-content:flex-end}
-  .bars .bar{width:100%;max-width:22px;border-radius:7px 7px 4px 4px;background:var(--surface-3)}
-  .bars .bar.hot{background:var(--accent)}
-  .bars .d{font-size:11px;color:var(--faint)}
-  .bars .col.today .d{color:var(--text);font-weight:600}
+      .week {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: 16px 17px;
+        margin-top: 14px;
+        box-shadow: var(--shadow);
+      }
+      .bars {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 8px;
+        height: 84px;
+        margin: 6px 2px 8px;
+      }
+      .bars .col {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 7px;
+        height: 100%;
+        justify-content: flex-end;
+      }
+      .bars .bar {
+        width: 100%;
+        max-width: 22px;
+        border-radius: 7px 7px 4px 4px;
+        background: var(--surface-3);
+      }
+      .bars .bar.hot {
+        background: var(--accent);
+      }
+      .bars .d {
+        font-size: 11px;
+        color: var(--faint);
+      }
+      .bars .col.today .d {
+        color: var(--text);
+        font-weight: 600;
+      }
 
-  .spaces{display:flex;gap:8px;margin-top:18px;overflow:hidden}
-  .chip{font-size:12.5px;color:var(--muted);background:var(--surface);border:1px solid var(--border);
-    padding:8px 14px;border-radius:999px;white-space:nowrap}
-  .chip.on{background:var(--text);color:var(--bg);border-color:var(--text);font-weight:600}
-  .chip .dot{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:6px;vertical-align:1px}
+      .spaces {
+        display: flex;
+        gap: 8px;
+        margin-top: 18px;
+        overflow: hidden;
+      }
+      .chip {
+        font-size: 12.5px;
+        color: var(--muted);
+        background: var(--surface);
+        border: 1px solid var(--border);
+        padding: 8px 14px;
+        border-radius: 999px;
+        white-space: nowrap;
+      }
+      .chip.on {
+        background: var(--text);
+        color: var(--bg);
+        border-color: var(--text);
+        font-weight: 600;
+      }
+      .chip .dot {
+        display: inline-block;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        margin-right: 6px;
+        vertical-align: 1px;
+      }
 
-  .fade{position:absolute;left:0;right:0;bottom:64px;height:46px;
-    background:linear-gradient(to top,var(--bg),transparent);pointer-events:none}
-  .nav{position:absolute;left:0;right:0;bottom:0;height:64px;background:var(--surface);
-    border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-around;padding:0 6px}
-  .nav a{display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--faint);font-size:10px;text-decoration:none;flex:1}
-  .nav a.on{color:var(--text)} .nav a svg{width:21px;height:21px}
-  .nav .plus{width:46px;height:46px;border-radius:16px;background:var(--accent);color:var(--accent-ink);
-    display:flex;align-items:center;justify-content:center;margin-top:-14px;box-shadow:0 10px 22px -10px var(--accent)}
-  .nav .plus svg{width:23px;height:23px}
-  .caption{color:var(--muted);font-size:12px;text-align:center;max-width:392px;line-height:1.5}
-</style>
-</head>
-<body>
+      .fade {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 64px;
+        height: 46px;
+        background: linear-gradient(to top, var(--bg), transparent);
+        pointer-events: none;
+      }
+      .nav {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 64px;
+        background: var(--surface);
+        border-top: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-around;
+        padding: 0 6px;
+      }
+      .nav a {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 3px;
+        color: var(--faint);
+        font-size: 10px;
+        text-decoration: none;
+        flex: 1;
+      }
+      .nav a.on {
+        color: var(--text);
+      }
+      .nav a svg {
+        width: 21px;
+        height: 21px;
+      }
+      .nav .plus {
+        width: 46px;
+        height: 46px;
+        border-radius: 16px;
+        background: var(--accent);
+        color: var(--accent-ink);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: -14px;
+        box-shadow: 0 10px 22px -10px var(--accent);
+      }
+      .nav .plus svg {
+        width: 23px;
+        height: 23px;
+      }
+      .caption {
+        color: var(--muted);
+        font-size: 12px;
+        text-align: center;
+        max-width: 392px;
+        line-height: 1.5;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="pagehead">
+      <span>Oria home — <b>target look</b>, dark + light</span>
+      <span class="tgl">
+        <button id="d" class="on">Dark</button>
+        <button id="l">Light</button>
+      </span>
+    </div>
 
-  <div class="pagehead">
-    <span>Oria home — <b>target look</b>, dark + light</span>
-    <span class="tgl">
-      <button id="d" class="on">Dark</button>
-      <button id="l">Light</button>
-    </span>
-  </div>
-
-  <div class="phone">
-    <div class="screen">
-      <div class="scroll" id="scroll">
-
-        <div class="statusbar">
-          <span class="num">9:41</span>
-          <span class="dots"><i></i><i></i><i></i><i></i></span>
-        </div>
-
-        <div class="topbar">
-          <div class="brand">
-            <span class="wordmark">Oria</span>
-            <span class="space"><span class="dot"></span>All spaces ▾</span>
+    <div class="phone">
+      <div class="screen">
+        <div class="scroll" id="scroll">
+          <div class="statusbar">
+            <span class="num">9:41</span>
+            <span class="dots"><i></i><i></i><i></i><i></i></span>
           </div>
-          <div style="display:flex;align-items:center;gap:10px">
-            <div class="avatar">IA</div>
+
+          <div class="topbar">
+            <div class="brand">
+              <span class="wordmark">Oria</span>
+              <span class="space"><span class="dot"></span>All spaces ▾</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px">
+              <div class="avatar">IA</div>
+            </div>
           </div>
-        </div>
 
-        <div class="greet">
-          <h1>Good morning, Issam</h1>
-          <p>Thursday, June 5 · everything in one place</p>
-        </div>
+          <div class="greet">
+            <h1>Good morning, Issam</h1>
+            <p>Thursday, June 5 · everything in one place</p>
+          </div>
 
-        <div class="capture">
-          <span class="ph">Type, paste, or drop anything…</span>
-          <div class="cbtn" title="attach / drop a file"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21.4 11.05 12.25 20.2a5.5 5.5 0 0 1-7.78-7.78l9.2-9.19a3.67 3.67 0 0 1 5.18 5.18l-9.2 9.2a1.83 1.83 0 0 1-2.59-2.59l8.49-8.48"/></svg></div>
-          <div class="cbtn" title="paste"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg></div>
-        </div>
+          <div class="capture">
+            <span class="ph">Type, paste, or drop anything…</span>
+            <div class="cbtn" title="attach / drop a file">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M21.4 11.05 12.25 20.2a5.5 5.5 0 0 1-7.78-7.78l9.2-9.19a3.67 3.67 0 0 1 5.18 5.18l-9.2 9.2a1.83 1.83 0 0 1-2.59-2.59l8.49-8.48"
+                />
+              </svg>
+            </div>
+            <div class="cbtn" title="paste">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <rect x="8" y="2" width="8" height="4" rx="1" />
+                <path
+                  d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"
+                />
+              </svg>
+            </div>
+          </div>
 
-        <div class="sechead">
-          <span class="lbl">Your day</span>
-          <span class="seelink">Customize</span>
-        </div>
+          <div class="sechead">
+            <span class="lbl">Your day</span>
+            <span class="seelink">Customize</span>
+          </div>
 
-        <div class="grid">
+          <div class="grid">
+            <div class="tile">
+              <div class="dialwrap">
+                <div class="dial" style="width: 74px; height: 74px">
+                  <svg viewBox="0 0 36 36" width="74" height="74">
+                    <circle
+                      cx="18"
+                      cy="18"
+                      r="15.6"
+                      fill="none"
+                      stroke="var(--rec-t)"
+                      stroke-width="3.4"
+                    />
+                    <circle
+                      cx="18"
+                      cy="18"
+                      r="15.6"
+                      fill="none"
+                      stroke="var(--rec)"
+                      stroke-width="3.4"
+                      stroke-linecap="round"
+                      pathLength="100"
+                      stroke-dasharray="82 100"
+                      transform="rotate(-90 18 18)"
+                    />
+                  </svg>
+                  <div class="ctr">
+                    <span class="v num" style="color: var(--rec)">82</span><span class="u">%</span>
+                  </div>
+                </div>
+                <div>
+                  <div class="tlbl">Recovery</div>
+                  <div class="sub" style="color: var(--rec); font-weight: 600; margin-top: 5px">
+                    Primed
+                  </div>
+                  <div class="sub">Ready to push today</div>
+                </div>
+              </div>
+            </div>
 
-          <div class="tile">
-            <div class="dialwrap">
-              <div class="dial" style="width:74px;height:74px">
-                <svg viewBox="0 0 36 36" width="74" height="74">
-                  <circle cx="18" cy="18" r="15.6" fill="none" stroke="var(--rec-t)" stroke-width="3.4"/>
-                  <circle cx="18" cy="18" r="15.6" fill="none" stroke="var(--rec)" stroke-width="3.4" stroke-linecap="round" pathLength="100" stroke-dasharray="82 100" transform="rotate(-90 18 18)"/>
+            <div class="tile">
+              <div class="tlbl">Spending · June</div>
+              <div style="display: flex; align-items: center; gap: 13px; margin-top: 10px">
+                <div class="dial" style="width: 60px; height: 60px">
+                  <svg viewBox="0 0 36 36" width="60" height="60">
+                    <circle
+                      cx="18"
+                      cy="18"
+                      r="15.6"
+                      fill="none"
+                      stroke="var(--surface-3)"
+                      stroke-width="3.4"
+                    />
+                    <circle
+                      cx="18"
+                      cy="18"
+                      r="15.6"
+                      fill="none"
+                      stroke="var(--spend)"
+                      stroke-width="3.4"
+                      stroke-linecap="round"
+                      pathLength="100"
+                      stroke-dasharray="62 100"
+                      transform="rotate(-90 18 18)"
+                    />
+                  </svg>
+                  <div class="ctr"><span class="v num" style="font-size: 13px">62%</span></div>
+                </div>
+                <div>
+                  <div class="num" style="font-weight: 600; font-size: 19px">$3,240</div>
+                  <div class="sub">of $5,200 budget</div>
+                  <div class="pill down" style="margin-top: 6px">↓ 8% vs May</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="smallrow wide">
+              <div class="stile">
+                <div class="dial minidial" style="width: 54px; height: 54px">
+                  <svg viewBox="0 0 36 36" width="54" height="54">
+                    <circle
+                      cx="18"
+                      cy="18"
+                      r="15.6"
+                      fill="none"
+                      stroke="var(--sleep-t)"
+                      stroke-width="3.6"
+                    />
+                    <circle
+                      cx="18"
+                      cy="18"
+                      r="15.6"
+                      fill="none"
+                      stroke="var(--sleep)"
+                      stroke-width="3.6"
+                      stroke-linecap="round"
+                      pathLength="100"
+                      stroke-dasharray="91 100"
+                      transform="rotate(-90 18 18)"
+                    />
+                  </svg>
+                  <div class="ctr"><span class="v num">91</span></div>
+                </div>
+                <div class="tlbl">Sleep</div>
+              </div>
+              <div class="stile">
+                <div class="dial minidial" style="width: 54px; height: 54px">
+                  <svg viewBox="0 0 36 36" width="54" height="54">
+                    <circle
+                      cx="18"
+                      cy="18"
+                      r="15.6"
+                      fill="none"
+                      stroke="var(--strain-t)"
+                      stroke-width="3.6"
+                    />
+                    <circle
+                      cx="18"
+                      cy="18"
+                      r="15.6"
+                      fill="none"
+                      stroke="var(--strain)"
+                      stroke-width="3.6"
+                      stroke-linecap="round"
+                      pathLength="100"
+                      stroke-dasharray="68 100"
+                      transform="rotate(-90 18 18)"
+                    />
+                  </svg>
+                  <div class="ctr"><span class="v num">14.2</span></div>
+                </div>
+                <div class="tlbl">Strain</div>
+              </div>
+              <div class="stile">
+                <div class="nw" style="align-items: center; text-align: center">
+                  <div class="big num">$128.4k</div>
+                  <svg width="62" height="22" viewBox="0 0 62 22" fill="none" style="margin: 2px 0">
+                    <polyline
+                      points="0,17 10,15 20,16 30,11 40,12 52,6 62,4"
+                      stroke="var(--up)"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                  <span class="pill up">↑ 2.1%</span>
+                </div>
+                <div class="tlbl">Net worth</div>
+              </div>
+            </div>
+
+            <div class="tile wide">
+              <div class="rem">
+                <span class="remnum num">3</span>
+                <div class="remnext">
+                  <div class="tlbl" style="margin-bottom: 4px">Reminders today</div>
+                  <div class="t">Call the movers</div>
+                  <div class="when">Next · 2:00 PM</div>
+                </div>
+                <svg
+                  viewBox="0 0 24 24"
+                  width="18"
+                  height="18"
+                  fill="none"
+                  stroke="var(--faint)"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="m9 18 6-6-6-6" />
                 </svg>
-                <div class="ctr"><span class="v num" style="color:var(--rec)">82</span><span class="u">%</span></div>
               </div>
-              <div>
-                <div class="tlbl">Recovery</div>
-                <div class="sub" style="color:var(--rec);font-weight:600;margin-top:5px">Primed</div>
-                <div class="sub">Ready to push today</div>
+            </div>
+
+            <button class="talk">
+              <span class="mic"
+                ><svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.9"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <rect x="9" y="2" width="6" height="12" rx="3" />
+                  <path d="M5 10a7 7 0 0 0 14 0M12 17v4" /></svg
+              ></span>
+              <span style="text-align: left">
+                <span class="tt" style="display: block">Talk to Oria</span>
+                <span class="ts" style="display: block">Ask anything, or just say it out loud</span>
+              </span>
+            </button>
+          </div>
+
+          <div class="brief">
+            <div class="bh">
+              <span class="ic"
+                ><svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path
+                    d="M12 3v2M12 19v2M5 12H3M21 12h-2M5.6 5.6 4.2 4.2M19.8 19.8l-1.4-1.4M5.6 18.4 4.2 19.8M19.8 4.2l-1.4 1.4"
+                  />
+                  <circle cx="12" cy="12" r="4" /></svg></span
+              ><span class="lbl" style="color: var(--accent)">Morning briefing</span>
+            </div>
+            <p>
+              One thing is flagged for today: <strong>call the movers</strong> at 2 PM.
+              <span class="dim"
+                >Recovery is high and spending is tracking 8% under last month, so it's a light day.
+                Your Vercel Pro plan renews July 3.</span
+              >
+            </p>
+          </div>
+
+          <div class="week">
+            <div class="sechead" style="margin-bottom: 6px">
+              <span class="lbl">Your week</span><span class="seelink">Activity</span>
+            </div>
+            <div class="bars">
+              <div class="col">
+                <div class="bar" style="height: 28%"></div>
+                <span class="d">Sa</span>
+              </div>
+              <div class="col">
+                <div class="bar" style="height: 46%"></div>
+                <span class="d">Su</span>
+              </div>
+              <div class="col">
+                <div class="bar" style="height: 38%"></div>
+                <span class="d">Mo</span>
+              </div>
+              <div class="col">
+                <div class="bar" style="height: 64%"></div>
+                <span class="d">Tu</span>
+              </div>
+              <div class="col">
+                <div class="bar" style="height: 52%"></div>
+                <span class="d">We</span>
+              </div>
+              <div class="col today">
+                <div class="bar hot" style="height: 88%"></div>
+                <span class="d">Th</span>
+              </div>
+              <div class="col">
+                <div class="bar" style="height: 20%"></div>
+                <span class="d">Fr</span>
               </div>
             </div>
           </div>
 
-          <div class="tile">
-            <div class="tlbl">Spending · June</div>
-            <div style="display:flex;align-items:center;gap:13px;margin-top:10px">
-              <div class="dial" style="width:60px;height:60px">
-                <svg viewBox="0 0 36 36" width="60" height="60">
-                  <circle cx="18" cy="18" r="15.6" fill="none" stroke="var(--surface-3)" stroke-width="3.4"/>
-                  <circle cx="18" cy="18" r="15.6" fill="none" stroke="var(--spend)" stroke-width="3.4" stroke-linecap="round" pathLength="100" stroke-dasharray="62 100" transform="rotate(-90 18 18)"/>
-                </svg>
-                <div class="ctr"><span class="v num" style="font-size:13px">62%</span></div>
-              </div>
-              <div>
-                <div class="num" style="font-weight:600;font-size:19px">$3,240</div>
-                <div class="sub">of $5,200 budget</div>
-                <div class="pill down" style="margin-top:6px">↓ 8% vs May</div>
-              </div>
-            </div>
+          <div class="spaces">
+            <span class="chip on">All spaces</span>
+            <span class="chip"
+              ><span class="dot" style="background: var(--sleep)"></span>Personal</span
+            >
+            <span class="chip"
+              ><span class="dot" style="background: var(--spend)"></span>Family</span
+            >
+            <span class="chip"
+              ><span class="dot" style="background: var(--strain)"></span>Work</span
+            >
           </div>
 
-          <div class="smallrow wide">
-            <div class="stile">
-              <div class="dial minidial" style="width:54px;height:54px">
-                <svg viewBox="0 0 36 36" width="54" height="54">
-                  <circle cx="18" cy="18" r="15.6" fill="none" stroke="var(--sleep-t)" stroke-width="3.6"/>
-                  <circle cx="18" cy="18" r="15.6" fill="none" stroke="var(--sleep)" stroke-width="3.6" stroke-linecap="round" pathLength="100" stroke-dasharray="91 100" transform="rotate(-90 18 18)"/>
-                </svg>
-                <div class="ctr"><span class="v num">91</span></div>
-              </div>
-              <div class="tlbl">Sleep</div>
-            </div>
-            <div class="stile">
-              <div class="dial minidial" style="width:54px;height:54px">
-                <svg viewBox="0 0 36 36" width="54" height="54">
-                  <circle cx="18" cy="18" r="15.6" fill="none" stroke="var(--strain-t)" stroke-width="3.6"/>
-                  <circle cx="18" cy="18" r="15.6" fill="none" stroke="var(--strain)" stroke-width="3.6" stroke-linecap="round" pathLength="100" stroke-dasharray="68 100" transform="rotate(-90 18 18)"/>
-                </svg>
-                <div class="ctr"><span class="v num">14.2</span></div>
-              </div>
-              <div class="tlbl">Strain</div>
-            </div>
-            <div class="stile">
-              <div class="nw" style="align-items:center;text-align:center">
-                <div class="big num">$128.4k</div>
-                <svg width="62" height="22" viewBox="0 0 62 22" fill="none" style="margin:2px 0">
-                  <polyline points="0,17 10,15 20,16 30,11 40,12 52,6 62,4" stroke="var(--up)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                <span class="pill up">↑ 2.1%</span>
-              </div>
-              <div class="tlbl">Net worth</div>
-            </div>
-          </div>
-
-          <div class="tile wide">
-            <div class="rem">
-              <span class="remnum num">3</span>
-              <div class="remnext">
-                <div class="tlbl" style="margin-bottom:4px">Reminders today</div>
-                <div class="t">Call the movers</div>
-                <div class="when">Next · 2:00 PM</div>
-              </div>
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--faint)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-            </div>
-          </div>
-
-          <button class="talk">
-            <span class="mic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v4"/></svg></span>
-            <span style="text-align:left">
-              <span class="tt" style="display:block">Talk to Oria</span>
-              <span class="ts" style="display:block">Ask anything, or just say it out loud</span>
-            </span>
-          </button>
-
-        </div>
-
-        <div class="brief">
-          <div class="bh"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v2M12 19v2M5 12H3M21 12h-2M5.6 5.6 4.2 4.2M19.8 19.8l-1.4-1.4M5.6 18.4 4.2 19.8M19.8 4.2l-1.4 1.4"/><circle cx="12" cy="12" r="4"/></svg></span><span class="lbl" style="color:var(--accent)">Morning briefing</span></div>
-          <p>One thing is flagged for today: <strong>call the movers</strong> at 2 PM. <span class="dim">Recovery is high and spending is tracking 8% under last month, so it's a light day. Your Vercel Pro plan renews July 3.</span></p>
-        </div>
-
-        <div class="week">
-          <div class="sechead" style="margin-bottom:6px"><span class="lbl">Your week</span><span class="seelink">Activity</span></div>
-          <div class="bars">
-            <div class="col"><div class="bar" style="height:28%"></div><span class="d">Sa</span></div>
-            <div class="col"><div class="bar" style="height:46%"></div><span class="d">Su</span></div>
-            <div class="col"><div class="bar" style="height:38%"></div><span class="d">Mo</span></div>
-            <div class="col"><div class="bar" style="height:64%"></div><span class="d">Tu</span></div>
-            <div class="col"><div class="bar" style="height:52%"></div><span class="d">We</span></div>
-            <div class="col today"><div class="bar hot" style="height:88%"></div><span class="d">Th</span></div>
-            <div class="col"><div class="bar" style="height:20%"></div><span class="d">Fr</span></div>
+          <div class="fade"></div>
+          <div class="nav">
+            <a class="on"
+              ><svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="m3 10 9-7 9 7v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /></svg
+              >Today</a
+            >
+            <a
+              ><svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg
+              >Ask</a
+            >
+            <a
+              ><span class="plus"
+                ><svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.2"
+                  stroke-linecap="round"
+                >
+                  <path d="M12 5v14M5 12h14" /></svg></span
+            ></a>
+            <a
+              ><svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <rect x="3" y="4" width="18" height="18" rx="2" />
+                <path d="M16 2v4M8 2v4M3 10h18" /></svg
+              >Calendar</a
+            >
+            <a
+              ><svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M4 6h16M4 12h16M4 18h16" /></svg
+              >More</a
+            >
           </div>
         </div>
-
-        <div class="spaces">
-          <span class="chip on">All spaces</span>
-          <span class="chip"><span class="dot" style="background:var(--sleep)"></span>Personal</span>
-          <span class="chip"><span class="dot" style="background:var(--spend)"></span>Family</span>
-          <span class="chip"><span class="dot" style="background:var(--strain)"></span>Work</span>
-        </div>
-
-        <div class="fade"></div>
-        <div class="nav">
-          <a class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3 10 9-7 9 7v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Today</a>
-          <a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Ask</a>
-          <a><span class="plus"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></a>
-          <a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Calendar</a>
-          <a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>More</a>
-        </div>
-
       </div>
     </div>
-  </div>
 
-  <p class="caption">Tap Dark / Light above. Everything is dummy data to show the visual bar: dials for health, a spend ring + trend, net-worth sparkline, one capture bar that takes type / paste / dropped files, a Talk-to-Oria cube, briefing, your week, and the All-spaces ↔ per-space switch.</p>
+    <p class="caption">
+      Tap Dark / Light above. Everything is dummy data to show the visual bar: dials for health, a
+      spend ring + trend, net-worth sparkline, one capture bar that takes type / paste / dropped
+      files, a Talk-to-Oria cube, briefing, your week, and the All-spaces ↔ per-space switch.
+    </p>
 
-<script>
-  var root=document.documentElement,d=document.getElementById('d'),l=document.getElementById('l');
-  function set(t){root.setAttribute('data-theme',t);d.classList.toggle('on',t==='dark');l.classList.toggle('on',t==='light')}
-  d.onclick=function(){set('dark')};l.onclick=function(){set('light')};
-</script>
-</body>
+    <script>
+      var root = document.documentElement,
+        d = document.getElementById("d"),
+        l = document.getElementById("l");
+      function set(t) {
+        root.setAttribute("data-theme", t);
+        d.classList.toggle("on", t === "dark");
+        l.classList.toggle("on", t === "light");
+      }
+      d.onclick = function () {
+        set("dark");
+      };
+      l.onclick = function () {
+        set("light");
+      };
+    </script>
+  </body>
 </html>

@@ -46,9 +46,7 @@ export function enforceActiveOrg<T extends WithOrgId>(
       context: {
         callSite,
         expectedOrgId,
-        violatingOrgIds: Array.from(
-          new Set(violators.map((v) => v.org ?? "null")),
-        ),
+        violatingOrgIds: Array.from(new Set(violators.map((v) => v.org ?? "null"))),
         droppedCount: violators.length,
       },
       organizationId: expectedOrgId,
@@ -84,9 +82,7 @@ export function enforceAllowedOrgs<T extends WithOrgId>(
       context: {
         callSite,
         allowedOrgIds: Array.from(allowedOrgIds),
-        violatingOrgIds: Array.from(
-          new Set(violators.map((v) => v.org ?? "null")),
-        ),
+        violatingOrgIds: Array.from(new Set(violators.map((v) => v.org ?? "null"))),
         droppedCount: violators.length,
       },
     });

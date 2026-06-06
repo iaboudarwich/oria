@@ -19,9 +19,11 @@ If we ever can't honor a piece of this contract, we change the contract before w
 Lives on heyoria.com, above the fold, below the hero. Never removed without re-review.
 
 **English:**
+
 > Oria reads what you connect. Nothing more. You stay in control of what comes in and what stays out.
 
 **Rules:**
+
 - Must mention the limit ("nothing more" or equivalent).
 - Must mention user control.
 - Must avoid "AI" jargon, "powered by," "magic," "intelligence."
@@ -34,9 +36,11 @@ Lives on heyoria.com, above the fold, below the hero. Never removed without re-r
 Appears **before** the first Connect prompt. Two-column layout. Plain English. Four languages.
 
 ### Header
+
 > Before we connect anything, here's what to expect.
 
 ### Left column: WHAT ORIA DOES
+
 - Reads the accounts you connect, to find what matters.
 - Stores extracted data (bills, dates, contacts, files) encrypted at rest.
 - Uses AI to find patterns, draft replies, and surface what's coming.
@@ -44,6 +48,7 @@ Appears **before** the first Connect prompt. Two-column layout. Plain English. F
 - Lets you disconnect or delete, anytime, no questions.
 
 ### Right column: WHAT ORIA NEVER DOES
+
 - Sell your data. Not now, not ever.
 - Train AI models on your content.
 - Read messages from senders you mark confidential.
@@ -51,12 +56,14 @@ Appears **before** the first Connect prompt. Two-column layout. Plain English. F
 - Share anything with advertisers.
 
 ### Footer
+
 > Read the full details at heyoria.com/trust. You can change your mind anytime in Settings.
 
 [Continue] (primary button, ink-filled)
 [Maybe later] (secondary, ghost)
 
 ### Rules
+
 - The left column is always 5 items. The right column is always 5 items.
 - Each line is a single sentence under 14 words.
 - The Continue button only appears after the user has been on the slide for 2 seconds (no accidental skips).
@@ -69,9 +76,11 @@ Appears **before** the first Connect prompt. Two-column layout. Plain English. F
 URL: https://heyoria.com/trust. Public, no auth required. Four languages.
 
 ### Title
+
 > How we handle your stuff
 
 ### Lead
+
 > You're trusting Oria with the shape of your life. We owe you a straight answer about what we do with it.
 
 ### Section: What we collect
@@ -110,6 +119,7 @@ We don't share, sell, or rent your data to third parties for any purpose. Not fo
 ### Section: Your rights
 
 You can, at any time:
+
 - See every action Oria has taken, in the audit log.
 - See every piece of data Oria has remembered, on the "What Oria Knows About You" page.
 - Export everything as Markdown and JSON.
@@ -144,6 +154,7 @@ We don't change this page silently. If our practices change, we notify every use
 ### Section: Contact
 
 Privacy questions, deletion requests, or security disclosures:
+
 - Email: privacy@heyoria.com
 - Security disclosures: security@heyoria.com
 
@@ -158,26 +169,28 @@ Last updated: [auto-generated date]
 URL: https://heyoria.com/trust/subprocessors. Public, four languages.
 
 ### Header
+
 > Every third party that touches your data.
 
 ### Table
 
-| Subprocessor | Purpose | Data accessed | Location |
-|---|---|---|---|
-| Supabase | Database hosting | All structured user data | US (or EU if your account is EU-registered) |
-| Vercel | Web hosting | Request logs, user sessions | US |
-| Railway | Python sidecar (embeddings, extraction) | Document text in transit, never stored | US |
-| Anthropic | Default AI provider for conversations and infrastructure tasks | Conversation context, sent per request | US |
-| OpenAI | Voice transcription (Whisper) | Audio in transit, transcript returned | US |
-| Cloudflare R2 | File storage | User-uploaded files, encrypted | Global edge |
-| Upstash | Redis cache and rate limiting | Session tokens, rate counters, never user content | US |
-| Resend | Transactional email | Email address, subject line, body of notifications we send you | US |
-| Sentry | Error tracking | Error logs, PII-scrubbed | US |
-| PostHog | Product analytics | Anonymized event counts, never raw content | EU (chosen for stricter data laws) |
-| Google | Gmail/Calendar/Drive OAuth | Only the data you authorize, only when you connect | US |
-| WHOOP | Health data integration (Round 17+) | Only the data you authorize | US |
+| Subprocessor  | Purpose                                                        | Data accessed                                                  | Location                                    |
+| ------------- | -------------------------------------------------------------- | -------------------------------------------------------------- | ------------------------------------------- |
+| Supabase      | Database hosting                                               | All structured user data                                       | US (or EU if your account is EU-registered) |
+| Vercel        | Web hosting                                                    | Request logs, user sessions                                    | US                                          |
+| Railway       | Python sidecar (embeddings, extraction)                        | Document text in transit, never stored                         | US                                          |
+| Anthropic     | Default AI provider for conversations and infrastructure tasks | Conversation context, sent per request                         | US                                          |
+| OpenAI        | Voice transcription (Whisper)                                  | Audio in transit, transcript returned                          | US                                          |
+| Cloudflare R2 | File storage                                                   | User-uploaded files, encrypted                                 | Global edge                                 |
+| Upstash       | Redis cache and rate limiting                                  | Session tokens, rate counters, never user content              | US                                          |
+| Resend        | Transactional email                                            | Email address, subject line, body of notifications we send you | US                                          |
+| Sentry        | Error tracking                                                 | Error logs, PII-scrubbed                                       | US                                          |
+| PostHog       | Product analytics                                              | Anonymized event counts, never raw content                     | EU (chosen for stricter data laws)          |
+| Google        | Gmail/Calendar/Drive OAuth                                     | Only the data you authorize, only when you connect             | US                                          |
+| WHOOP         | Health data integration (Round 17+)                            | Only the data you authorize                                    | US                                          |
 
 ### Footer
+
 > We review this list quarterly. If we add a subprocessor, we'll notify you in-app 30 days before they touch your data.
 
 Last updated: [auto-generated date]
@@ -189,20 +202,25 @@ Last updated: [auto-generated date]
 Appears in the modal **above** the OAuth scope grant button, every time a user connects a new account.
 
 ### Generic template
+
 > Oria is about to ask **{provider}** for permission to read your {scope-summary}. We'll only read what you authorize. We never write or delete unless you ask us to. You can disconnect anytime in Settings.
 
 ### Per provider
 
 **Gmail:**
+
 > Oria will ask Google for read-only access to your Gmail. We'll scan for bills, subscriptions, flights, and other structured signals. We never read messages from senders you've marked confidential. We never send or delete email.
 
 **Google Calendar:**
+
 > Oria will ask Google for access to your Calendar. We'll read your events and, with your permission, add new ones (like reminders or focus blocks). You'll confirm every write before it happens.
 
 **Google Drive:**
+
 > Oria will ask Google for permission to read files you specifically pick using a file picker. We don't get access to your whole Drive, only the files you choose.
 
 **WHOOP:**
+
 > Oria will ask WHOOP for read-only access to your health data: sleep, recovery, strain, workouts. We never share this with anyone. You can disconnect anytime.
 
 ---
@@ -212,20 +230,25 @@ Appears in the modal **above** the OAuth scope grant button, every time a user c
 Every time Oria is about to write, send, archive, label, or modify anything in a user's account.
 
 ### Generic template
+
 > Oria is about to {action} on your behalf. Confirm? [Confirm] [Cancel]
 
 ### Examples
 
 **Calendar add:**
+
 > Oria is about to add "Investor call with Sarah" to your Google Calendar on Tuesday at 3pm. Confirm?
 
 **Email draft:**
+
 > Oria has drafted a reply to Mom. It will be saved as a draft in your Gmail. You'll need to send it yourself. Continue?
 
 **Email archive:**
+
 > Oria is about to archive 12 messages tagged "newsletter." This moves them out of your inbox. Confirm?
 
 ### Rules
+
 - Every write action has a 60-second undo (toast with countdown after confirm).
 - Email is never auto-sent. Always saved as draft.
 - Destructive actions (archive, delete, modify) require a second confirmation if the action affects more than 5 items.
@@ -237,15 +260,19 @@ Every time Oria is about to write, send, archive, label, or modify anything in a
 In Settings > Privacy > Confidentiality:
 
 ### Header
+
 > Things Oria should never read.
 
 ### Lead
+
 > Add senders, email addresses, subjects, or keywords. Oria will skip any email matching these during scans, and never include them in summaries or insights.
 
 ### Examples placeholder
+
 > e.g., therapy@..., divorce, oncology, salary negotiation
 
 ### Footer
+
 > Already-scanned data matching these is permanently removed within 24 hours. Audit log entries are kept but anonymized.
 
 ---
@@ -255,19 +282,24 @@ In Settings > Privacy > Confidentiality:
 In Settings > Memory > What Oria Knows About You:
 
 ### Header
+
 > Everything Oria has remembered about you.
 
 ### Lead
+
 > This is the full record. You can delete any entry, edit any entry, or export the entire memory as Markdown.
 
 ### Per-entry chip
+
 Each fact Oria has stored shows:
+
 - The fact itself, in plain English
 - When it was learned (date)
 - Where it came from (email, conversation, manual)
 - [Edit] [Delete] buttons
 
 ### Footer
+
 > When Oria uses a memory in an answer, you'll see a small chip indicating which memory was used. Click it to jump here.
 
 ---
@@ -277,6 +309,7 @@ Each fact Oria has stored shows:
 In Settings > Account > Delete account:
 
 ### Step 1, confirmation
+
 > You're about to delete your Oria account. Here's what happens:
 >
 > - Every connector disconnects immediately.
@@ -289,6 +322,7 @@ In Settings > Account > Delete account:
 > [Delete account] [Cancel]
 
 ### Step 2, final confirmation
+
 > Type "DELETE" to confirm.
 >
 > [text input]
@@ -296,6 +330,7 @@ In Settings > Account > Delete account:
 > [Permanently delete] [Cancel]
 
 ### Step 3, email confirmation
+
 > Sent to user's email:
 >
 > Subject: Your Oria account is scheduled for deletion
@@ -309,15 +344,19 @@ In Settings > Account > Delete account:
 In Settings > Account > Export your data:
 
 ### Header
+
 > Get everything Oria has on you.
 
 ### Lead
+
 > Your full archive: trackables, memories, conversations, connectors, settings, audit log. Delivered as a zip file with Markdown and JSON.
 
 ### Button
+
 > [Generate export]
 
 ### After click
+
 > Generating your archive. We'll email you a download link in a few minutes. The link works for 7 days.
 
 ---
@@ -327,6 +366,7 @@ In Settings > Account > Export your data:
 Personal context: standard trust messaging.
 
 Investor / Business / Family Office contexts: add a note in the privacy step:
+
 > You're using Oria in a {context} setup. The same privacy rules apply. We don't share data between contexts. Each context has its own audit log.
 
 ---
@@ -334,12 +374,14 @@ Investor / Business / Family Office contexts: add a note in the privacy step:
 ## 12. What changes without re-review
 
 These can be updated by the team without trust review:
+
 - Auto-generated dates ("Last updated")
 - Subprocessor list (after the 30-day notification is sent)
 - Typo fixes
 - Translation refinements
 
 These require full re-review:
+
 - The "What Oria does" / "What Oria never does" lists.
 - The /trust page sections.
 - The homepage honest-limit line.

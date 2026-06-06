@@ -1,9 +1,6 @@
 import "server-only";
 
-import type {
-  DocumentType,
-  Section,
-} from "@/lib/supabase/types";
+import type { DocumentType, Section } from "@/lib/supabase/types";
 import type { SmartSection } from "@/lib/ai/extract";
 
 /**
@@ -34,10 +31,7 @@ export function resolveFinalSection(input: {
 }): Section | null {
   // Hard overrides: bills and money-shaped docs land in Finance.
   if (input.smartSection === "bills") return "finance";
-  if (
-    input.documentType === "invoice" ||
-    input.documentType === "receipt"
-  ) {
+  if (input.documentType === "invoice" || input.documentType === "receipt") {
     return "finance";
   }
   // Otherwise: prefer the model's suggestion, fall back to caller hint.

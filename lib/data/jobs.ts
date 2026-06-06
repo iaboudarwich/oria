@@ -25,12 +25,7 @@ export type JobKind =
   | "analyze_image"
   | "categorize_section";
 
-export type JobStatus =
-  | "pending"
-  | "processing"
-  | "completed"
-  | "failed"
-  | "retrying";
+export type JobStatus = "pending" | "processing" | "completed" | "failed" | "retrying";
 
 export type BackgroundJob = {
   id: string;
@@ -130,10 +125,7 @@ export async function markJobCompleted(
 }
 
 /** Mark a job failed with an error message. Increment retry_count. */
-export async function markJobFailed(
-  jobId: string | null,
-  errorMessage: string,
-): Promise<void> {
+export async function markJobFailed(jobId: string | null, errorMessage: string): Promise<void> {
   if (!jobId) return;
   try {
     const admin = createAdminClient();
@@ -144,8 +136,7 @@ export async function markJobFailed(
       .select("retry_count")
       .eq("id", jobId)
       .maybeSingle();
-    const prevCount =
-      (data as { retry_count?: number } | null)?.retry_count ?? 0;
+    const prevCount = (data as { retry_count?: number } | null)?.retry_count ?? 0;
     await admin
       .from("background_jobs")
       .update({
@@ -192,9 +183,7 @@ export async function markJobRetrying(jobId: string | null): Promise<void> {
  * The WHERE … AND status='pending' guard on the UPDATE means a row can
  * only be claimed once even if two cron invocations overlap slightly.
  */
-export async function claimPendingExtractionJobs(
-  limit: number,
-): Promise<BackgroundJob[]> {
+export async function claimPendingExtractionJobs(limit: number): Promise<BackgroundJob[]> {
   try {
     const admin = createAdminClient();
     const { data: candidates } = await admin
@@ -224,9 +213,7 @@ export async function claimPendingExtractionJobs(
 /**
  * Atomically claim up to `limit` pending analyze_image jobs.
  */
-export async function claimPendingImageJobs(
-  limit: number,
-): Promise<BackgroundJob[]> {
+export async function claimPendingImageJobs(limit: number): Promise<BackgroundJob[]> {
   try {
     const admin = createAdminClient();
     const { data: candidates } = await admin
@@ -256,9 +243,7 @@ export async function claimPendingImageJobs(
 /**
  * Atomically claim up to `limit` pending categorize_section jobs.
  */
-export async function claimPendingCategorizationJobs(
-  limit: number,
-): Promise<BackgroundJob[]> {
+export async function claimPendingCategorizationJobs(limit: number): Promise<BackgroundJob[]> {
   try {
     const admin = createAdminClient();
     const { data: candidates } = await admin
@@ -289,9 +274,7 @@ export async function claimPendingCategorizationJobs(
  * Atomically claim up to `limit` pending entity.extract jobs.
  * Same race-safe pattern as claimPendingExtractionJobs.
  */
-export async function claimPendingEntityJobs(
-  limit: number,
-): Promise<BackgroundJob[]> {
+export async function claimPendingEntityJobs(limit: number): Promise<BackgroundJob[]> {
   try {
     const admin = createAdminClient();
     const { data: candidates } = await admin
@@ -470,10 +453,7 @@ export async function getJobsHealth(): Promise<JobsHealth> {
     const durations = ((durationsRes.data ?? []) as DurationRow[])
       .map((r) => {
         if (!r.started_at || !r.completed_at) return 0;
-        return (
-          new Date(r.completed_at).getTime() -
-          new Date(r.started_at).getTime()
-        );
+        return new Date(r.completed_at).getTime() - new Date(r.started_at).getTime();
       })
       .filter((n) => n > 0 && n < 10 * 60_000);
     const avgDurationMs24h =
@@ -488,15 +468,13 @@ export async function getJobsHealth(): Promise<JobsHealth> {
       updated_at: string;
       organization_id: string;
     };
-    const recentFailures = ((recentFailuresRes.data ?? []) as FailRow[]).map(
-      (r) => ({
-        id: r.id,
-        kind: r.kind,
-        error: r.error_message ?? "Unknown error",
-        when: r.updated_at,
-        organizationId: r.organization_id,
-      }),
-    );
+    const recentFailures = ((recentFailuresRes.data ?? []) as FailRow[]).map((r) => ({
+      id: r.id,
+      kind: r.kind,
+      error: r.error_message ?? "Unknown error",
+      when: r.updated_at,
+      organizationId: r.organization_id,
+    }));
 
     return {
       failed24h: failed24h.count ?? 0,

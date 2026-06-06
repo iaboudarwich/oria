@@ -16,11 +16,9 @@ export default async function WorkContractsPage() {
         Agreements, leases, terms, and signed documents.
       </div>
 
-      <div className="space-y-8 animate-fade-up">
+      <div className="animate-fade-up space-y-8">
         <section>
-          <h2 className="mb-3 px-1 text-[13px] font-medium text-ink-muted">
-            Add a contract
-          </h2>
+          <h2 className="mb-3 px-1 text-[13px] font-medium text-ink-muted">Add a contract</h2>
           <Dropzone
             heading="Drop a contract or agreement"
             subheading="Add a short note for context. Click to browse."
@@ -28,9 +26,7 @@ export default async function WorkContractsPage() {
         </section>
 
         <section>
-          <h2 className="mb-3 px-1 text-[13px] font-medium text-ink-muted">
-            Library
-          </h2>
+          <h2 className="mb-3 px-1 text-[13px] font-medium text-ink-muted">Library</h2>
           <WorkFeed
             items={items}
             emptyTitle="No contracts yet."

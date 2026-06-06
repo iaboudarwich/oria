@@ -123,7 +123,9 @@ const HIGH_LEAK_SURFACES = [
  *     classify uploads + organize reminders into the right circle).
  */
 export async function createCircle(formData: FormData): Promise<void> {
-  const rawName = String(formData.get("name") ?? "").trim().slice(0, 60);
+  const rawName = String(formData.get("name") ?? "")
+    .trim()
+    .slice(0, 60);
   if (!rawName) return;
 
   const description =
@@ -162,9 +164,7 @@ export async function createCircle(formData: FormData): Promise<void> {
   redirect(`/dashboard/circles/${orgRow.id}/setup`);
 }
 
-export type DeleteSpaceResult =
-  | { ok: true }
-  | { ok: false; reason: DeleteSpaceReason | "failed" };
+export type DeleteSpaceResult = { ok: true } | { ok: false; reason: DeleteSpaceReason | "failed" };
 
 /**
  * Permanently delete a space (a workspace OR a circle) and everything it owns.

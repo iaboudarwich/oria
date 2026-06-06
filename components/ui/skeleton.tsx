@@ -1,19 +1,7 @@
 import type { CSSProperties } from "react";
 
-export function Skeleton({
-  className = "",
-  style,
-}: {
-  className?: string;
-  style?: CSSProperties;
-}) {
-  return (
-    <div
-      className={`skeleton ${className}`}
-      style={style}
-      aria-hidden
-    />
-  );
+export function Skeleton({ className = "", style }: { className?: string; style?: CSSProperties }) {
+  return <div className={`skeleton ${className}`} style={style} aria-hidden />;
 }
 
 export function SkeletonList({ rows = 4 }: { rows?: number }) {
@@ -21,7 +9,7 @@ export function SkeletonList({ rows = 4 }: { rows?: number }) {
     <div className="space-y-2">
       {Array.from({ length: rows }).map((_, i) => (
         <div key={i} className="flex items-center gap-3 rounded-xl px-3 py-2.5">
-          <Skeleton className="h-8 w-8 rounded-lg shrink-0" />
+          <Skeleton className="h-8 w-8 shrink-0 rounded-lg" />
           <div className="flex-1 space-y-1.5">
             <Skeleton className="h-3.5 rounded-md" style={{ width: `${60 + (i % 3) * 15}%` }} />
             <Skeleton className="h-3 rounded-md" style={{ width: `${40 + (i % 2) * 20}%` }} />
@@ -34,7 +22,7 @@ export function SkeletonList({ rows = 4 }: { rows?: number }) {
 
 export function SkeletonCard() {
   return (
-    <div className="rounded-2xl border border-line bg-surface-raised p-4 space-y-3">
+    <div className="space-y-3 rounded-2xl border border-line bg-surface-raised p-4">
       <Skeleton className="h-5 rounded-lg" style={{ width: "60%" }} />
       <Skeleton className="h-3.5 rounded-md" style={{ width: "80%" }} />
       <Skeleton className="h-3.5 rounded-md" style={{ width: "50%" }} />

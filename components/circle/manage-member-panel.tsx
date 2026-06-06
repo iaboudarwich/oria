@@ -7,10 +7,7 @@ import {
   transferOwnership,
   updateMemberAccess,
 } from "@/lib/data/member-access-actions";
-import {
-  ACCESS_LEVEL_BLURBS,
-  ACCESS_LEVEL_LABELS,
-} from "@/lib/data/access-labels";
+import { ACCESS_LEVEL_BLURBS, ACCESS_LEVEL_LABELS } from "@/lib/data/access-labels";
 import { ChevronDownIcon, ChevronUpIcon } from "@/components/ui/icon";
 import type { AccessLevel } from "@/lib/supabase/types";
 
@@ -37,12 +34,8 @@ export function ManageMemberPanel({
   const [open, setOpen] = useState(false);
   const [level, setLevel] = useState<AccessLevel>(member.access_level);
 
-  const allowedBuiltin = new Set(
-    allowlist.filter((r) => r.kind === "builtin").map((r) => r.key),
-  );
-  const allowedCustom = new Set(
-    allowlist.filter((r) => r.kind === "custom").map((r) => r.key),
-  );
+  const allowedBuiltin = new Set(allowlist.filter((r) => r.kind === "builtin").map((r) => r.key));
+  const allowedCustom = new Set(allowlist.filter((r) => r.kind === "custom").map((r) => r.key));
 
   return (
     <div className="rounded-lg">
@@ -50,7 +43,7 @@ export function ManageMemberPanel({
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
-        className={`flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-1.5 text-[11.5px] transition-base hover:bg-canvas/60 ${
+        className={`transition-base flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-1.5 text-[11.5px] hover:bg-canvas/60 ${
           open ? "text-ink" : "text-ink-muted hover:text-ink"
         }`}
       >
@@ -68,14 +61,12 @@ export function ManageMemberPanel({
             className="space-y-2"
           >
             <input type="hidden" name="membership_id" value={member.id} />
-            <p className="text-[12px] text-ink-muted">
-              What can {member.firstName} see?
-            </p>
+            <p className="text-[12px] text-ink-muted">What can {member.firstName} see?</p>
             <div className="space-y-1">
               {(["full", "limited", "assigned"] as AccessLevel[]).map((lvl) => (
                 <label
                   key={lvl}
-                  className="flex cursor-pointer items-start gap-2.5 rounded-md border border-line bg-canvas/60 px-2.5 py-1.5 transition-base hover:border-line-strong has-[:checked]:border-ink has-[:checked]:bg-canvas"
+                  className="transition-base flex cursor-pointer items-start gap-2.5 rounded-md border border-line bg-canvas/60 px-2.5 py-1.5 hover:border-line-strong has-[:checked]:border-ink has-[:checked]:bg-canvas"
                 >
                   <input
                     type="radio"
@@ -86,9 +77,7 @@ export function ManageMemberPanel({
                     className="mt-0.5 h-3.5 w-3.5 accent-ink"
                   />
                   <span className="min-w-0">
-                    <span className="block text-[12.5px] text-ink">
-                      {ACCESS_LEVEL_LABELS[lvl]}
-                    </span>
+                    <span className="block text-[12.5px] text-ink">{ACCESS_LEVEL_LABELS[lvl]}</span>
                     <span className="block text-[11px] text-ink-faint">
                       {ACCESS_LEVEL_BLURBS[lvl]}
                     </span>
@@ -99,7 +88,7 @@ export function ManageMemberPanel({
             <div className="flex items-center gap-3 pt-1">
               <button
                 type="submit"
-                className="inline-flex h-8 items-center rounded-lg bg-ink px-3 text-[12px] text-surface hover:bg-ink-soft transition-base"
+                className="transition-base inline-flex h-8 items-center rounded-lg bg-ink px-3 text-[12px] text-surface hover:bg-ink-soft"
               >
                 Save access
               </button>
@@ -107,7 +96,7 @@ export function ManageMemberPanel({
                 <input type="hidden" name="membership_id" value={member.id} />
                 <button
                   type="submit"
-                  className="text-[11.5px] text-ink-muted hover:text-ink transition-base"
+                  className="transition-base text-[11.5px] text-ink-muted hover:text-ink"
                 >
                   Make owner
                 </button>
@@ -116,7 +105,7 @@ export function ManageMemberPanel({
                 <input type="hidden" name="membership_id" value={member.id} />
                 <button
                   type="submit"
-                  className="text-[11.5px] text-ink-faint hover:text-claret transition-base"
+                  className="transition-base text-[11.5px] text-ink-faint hover:text-claret"
                 >
                   Remove
                 </button>
@@ -133,21 +122,18 @@ export function ManageMemberPanel({
               className="space-y-2 border-t border-line pt-3"
             >
               <input type="hidden" name="membership_id" value={member.id} />
-              <p className="text-[12px] text-ink-muted">
-                Which sections can they see?
-              </p>
+              <p className="text-[12px] text-ink-muted">Which sections can they see?</p>
               <div className="grid grid-cols-1 gap-1 sm:grid-cols-2">
                 {sections.map((s) => {
                   const checked =
                     s.ref.kind === "builtin"
                       ? allowedBuiltin.has(s.ref.key)
                       : allowedCustom.has(s.ref.key);
-                  const inputName =
-                    s.ref.kind === "builtin" ? "builtin" : "custom";
+                  const inputName = s.ref.kind === "builtin" ? "builtin" : "custom";
                   return (
                     <label
                       key={`${s.ref.kind}-${s.ref.key}`}
-                      className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1 transition-base hover:bg-canvas/60 has-[:checked]:bg-canvas"
+                      className="transition-base flex cursor-pointer items-center gap-2 rounded-md px-2 py-1 hover:bg-canvas/60 has-[:checked]:bg-canvas"
                     >
                       <input
                         type="checkbox"
@@ -163,7 +149,7 @@ export function ManageMemberPanel({
               </div>
               <button
                 type="submit"
-                className="mt-1 inline-flex h-8 items-center rounded-lg bg-ink px-3 text-[12px] text-surface hover:bg-ink-soft transition-base"
+                className="transition-base mt-1 inline-flex h-8 items-center rounded-lg bg-ink px-3 text-[12px] text-surface hover:bg-ink-soft"
               >
                 Save sections
               </button>

@@ -62,7 +62,9 @@ export async function applyDetectedItem(input: {
 
   const { data } = await admin
     .from("email_detected_items")
-    .select("id, user_id, organization_id, connection_id, item_type, source_subject, source_from, source_date, extracted")
+    .select(
+      "id, user_id, organization_id, connection_id, item_type, source_subject, source_from, source_date, extracted",
+    )
     .eq("id", input.itemId)
     .eq("user_id", input.userId)
     .eq("status", "pending")
@@ -246,10 +248,7 @@ const AUTO_ROUTE_CONFIDENCE = 0.75;
  *  - auto_all: apply every pending item (routing where a section is known)
  * Returns the number of items auto-applied.
  */
-export async function autoRoutePendingItems(
-  userId: string,
-  connectionId: string,
-): Promise<number> {
+export async function autoRoutePendingItems(userId: string, connectionId: string): Promise<number> {
   const admin = createAdminClient();
 
   const { data: profile } = await admin
@@ -257,7 +256,9 @@ export async function autoRoutePendingItems(
     .select("auto_route_preference")
     .eq("id", userId)
     .maybeSingle();
-  const pref = (profile as { auto_route_preference?: string } | null)?.auto_route_preference ?? "auto_confident";
+  const pref =
+    (profile as { auto_route_preference?: string } | null)?.auto_route_preference ??
+    "auto_confident";
   if (pref === "always_review") return 0;
 
   // Only this connection's pending items, so each inbox auto-routes its own.
@@ -267,16 +268,21 @@ export async function autoRoutePendingItems(
     .eq("user_id", userId)
     .eq("connection_id", connectionId)
     .eq("status", "pending");
-  const items = (rows as
-    | {
-        id: string;
-        item_type: string;
-        confidence: number | null;
-        extracted: { appointment_type?: string | null; vendor?: string | null; title?: string | null };
-        source_from: string | null;
-        organization_id: string | null;
-      }[]
-    | null) ?? [];
+  const items =
+    (rows as
+      | {
+          id: string;
+          item_type: string;
+          confidence: number | null;
+          extracted: {
+            appointment_type?: string | null;
+            vendor?: string | null;
+            title?: string | null;
+          };
+          source_from: string | null;
+          organization_id: string | null;
+        }[]
+      | null) ?? [];
 
   let applied = 0;
   for (const it of items) {

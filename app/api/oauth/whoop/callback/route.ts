@@ -3,11 +3,7 @@ import "server-only";
 import { NextResponse, after } from "next/server";
 import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
-import {
-  exchangeCodeForTokens,
-  fetchProfile,
-  redirectUri,
-} from "@/lib/whoop/oauth";
+import { exchangeCodeForTokens, fetchProfile, redirectUri } from "@/lib/whoop/oauth";
 import { verifyWhoopState } from "@/lib/whoop/oauth-state";
 import { upsertWhoopConnection } from "@/lib/whoop/connections";
 import { syncWhoopConnection } from "@/lib/whoop/sync";

@@ -64,7 +64,7 @@ export function AgendaClient({
   const Row = ({ it, accent }: { it: AgendaItem; accent?: boolean }) => (
     <li>
       <div
-        className={`group flex items-center gap-3 rounded-lg px-3 py-2 transition-base hover:bg-surface-raised ${
+        className={`group transition-base flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-surface-raised ${
           accent ? "border-s-2 border-brand bg-brand-soft/30" : ""
         }`}
       >
@@ -87,7 +87,7 @@ export function AgendaClient({
             onClick={() => toggleFlag(it)}
             aria-label={it.flagged ? t("unflag") : t("flag")}
             aria-pressed={it.flagged}
-            className={`shrink-0 transition-base ${it.flagged ? "text-warning" : "text-ink-faint hover:text-ink"}`}
+            className={`transition-base shrink-0 ${it.flagged ? "text-warning" : "text-ink-faint hover:text-ink"}`}
           >
             <FlagIcon size={13} />
           </button>
@@ -100,7 +100,10 @@ export function AgendaClient({
     <section>
       <div className="mb-3 flex items-center justify-between px-1">
         <h2 className="text-[13px] font-medium text-ink-muted">{t("title")}</h2>
-        <Link href="/dashboard/calendar" className="text-[12px] text-ink-faint transition-base hover:text-ink">
+        <Link
+          href="/dashboard/calendar"
+          className="transition-base text-[12px] text-ink-faint hover:text-ink"
+        >
           {t("open_calendar")}
         </Link>
       </div>
@@ -113,12 +116,14 @@ export function AgendaClient({
             type="button"
             onClick={() => setView(k)}
             aria-pressed={view === k}
-            className={`rounded-full px-2.5 py-1 text-[11.5px] font-medium transition-base ${
+            className={`transition-base rounded-full px-2.5 py-1 text-[11.5px] font-medium ${
               view === k ? "bg-ink text-surface" : "bg-surface-raised text-ink-muted hover:text-ink"
             }`}
           >
             {t(`view_${k}`)}
-            {counts[k] > 0 ? <span className="ms-1 tabular-nums opacity-70">{counts[k]}</span> : null}
+            {counts[k] > 0 ? (
+              <span className="ms-1 tabular-nums opacity-70">{counts[k]}</span>
+            ) : null}
           </button>
         ))}
       </div>
@@ -133,15 +138,22 @@ export function AgendaClient({
               {DAY_BUCKETS.map((b: DayBucket) =>
                 bucketed[b].length ? (
                   <div key={b}>
-                    <p className="mb-1 flex items-center gap-2 px-1 text-eyebrow">
+                    <p className="text-eyebrow mb-1 flex items-center gap-2 px-1">
                       {t(`bucket_${b}`)}
                       {b === currentBucket ? (
-                        <span className="inline-block h-1.5 w-1.5 rounded-full bg-brand" aria-label={t("now")} />
+                        <span
+                          className="inline-block h-1.5 w-1.5 rounded-full bg-brand"
+                          aria-label={t("now")}
+                        />
                       ) : null}
                     </p>
                     <ul className="space-y-0.5">
                       {bucketed[b].map((it, i) => (
-                        <Row key={it.id} it={it as AgendaItem} accent={b === currentBucket && i === 0} />
+                        <Row
+                          key={it.id}
+                          it={it as AgendaItem}
+                          accent={b === currentBucket && i === 0}
+                        />
                       ))}
                     </ul>
                   </div>

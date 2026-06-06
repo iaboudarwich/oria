@@ -32,9 +32,7 @@ export interface StoreChunksResult {
  * Split text into chunks, embed them, and upsert into document_chunks.
  * Also updates uploads.chunk_count and uploads.is_chunked.
  */
-export async function storeChunks(
-  input: StoreChunksInput
-): Promise<StoreChunksResult> {
+export async function storeChunks(input: StoreChunksInput): Promise<StoreChunksResult> {
   const { uploadId, organizationId, text, section, filename } = input;
   const supabase = createAdminClient();
 
@@ -96,8 +94,5 @@ export async function storeChunks(
 export async function deleteChunks(uploadId: string): Promise<void> {
   const supabase = createAdminClient();
   await supabase.from("document_chunks").delete().eq("upload_id", uploadId);
-  await supabase
-    .from("uploads")
-    .update({ chunk_count: 0, is_chunked: false })
-    .eq("id", uploadId);
+  await supabase.from("uploads").update({ chunk_count: 0, is_chunked: false }).eq("id", uploadId);
 }

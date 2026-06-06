@@ -126,7 +126,7 @@ export function AllocationDonut({
               style={{ background: colorForKind(s.kind) }}
             />
             <span className="flex-1 truncate text-ink-soft">{KIND_LABEL[s.kind]}</span>
-            <span className="tabular-nums text-ink-faint">{Math.round(s.share * 100)}%</span>
+            <span className="text-ink-faint tabular-nums">{Math.round(s.share * 100)}%</span>
           </li>
         ))}
       </ul>

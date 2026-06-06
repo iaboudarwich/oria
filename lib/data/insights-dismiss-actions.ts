@@ -1,9 +1,6 @@
 "use server";
 
-import {
-  readDismissedInsightIds,
-  writeDismissedInsightIds,
-} from "./insights-dismiss";
+import { readDismissedInsightIds, writeDismissedInsightIds } from "./insights-dismiss";
 
 /**
  * Add an insight id to the dismissed list so it doesn't reappear on

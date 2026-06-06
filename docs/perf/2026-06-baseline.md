@@ -10,18 +10,19 @@ Edge TTFB on the public routes, median of 3 curl samples from a remote
 sandbox (includes network latency, so treat as an upper bound on server
 TTFB, not Lighthouse, no JS execution). Captured 2026-06.
 
-| Route | Edge TTFB (median) |
-|---|---|
-| `/` (landing) | 0.26s |
-| `/login` | 0.24s |
-| `/privacy` (revalidate=86400) | 0.29s |
-| `/terms` (revalidate=86400) | 0.22s |
-| `/api/version` (no-store) | 0.22s |
+| Route                         | Edge TTFB (median) |
+| ----------------------------- | ------------------ |
+| `/` (landing)                 | 0.26s              |
+| `/login`                      | 0.24s              |
+| `/privacy` (revalidate=86400) | 0.29s              |
+| `/terms` (revalidate=86400)   | 0.22s              |
+| `/api/version` (no-store)     | 0.22s              |
 
 Read: the server-rendered public pages return their first byte in ~220 to
 290 ms including round-trip from this sandbox, so origin server TTFB is
 healthy. The dashboard pages will be somewhat higher (auth + per-space data
-+ per-space theme), but that delta cannot be isolated from here.
+
+- per-space theme), but that delta cannot be isolated from here.
 
 ### Why the dashboard rows are blocked
 
@@ -48,19 +49,19 @@ All five are auth-gated (307 -> /login) and need a signed-in Lighthouse run;
 "blocked" means not measurable from the current environment (no session, no
 browser), not "skipped".
 
-| Page | URL | TTFB | TTI | LCP | First-load JS |
-|---|---|---|---|---|---|
-| Dashboard home | /dashboard | blocked | blocked | blocked | blocked |
-| Settings | /dashboard/settings | blocked | blocked | blocked | blocked |
-| Calendar | /dashboard/calendar | blocked | blocked | blocked | blocked |
-| Things | /dashboard/things | blocked | blocked | blocked | blocked |
-| Ask Oria | /dashboard/ask | blocked | blocked | blocked | blocked |
+| Page           | URL                 | TTFB    | TTI     | LCP     | First-load JS |
+| -------------- | ------------------- | ------- | ------- | ------- | ------------- |
+| Dashboard home | /dashboard          | blocked | blocked | blocked | blocked       |
+| Settings       | /dashboard/settings | blocked | blocked | blocked | blocked       |
+| Calendar       | /dashboard/calendar | blocked | blocked | blocked | blocked       |
+| Things         | /dashboard/things   | blocked | blocked | blocked | blocked       |
+| Ask Oria       | /dashboard/ask      | blocked | blocked | blocked | blocked       |
 
 ## Slowest 5 API endpoints (p95)
 
-| Endpoint | p95 (ms) | Notes |
-|---|---|---|
-| _from Vercel/Sentry_ | | |
+| Endpoint             | p95 (ms) | Notes |
+| -------------------- | -------- | ----- |
+| _from Vercel/Sentry_ |          |       |
 
 (Expected likely offenders from code review: `/api/ask` and `/api/work/agent`
 are inherently slow because they stream an LLM response; the relevant metric

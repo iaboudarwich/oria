@@ -31,7 +31,10 @@ export async function GET(request: Request) {
 
   const result = await browseOneDrive(connectionId, folderId);
   if (!result.ok) {
-    return NextResponse.json({ error: result.reason }, { status: result.reason === "token" ? 502 : 500 });
+    return NextResponse.json(
+      { error: result.reason },
+      { status: result.reason === "token" ? 502 : 500 },
+    );
   }
   return NextResponse.json({ items: result.items });
 }

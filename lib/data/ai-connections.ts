@@ -49,15 +49,17 @@ export async function listAiConnections(userId: string): Promise<AiConnection[]>
     .select("id, provider, status, is_active, label, last_validated_at, last_error")
     .eq("user_id", userId)
     .order("created_at", { ascending: true });
-  return ((data ?? []) as Array<{
-    id: string;
-    provider: ProviderName;
-    status: ConnectionStatus;
-    is_active: boolean;
-    label: string | null;
-    last_validated_at: string | null;
-    last_error: string | null;
-  }>).map((r) => ({
+  return (
+    (data ?? []) as Array<{
+      id: string;
+      provider: ProviderName;
+      status: ConnectionStatus;
+      is_active: boolean;
+      label: string | null;
+      last_validated_at: string | null;
+      last_error: string | null;
+    }>
+  ).map((r) => ({
     id: r.id,
     provider: r.provider,
     status: r.status,
@@ -157,7 +159,10 @@ export async function addAiConnection(input: {
 }
 
 /** Make one of the user's connections the active one (deactivating the rest). */
-export async function setActiveAiConnection(userId: string, connectionId: string): Promise<boolean> {
+export async function setActiveAiConnection(
+  userId: string,
+  connectionId: string,
+): Promise<boolean> {
   const admin = createAdminClient();
   const { data: row } = await admin
     .from("user_ai_connections")
@@ -220,7 +225,8 @@ export async function revalidateAllAiConnections(): Promise<{ checked: number }>
   const { data } = await admin
     .from("user_ai_connections")
     .select("id, provider, encrypted_api_key");
-  const rows = (data as { id: string; provider: ProviderName; encrypted_api_key: string }[] | null) ?? [];
+  const rows =
+    (data as { id: string; provider: ProviderName; encrypted_api_key: string }[] | null) ?? [];
   for (const r of rows) {
     try {
       const key = decryptToken(r.encrypted_api_key);
@@ -229,7 +235,7 @@ export async function revalidateAllAiConnections(): Promise<{ checked: number }>
         .from("user_ai_connections")
         .update({
           status: result.status,
-          last_error: result.valid ? null : result.error ?? null,
+          last_error: result.valid ? null : (result.error ?? null),
           last_validated_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         })
@@ -278,7 +284,7 @@ export async function getPendingAiNotice(userId: string): Promise<PendingAiNotic
     .select("pending_ai_notice")
     .eq("id", userId)
     .maybeSingle();
-  return ((data as { pending_ai_notice: PendingAiNotice | null } | null)?.pending_ai_notice) ?? null;
+  return (data as { pending_ai_notice: PendingAiNotice | null } | null)?.pending_ai_notice ?? null;
 }
 
 /** Clear the pending notice after the toast is shown. */

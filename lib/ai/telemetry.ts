@@ -93,9 +93,7 @@ export type AiErrorTelemetry = {
 
 /** Record a failed model call. Mirrors recordAiCall's context keys. */
 export function recordAiError(t: AiErrorTelemetry): void {
-  const err = t.error as
-    | { status?: number; message?: string; name?: string }
-    | undefined;
+  const err = t.error as { status?: number; message?: string; name?: string } | undefined;
   void recordSystemEvent({
     kind: "ai.error",
     severity: "error",

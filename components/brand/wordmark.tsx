@@ -24,12 +24,7 @@ type WordmarkProps = {
  * STROKE_WEIGHT is the one knob (≈1% of em = "a touch heavier").
  */
 const STROKE_WEIGHT = 11;
-export function Wordmark({
-  href = "/",
-  className = "",
-  tone = "ink",
-  onClick,
-}: WordmarkProps) {
+export function Wordmark({ href = "/", className = "", tone = "ink", onClick }: WordmarkProps) {
   const color = tone === "ivory" ? "text-surface" : "text-ink";
 
   // Wrapped in the link, the link carries the accessible name and the mark is
@@ -55,12 +50,7 @@ export function Wordmark({
 
   if (!href) return mark(true);
   return (
-    <Link
-      href={href}
-      onClick={onClick}
-      aria-label="Oria home"
-      className="inline-flex items-center"
-    >
+    <Link href={href} onClick={onClick} aria-label="Oria home" className="inline-flex items-center">
       {mark(false)}
     </Link>
   );

@@ -17,18 +17,13 @@ export async function GET(request: Request) {
       // user has a verified factor, UNLESS this is a trusted device (same rule
       // as password sign-in, Round 16.7).
       const aal = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-      const hasSecondFactor =
-        aal.data?.nextLevel === "aal2" && aal.data.currentLevel === "aal1";
+      const hasSecondFactor = aal.data?.nextLevel === "aal2" && aal.data.currentLevel === "aal1";
       const { data: userData } = await supabase.auth.getUser();
       const trusted =
-        hasSecondFactor && userData.user
-          ? await isTrustedDevice(userData.user.id)
-          : false;
+        hasSecondFactor && userData.user ? await isTrustedDevice(userData.user.id) : false;
       if (hasSecondFactor && !trusted) {
         const params = new URLSearchParams({ next });
-        return NextResponse.redirect(
-          new URL(`/login/mfa?${params.toString()}`, url.origin),
-        );
+        return NextResponse.redirect(new URL(`/login/mfa?${params.toString()}`, url.origin));
       }
       return NextResponse.redirect(new URL(next, url.origin));
     }

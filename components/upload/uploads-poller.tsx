@@ -25,8 +25,7 @@ export function UploadsPoller({ pending }: { pending: boolean }) {
 
     function schedule() {
       if (cancelled) return;
-      const delay =
-        POLL_SCHEDULE_MS[Math.min(tick, POLL_SCHEDULE_MS.length - 1)];
+      const delay = POLL_SCHEDULE_MS[Math.min(tick, POLL_SCHEDULE_MS.length - 1)];
       tick += 1;
       timeoutId = setTimeout(() => {
         if (cancelled) return;

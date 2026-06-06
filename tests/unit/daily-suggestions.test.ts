@@ -41,9 +41,7 @@ describe("computeSuggestions — signal to executable action", () => {
     expect(sug.pattern).toBe("expiring_trackable");
     expect(sug.params.days).toBe(10);
     expect(sug.action).toMatchObject({ kind: "create_reminder", leadDays: 7 });
-    expect((sug.action as { dueAt: string }).dueAt).toBe(
-      new Date("2026-06-13").toISOString(),
-    );
+    expect((sug.action as { dueAt: string }).dueAt).toBe(new Date("2026-06-13").toISOString());
   });
 
   it("untracked recurring bill yes-action creates a subscription Trackable", () => {
@@ -108,7 +106,9 @@ describe("computeSuggestions — signal to executable action", () => {
 
     const withReminder = makeSignals({
       ...base,
-      remindersDueToday: [{ id: "r1", title: "Invoice", dueAt: "2026-06-20T00:00:00Z", uploadId: "d1" }],
+      remindersDueToday: [
+        { id: "r1", title: "Invoice", dueAt: "2026-06-20T00:00:00Z", uploadId: "d1" },
+      ],
     });
     expect(computeSuggestions(withReminder, [], new Set())).toHaveLength(0);
   });

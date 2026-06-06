@@ -9,10 +9,7 @@ import { suggestEntityTypeSchema } from "@/lib/ai/suggest-entity-schema";
 import type { FieldDef } from "./entities";
 
 /** Returns AI-suggested field schema for a new entity type. */
-export async function suggestSchemaAction(
-  name: string,
-  description: string,
-): Promise<FieldDef[]> {
+export async function suggestSchemaAction(name: string, description: string): Promise<FieldDef[]> {
   return suggestEntityTypeSchema(name, description);
 }
 
@@ -91,10 +88,12 @@ export async function linkUploadToEntity(
   relationship: string,
 ): Promise<{ ok: boolean; error?: string }> {
   const supabase = await createClient();
-  const { error } = await supabase.from("entity_uploads").upsert(
-    { entity_id: entityId, upload_id: uploadId, relationship },
-    { onConflict: "entity_id,upload_id" },
-  );
+  const { error } = await supabase
+    .from("entity_uploads")
+    .upsert(
+      { entity_id: entityId, upload_id: uploadId, relationship },
+      { onConflict: "entity_id,upload_id" },
+    );
   if (error) return { ok: false, error: error.message };
   revalidatePath(`/dashboard/things/${entityId}`);
   revalidatePath(`/dashboard/uploads/${uploadId}`);
@@ -102,15 +101,9 @@ export async function linkUploadToEntity(
 }
 
 /** Set an entity's primary photo. */
-export async function setPrimaryPhoto(
-  entityId: string,
-  uploadId: string,
-): Promise<void> {
+export async function setPrimaryPhoto(entityId: string, uploadId: string): Promise<void> {
   const supabase = await createClient();
-  await supabase
-    .from("entities")
-    .update({ primary_photo_upload_id: uploadId })
-    .eq("id", entityId);
+  await supabase.from("entities").update({ primary_photo_upload_id: uploadId }).eq("id", entityId);
   revalidatePath(`/dashboard/things/${entityId}`);
 }
 
@@ -156,21 +149,19 @@ export async function seedEntityTypes(
 ): Promise<void> {
   const admin = createAdminClient();
   for (const t of types) {
-    await admin
-      .from("entity_types")
-      .upsert(
-        {
-          organization_id: organizationId,
-          key: t.key,
-          label_singular: t.label_singular,
-          label_plural: t.label_plural,
-          icon: t.icon ?? null,
-          field_schema: t.field_schema,
-          is_seeded: true,
-          created_by: null,
-        },
-        { onConflict: "organization_id,key" },
-      );
+    await admin.from("entity_types").upsert(
+      {
+        organization_id: organizationId,
+        key: t.key,
+        label_singular: t.label_singular,
+        label_plural: t.label_plural,
+        icon: t.icon ?? null,
+        field_schema: t.field_schema,
+        is_seeded: true,
+        created_by: null,
+      },
+      { onConflict: "organization_id,key" },
+    );
   }
 }
 
@@ -196,7 +187,10 @@ export async function translateUploadFieldsAction(
   const { infraComplete } = await import("@/lib/ai-providers");
 
   const langNames: Record<string, string> = {
-    en: "English", ar: "Arabic", fr: "French", es: "Spanish",
+    en: "English",
+    ar: "Arabic",
+    fr: "French",
+    es: "Spanish",
   };
   const targetName = langNames[targetLanguage] ?? targetLanguage;
 
@@ -212,7 +206,10 @@ export async function translateUploadFieldsAction(
       { tier: "fast", maxTokens: 1000 },
     );
     const raw = msg?.content.trim() || "";
-    const cleaned = raw.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim();
+    const cleaned = raw
+      .replace(/^```(?:json)?\s*/i, "")
+      .replace(/\s*```$/, "")
+      .trim();
     return JSON.parse(cleaned) as Record<string, unknown>;
   } catch {
     return null;

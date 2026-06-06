@@ -44,17 +44,12 @@ export async function savePushSubscription(input: {
 /** Delete one of the current user's subscriptions by endpoint. RLS-scoped. */
 export async function deletePushSubscription(endpoint: string): Promise<boolean> {
   const supabase = await createClient();
-  const { error } = await supabase
-    .from("push_subscriptions")
-    .delete()
-    .eq("endpoint", endpoint);
+  const { error } = await supabase.from("push_subscriptions").delete().eq("endpoint", endpoint);
   return !error;
 }
 
 /** All subscriptions for a user (service-role; used by the send path). */
-export async function getSubscriptionsForUser(
-  userId: string,
-): Promise<StoredPushSubscription[]> {
+export async function getSubscriptionsForUser(userId: string): Promise<StoredPushSubscription[]> {
   const admin = createAdminClient();
   const { data } = await admin
     .from("push_subscriptions")

@@ -68,21 +68,21 @@ export function ConnectButton({
       <a
         href={href}
         onClick={onClick}
-        className="inline-flex h-9 items-center rounded-[10px] bg-ink px-3 text-[12.5px] font-medium text-surface transition-base hover:bg-ink-soft"
+        className="transition-base inline-flex h-9 items-center rounded-[10px] bg-ink px-3 text-[12.5px] font-medium text-surface hover:bg-ink-soft"
       >
         {label}
       </a>
 
       {confirmOpen && confirm ? (
         <div
-          className="fixed inset-0 z-[60] flex items-end justify-center bg-ink/30 p-4 animate-fade-in sm:items-center"
+          className="animate-fade-in fixed inset-0 z-[60] flex items-end justify-center bg-ink/30 p-4 sm:items-center"
           role="dialog"
           aria-modal="true"
           aria-label={confirm.title}
           onClick={() => setConfirmOpen(false)}
         >
           <div
-            className="w-full max-w-sm rounded-2xl border border-line bg-surface-floating p-5 shadow-raised animate-fade-up"
+            className="animate-fade-up w-full max-w-sm rounded-2xl border border-line bg-surface-floating p-5 shadow-raised"
             onClick={(e) => e.stopPropagation()}
           >
             <h2 className="text-[15px] font-semibold text-ink">{confirm.title}</h2>
@@ -91,7 +91,7 @@ export function ConnectButton({
               <button
                 type="button"
                 onClick={() => setConfirmOpen(false)}
-                className="inline-flex h-9 items-center rounded-lg px-3 text-[12.5px] text-ink-muted transition-base hover:text-ink"
+                className="transition-base inline-flex h-9 items-center rounded-lg px-3 text-[12.5px] text-ink-muted hover:text-ink"
               >
                 {confirm.cancelLabel}
               </button>
@@ -99,7 +99,7 @@ export function ConnectButton({
                 ref={confirmContinueRef}
                 type="button"
                 onClick={go}
-                className="inline-flex h-9 items-center rounded-lg bg-ink px-3 text-[12.5px] font-medium text-surface transition-base hover:bg-ink-soft"
+                className="transition-base inline-flex h-9 items-center rounded-lg bg-ink px-3 text-[12.5px] font-medium text-surface hover:bg-ink-soft"
               >
                 {confirm.continueLabel}
               </button>
@@ -110,14 +110,14 @@ export function ConnectButton({
 
       {open ? (
         <div
-          className="fixed inset-0 z-[60] flex items-end justify-center bg-ink/30 p-4 animate-fade-in sm:items-center"
+          className="animate-fade-in fixed inset-0 z-[60] flex items-end justify-center bg-ink/30 p-4 sm:items-center"
           role="dialog"
           aria-modal="true"
           aria-label={t("header")}
           onClick={() => !pending && setOpen(false)}
         >
           <div
-            className="w-full max-w-md rounded-2xl border border-line bg-surface-floating p-5 shadow-raised animate-fade-up"
+            className="animate-fade-up w-full max-w-md rounded-2xl border border-line bg-surface-floating p-5 shadow-raised"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-start justify-between gap-3">
@@ -126,7 +126,7 @@ export function ConnectButton({
                 type="button"
                 onClick={() => !pending && setOpen(false)}
                 aria-label={t("cancel")}
-                className="shrink-0 text-ink-faint transition-base hover:text-ink"
+                className="transition-base shrink-0 text-ink-faint hover:text-ink"
               >
                 <CloseIcon size={16} />
               </button>
@@ -134,7 +134,7 @@ export function ConnectButton({
 
             <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
-                <p className="text-[11px] font-medium uppercase tracking-wide text-ink-faint">
+                <p className="text-[11px] font-medium tracking-wide text-ink-faint uppercase">
                   {t("do_title")}
                 </p>
                 <ul className="mt-2 space-y-1.5">
@@ -149,7 +149,7 @@ export function ConnectButton({
                 </ul>
               </div>
               <div>
-                <p className="text-[11px] font-medium uppercase tracking-wide text-ink-faint">
+                <p className="text-[11px] font-medium tracking-wide text-ink-faint uppercase">
                   {t("never_title")}
                 </p>
                 <ul className="mt-2 space-y-1.5">
@@ -172,7 +172,7 @@ export function ConnectButton({
                 type="button"
                 onClick={() => setOpen(false)}
                 disabled={pending}
-                className="inline-flex h-9 items-center rounded-lg px-3 text-[12.5px] text-ink-muted transition-base hover:text-ink disabled:opacity-50"
+                className="transition-base inline-flex h-9 items-center rounded-lg px-3 text-[12.5px] text-ink-muted hover:text-ink disabled:opacity-50"
               >
                 {t("cancel")}
               </button>
@@ -181,7 +181,7 @@ export function ConnectButton({
                 type="button"
                 onClick={proceed}
                 disabled={pending}
-                className="inline-flex h-9 items-center rounded-lg bg-ink px-3 text-[12.5px] font-medium text-surface transition-base hover:bg-ink-soft disabled:opacity-50"
+                className="transition-base inline-flex h-9 items-center rounded-lg bg-ink px-3 text-[12.5px] font-medium text-surface hover:bg-ink-soft disabled:opacity-50"
               >
                 {t("continue")}
               </button>

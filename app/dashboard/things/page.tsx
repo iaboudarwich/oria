@@ -5,11 +5,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { BoxIcon } from "@/components/ui/icon";
 import { resolveThingsLabel } from "@/lib/data/things-label";
 import { ThingsRename } from "@/components/things/things-rename";
-import {
-  listEntityTypes,
-  listEntities,
-  countEntitiesByType,
-} from "@/lib/data/entities";
+import { listEntityTypes, listEntities, countEntitiesByType } from "@/lib/data/entities";
 import { requireContext } from "@/lib/data/organizations";
 
 export const metadata = { title: "Records" };
@@ -19,7 +15,8 @@ export default async function ThingsPage({
 }: {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const sp: Record<string, string | string[] | undefined> = await (searchParams ?? Promise.resolve({}));
+  const sp: Record<string, string | string[] | undefined> = await (searchParams ??
+    Promise.resolve({}));
   const t = await getTranslations("empty");
   const tr = await getTranslations("records");
   const ctx = await requireContext();
@@ -29,26 +26,23 @@ export default async function ThingsPage({
     countEntitiesByType(ctx.organization.id),
   ]);
 
-  const activeTypeId =
-    typeof sp.type === "string" && sp.type ? sp.type : types[0]?.id ?? null;
+  const activeTypeId = typeof sp.type === "string" && sp.type ? sp.type : (types[0]?.id ?? null);
 
-  const entities = activeTypeId
-    ? await listEntities(activeTypeId)
-    : [];
+  const entities = activeTypeId ? await listEntities(activeTypeId) : [];
 
   const activeType = types.find((t) => t.id === activeTypeId);
 
   return (
     <>
       <Topbar title={thingsLabel} />
-      <div className="flex gap-6 animate-fade-up">
+      <div className="animate-fade-up flex gap-6">
         {/* Sidebar */}
         <aside className="hidden w-48 shrink-0 lg:block">
           <div className="mb-2 flex items-center justify-between px-1">
             <p className="text-eyebrow">{tr("types")}</p>
             <Link
               href="/dashboard/things/new-type"
-              className="text-[11px] text-ink-faint hover:text-ink transition-base"
+              className="transition-base text-[11px] text-ink-faint hover:text-ink"
             >
               + {tr("add")}
             </Link>
@@ -61,25 +55,21 @@ export default async function ThingsPage({
               <li key={t.id}>
                 <Link
                   href={`/dashboard/things?type=${t.id}`}
-                  className={`flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-[12.5px] transition-base ${
+                  className={`transition-base flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-[12.5px] ${
                     t.id === activeTypeId
-                      ? "bg-surface-raised text-ink font-medium"
+                      ? "bg-surface-raised font-medium text-ink"
                       : "text-ink-muted hover:bg-canvas/60 hover:text-ink"
                   }`}
                 >
                   <span className="flex-1 truncate">{t.label_plural}</span>
                   {counts[t.id] ? (
-                    <span className="shrink-0 text-[10.5px] text-ink-faint">
-                      {counts[t.id]}
-                    </span>
+                    <span className="shrink-0 text-[10.5px] text-ink-faint">{counts[t.id]}</span>
                   ) : null}
                 </Link>
               </li>
             ))}
             {types.length === 0 && (
-              <li className="px-2 text-[12px] text-ink-faint">
-                {tr("no_types")}
-              </li>
+              <li className="px-2 text-[12px] text-ink-faint">{tr("no_types")}</li>
             )}
           </ul>
         </aside>
@@ -96,12 +86,10 @@ export default async function ThingsPage({
           ) : (
             <>
               <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-[16px] font-semibold text-ink">
-                  {activeType.label_plural}
-                </h2>
+                <h2 className="text-[16px] font-semibold text-ink">{activeType.label_plural}</h2>
                 <Link
                   href={`/dashboard/things/new?type=${activeType.id}`}
-                  className="inline-flex h-9 items-center rounded-lg bg-ink px-3 text-[12.5px] text-surface hover:bg-ink-soft transition-base"
+                  className="transition-base inline-flex h-9 items-center rounded-lg bg-ink px-3 text-[12.5px] text-surface hover:bg-ink-soft"
                 >
                   + Add {activeType.label_singular}
                 </Link>
@@ -124,19 +112,14 @@ export default async function ThingsPage({
                       <li key={e.id}>
                         <Link
                           href={`/dashboard/things/${e.id}`}
-                          className="block rounded-2xl border border-line bg-surface-raised p-4 transition-base hover:border-line-strong hover:shadow-sm"
+                          className="transition-base block rounded-2xl border border-line bg-surface-raised p-4 hover:border-line-strong hover:shadow-sm"
                         >
-                          <p className="font-medium text-[14px] text-ink truncate">
-                            {e.name}
-                          </p>
+                          <p className="truncate text-[14px] font-medium text-ink">{e.name}</p>
                           {keyFields.map((f) => {
                             const v = e.details[f.key];
                             if (!v) return null;
                             return (
-                              <p
-                                key={f.key}
-                                className="mt-0.5 text-[12px] text-ink-faint truncate"
-                              >
+                              <p key={f.key} className="mt-0.5 truncate text-[12px] text-ink-faint">
                                 {f.label}: {String(v)}
                               </p>
                             );

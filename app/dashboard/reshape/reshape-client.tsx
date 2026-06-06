@@ -53,7 +53,10 @@ export function ReshapeClient({ initialIntent }: { initialIntent?: string }) {
 
   function answer(value: string, skipped: boolean) {
     if (!question) return;
-    const next: Answer[] = [...answers, { questionId: question.id, question: question.text, answer: value, skipped }];
+    const next: Answer[] = [
+      ...answers,
+      { questionId: question.id, question: question.text, answer: value, skipped },
+    ];
     setQuestion(null);
     void onboardingNextStep({ mode: "reconfigure", answers: next, intent }).then((s) =>
       handleStep(s, intent, next),
@@ -82,7 +85,7 @@ export function ReshapeClient({ initialIntent }: { initialIntent?: string }) {
   }
 
   return (
-    <div className="mx-auto max-w-lg py-2 animate-fade-up">
+    <div className="animate-fade-up mx-auto max-w-lg py-2">
       <h1 className="text-title text-ink">{t("title")}</h1>
       <p className="mt-1 text-[13px] text-ink-muted">{t("subtitle")}</p>
 
@@ -103,12 +106,12 @@ export function ReshapeClient({ initialIntent }: { initialIntent?: string }) {
               autoFocus
               rows={3}
               placeholder={t("intent_placeholder")}
-              className="w-full resize-none rounded-xl border border-line-strong bg-surface-raised px-4 py-3 text-[15px] text-ink outline-none transition-base focus:border-ink placeholder:text-ink-faint"
+              className="transition-base w-full resize-none rounded-xl border border-line-strong bg-surface-raised px-4 py-3 text-[15px] text-ink outline-none placeholder:text-ink-faint focus:border-ink"
             />
             <button
               type="submit"
               disabled={!draft.trim()}
-              className="mt-3 rounded-xl bg-ink px-5 py-2.5 text-[14px] font-medium text-surface transition-base hover:bg-ink-soft disabled:opacity-40"
+              className="transition-base mt-3 rounded-xl bg-ink px-5 py-2.5 text-[14px] font-medium text-surface hover:bg-ink-soft disabled:opacity-40"
             >
               {t("intent_go")}
             </button>
@@ -116,7 +119,7 @@ export function ReshapeClient({ initialIntent }: { initialIntent?: string }) {
         ) : phase === "asking" ? (
           question ? (
             <div>
-              <h2 className="text-[18px] font-semibold text-ink text-balance">{question.text}</h2>
+              <h2 className="text-[18px] font-semibold text-balance text-ink">{question.text}</h2>
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
@@ -132,12 +135,12 @@ export function ReshapeClient({ initialIntent }: { initialIntent?: string }) {
                   autoFocus
                   rows={2}
                   placeholder={t("answer_placeholder")}
-                  className="mt-3 w-full resize-none rounded-xl border border-line-strong bg-surface-raised px-4 py-3 text-[15px] text-ink outline-none transition-base focus:border-ink placeholder:text-ink-faint"
+                  className="transition-base mt-3 w-full resize-none rounded-xl border border-line-strong bg-surface-raised px-4 py-3 text-[15px] text-ink outline-none placeholder:text-ink-faint focus:border-ink"
                 />
                 <div className="mt-2 flex items-center gap-3">
                   <button
                     type="submit"
-                    className="rounded-xl bg-ink px-5 py-2 text-[14px] font-medium text-surface transition-base hover:bg-ink-soft"
+                    className="transition-base rounded-xl bg-ink px-5 py-2 text-[14px] font-medium text-surface hover:bg-ink-soft"
                   >
                     {t("answer_continue")}
                   </button>
@@ -147,7 +150,7 @@ export function ReshapeClient({ initialIntent }: { initialIntent?: string }) {
                       answer("", true);
                       setDraft("");
                     }}
-                    className="text-[12.5px] text-ink-faint transition-base hover:text-ink"
+                    className="transition-base text-[12.5px] text-ink-faint hover:text-ink"
                   >
                     {t("answer_skip")}
                   </button>
@@ -199,7 +202,10 @@ export function ReshapeClient({ initialIntent }: { initialIntent?: string }) {
 function Spinner({ label }: { label: string }) {
   return (
     <div className="flex items-center gap-3 py-6 text-ink-faint">
-      <span className="h-4 w-4 animate-spin rounded-full border-2 border-line-strong border-t-ink" aria-hidden />
+      <span
+        className="h-4 w-4 animate-spin rounded-full border-2 border-line-strong border-t-ink"
+        aria-hidden
+      />
       <span className="text-[14px]">{label}</span>
     </div>
   );

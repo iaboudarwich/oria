@@ -1,22 +1,9 @@
 "use client";
 
-import {
-  useCallback,
-  useEffect,
-  useId,
-  useRef,
-  useState,
-  useTransition,
-} from "react";
+import { useCallback, useEffect, useId, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { uploadFile } from "@/lib/data/upload-actions";
-import {
-  ArrowRightIcon,
-  CameraIcon,
-  CheckIcon,
-  CloseIcon,
-  UploadIcon,
-} from "@/components/ui/icon";
+import { ArrowRightIcon, CameraIcon, CheckIcon, CloseIcon, UploadIcon } from "@/components/ui/icon";
 import { useUploadQueue, UploadQueue } from "@/components/upload/upload-queue";
 
 type CompactStatus =
@@ -75,8 +62,7 @@ export function DropzoneCompact({
       const fd = new FormData();
       fd.append("file", file);
       if (defaultSection) fd.append("section", defaultSection);
-      if (defaultCustomSectionId)
-        fd.append("custom_section_id", defaultCustomSectionId);
+      if (defaultCustomSectionId) fd.append("custom_section_id", defaultCustomSectionId);
       if (smartSection) fd.append("smart_section", smartSection);
       return fd;
     },
@@ -142,8 +128,7 @@ export function DropzoneCompact({
     const formData = new FormData();
     formData.append("file", file);
     if (defaultSection) formData.append("section", defaultSection);
-    if (defaultCustomSectionId)
-      formData.append("custom_section_id", defaultCustomSectionId);
+    if (defaultCustomSectionId) formData.append("custom_section_id", defaultCustomSectionId);
     if (smartSection) formData.append("smart_section", smartSection);
     const note = description.trim();
     if (note) formData.append("description", note);
@@ -197,21 +182,10 @@ export function DropzoneCompact({
         }
       }, 1500);
     });
-  }, [
-    status,
-    description,
-    defaultSection,
-    defaultCustomSectionId,
-    smartSection,
-    router,
-  ]);
+  }, [status, description, defaultSection, defaultCustomSectionId, smartSection, router]);
 
   const queueList = (
-    <UploadQueue
-      tasks={queue.tasks}
-      activeCount={queue.activeCount}
-      onClear={queue.clear}
-    />
+    <UploadQueue tasks={queue.tasks} activeCount={queue.activeCount} onClear={queue.clear} />
   );
 
   if (status.kind === "ready") {
@@ -228,19 +202,15 @@ export function DropzoneCompact({
               />
             ) : (
               <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-line bg-canvas text-[10px] font-medium text-ink-muted">
-                {(status.file.name.split(".").pop() ?? "FILE")
-                  .toUpperCase()
-                  .slice(0, 4)}
+                {(status.file.name.split(".").pop() ?? "FILE").toUpperCase().slice(0, 4)}
               </span>
             )}
-            <p className="min-w-0 flex-1 truncate text-[13px] text-ink">
-              {status.file.name}
-            </p>
+            <p className="min-w-0 flex-1 truncate text-[13px] text-ink">{status.file.name}</p>
             <button
               type="button"
               onClick={reset}
               aria-label="Remove file"
-              className="inline-flex h-7 w-7 items-center justify-center rounded-md text-ink-faint transition-base hover:bg-canvas hover:text-ink"
+              className="transition-base inline-flex h-7 w-7 items-center justify-center rounded-md text-ink-faint hover:bg-canvas hover:text-ink"
             >
               <CloseIcon size={12} />
             </button>
@@ -258,14 +228,14 @@ export function DropzoneCompact({
                     : "Optional note. Oria reads it with the file."
               }
               maxLength={500}
-              className="block h-9 flex-1 rounded-md border border-line bg-canvas/40 px-2.5 text-[12.5px] text-ink placeholder:text-ink-faint outline-none focus:border-line-strong"
+              className="block h-9 flex-1 rounded-md border border-line bg-canvas/40 px-2.5 text-[12.5px] text-ink outline-none placeholder:text-ink-faint focus:border-line-strong"
               autoFocus
             />
             <button
               type="button"
               onClick={commit}
               disabled={isPending}
-              className="cta inline-flex h-9 items-center gap-1.5 rounded-md bg-ink px-3 text-[12px] text-surface transition-base hover:bg-ink-soft disabled:cursor-default disabled:opacity-50"
+              className="cta transition-base inline-flex h-9 items-center gap-1.5 rounded-md bg-ink px-3 text-[12px] text-surface hover:bg-ink-soft disabled:cursor-default disabled:opacity-50"
             >
               {isPending ? "Uploading" : "Upload"}
               <ArrowRightIcon size={11} />
@@ -277,10 +247,7 @@ export function DropzoneCompact({
     );
   }
 
-  const busy =
-    status.kind === "uploading" ||
-    status.kind === "reading" ||
-    isPending;
+  const busy = status.kind === "uploading" || status.kind === "reading" || isPending;
   const done = status.kind === "done";
   const cameraInputId = `${inputId}-camera`;
 
@@ -298,7 +265,7 @@ export function DropzoneCompact({
           setDragging(false);
           handleFiles(e.dataTransfer.files);
         }}
-        className={`group flex h-12 cursor-pointer items-center gap-3 rounded-xl border border-dashed bg-surface-raised/60 px-4 transition-base ${
+        className={`group transition-base flex h-12 cursor-pointer items-center gap-3 rounded-xl border border-dashed bg-surface-raised/60 px-4 ${
           dragging
             ? "border-ink bg-canvas/80"
             : "border-line-strong hover:border-ink-muted hover:bg-surface-raised"
@@ -312,21 +279,19 @@ export function DropzoneCompact({
             <>
               {status.kind === "reading" ? "Oria is reading" : "Uploading"}{" "}
               <span className="text-ink-muted">
-                {status.kind === "uploading" || status.kind === "reading"
-                  ? status.name
-                  : ""}
+                {status.kind === "uploading" || status.kind === "reading" ? status.name : ""}
               </span>
             </>
           ) : done && status.kind === "done" ? (
-            status.itemsCount > 1
-              ? `Found ${status.itemsCount} items. ${status.sortedCount} sorted${
-                  status.unsortedCount > 0
-                    ? `, ${status.unsortedCount} need review`
-                    : ""
-                }.`
-              : status.itemsCount === 1
-                ? `Filed ${status.name}.`
-                : `Added ${status.name}.`
+            status.itemsCount > 1 ? (
+              `Found ${status.itemsCount} items. ${status.sortedCount} sorted${
+                status.unsortedCount > 0 ? `, ${status.unsortedCount} need review` : ""
+              }.`
+            ) : status.itemsCount === 1 ? (
+              `Filed ${status.name}.`
+            ) : (
+              `Added ${status.name}.`
+            )
           ) : status.kind === "error" ? (
             <span className="text-claret">{status.message}</span>
           ) : (
@@ -357,7 +322,7 @@ export function DropzoneCompact({
       {!busy && !done && (
         <label
           htmlFor={cameraInputId}
-          className="mt-1.5 flex cursor-pointer items-center gap-1.5 text-[12px] text-ink-faint transition-base hover:text-ink-muted md:hidden"
+          className="transition-base mt-1.5 flex cursor-pointer items-center gap-1.5 text-[12px] text-ink-faint hover:text-ink-muted md:hidden"
         >
           <CameraIcon size={13} />
           Take photo

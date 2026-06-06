@@ -53,7 +53,7 @@ export function OvercommitWarning({
           type="button"
           onClick={block}
           disabled={pending || blocked}
-          className="shrink-0 rounded-lg bg-ink px-3 py-1.5 text-[12.5px] font-medium text-surface transition-base hover:bg-ink-soft disabled:opacity-50"
+          className="transition-base shrink-0 rounded-lg bg-ink px-3 py-1.5 text-[12.5px] font-medium text-surface hover:bg-ink-soft disabled:opacity-50"
         >
           {blocked ? t("overcommit_blocked") : t("overcommit_action")}
         </button>

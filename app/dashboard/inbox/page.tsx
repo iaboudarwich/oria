@@ -32,38 +32,30 @@ export default async function UploadPage() {
   // list them, so the row either flips fast or shows a real Failed
   // pill instead of pretending it's still reading.
   await recoverStuckUploads();
-  const [counts, uploads, allSections, reviewCount, seenHints, reviewGroups] =
-    await Promise.all([
-      countUploadsBySection(),
-      listUploadsWithUploader({ limit: 50 }),
-      listAllSections({ includeHidden: false, includeReview: false }),
-      countReviewUploads(),
-      getSeenHintKeys(),
-      listReviewableGroups(),
-    ]);
+  const [counts, uploads, allSections, reviewCount, seenHints, reviewGroups] = await Promise.all([
+    countUploadsBySection(),
+    listUploadsWithUploader({ limit: 50 }),
+    listAllSections({ includeHidden: false, includeReview: false }),
+    countReviewUploads(),
+    getSeenHintKeys(),
+    listReviewableGroups(),
+  ]);
 
   // Uploads in a group still awaiting review are shown as one group card, not as
   // loose rows, so hide them from the flat list until the user resolves them.
-  const groupedUploadIds = new Set(
-    reviewGroups.flatMap((g) => g.images.map((im) => im.uploadId)),
-  );
+  const groupedUploadIds = new Set(reviewGroups.flatMap((g) => g.images.map((im) => im.uploadId)));
   const ungrouped = uploads.filter((u) => !groupedUploadIds.has(u.id));
 
   const thumbs = await getSignedUrlMap(
     uploads.map((u) => ({ id: u.id, storage_path: u.storage_path })),
   );
 
-  const anyProcessing = uploads.some(
-    (u) => u.status === "processing" || u.status === "received",
-  );
+  const anyProcessing = uploads.some((u) => u.status === "processing" || u.status === "received");
 
   // Uploads that have a low-confidence suggestion but no section yet.
   const pendingSuggestions: SuggestionItem[] = ungrouped
     .filter(
-      (u) =>
-        !u.section &&
-        !u.custom_section_id &&
-        (u.auto_section || u.auto_custom_section_id),
+      (u) => !u.section && !u.custom_section_id && (u.auto_section || u.auto_custom_section_id),
     )
     .map((u) => ({
       id: u.id,
@@ -77,12 +69,12 @@ export default async function UploadPage() {
       <Topbar title="Uploads" />
       <UploadsPoller pending={anyProcessing} />
 
-      <div className="space-y-7 animate-fade-up">
+      <div className="animate-fade-up space-y-7">
         <DropzoneCompact />
         {reviewCount > 0 ? (
           <Link
             href="/dashboard/sections/review"
-            className="flex items-center gap-3 rounded-xl border border-line bg-surface-raised px-4 py-3 transition-base hover:bg-canvas/60"
+            className="transition-base flex items-center gap-3 rounded-xl border border-line bg-surface-raised px-4 py-3 hover:bg-canvas/60"
           >
             <p className="flex-1 text-[13px] text-ink">
               {reviewCount} {reviewCount === 1 ? "item" : "items"} need a quick review

@@ -1,11 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Topbar } from "@/components/dashboard/topbar";
-import {
-  getEntity,
-  getEntityType,
-  listEntityUploads,
-} from "@/lib/data/entities";
+import { getEntity, getEntityType, listEntityUploads } from "@/lib/data/entities";
 import { createClient } from "@/lib/supabase/server";
 import { getSignedUrlMap } from "@/lib/data/uploads";
 import { setPrimaryPhoto } from "@/lib/data/entity-actions";
@@ -46,24 +42,26 @@ export default async function EntityDetailPage({ params }: Props) {
   );
 
   const relOptions = (entityType.relationship_options as string[]) ?? [
-    "document", "photo", "other",
+    "document",
+    "photo",
+    "other",
   ];
 
   return (
     <>
       <Topbar title={entity.name} />
-      <div className="mx-auto max-w-2xl animate-fade-up space-y-8">
+      <div className="animate-fade-up mx-auto max-w-2xl space-y-8">
         {/* Header */}
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-[11px] uppercase tracking-[0.12em] text-ink-faint mb-1">
+            <p className="mb-1 text-[11px] tracking-[0.12em] text-ink-faint uppercase">
               {entityType.label_singular}
             </p>
             <h1 className="text-[22px] font-semibold text-ink">{entity.name}</h1>
           </div>
           <Link
             href={`/dashboard/things/${id}/edit`}
-            className="shrink-0 text-[12px] text-ink-muted hover:text-ink transition-base"
+            className="transition-base shrink-0 text-[12px] text-ink-muted hover:text-ink"
           >
             Edit
           </Link>
@@ -78,7 +76,7 @@ export default async function EntityDetailPage({ params }: Props) {
                 if (!v && v !== 0) return null;
                 return (
                   <div key={f.key}>
-                    <dt className="text-[10.5px] uppercase tracking-[0.1em] text-ink-faint">
+                    <dt className="text-[10.5px] tracking-[0.1em] text-ink-faint uppercase">
                       {f.label}
                     </dt>
                     <dd className="mt-0.5 text-[13px] text-ink">{String(v)}</dd>
@@ -91,13 +89,11 @@ export default async function EntityDetailPage({ params }: Props) {
 
         {/* Documents */}
         <div>
-          <div className="flex items-center justify-between px-1 mb-3">
-            <h2 className="text-eyebrow">
-              Documents ({allLinks.length})
-            </h2>
+          <div className="mb-3 flex items-center justify-between px-1">
+            <h2 className="text-eyebrow">Documents ({allLinks.length})</h2>
             <Link
               href={`/dashboard/things/${id}/link`}
-              className="text-[11.5px] text-ink-muted hover:text-ink transition-base"
+              className="transition-base text-[11.5px] text-ink-muted hover:text-ink"
             >
               + Link document
             </Link>
@@ -132,25 +128,22 @@ export default async function EntityDetailPage({ params }: Props) {
               </Link>
             </div>
           ) : (
-            <ul className="divide-y divide-line rounded-2xl border border-line bg-surface-raised overflow-hidden">
+            <ul className="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface-raised">
               {allLinks.map((link) => {
                 const upload = uploads.find((u) => u.id === link.upload_id);
                 if (!upload) return null;
                 const thumb = thumbs.get(upload.id);
                 return (
-                  <li
-                    key={link.upload_id}
-                    className="flex items-center gap-3 px-4 py-2.5"
-                  >
+                  <li key={link.upload_id} className="flex items-center gap-3 px-4 py-2.5">
                     {thumb ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={thumb}
                         alt=""
-                        className="h-9 w-9 rounded-md object-cover shrink-0"
+                        className="h-9 w-9 shrink-0 rounded-md object-cover"
                       />
                     ) : (
-                      <span className="h-9 w-9 rounded-md bg-canvas shrink-0 flex items-center justify-center text-[10px] text-ink-faint uppercase">
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-canvas text-[10px] text-ink-faint uppercase">
                         {link.relationship.slice(0, 3)}
                       </span>
                     )}
@@ -169,11 +162,9 @@ export default async function EntityDetailPage({ params }: Props) {
                       <form action={setPrimaryPhoto.bind(null, id, upload.id)}>
                         <button
                           type="submit"
-                          className="text-[11px] text-ink-faint hover:text-ink transition-base"
+                          className="transition-base text-[11px] text-ink-faint hover:text-ink"
                         >
-                          {entity.primary_photo_upload_id === upload.id
-                            ? "Primary"
-                            : "Set primary"}
+                          {entity.primary_photo_upload_id === upload.id ? "Primary" : "Set primary"}
                         </button>
                       </form>
                     )}
@@ -187,7 +178,7 @@ export default async function EntityDetailPage({ params }: Props) {
         {/* Back */}
         <Link
           href={`/dashboard/things?type=${entity.entity_type_id}`}
-          className="inline-flex items-center gap-1.5 text-[12.5px] text-ink-muted hover:text-ink transition-base"
+          className="transition-base inline-flex items-center gap-1.5 text-[12.5px] text-ink-muted hover:text-ink"
         >
           ← Back to {entityType.label_plural}
         </Link>

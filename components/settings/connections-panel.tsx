@@ -32,19 +32,12 @@ const STATUS_DOT: Record<string, string> = {
   error: "bg-claret",
 };
 
-
 /**
  * Settings -> Connections. A user can connect several Gmail accounts; each is
  * rendered as its own card with independent controls. Server-rendered; the
  * cards handle their own actions on the client.
  */
-export async function ConnectionsPanel({
-  userId,
-  notice,
-}: {
-  userId: string;
-  notice?: string;
-}) {
+export async function ConnectionsPanel({ userId, notice }: { userId: string; notice?: string }) {
   const connections = await listGmailConnections(userId);
   // Two-zone hub (F1): this panel is the connected-Gmail detail (Zone 1). When
   // nothing is connected, the Available zone owns the connect affordance.
@@ -89,55 +82,56 @@ export async function ConnectionsPanel({
       ) : null}
 
       <>
-          {/* Status strip: an at-a-glance health row per connected inbox. */}
-          <div className="overflow-hidden rounded-2xl border border-line bg-surface-raised">
-            {perConnection.map(({ connection, counts }, i) => (
-              <div
-                key={connection.id}
-                className={`flex items-center gap-3 px-4 py-2.5 text-[12.5px] ${
-                  i > 0 ? "border-t border-line" : ""
-                }`}
-              >
-                <span
-                  className={`h-2 w-2 shrink-0 rounded-full ${STATUS_DOT[connection.status] ?? "bg-ink-faint"}`}
-                  aria-hidden
-                />
-                <span className="min-w-0 flex-1 truncate text-ink">{connection.email}</span>
-                <span className="shrink-0 text-ink-faint">
-                  {t(`status_${connection.status}`)} · {t("last_sync", { time: syncedLabel(connection.lastSyncedAt) })}
-                </span>
-                {counts.pending > 0 ? (
-                  <span className="shrink-0 rounded-full bg-ink px-1.5 text-[10.5px] font-semibold text-surface">
-                    {counts.pending}
-                  </span>
-                ) : null}
-              </div>
-            ))}
-          </div>
-
-          <GmailRoutePref initial={routePref} />
-          {perConnection.map(({ connection, counts, filters }) => (
-            <GmailConnectionCard
+        {/* Status strip: an at-a-glance health row per connected inbox. */}
+        <div className="overflow-hidden rounded-2xl border border-line bg-surface-raised">
+          {perConnection.map(({ connection, counts }, i) => (
+            <div
               key={connection.id}
-              connection={{
-                id: connection.id,
-                email: connection.email,
-                status: connection.status,
-                lastSyncedAt: connection.lastSyncedAt,
-              }}
-              counts={counts}
-              filters={filters}
-              spaces={spaces}
-            />
+              className={`flex items-center gap-3 px-4 py-2.5 text-[12.5px] ${
+                i > 0 ? "border-t border-line" : ""
+              }`}
+            >
+              <span
+                className={`h-2 w-2 shrink-0 rounded-full ${STATUS_DOT[connection.status] ?? "bg-ink-faint"}`}
+                aria-hidden
+              />
+              <span className="min-w-0 flex-1 truncate text-ink">{connection.email}</span>
+              <span className="shrink-0 text-ink-faint">
+                {t(`status_${connection.status}`)} ·{" "}
+                {t("last_sync", { time: syncedLabel(connection.lastSyncedAt) })}
+              </span>
+              {counts.pending > 0 ? (
+                <span className="shrink-0 rounded-full bg-ink px-1.5 text-[10.5px] font-semibold text-surface">
+                  {counts.pending}
+                </span>
+              ) : null}
+            </div>
           ))}
-          <div>
-            <GmailConnectButton
-              configured={configured}
-              variant="secondary"
-              label={t("connect_another")}
-            />
-          </div>
-        </>
+        </div>
+
+        <GmailRoutePref initial={routePref} />
+        {perConnection.map(({ connection, counts, filters }) => (
+          <GmailConnectionCard
+            key={connection.id}
+            connection={{
+              id: connection.id,
+              email: connection.email,
+              status: connection.status,
+              lastSyncedAt: connection.lastSyncedAt,
+            }}
+            counts={counts}
+            filters={filters}
+            spaces={spaces}
+          />
+        ))}
+        <div>
+          <GmailConnectButton
+            configured={configured}
+            variant="secondary"
+            label={t("connect_another")}
+          />
+        </div>
+      </>
     </section>
   );
 }

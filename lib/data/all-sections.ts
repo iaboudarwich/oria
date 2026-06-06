@@ -1,11 +1,7 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import { requireContext } from "./organizations";
-import type {
-  CustomSection,
-  Section,
-  SectionSetting,
-} from "@/lib/supabase/types";
+import type { CustomSection, Section, SectionSetting } from "@/lib/supabase/types";
 
 /**
  * Canonical default order for built-in sections. Custom sections come after
@@ -98,10 +94,7 @@ export async function listAllSections(
       .eq("organization_id", ctx.organization.id)
       .is("deleted_at", null)
       .order("created_at", { ascending: true }),
-    supabase
-      .from("section_settings")
-      .select("*")
-      .eq("organization_id", ctx.organization.id),
+    supabase.from("section_settings").select("*").eq("organization_id", ctx.organization.id),
   ]);
 
   const customSections = (customRes.data ?? []) as CustomSection[];

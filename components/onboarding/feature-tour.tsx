@@ -45,21 +45,25 @@ export function FeatureTour({ initialOpen }: { initialOpen: boolean }) {
       aria-labelledby="tour-title"
       className="fixed inset-0 z-[150] flex items-center justify-center px-4 py-6"
     >
-      <div aria-hidden onClick={finish} className="absolute inset-0 bg-ink/40 backdrop-blur-sm animate-fade-in" />
-      <div className="relative z-[151] w-full max-w-md rounded-2xl border border-line bg-surface-raised p-6 shadow-xl animate-scale-in">
-        <p className="text-[11.5px] font-semibold uppercase tracking-[0.08em] text-ink-faint">
+      <div
+        aria-hidden
+        onClick={finish}
+        className="animate-fade-in absolute inset-0 bg-ink/40 backdrop-blur-sm"
+      />
+      <div className="animate-scale-in relative z-[151] w-full max-w-md rounded-2xl border border-line bg-surface-raised p-6 shadow-xl">
+        <p className="text-[11.5px] font-semibold tracking-[0.08em] text-ink-faint uppercase">
           {t("step_of", { current: step + 1, total: STEPS.length })}
         </p>
-        <h2 id="tour-title" className="mt-1 text-title text-ink">
+        <h2 id="tour-title" className="text-title mt-1 text-ink">
           {t(`${key}.title`)}
         </h2>
-        <p className="mt-2 text-body text-ink-soft">{t(`${key}.body`)}</p>
+        <p className="text-body mt-2 text-ink-soft">{t(`${key}.body`)}</p>
 
         <div className="mt-6 flex items-center justify-between gap-3">
           <button
             type="button"
             onClick={finish}
-            className="text-[12.5px] text-ink-faint transition-base hover:text-ink"
+            className="transition-base text-[12.5px] text-ink-faint hover:text-ink"
           >
             {t("skip")}
           </button>
@@ -68,7 +72,7 @@ export function FeatureTour({ initialOpen }: { initialOpen: boolean }) {
               <button
                 type="button"
                 onClick={() => setStep((s) => s - 1)}
-                className="rounded-lg border border-line-strong px-3 py-1.5 text-[12.5px] font-medium text-ink transition-base hover:bg-surface"
+                className="transition-base rounded-lg border border-line-strong px-3 py-1.5 text-[12.5px] font-medium text-ink hover:bg-surface"
               >
                 {t("back")}
               </button>
@@ -76,7 +80,7 @@ export function FeatureTour({ initialOpen }: { initialOpen: boolean }) {
             <button
               type="button"
               onClick={() => (isLast ? finish() : setStep((s) => s + 1))}
-              className="rounded-lg bg-ink px-3.5 py-1.5 text-[12.5px] font-medium text-surface transition-base hover:bg-ink-soft"
+              className="transition-base rounded-lg bg-ink px-3.5 py-1.5 text-[12.5px] font-medium text-surface hover:bg-ink-soft"
             >
               {isLast ? t("done") : t("next")}
             </button>

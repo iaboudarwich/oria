@@ -67,7 +67,9 @@ const URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SRK = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const ANON = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 if (!URL || !SRK || !ANON) {
-  console.error("Missing Supabase env (NEXT_PUBLIC_SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY / NEXT_PUBLIC_SUPABASE_ANON_KEY)");
+  console.error(
+    "Missing Supabase env (NEXT_PUBLIC_SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY / NEXT_PUBLIC_SUPABASE_ANON_KEY)",
+  );
   process.exit(1);
 }
 
@@ -104,11 +106,19 @@ try {
   // 3. Recovery token -> session (the link's effect, done server-side here).
   const anon = createClient(URL, ANON, { auth: { persistSession: false } });
   const verified = await anon.auth.verifyOtp({ email, token: otp, type: "recovery" });
-  check("recovery token establishes a session", !!verified.data.session, verified.error?.message ?? "");
+  check(
+    "recovery token establishes a session",
+    !!verified.data.session,
+    verified.error?.message ?? "",
+  );
 
   // 4. updateUser against the recovery session actually changes the password.
   const upd = await anon.auth.updateUser({ password: NEW });
-  check("updateUser({ password }) succeeds on the recovery session", !upd.error, upd.error?.message ?? "");
+  check(
+    "updateUser({ password }) succeeds on the recovery session",
+    !upd.error,
+    upd.error?.message ?? "",
+  );
 
   // 5. The NEW password now signs in; the OLD one no longer does.
   const fresh = createClient(URL, ANON, { auth: { persistSession: false } });
@@ -138,7 +148,11 @@ const NEW2 = "NewPassword-" + randomUUID().slice(0, 8);
 let userId2 = null;
 try {
   // 1. Confirmed user.
-  const created = await admin.auth.admin.createUser({ email: email2, password: OLD2, email_confirm: true });
+  const created = await admin.auth.admin.createUser({
+    email: email2,
+    password: OLD2,
+    email_confirm: true,
+  });
   userId2 = created.data.user?.id ?? null;
   check("temp user (2fa) created", !!userId2);
 
@@ -153,7 +167,11 @@ try {
   const enrollCode = totp(secret);
   const ch0 = await setup.auth.mfa.challenge({ factorId });
   const v0 = await setup.auth.mfa.verify({ factorId, challengeId: ch0.data?.id, code: enrollCode });
-  check("authentication app verified (account now has a second factor)", !v0.error, v0.error?.message ?? "");
+  check(
+    "authentication app verified (account now has a second factor)",
+    !v0.error,
+    v0.error?.message ?? "",
+  );
 
   // 3. Recovery token -> a fresh recovery session (the reset link's effect).
   const link = await admin.auth.admin.generateLink({
@@ -164,11 +182,19 @@ try {
   const otp = link.data?.properties?.email_otp;
   const recovery = createClient(URL, ANON, { auth: { persistSession: false } });
   const verified = await recovery.auth.verifyOtp({ email: email2, token: otp, type: "recovery" });
-  check("recovery token establishes a session", !!verified.data.session, verified.error?.message ?? "");
+  check(
+    "recovery token establishes a session",
+    !!verified.data.session,
+    verified.error?.message ?? "",
+  );
 
   // 4. The bug: without elevation the provider refuses the password change.
   const blocked = await recovery.auth.updateUser({ password: NEW2 });
-  check("password change is blocked until the second factor is verified", !!blocked.error, blocked.error?.message ?? "(no error)");
+  check(
+    "password change is blocked until the second factor is verified",
+    !!blocked.error,
+    blocked.error?.message ?? "(no error)",
+  );
 
   // 5. The fix: detect the verified factor on the recovery session.
   const aal = await recovery.auth.mfa.getAuthenticatorAssuranceLevel();
@@ -183,7 +209,11 @@ try {
   // 6. Verify the 6-digit code to elevate the recovery session.
   const code = await freshCode(secret, enrollCode);
   const ch1 = await recovery.auth.mfa.challenge({ factorId: verifiedTotp[0].id });
-  const v1 = await recovery.auth.mfa.verify({ factorId: verifiedTotp[0].id, challengeId: ch1.data?.id, code });
+  const v1 = await recovery.auth.mfa.verify({
+    factorId: verifiedTotp[0].id,
+    challengeId: ch1.data?.id,
+    code,
+  });
   check("the 6-digit code elevates the recovery session", !v1.error, v1.error?.message ?? "");
 
   // 7. Now the password change succeeds, and the new password signs in.
@@ -192,7 +222,11 @@ try {
 
   const fresh = createClient(URL, ANON, { auth: { persistSession: false } });
   const newLogin = await fresh.auth.signInWithPassword({ email: email2, password: NEW2 });
-  check("new password signs in (2fa account)", !!newLogin.data.session, newLogin.error?.message ?? "");
+  check(
+    "new password signs in (2fa account)",
+    !!newLogin.data.session,
+    newLogin.error?.message ?? "",
+  );
 } catch (e) {
   check("no unexpected error (2fa)", false, e instanceof Error ? e.message : String(e));
 } finally {

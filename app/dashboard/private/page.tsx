@@ -53,7 +53,7 @@ export default function PrivateOriaPage() {
     <>
       <Topbar title="Private Oria" />
 
-      <div className="space-y-10 animate-fade-up">
+      <div className="animate-fade-up space-y-10">
         <section className="max-w-2xl">
           <span className="inline-flex items-center gap-1.5 rounded-md border border-line bg-surface-raised px-2 py-0.5 text-[11px] text-ink-muted">
             <PulseIcon size={11} /> Preview
@@ -62,9 +62,9 @@ export default function PrivateOriaPage() {
             A self-hosted, local-first version of Oria for confidential memory.
           </h2>
           <p className="mt-3 text-[14px] leading-[1.55] text-ink-muted">
-            Private Oria runs entirely on your own infrastructure. Same upload
-            anything, same calm search, same operational memory, but the files,
-            the AI, and the index live on hardware you control.
+            Private Oria runs entirely on your own infrastructure. Same upload anything, same calm
+            search, same operational memory, but the files, the AI, and the index live on hardware
+            you control.
           </p>
           <p className="mt-2 text-[13px] text-ink-faint">
             Not built yet. This is the architecture and the direction.
@@ -72,9 +72,7 @@ export default function PrivateOriaPage() {
         </section>
 
         <section>
-          <h3 className="mb-3 px-1 text-[13px] font-medium text-ink-muted">
-            What it covers
-          </h3>
+          <h3 className="mb-3 px-1 text-[13px] font-medium text-ink-muted">What it covers</h3>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {PILLARS.map((p) => (
               <article
@@ -85,26 +83,22 @@ export default function PrivateOriaPage() {
                   <p.Icon size={14} />
                 </div>
                 <p className="text-[14px] font-semibold text-ink">{p.title}</p>
-                <p className="mt-1 text-[13px] leading-[1.55] text-ink-muted">
-                  {p.body}
-                </p>
+                <p className="mt-1 text-[13px] leading-[1.55] text-ink-muted">{p.body}</p>
               </article>
             ))}
           </div>
         </section>
 
-        <section className="rounded-xl border border-line bg-surface-raised p-6 max-w-2xl">
-          <h3 className="text-[14px] font-semibold text-ink">
-            Bring it to your team
-          </h3>
+        <section className="max-w-2xl rounded-xl border border-line bg-surface-raised p-6">
+          <h3 className="text-[14px] font-semibold text-ink">Bring it to your team</h3>
           <p className="mt-1 text-[13px] text-ink-muted">
-            Private Oria opens to a small set of households and offices first.
-            Send a note if you want to be on that list.
+            Private Oria opens to a small set of households and offices first. Send a note if you
+            want to be on that list.
           </p>
           <div className="mt-4 flex items-center gap-3">
             <a
               href="mailto:private@oria.app?subject=Private%20Oria"
-              className="inline-flex h-10 items-center rounded-lg bg-ink px-4 text-[13px] text-surface hover:bg-ink-soft transition-base"
+              className="transition-base inline-flex h-10 items-center rounded-lg bg-ink px-4 text-[13px] text-surface hover:bg-ink-soft"
             >
               Request access
             </a>
@@ -113,9 +107,7 @@ export default function PrivateOriaPage() {
         </section>
 
         <section className="max-w-2xl">
-          <h3 className="text-[13px] font-medium text-ink-muted px-1 mb-2">
-            How it will feel
-          </h3>
+          <h3 className="mb-2 px-1 text-[13px] font-medium text-ink-muted">How it will feel</h3>
           <ul className="space-y-1.5">
             {[
               "Same minimal interface you already use",
@@ -123,10 +115,7 @@ export default function PrivateOriaPage() {
               "Hosted on a Mac mini, a NAS, or your own server",
               "Sync between devices, no public cloud needed",
             ].map((line) => (
-              <li
-                key={line}
-                className="flex items-start gap-2.5 px-1 text-[13px] text-ink-soft"
-              >
+              <li key={line} className="flex items-start gap-2.5 px-1 text-[13px] text-ink-soft">
                 <span className="mt-1.5 inline-block h-1 w-1 shrink-0 rounded-full bg-accent" />
                 <span>{line}</span>
               </li>
@@ -137,4 +126,3 @@ export default function PrivateOriaPage() {
     </>
   );
 }
-

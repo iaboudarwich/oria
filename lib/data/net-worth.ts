@@ -5,11 +5,7 @@ import { requireContext } from "./organizations";
 import { enforceActiveOrg } from "./scope";
 import { logAuditEvent } from "./audit-log";
 import { revalidatePath } from "next/cache";
-import {
-  computeNetWorth,
-  type ManualAssetKind,
-  type NetWorth,
-} from "@/lib/net-worth/compute";
+import { computeNetWorth, type ManualAssetKind, type NetWorth } from "@/lib/net-worth/compute";
 
 export type ManualAsset = {
   id: string;
@@ -75,7 +71,9 @@ export async function listNetWorthSnapshots(limit = 90): Promise<NetWorthSnapsho
   const supabase = await createClient();
   const { data } = await supabase
     .from("net_worth_snapshots")
-    .select("organization_id, snapshot_date, total_assets, total_liabilities, net_worth, currency, breakdown")
+    .select(
+      "organization_id, snapshot_date, total_assets, total_liabilities, net_worth, currency, breakdown",
+    )
     .eq("organization_id", ctx.organization.id)
     .order("snapshot_date", { ascending: false })
     .limit(limit);
@@ -183,10 +181,7 @@ export async function archiveManualAsset(id: string): Promise<{ ok: boolean }> {
 }
 
 /** Toggle whether a holding counts toward net worth + insights. */
-export async function setAssetExcluded(
-  id: string,
-  excluded: boolean,
-): Promise<{ ok: boolean }> {
+export async function setAssetExcluded(id: string, excluded: boolean): Promise<{ ok: boolean }> {
   try {
     const ctx = await requireContext();
     const supabase = await createClient();

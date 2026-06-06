@@ -36,9 +36,7 @@ describe("suggestedQuestions — space-aware + localized", () => {
   });
 
   it("the investor template keeps its own bucket", () => {
-    expect(suggestedQuestions({ template: "investor" }, "en").join(" ")).toContain(
-      "portfolio",
-    );
+    expect(suggestedQuestions({ template: "investor" }, "en").join(" ")).toContain("portfolio");
   });
 
   it("falls back to Work for office spaces without a recognized template", () => {

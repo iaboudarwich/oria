@@ -15,9 +15,7 @@ export type OutlookConnectionSummary = {
 };
 
 /** All of the user's connected Outlook mailboxes (RLS-scoped). */
-export async function listOutlookConnections(
-  userId: string,
-): Promise<OutlookConnectionSummary[]> {
+export async function listOutlookConnections(userId: string): Promise<OutlookConnectionSummary[]> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("email_connections")
@@ -25,14 +23,16 @@ export async function listOutlookConnections(
     .eq("user_id", userId)
     .eq("provider", "outlook")
     .order("connected_at", { ascending: true });
-  return ((data as Array<{
-    id: string;
-    email_address: string;
-    status: OutlookConnectionSummary["status"];
-    connected_at: string;
-    last_synced_at: string | null;
-    last_error: string | null;
-  }>) ?? []).map((r) => ({
+  return (
+    (data as Array<{
+      id: string;
+      email_address: string;
+      status: OutlookConnectionSummary["status"];
+      connected_at: string;
+      last_synced_at: string | null;
+      last_error: string | null;
+    }>) ?? []
+  ).map((r) => ({
     id: r.id,
     email: r.email_address,
     status: r.status,

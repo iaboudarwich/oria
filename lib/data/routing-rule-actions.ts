@@ -6,8 +6,16 @@ import { requireContext } from "./organizations";
 import { logAuditEvent } from "./audit-log";
 
 const BUILTIN_SECTIONS = new Set<string>([
-  "household", "travel", "properties", "staff", "events",
-  "finance", "legal", "personal", "vendors", "health",
+  "household",
+  "travel",
+  "properties",
+  "staff",
+  "events",
+  "finance",
+  "legal",
+  "personal",
+  "vendors",
+  "health",
 ]);
 
 /**
@@ -95,19 +103,17 @@ export async function suppressRoutingRule(vendor: string): Promise<{ ok: boolean
   if (!v) return { ok: false };
   const ctx = await requireContext();
   const admin = createAdminClient();
-  await admin
-    .from("learned_routing_rules")
-    .upsert(
-      {
-        user_id: ctx.profile.id,
-        organization_id: ctx.organization.id,
-        match_type: "vendor",
-        match_value: v,
-        target_section_key: "",
-        source: "suppressed",
-      },
-      { onConflict: "user_id,organization_id,match_type,match_value" },
-    );
+  await admin.from("learned_routing_rules").upsert(
+    {
+      user_id: ctx.profile.id,
+      organization_id: ctx.organization.id,
+      match_type: "vendor",
+      match_value: v,
+      target_section_key: "",
+      source: "suppressed",
+    },
+    { onConflict: "user_id,organization_id,match_type,match_value" },
+  );
   return { ok: true };
 }
 

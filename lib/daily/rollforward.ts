@@ -81,19 +81,11 @@ export async function applyRollForward(
   const alreadyCarried = new Set<string>(
     (existing ?? []).map((r) => r.source_id as string).filter(Boolean),
   );
-  const rows = computeRolloverCards(
-    overdue,
-    alreadyCarried,
-    forDate,
-    userId,
-    organizationId,
-  );
+  const rows = computeRolloverCards(overdue, alreadyCarried, forDate, userId, organizationId);
   if (!rows.length) return 0;
-  await admin
-    .from("today_pinned_cards")
-    .upsert(rows, {
-      onConflict: "user_id,organization_id,card_kind,source_id,for_date",
-      ignoreDuplicates: true,
-    });
+  await admin.from("today_pinned_cards").upsert(rows, {
+    onConflict: "user_id,organization_id,card_kind,source_id,for_date",
+    ignoreDuplicates: true,
+  });
   return rows.length;
 }

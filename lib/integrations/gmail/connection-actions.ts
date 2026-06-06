@@ -13,9 +13,7 @@ export type AutoRoutePreference = "always_review" | "auto_confident" | "auto_all
 const VALID_PREFS: AutoRoutePreference[] = ["always_review", "auto_confident", "auto_all"];
 
 /** Save the user's auto-routing preference (how aggressively to auto-add). */
-export async function setAutoRoutePreference(
-  pref: AutoRoutePreference,
-): Promise<{ ok: boolean }> {
+export async function setAutoRoutePreference(pref: AutoRoutePreference): Promise<{ ok: boolean }> {
   if (!VALID_PREFS.includes(pref)) return { ok: false };
   const supabase = await createClient();
   const {
@@ -46,8 +44,14 @@ export async function saveConnectionFilters(
   const routing = config.workspaceRouting;
   const mode = config.routingMode === "fixed" ? "fixed" : "auto";
   await updateConnectionFilters(user.id, connectionId, {
-    excludeKeywords: (config.excludeKeywords ?? []).map((s) => s.trim()).filter(Boolean).slice(0, 50),
-    excludeSenders: (config.excludeSenders ?? []).map((s) => s.trim()).filter(Boolean).slice(0, 50),
+    excludeKeywords: (config.excludeKeywords ?? [])
+      .map((s) => s.trim())
+      .filter(Boolean)
+      .slice(0, 50),
+    excludeSenders: (config.excludeSenders ?? [])
+      .map((s) => s.trim())
+      .filter(Boolean)
+      .slice(0, 50),
     excludeWithAttachments: !!config.excludeWithAttachments,
     workspaceRouting: routing === "work" || routing === "auto" ? routing : "personal",
     routingMode: mode,

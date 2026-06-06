@@ -16,15 +16,11 @@ import { computeNetWorth, type AssetInput } from "./compute";
  * snapshot orgs that hold at least one live holding, so an empty org never
  * litters the history with zero rows.
  */
-export async function takeNetWorthSnapshots(
-  now: Date,
-): Promise<{ snapshots: number }> {
+export async function takeNetWorthSnapshots(now: Date): Promise<{ snapshots: number }> {
   const admin = createAdminClient();
   let snapshots = 0;
 
-  const { data: profiles } = await admin
-    .from("profiles")
-    .select("id, timezone");
+  const { data: profiles } = await admin.from("profiles").select("id, timezone");
   if (!profiles?.length) return { snapshots };
 
   // Owners only: a snapshot is taken once per owned org at the owner's midnight.
@@ -55,20 +51,18 @@ export async function takeNetWorthSnapshots(
     if (!assets?.length) continue; // nothing to snapshot
 
     const nw = computeNetWorth(assets as AssetInput[]);
-    const { error } = await admin
-      .from("net_worth_snapshots")
-      .upsert(
-        {
-          organization_id: orgId,
-          snapshot_date: ymd,
-          total_assets: nw.totalAssets,
-          total_liabilities: nw.totalLiabilities,
-          net_worth: nw.netWorth,
-          currency: nw.currency,
-          breakdown: nw.byKind,
-        },
-        { onConflict: "organization_id,snapshot_date" },
-      );
+    const { error } = await admin.from("net_worth_snapshots").upsert(
+      {
+        organization_id: orgId,
+        snapshot_date: ymd,
+        total_assets: nw.totalAssets,
+        total_liabilities: nw.totalLiabilities,
+        net_worth: nw.netWorth,
+        currency: nw.currency,
+        breakdown: nw.byKind,
+      },
+      { onConflict: "organization_id,snapshot_date" },
+    );
     if (error) continue;
     snapshots += 1;
     await logAuditEvent({

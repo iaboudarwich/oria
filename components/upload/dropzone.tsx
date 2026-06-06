@@ -73,8 +73,7 @@ export function Dropzone({
       const fd = new FormData();
       fd.append("file", file);
       if (defaultSection) fd.append("section", defaultSection);
-      if (defaultCustomSectionId)
-        fd.append("custom_section_id", defaultCustomSectionId);
+      if (defaultCustomSectionId) fd.append("custom_section_id", defaultCustomSectionId);
       if (smartSection) fd.append("smart_section", smartSection);
       if (groupId) fd.append("group_id", groupId);
       return fd;
@@ -144,8 +143,7 @@ export function Dropzone({
     const formData = new FormData();
     formData.append("file", file);
     if (defaultSection) formData.append("section", defaultSection);
-    if (defaultCustomSectionId)
-      formData.append("custom_section_id", defaultCustomSectionId);
+    if (defaultCustomSectionId) formData.append("custom_section_id", defaultCustomSectionId);
     if (smartSection) formData.append("smart_section", smartSection);
     const note = description.trim();
     if (note) formData.append("description", note);
@@ -206,14 +204,7 @@ export function Dropzone({
       // Reset description for a follow-up upload.
       setDescription("");
     });
-  }, [
-    status,
-    description,
-    defaultSection,
-    defaultCustomSectionId,
-    smartSection,
-    router,
-  ]);
+  }, [status, description, defaultSection, defaultCustomSectionId, smartSection, router]);
 
   // -- IDLE: classic dropzone target ------------------------------------------
   if (status.kind === "idle") {
@@ -233,7 +224,7 @@ export function Dropzone({
             setDragging(false);
             handleFiles(e.dataTransfer.files);
           }}
-          className={`flex cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl border border-dashed px-6 py-12 text-center shadow-[0_1px_2px_rgba(28,26,23,0.04)] transition-base sm:py-14 ${
+          className={`transition-base flex cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl border border-dashed px-6 py-12 text-center shadow-[0_1px_2px_rgba(28,26,23,0.04)] sm:py-14 ${
             dragging
               ? "scale-[1.005] border-ink bg-canvas/80 shadow-[0_8px_24px_-16px_rgba(28,26,23,0.20)]"
               : "border-line-strong bg-surface-raised/60 hover:border-ink-muted hover:bg-surface-raised hover:shadow-[0_4px_16px_-12px_rgba(28,26,23,0.18)]"
@@ -241,9 +232,7 @@ export function Dropzone({
         >
           <UploadIcon size={20} />
           <div>
-            <h2 className="text-[20px] font-semibold tracking-tight text-ink">
-              {heading}
-            </h2>
+            <h2 className="text-[20px] font-semibold tracking-tight text-ink">{heading}</h2>
             <p className="mt-1 text-[13px] text-ink-muted">{subheading}</p>
           </div>
           <input
@@ -255,11 +244,7 @@ export function Dropzone({
           />
         </label>
 
-        <UploadQueue
-          tasks={queue.tasks}
-          activeCount={queue.activeCount}
-          onClear={queue.clear}
-        />
+        <UploadQueue tasks={queue.tasks} activeCount={queue.activeCount} onClear={queue.clear} />
 
         {/* Camera capture. shown only on touch/mobile-sized screens.
             Renders as a tappable secondary button. On mobile browsers
@@ -268,7 +253,7 @@ export function Dropzone({
             appears as a confusing fallback. */}
         <label
           htmlFor={cameraInputId}
-          className="flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-line bg-surface-raised/60 py-2.5 text-[13px] text-ink-muted transition-base hover:border-line-strong hover:text-ink md:hidden"
+          className="transition-base flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-line bg-surface-raised/60 py-2.5 text-[13px] text-ink-muted hover:border-line-strong hover:text-ink md:hidden"
         >
           <CameraIcon size={15} />
           Take photo
@@ -290,10 +275,7 @@ export function Dropzone({
     return (
       <div className="space-y-3 rounded-2xl border border-line-strong bg-surface-raised p-4 shadow-[0_1px_2px_rgba(28,26,23,0.04)]">
         <div className="flex items-start gap-3">
-          <FilePreview
-            file={status.file}
-            previewUrl={status.previewUrl}
-          />
+          <FilePreview file={status.file} previewUrl={status.previewUrl} />
           <div className="min-w-0 flex-1">
             <p className="truncate text-[13.5px] text-ink">{status.file.name}</p>
             <p className="text-[11.5px] text-ink-faint">
@@ -304,7 +286,7 @@ export function Dropzone({
             type="button"
             onClick={clearPick}
             aria-label="Remove file"
-            className="inline-flex h-7 w-7 cursor-pointer items-center justify-center rounded-md text-ink-faint transition-base hover:bg-canvas hover:text-ink"
+            className="transition-base inline-flex h-7 w-7 cursor-pointer items-center justify-center rounded-md text-ink-faint hover:bg-canvas hover:text-ink"
           >
             <CloseIcon size={12} />
           </button>
@@ -316,7 +298,7 @@ export function Dropzone({
           rows={2}
           maxLength={500}
           placeholder="Add a note (optional). e.g. ‘Lunch: chicken, rice, salad.’ or ‘March electricity bill for the LA apartment.’"
-          className="block w-full resize-y rounded-lg border border-line bg-canvas/40 px-3 py-2 text-[13px] text-ink placeholder:text-ink-faint outline-none transition-base focus:border-line-strong"
+          className="transition-base block w-full resize-y rounded-lg border border-line bg-canvas/40 px-3 py-2 text-[13px] text-ink outline-none placeholder:text-ink-faint focus:border-line-strong"
           aria-label="Optional note about this upload"
           autoFocus
         />
@@ -328,7 +310,7 @@ export function Dropzone({
           <div className="flex items-center gap-2">
             <label
               htmlFor="oria-upload-replace"
-              className="cursor-pointer text-[12px] text-ink-muted transition-base hover:text-ink"
+              className="transition-base cursor-pointer text-[12px] text-ink-muted hover:text-ink"
             >
               Replace
               <input
@@ -342,7 +324,7 @@ export function Dropzone({
               type="button"
               onClick={commitUpload}
               disabled={isPending}
-              className="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-lg bg-ink px-3.5 text-[12.5px] text-surface transition-base hover:bg-ink-soft disabled:cursor-default disabled:opacity-50"
+              className="transition-base inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-lg bg-ink px-3.5 text-[12.5px] text-surface hover:bg-ink-soft disabled:cursor-default disabled:opacity-50"
             >
               {isPending ? "Uploading" : "Upload"}
               <ArrowRightIcon size={12} />
@@ -367,7 +349,7 @@ export function Dropzone({
         <button
           type="button"
           onClick={clearPick}
-          className="cursor-pointer text-[12px] text-ink-muted transition-base hover:text-ink"
+          className="transition-base cursor-pointer text-[12px] text-ink-muted hover:text-ink"
         >
           Upload another
         </button>
@@ -376,13 +358,7 @@ export function Dropzone({
   );
 }
 
-function FilePreview({
-  file,
-  previewUrl,
-}: {
-  file: File;
-  previewUrl: string | null;
-}) {
+function FilePreview({ file, previewUrl }: { file: File; previewUrl: string | null }) {
   if (previewUrl) {
     return (
       // eslint-disable-next-line @next/next/no-img-element
@@ -418,9 +394,7 @@ function StatusBanner({ status, pending }: { status: Status; pending: boolean })
         </span>
         <p className="text-[13px] text-ink">
           Uploading{" "}
-          <span className="text-ink-muted">
-            {status.kind === "uploading" ? status.name : ""}
-          </span>
+          <span className="text-ink-muted">{status.kind === "uploading" ? status.name : ""}</span>
         </p>
       </div>
     );
@@ -433,8 +407,7 @@ function StatusBanner({ status, pending }: { status: Status; pending: boolean })
           <span className="relative inline-flex h-2 w-2 rounded-full bg-accent" />
         </span>
         <p className="text-[13px] text-ink">
-          Oria is reading{" "}
-          <span className="text-ink-muted">{status.name}</span>
+          Oria is reading <span className="text-ink-muted">{status.name}</span>
         </p>
       </div>
     );

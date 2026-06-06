@@ -29,9 +29,11 @@ export function CaptureButton() {
         aria-label={t("open")}
         aria-haspopup="dialog"
         onClick={() => setOpen(true)}
-        className="inline-flex h-14 w-14 -translate-y-2 items-center justify-center rounded-full border-2 border-canvas bg-brand text-surface shadow-lg shadow-brand/30 transition-base hover:bg-brand/90 active:scale-95 md:translate-y-0"
+        className="transition-base inline-flex h-14 w-14 -translate-y-2 items-center justify-center rounded-full border-2 border-canvas bg-brand text-surface shadow-lg shadow-brand/30 hover:bg-brand/90 active:scale-95 md:translate-y-0"
       >
-        <span aria-hidden className="text-[26px] font-light leading-none">+</span>
+        <span aria-hidden className="text-[26px] leading-none font-light">
+          +
+        </span>
       </button>
 
       <Sheet open={open} onOpenChange={setOpen} title={t("title")} description={t("subtitle")}>
@@ -41,7 +43,7 @@ export function CaptureButton() {
             <Link
               href="/dashboard/inbox"
               onClick={() => setOpen(false)}
-              className="flex items-center gap-2 rounded-xl border border-line bg-surface-raised px-3 py-3 text-[13px] text-ink transition-base hover:bg-canvas"
+              className="transition-base flex items-center gap-2 rounded-xl border border-line bg-surface-raised px-3 py-3 text-[13px] text-ink hover:bg-canvas"
             >
               <UploadIcon size={16} />
               {t("upload")}
@@ -49,7 +51,7 @@ export function CaptureButton() {
             <Link
               href="/dashboard/calendar"
               onClick={() => setOpen(false)}
-              className="flex items-center gap-2 rounded-xl border border-line bg-surface-raised px-3 py-3 text-[13px] text-ink transition-base hover:bg-canvas"
+              className="transition-base flex items-center gap-2 rounded-xl border border-line bg-surface-raised px-3 py-3 text-[13px] text-ink hover:bg-canvas"
             >
               <CalendarIcon size={16} />
               {t("reminder")}

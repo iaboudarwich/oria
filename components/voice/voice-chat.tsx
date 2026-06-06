@@ -36,7 +36,11 @@ export function VoiceChat() {
 
   const browserSpeak = useCallback(
     (text: string): boolean => {
-      if (typeof window === "undefined" || !("speechSynthesis" in window) || typeof window.SpeechSynthesisUtterance === "undefined") {
+      if (
+        typeof window === "undefined" ||
+        !("speechSynthesis" in window) ||
+        typeof window.SpeechSynthesisUtterance === "undefined"
+      ) {
         return false;
       }
       try {
@@ -88,21 +92,18 @@ export function VoiceChat() {
     [browserSpeak],
   );
 
-  const whenLabel = useCallback(
-    (action: ProposedAction): string => {
-      if (action.type !== "reminder.create" || !action.date || !action.time) return "";
-      const d = new Date(`${action.date}T${action.time}`);
-      if (Number.isNaN(d.getTime())) return `${action.date} ${action.time}`;
-      return d.toLocaleString(undefined, {
-        weekday: "short",
-        month: "short",
-        day: "numeric",
-        hour: "numeric",
-        minute: "2-digit",
-      });
-    },
-    [],
-  );
+  const whenLabel = useCallback((action: ProposedAction): string => {
+    if (action.type !== "reminder.create" || !action.date || !action.time) return "";
+    const d = new Date(`${action.date}T${action.time}`);
+    if (Number.isNaN(d.getTime())) return `${action.date} ${action.time}`;
+    return d.toLocaleString(undefined, {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+    });
+  }, []);
 
   const confirmText = useCallback(
     (action: ProposedAction): string => {
@@ -225,7 +226,12 @@ export function VoiceChat() {
   return (
     <section className="rounded-2xl border border-line bg-surface-raised p-5">
       <div className="flex items-center gap-4">
-        <MicButton size="lg" onTranscribed={ask} targetLanguage={locale} breatheWhenIdle={phase === "idle"} />
+        <MicButton
+          size="lg"
+          onTranscribed={ask}
+          targetLanguage={locale}
+          breatheWhenIdle={phase === "idle"}
+        />
         <div className="min-w-0">
           <h2 className="text-[15px] font-semibold text-ink">{t("title")}</h2>
           <p className="mt-0.5 text-[12.5px] text-ink-muted">{t("subtitle")}</p>
@@ -259,7 +265,7 @@ export function VoiceChat() {
                   <button
                     type="button"
                     onClick={cancel}
-                    className="text-[12px] text-ink-muted transition-base hover:text-ink"
+                    className="transition-base text-[12px] text-ink-muted hover:text-ink"
                   >
                     {tv("confirm_no")}
                   </button>
@@ -268,7 +274,7 @@ export function VoiceChat() {
                 <button
                   type="button"
                   onClick={doUndo}
-                  className="mt-2 inline-flex items-center gap-1.5 rounded-lg border border-line px-2.5 py-1 text-[12px] text-ink-muted transition-base hover:text-ink"
+                  className="transition-base mt-2 inline-flex items-center gap-1.5 rounded-lg border border-line px-2.5 py-1 text-[12px] text-ink-muted hover:text-ink"
                 >
                   {tv("undo")} ({undo.secs})
                 </button>
@@ -276,7 +282,7 @@ export function VoiceChat() {
                 <button
                   type="button"
                   onClick={() => speak(answer)}
-                  className="mt-2 inline-flex items-center gap-1.5 text-[12px] text-ink-muted transition-base hover:text-ink"
+                  className="transition-base mt-2 inline-flex items-center gap-1.5 text-[12px] text-ink-muted hover:text-ink"
                 >
                   <SpeakerIcon size={13} />
                   {speaking ? t("speaking") : t("replay")}

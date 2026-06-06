@@ -38,16 +38,8 @@ export interface SemanticSearchResult {
 /**
  * Search document chunks for the given query within an organisation.
  */
-export async function searchChunks(
-  opts: SemanticSearchOptions
-): Promise<SemanticSearchResult> {
-  const {
-    organizationId,
-    query,
-    topK = 10,
-    similarityThreshold = 0.3,
-    section,
-  } = opts;
+export async function searchChunks(opts: SemanticSearchOptions): Promise<SemanticSearchResult> {
+  const { organizationId, query, topK = 10, similarityThreshold = 0.3, section } = opts;
 
   const supabase = await createClient();
 
@@ -65,14 +57,16 @@ export async function searchChunks(
 
     if (!error && data && data.length > 0) {
       return {
-        chunks: (data as Array<{
-          id: string;
-          upload_id: string;
-          chunk_index: number;
-          content: string;
-          similarity: number;
-          metadata: Record<string, unknown>;
-        }>).map((row) => ({
+        chunks: (
+          data as Array<{
+            id: string;
+            upload_id: string;
+            chunk_index: number;
+            content: string;
+            similarity: number;
+            metadata: Record<string, unknown>;
+          }>
+        ).map((row) => ({
           id: row.id,
           uploadId: row.upload_id,
           chunkIndex: row.chunk_index,
@@ -109,13 +103,15 @@ export async function searchChunks(
 
   if (!ftError && ftData && ftData.length > 0) {
     return {
-      chunks: (ftData as Array<{
-        id: string;
-        upload_id: string;
-        chunk_index: number;
-        content: string;
-        metadata: Record<string, unknown>;
-      }>).map((row, i) => ({
+      chunks: (
+        ftData as Array<{
+          id: string;
+          upload_id: string;
+          chunk_index: number;
+          content: string;
+          metadata: Record<string, unknown>;
+        }>
+      ).map((row, i) => ({
         id: row.id,
         uploadId: row.upload_id,
         chunkIndex: row.chunk_index,
@@ -149,7 +145,7 @@ export interface CrossOrgSearchResult {
  * would be too expensive at scale).
  */
 export async function searchChunksCrossOrg(
-  opts: Omit<SemanticSearchOptions, "organizationId">
+  opts: Omit<SemanticSearchOptions, "organizationId">,
 ): Promise<CrossOrgSearchResult> {
   const { query, topK = 10, similarityThreshold = 0.3 } = opts;
 
@@ -159,21 +155,15 @@ export async function searchChunksCrossOrg(
   }
 
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc(
-    "match_document_chunks_cross_org",
-    {
-      query_embedding: JSON.stringify(queryEmbedding),
-      match_count: topK,
-      similarity_threshold: similarityThreshold,
-    },
-  );
+  const { data, error } = await supabase.rpc("match_document_chunks_cross_org", {
+    query_embedding: JSON.stringify(queryEmbedding),
+    match_count: topK,
+    similarity_threshold: similarityThreshold,
+  });
 
   if (error || !data || data.length === 0) {
     if (error) {
-      console.warn(
-        "[embedding/search] match_document_chunks_cross_org RPC error:",
-        error,
-      );
+      console.warn("[embedding/search] match_document_chunks_cross_org RPC error:", error);
     }
     return { chunks: [], method: "none" };
   }

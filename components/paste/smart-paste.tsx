@@ -71,7 +71,12 @@ export function SmartPaste() {
     const confirmation = t("filed", { section: offer.sectionLabel });
     startTransition(async () => {
       showOptimisticFiled(confirmation); // reflect immediately
-      const res = await confirmPaste({ text: text.trim(), section: offer.section, timezone, nowISO });
+      const res = await confirmPaste({
+        text: text.trim(),
+        section: offer.section,
+        timezone,
+        nowISO,
+      });
       if (res.ok) {
         setFiled(confirmation);
         setOffer(null);
@@ -85,8 +90,8 @@ export function SmartPaste() {
 
   return (
     <section>
-      <h2 className="mb-2 px-1 text-eyebrow">{t("heading")}</h2>
-      <div className="rounded-2xl border border-line bg-surface-raised p-3 space-y-2">
+      <h2 className="text-eyebrow mb-2 px-1">{t("heading")}</h2>
+      <div className="space-y-2 rounded-2xl border border-line bg-surface-raised p-3">
         <AutoGrowTextarea
           value={text}
           onChange={(v) => {
@@ -106,7 +111,7 @@ export function SmartPaste() {
           placeholder={t("placeholder")}
           minRows={2}
           maxRows={8}
-          className="block w-full rounded-xl bg-canvas/40 px-3 py-2 text-[13px] text-ink placeholder:text-ink-faint outline-none transition-base focus:bg-canvas"
+          className="transition-base block w-full rounded-xl bg-canvas/40 px-3 py-2 text-[13px] text-ink outline-none placeholder:text-ink-faint focus:bg-canvas"
         />
 
         {checking ? <p className="px-1 text-[11.5px] text-ink-faint">{t("reading")}</p> : null}
@@ -124,7 +129,7 @@ export function SmartPaste() {
             <button
               type="button"
               onClick={() => setOffer(null)}
-              className="text-[12px] text-ink-muted transition-base hover:text-ink"
+              className="transition-base text-[12px] text-ink-muted hover:text-ink"
             >
               {t("dismiss")}
             </button>

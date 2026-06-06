@@ -108,7 +108,7 @@ export async function listConversations(input: {
  * messages in chronological order.
  */
 export async function getConversationWithMessages(
-  conversationId: string
+  conversationId: string,
 ): Promise<{ conversation: Conversation; messages: Message[] } | null> {
   try {
     const supabase = await createClient();
@@ -128,7 +128,7 @@ export async function getConversationWithMessages(
 
     return {
       conversation: conv as Conversation,
-      messages: ((msgs ?? []) as Message[]),
+      messages: (msgs ?? []) as Message[],
     };
   } catch {
     return null;
@@ -139,9 +139,7 @@ export async function getConversationWithMessages(
  * Soft-delete a conversation. Cascades to messages are handled at DB
  * level; the row stays for audit purposes.
  */
-export async function deleteConversation(
-  conversationId: string
-): Promise<void> {
+export async function deleteConversation(conversationId: string): Promise<void> {
   try {
     const supabase = await createClient();
     await supabase
@@ -158,14 +156,11 @@ export async function deleteConversation(
  */
 export async function setConversationStarred(
   conversationId: string,
-  starred: boolean
+  starred: boolean,
 ): Promise<void> {
   try {
     const supabase = await createClient();
-    await supabase
-      .from("conversations")
-      .update({ starred })
-      .eq("id", conversationId);
+    await supabase.from("conversations").update({ starred }).eq("id", conversationId);
   } catch {
     // Best-effort
   }

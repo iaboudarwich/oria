@@ -23,7 +23,9 @@ type Member = {
  * tagged with the group. Idempotent via an atomic pending -> extracting claim,
  * so the client trigger and the cron fallback never double-extract.
  */
-export async function extractUploadGroup(groupId: string): Promise<{ ok: boolean; status?: string }> {
+export async function extractUploadGroup(
+  groupId: string,
+): Promise<{ ok: boolean; status?: string }> {
   const admin = createAdminClient();
 
   // 1. Claim the group. Only the pending -> extracting transition proceeds.
@@ -46,7 +48,9 @@ export async function extractUploadGroup(groupId: string): Promise<{ ok: boolean
     .eq("group_id", groupId)
     .is("deleted_at", null)
     .order("created_at", { ascending: true });
-  const members = ((rows ?? []) as Member[]).filter((m) => (m.mime_type ?? "").startsWith("image/"));
+  const members = ((rows ?? []) as Member[]).filter((m) =>
+    (m.mime_type ?? "").startsWith("image/"),
+  );
 
   if (members.length === 0) {
     await admin.from("upload_groups").update({ status: "split" }).eq("id", groupId);
@@ -63,7 +67,11 @@ export async function extractUploadGroup(groupId: string): Promise<{ ok: boolean
     const { data: blob } = await admin.storage.from("uploads").download(m.storage_path);
     if (!blob) continue;
     const buf = Buffer.from(await blob.arrayBuffer());
-    images.push({ mimeType: m.mime_type ?? "image/jpeg", dataBase64: buf.toString("base64"), filename: m.filename });
+    images.push({
+      mimeType: m.mime_type ?? "image/jpeg",
+      dataBase64: buf.toString("base64"),
+      filename: m.filename,
+    });
     usable.push(m);
   }
   if (images.length === 0) {
@@ -84,7 +92,10 @@ export async function extractUploadGroup(groupId: string): Promise<{ ok: boolean
   const nowIso = new Date().toISOString();
   for (const rec of result.records) {
     const primary = usable[rec.image_indexes[0] ?? 0] ?? usable[0];
-    const childIds = rec.image_indexes.slice(1).map((i) => usable[i]?.id).filter(Boolean) as string[];
+    const childIds = rec.image_indexes
+      .slice(1)
+      .map((i) => usable[i]?.id)
+      .filter(Boolean) as string[];
 
     await admin.from("memory_items").insert({
       organization_id: orgId,
@@ -153,7 +164,12 @@ export async function extractUploadGroup(groupId: string): Promise<{ ok: boolean
       action: "upload.group_extracted",
       resourceType: "upload_group",
       resourceId: groupId,
-      metadata: { merged: result.merged, records: result.records.length, images: images.length, overflow: overflow.length },
+      metadata: {
+        merged: result.merged,
+        records: result.records.length,
+        images: images.length,
+        overflow: overflow.length,
+      },
     });
   }
 

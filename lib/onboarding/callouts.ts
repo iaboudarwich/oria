@@ -44,7 +44,9 @@ function uniqueNonEmpty(values: string[]): string[] {
 export function buildCallouts(plan: SetupPlan, ctx: UserContext): Callout[] {
   const sections = uniqueNonEmpty(
     plan.spaces
-      .flatMap((s) => s.workspaces.flatMap((w) => [...w.sections].sort((a, b) => a.priority - b.priority)))
+      .flatMap((s) =>
+        s.workspaces.flatMap((w) => [...w.sections].sort((a, b) => a.priority - b.priority)),
+      )
       .map((sec) => sec.title),
   );
 

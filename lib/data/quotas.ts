@@ -92,8 +92,7 @@ export async function checkDailyUploadBytes(
     return { ok: true, remaining: limit, limit };
   }
   const used = (data ?? []).reduce(
-    (acc: number, r: { size_bytes: number | null }) =>
-      acc + (r.size_bytes ?? 0),
+    (acc: number, r: { size_bytes: number | null }) => acc + (r.size_bytes ?? 0),
     0,
   );
   const remaining = Math.max(0, limit - used);
@@ -111,9 +110,7 @@ export async function checkDailyUploadBytes(
  * Returns ok=true when the user has Ask requests left today. Counts every
  * search.queried event tagged via:ask* for this actor since midnight.
  */
-export async function checkDailyAskRequests(
-  userId: string,
-): Promise<QuotaCheck> {
+export async function checkDailyAskRequests(userId: string): Promise<QuotaCheck> {
   const limit = dailyAskCap();
   const admin = createAdminClient();
   const { count, error } = await admin
@@ -167,8 +164,7 @@ export async function checkTotalUserStorage(
     return { ok: true, remaining: limit, limit };
   }
   const used = (data ?? []).reduce(
-    (acc: number, r: { size_bytes: number | null }) =>
-      acc + (r.size_bytes ?? 0),
+    (acc: number, r: { size_bytes: number | null }) => acc + (r.size_bytes ?? 0),
     0,
   );
   if (used + incomingBytes > limit) {
@@ -193,19 +189,13 @@ export type StorageStats = {
  * the settings page to render progress bars. Soft-fails to zeroes on
  * any DB error so the page always renders. Never modifies anything.
  */
-export async function getUserStorageStats(
-  userId: string,
-): Promise<StorageStats> {
+export async function getUserStorageStats(userId: string): Promise<StorageStats> {
   const lifetimeLimitBytes = userStorageCap();
   const dailyLimitBytes = dailyUploadCap();
   const admin = createAdminClient();
 
   const [lifetimeRes, dailyRes] = await Promise.allSettled([
-    admin
-      .from("uploads")
-      .select("size_bytes")
-      .eq("uploaded_by", userId)
-      .is("deleted_at", null),
+    admin.from("uploads").select("size_bytes").eq("uploaded_by", userId).is("deleted_at", null),
     admin
       .from("uploads")
       .select("size_bytes")
@@ -218,9 +208,7 @@ export async function getUserStorageStats(
 
   const lifetimeUsedBytes =
     lifetimeRes.status === "fulfilled" && !lifetimeRes.value.error
-      ? sum(
-          (lifetimeRes.value.data ?? []) as { size_bytes: number | null }[],
-        )
+      ? sum((lifetimeRes.value.data ?? []) as { size_bytes: number | null }[])
       : 0;
 
   const dailyUsedBytes =
@@ -236,9 +224,7 @@ export async function getUserStorageStats(
  * its own. the daily check fires first. but feeds the admin health
  * page so we can spot a user racking up cost over a longer window.
  */
-export async function getMonthlyAskUsage(
-  userId: string,
-): Promise<{ used: number; limit: number }> {
+export async function getMonthlyAskUsage(userId: string): Promise<{ used: number; limit: number }> {
   const limit = monthlyAskCap();
   const admin = createAdminClient();
   const since = new Date(Date.now() - 30 * 24 * 3600 * 1000).toISOString();

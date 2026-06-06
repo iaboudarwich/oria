@@ -24,17 +24,13 @@ export function ReportChartView({ chart }: { chart: ReportChart }) {
   return null;
 }
 
-function TableChart({
-  chart,
-}: {
-  chart: Extract<ReportChart, { kind: "table" }>;
-}) {
+function TableChart({ chart }: { chart: Extract<ReportChart, { kind: "table" }> }) {
   return (
     <figure>
       <div className="overflow-x-auto rounded-xl border border-line bg-canvas/40">
         <table className="w-full border-collapse text-[12.5px]">
           <thead>
-            <tr className="border-b border-line bg-canvas/60 text-left text-[11px] uppercase tracking-[0.08em] text-ink-faint">
+            <tr className="border-b border-line bg-canvas/60 text-left text-[11px] tracking-[0.08em] text-ink-faint uppercase">
               {chart.table.columns.map((c, i) => (
                 <th key={c + i} className="px-3 py-2 font-medium">
                   {c}
@@ -59,28 +55,17 @@ function TableChart({
         </table>
       </div>
       {chart.caption ? (
-        <figcaption className="mt-2 px-1 text-[11px] text-ink-faint">
-          {chart.caption}
-        </figcaption>
+        <figcaption className="mt-2 px-1 text-[11px] text-ink-faint">{chart.caption}</figcaption>
       ) : null}
     </figure>
   );
 }
 
-function BarChart({
-  chart,
-}: {
-  chart: Extract<ReportChart, { kind: "bar" }>;
-}) {
-  const xValues = Array.from(
-    new Set(chart.series.flatMap((s) => s.data.map((d) => d.x))),
-  );
+function BarChart({ chart }: { chart: Extract<ReportChart, { kind: "bar" }> }) {
+  const xValues = Array.from(new Set(chart.series.flatMap((s) => s.data.map((d) => d.x))));
   if (xValues.length === 0) return null;
 
-  const max = Math.max(
-    1,
-    ...chart.series.flatMap((s) => s.data.map((d) => d.y)),
-  );
+  const max = Math.max(1, ...chart.series.flatMap((s) => s.data.map((d) => d.y)));
 
   const W = 600;
   const H = 200;
@@ -153,20 +138,11 @@ function BarChart({
   );
 }
 
-function LineChart({
-  chart,
-}: {
-  chart: Extract<ReportChart, { kind: "line" }>;
-}) {
-  const xValues = Array.from(
-    new Set(chart.series.flatMap((s) => s.data.map((d) => d.x))),
-  );
+function LineChart({ chart }: { chart: Extract<ReportChart, { kind: "line" }> }) {
+  const xValues = Array.from(new Set(chart.series.flatMap((s) => s.data.map((d) => d.x))));
   if (xValues.length === 0) return null;
 
-  const max = Math.max(
-    1,
-    ...chart.series.flatMap((s) => s.data.map((d) => d.y)),
-  );
+  const max = Math.max(1, ...chart.series.flatMap((s) => s.data.map((d) => d.y)));
 
   const W = 600;
   const H = 200;
@@ -222,9 +198,7 @@ function LineChart({
                 if (!point) return null;
                 const px = padLeft + i * xStep;
                 const py = H - padBottom - (point.y / max) * plotH;
-                return (
-                  <circle key={x + i} cx={px} cy={py} r={2.5} fill={color} />
-                );
+                return <circle key={x + i} cx={px} cy={py} r={2.5} fill={color} />;
               })}
             </g>
           );
@@ -269,9 +243,7 @@ function Legend({
           {s.label}
         </span>
       ))}
-      {caption ? (
-        <span className="text-[11px] text-ink-faint">{caption}</span>
-      ) : null}
+      {caption ? <span className="text-[11px] text-ink-faint">{caption}</span> : null}
     </figcaption>
   );
 }

@@ -24,9 +24,7 @@ function rankOf(kind: string): number {
   return RANK[kind] ?? 4;
 }
 
-export function dedupeSidebarSections<T extends { label: string; kind: string }>(
-  items: T[],
-): T[] {
+export function dedupeSidebarSections<T extends { label: string; kind: string }>(items: T[]): T[] {
   // For each lowercased name keep the index of the highest-precedence entry
   // (ties resolve to the earliest), then filter to those indices so the
   // surviving entries stay in their original order.

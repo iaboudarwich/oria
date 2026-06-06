@@ -48,11 +48,11 @@ export async function DailyLoop({
             <span className="text-brand" aria-hidden>
               <SparkIcon size={16} />
             </span>
-            <h2 className="text-[12px] font-medium uppercase tracking-wide">
+            <h2 className="text-[12px] font-medium tracking-wide uppercase">
               {t(`kind_${r.kind}`)}
             </h2>
           </div>
-          <p className="mt-2 whitespace-pre-line text-[13.5px] leading-relaxed text-ink">
+          <p className="mt-2 text-[13.5px] leading-relaxed whitespace-pre-line text-ink">
             {r.summary}
           </p>
         </article>
@@ -64,11 +64,11 @@ export async function DailyLoop({
             <span className="text-brand" aria-hidden>
               <CalendarIcon size={16} />
             </span>
-            <h2 className="text-[12px] font-medium uppercase tracking-wide">
+            <h2 className="text-[12px] font-medium tracking-wide uppercase">
               {t("journal_label")}
             </h2>
           </div>
-          <p className="mt-2 whitespace-pre-line text-[13.5px] leading-relaxed text-ink">
+          <p className="mt-2 text-[13.5px] leading-relaxed whitespace-pre-line text-ink">
             {data.journalBody}
           </p>
         </article>

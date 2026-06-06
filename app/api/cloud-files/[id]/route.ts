@@ -13,10 +13,7 @@ export const runtime = "nodejs";
  * Remove one linked Drive file reference. Owner-scoped. Does not touch the file
  * in Drive (Oria only ever held a reference).
  */
-export async function DELETE(
-  _request: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const supabase = await createClient();
   const {

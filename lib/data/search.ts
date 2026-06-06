@@ -2,12 +2,7 @@ import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import { requireContext } from "./organizations";
 import { TYPE_ALIASES } from "./upload-intelligence";
-import type {
-  DocumentType,
-  Extraction,
-  Profile,
-  Upload,
-} from "@/lib/supabase/types";
+import type { DocumentType, Extraction, Profile, Upload } from "@/lib/supabase/types";
 
 export type SearchResult = Upload & {
   uploader: Pick<Profile, "id" | "full_name" | "email"> | null;
@@ -91,11 +86,7 @@ export async function searchUploads(rawQuery: string): Promise<SearchResult[]> {
     )
     .limit(80);
 
-  const [directRes, typesRes, extractionsRes] = await Promise.all([
-    directQ,
-    typesQ,
-    extractionsQ,
-  ]);
+  const [directRes, typesRes, extractionsRes] = await Promise.all([directQ, typesQ, extractionsQ]);
 
   const direct = (directRes.data ?? []) as Upload[];
   const byType = (typesRes.data ?? []) as Upload[];
@@ -135,17 +126,12 @@ export async function searchUploads(rawQuery: string): Promise<SearchResult[]> {
   // Hydrate uploaders + latest extractions.
   const ids = merged.map((u) => u.id);
   const uploaderIds = Array.from(
-    new Set(
-      merged.map((u) => u.uploaded_by).filter((id): id is string => !!id),
-    ),
+    new Set(merged.map((u) => u.uploaded_by).filter((id): id is string => !!id)),
   );
 
   const [profilesRes, extractRes] = await Promise.all([
     uploaderIds.length > 0
-      ? supabase
-          .from("profiles")
-          .select("id, full_name, email")
-          .in("id", uploaderIds)
+      ? supabase.from("profiles").select("id, full_name, email").in("id", uploaderIds)
       : Promise.resolve({ data: [] }),
     supabase
       .from("extractions")
@@ -156,24 +142,23 @@ export async function searchUploads(rawQuery: string): Promise<SearchResult[]> {
       .order("processed_at", { ascending: false }),
   ]);
 
-  const profileMap = new Map<
-    string,
-    Pick<Profile, "id" | "full_name" | "email">
-  >();
-  ((profilesRes.data ?? []) as Pick<Profile, "id" | "full_name" | "email">[]).forEach(
-    (p) => profileMap.set(p.id, p),
+  const profileMap = new Map<string, Pick<Profile, "id" | "full_name" | "email">>();
+  ((profilesRes.data ?? []) as Pick<Profile, "id" | "full_name" | "email">[]).forEach((p) =>
+    profileMap.set(p.id, p),
   );
 
   // First (= most recent) extraction per upload_id.
   const extractionMap = new Map<string, SearchResult["extraction"]>();
-  ((extractRes.data ?? []) as Array<{
-    upload_id: string;
-    document_type: DocumentType | null;
-    language: string | null;
-    is_handwritten: boolean | null;
-    entities: unknown;
-    action_items: string[] | null;
-  }>).forEach((e) => {
+  (
+    (extractRes.data ?? []) as Array<{
+      upload_id: string;
+      document_type: DocumentType | null;
+      language: string | null;
+      is_handwritten: boolean | null;
+      entities: unknown;
+      action_items: string[] | null;
+    }>
+  ).forEach((e) => {
     if (extractionMap.has(e.upload_id)) return;
     extractionMap.set(e.upload_id, {
       document_type: e.document_type,
@@ -186,7 +171,7 @@ export async function searchUploads(rawQuery: string): Promise<SearchResult[]> {
 
   return merged.map((u) => ({
     ...u,
-    uploader: u.uploaded_by ? profileMap.get(u.uploaded_by) ?? null : null,
+    uploader: u.uploaded_by ? (profileMap.get(u.uploaded_by) ?? null) : null,
     extraction: extractionMap.get(u.id) ?? null,
   }));
 }
@@ -204,4 +189,3 @@ function matchTypeAliases(query: string): DocumentType[] {
   }
   return Array.from(hits);
 }
-

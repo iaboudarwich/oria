@@ -20,12 +20,15 @@ export async function readDismissedInsightIds(): Promise<Set<string>> {
   const store = await cookies();
   const raw = store.get(COOKIE)?.value ?? "";
   if (!raw) return new Set();
-  return new Set(raw.split(",").map((s) => s.trim()).filter(Boolean));
+  return new Set(
+    raw
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean),
+  );
 }
 
-export async function writeDismissedInsightIds(
-  ids: Set<string>,
-): Promise<void> {
+export async function writeDismissedInsightIds(ids: Set<string>): Promise<void> {
   const store = await cookies();
   const list = Array.from(ids).slice(-MAX_DISMISSED).join(",");
   store.set(COOKIE, list, {

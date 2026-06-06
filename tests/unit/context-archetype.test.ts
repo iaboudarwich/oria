@@ -44,7 +44,11 @@ describe("resolveContextArchetype", () => {
     expect(resolveContextArchetype(orgForIntent("investor"))).toBe("investor");
     expect(resolveContextArchetype(orgForIntent("personal"))).toBe("personal");
     expect(
-      resolveContextArchetype({ kind: "personal", parent_kind: "personal", template_key: "investor" }),
+      resolveContextArchetype({
+        kind: "personal",
+        parent_kind: "personal",
+        template_key: "investor",
+      }),
     ).toBe("investor");
   });
 

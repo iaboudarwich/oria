@@ -37,9 +37,8 @@ export default async function BillsPage({
 }: {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const sp: Record<string, string | string[] | undefined> = await (
-    searchParams ?? Promise.resolve({})
-  );
+  const sp: Record<string, string | string[] | undefined> = await (searchParams ??
+    Promise.resolve({}));
   const view = sp.view === "spend" ? "spend" : "overview";
   const ctx = await requireContext();
   const [bills, memories, recentQuestions, summary, trackables] = await Promise.all([
@@ -54,12 +53,8 @@ export default async function BillsPage({
 
   const upcoming = bills
     .filter((b) => b.occurred_at && new Date(b.occurred_at) >= now)
-    .sort((a, b) =>
-      (a.occurred_at ?? "").localeCompare(b.occurred_at ?? ""),
-    );
-  const recent = bills
-    .filter((b) => b.occurred_at && new Date(b.occurred_at) < now)
-    .slice(0, 12);
+    .sort((a, b) => (a.occurred_at ?? "").localeCompare(b.occurred_at ?? ""));
+  const recent = bills.filter((b) => b.occurred_at && new Date(b.occurred_at) < now).slice(0, 12);
   const recurring = summarizeRecurring(bills);
   const forecast = forecastNextMonth(recurring);
 
@@ -82,7 +77,7 @@ export default async function BillsPage({
     <>
       <Topbar title="Bills" />
 
-      <div className="space-y-7 animate-fade-up">
+      <div className="animate-fade-up space-y-7">
         <DropzoneCompact
           smartSection="bills"
           heading="Drop a bill or invoice"
@@ -126,10 +121,8 @@ export default async function BillsPage({
 
         {view === "overview" && upcoming.length > 0 ? (
           <section>
-            <h2 className="mb-2 px-1 text-eyebrow">
-              Upcoming
-            </h2>
-            <ul className="rounded-2xl border border-line bg-surface-raised divide-y divide-line">
+            <h2 className="text-eyebrow mb-2 px-1">Upcoming</h2>
+            <ul className="divide-y divide-line rounded-2xl border border-line bg-surface-raised">
               {upcoming.map((b) => (
                 <BillRow key={b.id} bill={b} kind="upcoming" />
               ))}
@@ -139,10 +132,8 @@ export default async function BillsPage({
 
         {view === "overview" && recurring.length > 0 ? (
           <section>
-            <h2 className="mb-2 px-1 text-eyebrow">
-              Recurring
-            </h2>
-            <ul className="rounded-2xl border border-line bg-surface-raised divide-y divide-line">
+            <h2 className="text-eyebrow mb-2 px-1">Recurring</h2>
+            <ul className="divide-y divide-line rounded-2xl border border-line bg-surface-raised">
               {recurring.map((r, i) => (
                 <RecurringRow key={i} r={r} />
               ))}
@@ -152,10 +143,8 @@ export default async function BillsPage({
 
         {view === "overview" && recent.length > 0 ? (
           <section>
-            <h2 className="mb-2 px-1 text-eyebrow">
-              Recent
-            </h2>
-            <ul className="rounded-2xl border border-line bg-surface-raised divide-y divide-line">
+            <h2 className="text-eyebrow mb-2 px-1">Recent</h2>
+            <ul className="divide-y divide-line rounded-2xl border border-line bg-surface-raised">
               {recent.map((b) => (
                 <BillRow key={b.id} bill={b} kind="recent" />
               ))}
@@ -164,15 +153,9 @@ export default async function BillsPage({
         ) : null}
 
         <section>
-          <h2 className="mb-2 px-1 text-eyebrow">
-            Ask Bills
-          </h2>
+          <h2 className="text-eyebrow mb-2 px-1">Ask Bills</h2>
           <div className="rounded-2xl border border-line bg-surface-raised p-3">
-            <AskChat
-              scope={SCOPE}
-              suggestions={SUGGESTIONS}
-              recentQuestions={recentQuestions}
-            />
+            <AskChat scope={SCOPE} suggestions={SUGGESTIONS} recentQuestions={recentQuestions} />
           </div>
         </section>
 
@@ -217,7 +200,9 @@ function FinancialStrip({
           <p className="mt-1 text-[26px] font-semibold tracking-tight text-ink tabular-nums">
             {forecast.total.toLocaleString()}
             {forecast.currency ? (
-              <span className="ml-1 text-[12.5px] font-normal text-ink-muted">{forecast.currency}</span>
+              <span className="ml-1 text-[12.5px] font-normal text-ink-muted">
+                {forecast.currency}
+              </span>
             ) : null}
           </p>
         ) : (
@@ -226,25 +211,23 @@ function FinancialStrip({
       </div>
       <div className="rounded-2xl border border-line bg-surface-raised p-4">
         <span className="text-eyebrow">{labels.dueThisWeek}</span>
-        <p className="mt-1 text-[26px] font-semibold tracking-tight text-ink tabular-nums">{dueThisWeek}</p>
+        <p className="mt-1 text-[26px] font-semibold tracking-tight text-ink tabular-nums">
+          {dueThisWeek}
+        </p>
         <span className="text-[12px] text-ink-muted">{labels.billsCaption}</span>
       </div>
       <div className="rounded-2xl border border-line bg-surface-raised p-4">
         <span className="text-eyebrow">{labels.upcoming}</span>
-        <p className="mt-1 text-[26px] font-semibold tracking-tight text-ink tabular-nums">{upcomingCount}</p>
+        <p className="mt-1 text-[26px] font-semibold tracking-tight text-ink tabular-nums">
+          {upcomingCount}
+        </p>
         <span className="text-[12px] text-ink-muted">{labels.billsCaption}</span>
       </div>
     </section>
   );
 }
 
-function BillRow({
-  bill: b,
-  kind,
-}: {
-  bill: BillItem;
-  kind: "upcoming" | "recent";
-}) {
+function BillRow({ bill: b, kind }: { bill: BillItem; kind: "upcoming" | "recent" }) {
   const date = b.occurred_at ? new Date(b.occurred_at) : null;
   const dateLabel = date
     ? kind === "upcoming"
@@ -266,21 +249,17 @@ function BillRow({
         {b.upload_id ? (
           <Link
             href={`/dashboard/uploads/${b.upload_id}`}
-            className="block truncate text-[13.5px] text-ink transition-base hover:text-ink-soft"
+            className="transition-base block truncate text-[13.5px] text-ink hover:text-ink-soft"
           >
             {b.merchant || b.title}
           </Link>
         ) : (
-          <p className="truncate text-[13.5px] text-ink">
-            {b.merchant || b.title}
-          </p>
+          <p className="truncate text-[13.5px] text-ink">{b.merchant || b.title}</p>
         )}
       </div>
       <div className="text-right">
         {amount ? <p className="text-[13px] text-ink tabular-nums">{amount}</p> : null}
-        {dateLabel ? (
-          <p className="text-[11px] text-ink-faint">{dateLabel}</p>
-        ) : null}
+        {dateLabel ? <p className="text-[11px] text-ink-faint">{dateLabel}</p> : null}
       </div>
     </li>
   );
@@ -293,9 +272,7 @@ function RecurringRow({ r }: { r: RecurringSummary }) {
         <p className="truncate text-[13.5px] text-ink">{r.merchant}</p>
         <p className="truncate text-[11.5px] text-ink-faint">
           {(r.interval ?? "recurring").toLowerCase()}
-          {r.next_expected
-            ? ` · next ${friendlyDate(new Date(r.next_expected))}`
-            : ""}
+          {r.next_expected ? ` · next ${friendlyDate(new Date(r.next_expected))}` : ""}
           {r.count > 1 ? ` · ${r.count} seen` : ""}
         </p>
       </div>
@@ -345,7 +322,7 @@ function forecastNextMonth(
     counts.set(c, (counts.get(c) ?? 0) + 1);
   }
   const sorted = Array.from(counts.entries()).sort((a, b) => b[1] - a[1]);
-  const currency = sorted[0]?.[0] === NONE ? null : sorted[0]?.[0] ?? null;
+  const currency = sorted[0]?.[0] === NONE ? null : (sorted[0]?.[0] ?? null);
   return { total: Math.round(total), currency };
 }
 

@@ -5,10 +5,7 @@ import { InviteCreator } from "@/components/circle/invite-creator";
 import { InviteCard } from "@/components/circle/invite-card";
 import { getCurrentContext } from "@/lib/data/organizations";
 import { listAllSections } from "@/lib/data/all-sections";
-import {
-  listInviteSectionRefs,
-  listPendingInvites,
-} from "@/lib/data/circle";
+import { listInviteSectionRefs, listPendingInvites } from "@/lib/data/circle";
 import type { Invite } from "@/lib/supabase/types";
 
 export const metadata = { title: "Invite people" };
@@ -40,10 +37,7 @@ export default async function CircleSetupPage({ params }: PageProps) {
       name: s.name,
     }));
 
-  const allowlists = new Map<
-    string,
-    Array<{ kind: "builtin" | "custom"; key: string }>
-  >();
+  const allowlists = new Map<string, Array<{ kind: "builtin" | "custom"; key: string }>>();
   await Promise.all(
     invites
       .filter((i: Invite) => i.access_level === "limited")
@@ -57,13 +51,12 @@ export default async function CircleSetupPage({ params }: PageProps) {
     <>
       <Topbar title={ctx.organization.name} />
 
-      <div className="mx-auto max-w-2xl animate-fade-up">
+      <div className="animate-fade-up mx-auto max-w-2xl">
         <Steps current={2} />
 
-        <p className="mb-7 mt-5 px-1 text-[13px] text-ink-muted">
-          Invite the people in this circle. Each person gets a one-time link
-          and a short code. Personal items stay private. Only what is shared
-          into this circle is visible.
+        <p className="mt-5 mb-7 px-1 text-[13px] text-ink-muted">
+          Invite the people in this circle. Each person gets a one-time link and a short code.
+          Personal items stay private. Only what is shared into this circle is visible.
         </p>
 
         <section className="rounded-2xl border border-line bg-surface-raised p-5 shadow-[0_1px_2px_rgba(28,26,23,0.04),0_2px_8px_-6px_rgba(28,26,23,0.08)]">
@@ -72,9 +65,7 @@ export default async function CircleSetupPage({ params }: PageProps) {
 
         {invites.length > 0 ? (
           <section className="mt-8">
-            <h2 className="mb-2 px-1 text-eyebrow">
-              Pending invites · {invites.length}
-            </h2>
+            <h2 className="text-eyebrow mb-2 px-1">Pending invites · {invites.length}</h2>
             <ul className="space-y-2">
               {invites.map((inv: Invite) => (
                 <InviteCard
@@ -91,13 +82,13 @@ export default async function CircleSetupPage({ params }: PageProps) {
         <div className="mt-10 flex items-center gap-3 border-t border-line pt-6">
           <Link
             href="/dashboard/circle"
-            className="inline-flex h-11 items-center rounded-xl bg-ink px-5 text-[13.5px] text-surface hover:bg-ink-soft transition-base"
+            className="transition-base inline-flex h-11 items-center rounded-xl bg-ink px-5 text-[13.5px] text-surface hover:bg-ink-soft"
           >
             Done, open my circle
           </Link>
           <Link
             href="/dashboard"
-            className="text-[13px] text-ink-muted hover:text-ink transition-base"
+            className="transition-base text-[13px] text-ink-muted hover:text-ink"
           >
             Skip for now
           </Link>
@@ -129,9 +120,7 @@ function Steps({ current }: { current: 1 | 2 }) {
               {done ? "✓" : n}
             </span>
             <span className={active ? "text-ink" : ""}>{label}</span>
-            {i < labels.length - 1 ? (
-              <span className="ml-1 h-px w-6 bg-line" />
-            ) : null}
+            {i < labels.length - 1 ? <span className="ml-1 h-px w-6 bg-line" /> : null}
           </li>
         );
       })}

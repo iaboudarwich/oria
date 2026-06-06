@@ -63,9 +63,7 @@ describe("AI prompts must contain zero em-dashes", () => {
       if (hits.length > 0) {
         const message =
           `Found ${hits.length} em-dash(es) in ${file}:\n` +
-          hits
-            .map((h) => `  line ${h.line} col ${h.col}: …${h.preview}…`)
-            .join("\n") +
+          hits.map((h) => `  line ${h.line} col ${h.col}: …${h.preview}…`).join("\n") +
           `\n\nReplace each one with a comma, a period, or a rewrite. ` +
           `The Ask Oria agent will mirror em-dashes back at users if they appear in the prompt body.`;
         throw new Error(message);
@@ -86,11 +84,7 @@ describe("User-facing AI greeting strings are em-dash free", () => {
       trees: Record<string, Q[]>;
       reconfigure: Q[];
     };
-    const all: Q[] = [
-      ...bank.intro,
-      ...Object.values(bank.trees).flat(),
-      ...bank.reconfigure,
-    ];
+    const all: Q[] = [...bank.intro, ...Object.values(bank.trees).flat(), ...bank.reconfigure];
     expect(all.length).toBeGreaterThan(5);
     for (const q of all) {
       expect(q.base).not.toContain(EM_DASH);

@@ -55,14 +55,15 @@ export function ResetClient({
     // factor before the password can be changed.
     async function resolveAfterSession() {
       const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-      const needsSecondFactor =
-        aal?.currentLevel === "aal1" && aal?.nextLevel === "aal2";
+      const needsSecondFactor = aal?.currentLevel === "aal1" && aal?.nextLevel === "aal2";
       if (!needsSecondFactor) {
         if (active) setPhase("ready");
         return;
       }
       const { data: list } = await supabase.auth.mfa.listFactors();
-      const verified = ((list?.totp ?? []) as { id: string; status: string; friendly_name?: string | null }[])
+      const verified = (
+        (list?.totp ?? []) as { id: string; status: string; friendly_name?: string | null }[]
+      )
         .filter((f) => f.status === "verified")
         .map((f) => ({ id: f.id, friendly_name: f.friendly_name }));
       if (!active) return;
@@ -184,7 +185,7 @@ export function ResetClient({
 
   if (phase === "verifying") {
     return (
-      <p className="mt-6 text-center text-body-sm text-ink-muted" role="status" aria-live="polite">
+      <p className="text-body-sm mt-6 text-center text-ink-muted" role="status" aria-live="polite">
         {t("reset_verifying")}
       </p>
     );
@@ -193,10 +194,13 @@ export function ResetClient({
   if (phase === "invalid") {
     return (
       <div className="mt-6 space-y-4 text-center">
-        <p role="status" className="rounded-xl border border-claret/20 bg-claret/5 px-3.5 py-3 text-body-sm text-claret">
+        <p
+          role="status"
+          className="text-body-sm rounded-xl border border-claret/20 bg-claret/5 px-3.5 py-3 text-claret"
+        >
           {t("reset_invalid")}
         </p>
-        <Link href="/auth/forgot" className="block text-body-sm text-brand hover:opacity-80">
+        <Link href="/auth/forgot" className="text-body-sm block text-brand hover:opacity-80">
           {t("reset_request_new")}
         </Link>
       </div>
@@ -208,7 +212,7 @@ export function ResetClient({
       <form className="mt-6 space-y-3" onSubmit={onVerifyCode} noValidate>
         <div className="text-center">
           <h2 className="text-title text-ink">{t("twostep_title")}</h2>
-          <p className="mt-1.5 text-body-sm text-ink-muted">{t("twostep_help")}</p>
+          <p className="text-body-sm mt-1.5 text-ink-muted">{t("twostep_help")}</p>
         </div>
 
         {factors.length > 1 ? (
@@ -253,19 +257,22 @@ export function ResetClient({
             required
             aria-invalid={twoError ? true : undefined}
             aria-describedby={twoError ? "twostep-error" : undefined}
-            className="block h-11 w-full rounded-xl border border-line bg-canvas px-3 text-[16px] tracking-[0.3em] text-ink placeholder:text-ink-faint outline-none transition-base focus:border-brand focus:ring-[3px] focus:ring-brand/12"
+            className="transition-base block h-11 w-full rounded-xl border border-line bg-canvas px-3 text-[16px] tracking-[0.3em] text-ink outline-none placeholder:text-ink-faint focus:border-brand focus:ring-[3px] focus:ring-brand/12"
           />
         </label>
 
         <div id="twostep-error" aria-live="assertive">
           {twoError === "wrong" ? (
-            <p role="alert" className="rounded-xl border border-claret/20 bg-claret/5 px-3.5 py-2.5 text-[13px] text-claret">
+            <p
+              role="alert"
+              className="rounded-xl border border-claret/20 bg-claret/5 px-3.5 py-2.5 text-[13px] text-claret"
+            >
               {t("twostep_wrong")}
             </p>
           ) : twoError === "expired" ? (
             <button
               type="submit"
-              className="block w-full rounded-xl border border-claret/20 bg-claret/5 px-3.5 py-2.5 text-start text-[13px] text-claret transition-base hover:bg-claret/10"
+              className="transition-base block w-full rounded-xl border border-claret/20 bg-claret/5 px-3.5 py-2.5 text-start text-[13px] text-claret hover:bg-claret/10"
             >
               {t("twostep_expired")}
             </button>
@@ -283,7 +290,7 @@ export function ResetClient({
           {checking ? (
             <>
               <span
-                className="h-3.5 w-3.5 rounded-full border-2 border-current border-t-transparent animate-spin"
+                className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent"
                 aria-hidden
               />
               {t("twostep_checking")}
@@ -309,7 +316,11 @@ export function ResetClient({
         strengthLabels={strengthLabels}
       />
       {error ? (
-        <p role="alert" aria-live="assertive" className="rounded-xl border border-claret/20 bg-claret/5 px-3.5 py-2.5 text-[13px] text-claret">
+        <p
+          role="alert"
+          aria-live="assertive"
+          className="rounded-xl border border-claret/20 bg-claret/5 px-3.5 py-2.5 text-[13px] text-claret"
+        >
           {error}
         </p>
       ) : null}
@@ -324,7 +335,7 @@ export function ResetClient({
         {saving ? (
           <>
             <span
-              className="h-3.5 w-3.5 rounded-full border-2 border-current border-t-transparent animate-spin"
+              className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent"
               aria-hidden
             />
             {t("reset_saving")}

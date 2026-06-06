@@ -27,7 +27,10 @@ export type TemplateDefinition = {
 
 function seeds(titles: [string, string][]): TemplateSectionSeed[] {
   return titles.map(([title, icon], i) => ({
-    key: title.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, ""),
+    key: title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "_")
+      .replace(/^_|_$/g, ""),
     title,
     icon,
     priority: i,
@@ -106,7 +109,15 @@ export const TEMPLATES: TemplateDefinition[] = [
     accentSuggestion: "#2f5d8a",
     askStarters: ["Which invoices are unpaid?", "What did I spend on tools this quarter?"],
     defaultReminders: [],
-    matchSignals: ["freelance", "freelancer", "self-employed", "consultant", "contractor", "solo", "clients"],
+    matchSignals: [
+      "freelance",
+      "freelancer",
+      "self-employed",
+      "consultant",
+      "contractor",
+      "solo",
+      "clients",
+    ],
   },
   {
     id: "traveler",
@@ -142,7 +153,16 @@ export const TEMPLATES: TemplateDefinition[] = [
     accentSuggestion: "#4f7a4f",
     askStarters: ["What's due for grading?", "When is the next parent meeting?"],
     defaultReminders: [],
-    matchSignals: ["teacher", "teach", "teaching", "educator", "professor", "school", "classroom", "students"],
+    matchSignals: [
+      "teacher",
+      "teach",
+      "teaching",
+      "educator",
+      "professor",
+      "school",
+      "classroom",
+      "students",
+    ],
   },
   {
     id: "caregiver",
@@ -160,7 +180,15 @@ export const TEMPLATES: TemplateDefinition[] = [
     accentSuggestion: "#9a6b8a",
     askStarters: ["When is the next appointment?", "Which medications are due for a refill?"],
     defaultReminders: [],
-    matchSignals: ["caregiver", "caring for", "elderly", "parent's health", "medication", "patient", "nurse"],
+    matchSignals: [
+      "caregiver",
+      "caring for",
+      "elderly",
+      "parent's health",
+      "medication",
+      "patient",
+      "nurse",
+    ],
   },
   {
     id: "investor",
@@ -176,12 +204,23 @@ export const TEMPLATES: TemplateDefinition[] = [
     accentSuggestion: "#2f6b4f",
     askStarters: ["What's in my current deal flow?", "When is the next LP report due?"],
     defaultReminders: [],
-    matchSignals: ["investor", "investing", "portfolio", "venture", "fund", "lp", "deals", "vc", "angel"],
+    matchSignals: [
+      "investor",
+      "investing",
+      "portfolio",
+      "venture",
+      "fund",
+      "lp",
+      "deals",
+      "vc",
+      "angel",
+    ],
   },
   {
     id: "custom",
     displayName: "Custom",
-    description: "A blank space when nothing else fits; the AI fills sections from what the user said.",
+    description:
+      "A blank space when nothing else fits; the AI fills sections from what the user said.",
     defaultSpaceType: "personal",
     sections: [],
     accentSuggestion: "#5b6470",

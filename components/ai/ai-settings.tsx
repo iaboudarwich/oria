@@ -60,7 +60,7 @@ export function AiSettings({
           : t("st_out_of_credits");
 
   const active = connections.find((c) => c.isActive) ?? null;
-  const activeName = active ? PROVIDER_NAME[active.provider] ?? active.provider : "";
+  const activeName = active ? (PROVIDER_NAME[active.provider] ?? active.provider) : "";
   const confirmConn = connections.find((c) => c.id === confirmId) ?? null;
 
   function makeActive(id: string) {
@@ -96,7 +96,7 @@ export function AiSettings({
             <button
               type="button"
               onClick={() => setModalOpen(true)}
-              className="rounded-lg bg-ink px-4 py-2 text-[13px] font-medium text-surface transition-base hover:bg-ink-soft"
+              className="transition-base rounded-lg bg-ink px-4 py-2 text-[13px] font-medium text-surface hover:bg-ink-soft"
             >
               {t("connect")}
             </button>
@@ -124,7 +124,7 @@ export function AiSettings({
                         type="button"
                         disabled={pending}
                         onClick={() => makeActive(c.id)}
-                        className="rounded-lg border border-line px-2.5 py-1.5 text-[12px] text-ink transition-base hover:bg-canvas disabled:opacity-50"
+                        className="transition-base rounded-lg border border-line px-2.5 py-1.5 text-[12px] text-ink hover:bg-canvas disabled:opacity-50"
                       >
                         {t("make_active")}
                       </button>
@@ -133,7 +133,7 @@ export function AiSettings({
                       type="button"
                       disabled={pending}
                       onClick={() => setConfirmId(c.id)}
-                      className="rounded-lg border border-line px-2.5 py-1.5 text-[12px] text-claret transition-base hover:bg-canvas disabled:opacity-50"
+                      className="transition-base rounded-lg border border-line px-2.5 py-1.5 text-[12px] text-claret hover:bg-canvas disabled:opacity-50"
                     >
                       {t("remove")}
                     </button>
@@ -144,7 +144,7 @@ export function AiSettings({
             <button
               type="button"
               onClick={() => setModalOpen(true)}
-              className="text-[12.5px] text-ink-muted transition-base hover:text-ink"
+              className="transition-base text-[12.5px] text-ink-muted hover:text-ink"
             >
               {t("add_another")}
             </button>
@@ -174,7 +174,7 @@ export function AiSettings({
           {REASONING_OPTIONS.map((o) => (
             <label
               key={o.value}
-              className="flex cursor-pointer items-center gap-2.5 rounded-lg border border-line px-3 py-2 transition-base hover:bg-canvas"
+              className="transition-base flex cursor-pointer items-center gap-2.5 rounded-lg border border-line px-3 py-2 hover:bg-canvas"
             >
               <input
                 type="radio"
@@ -187,11 +187,13 @@ export function AiSettings({
             </label>
           ))}
         </div>
-        {active ? <p className="text-[12px] text-ink-faint">{t("dt_byo_note", { name: activeName })}</p> : null}
+        {active ? (
+          <p className="text-[12px] text-ink-faint">{t("dt_byo_note", { name: activeName })}</p>
+        ) : null}
       </div>
 
       {/* Privacy: the key selects the model, never grants data access. */}
-      <div className="rounded-xl border border-line bg-canvas px-4 py-3 space-y-1.5">
+      <div className="space-y-1.5 rounded-xl border border-line bg-canvas px-4 py-3">
         <p className="text-[12.5px] font-medium text-ink">{t("data_principle_title")}</p>
         <p className="text-[12.5px] text-ink-muted">{t("data_principle_body")}</p>
         <p className="text-[12.5px] text-ink-muted">{t("privacy_body")}</p>
@@ -208,9 +210,14 @@ export function AiSettings({
           className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4"
           onClick={() => setConfirmId(null)}
         >
-          <div className="w-full max-w-sm rounded-2xl bg-surface p-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="w-full max-w-sm rounded-2xl bg-surface p-5 shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
             <h3 className="text-[15px] font-semibold text-ink">
-              {t("disconnect_confirm_title", { name: PROVIDER_NAME[confirmConn.provider] ?? confirmConn.provider })}
+              {t("disconnect_confirm_title", {
+                name: PROVIDER_NAME[confirmConn.provider] ?? confirmConn.provider,
+              })}
             </h3>
             <p className="mt-1 text-[13px] text-ink-muted">{t("disconnect_confirm_body")}</p>
             <div className="mt-4 flex items-center justify-end gap-2">
@@ -225,7 +232,7 @@ export function AiSettings({
                 type="button"
                 disabled={pending}
                 onClick={() => remove(confirmConn.id)}
-                className="rounded-lg bg-claret px-3 py-1.5 text-[12.5px] font-medium text-surface transition-base hover:opacity-90 disabled:opacity-50"
+                className="transition-base rounded-lg bg-claret px-3 py-1.5 text-[12.5px] font-medium text-surface hover:opacity-90 disabled:opacity-50"
               >
                 {t("disconnect_confirm")}
               </button>

@@ -127,7 +127,12 @@ export function sanitizeArtifact(raw: unknown): Artifact | null {
   const type = o.type;
 
   const str = (v: unknown, max = 120): string =>
-    typeof v === "string" ? v.replace(/\u2014/g, "-").trim().slice(0, max) : "";
+    typeof v === "string"
+      ? v
+          .replace(/\u2014/g, "-")
+          .trim()
+          .slice(0, max)
+      : "";
   const num = (v: unknown): number | null => {
     if (typeof v === "number" && Number.isFinite(v)) return v;
     if (typeof v === "string") {
@@ -168,11 +173,7 @@ export function sanitizeArtifact(raw: unknown): Artifact | null {
       .slice(0, 6);
     if (columns.length < 1) return null;
     const rows = (Array.isArray(o.rows) ? o.rows : [])
-      .map((r) =>
-        (Array.isArray(r) ? r : [])
-          .map((c) => str(c, 60))
-          .slice(0, columns.length),
-      )
+      .map((r) => (Array.isArray(r) ? r : []).map((c) => str(c, 60)).slice(0, columns.length))
       .filter((r) => r.length === columns.length)
       .slice(0, 20);
     if (rows.length < 1) return null;

@@ -27,13 +27,12 @@ export function SessionsPanel() {
       <div>
         <h2 className="text-[15px] font-semibold text-ink">Active sessions</h2>
         <p className="mt-1 text-[13px] text-ink-muted">
-          Lost a phone? Worked on a borrowed laptop? Revoke any session
-          other than this browser, or kill them all and start fresh.
-          Both options ask you to sign in again before they run.
+          Lost a phone? Worked on a borrowed laptop? Revoke any session other than this browser, or
+          kill them all and start fresh. Both options ask you to sign in again before they run.
         </p>
       </div>
 
-      <div className="rounded-2xl border border-line bg-canvas p-4 space-y-3">
+      <div className="space-y-3 rounded-2xl border border-line bg-canvas p-4">
         <form action={signOutOthers}>
           <Button type="submit" variant="secondary">
             Sign out other devices
@@ -54,9 +53,8 @@ export function SessionsPanel() {
       </div>
 
       <p className="px-1 text-[11.5px] text-ink-faint">
-        A per-session list with individual revoke isn&apos;t available
-        through Oria yet. The Recent activity feed below shows the IP
-        and browser for every sign-in if something looks off.
+        A per-session list with individual revoke isn&apos;t available through Oria yet. The Recent
+        activity feed below shows the IP and browser for every sign-in if something looks off.
       </p>
     </section>
   );

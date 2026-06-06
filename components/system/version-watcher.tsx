@@ -27,12 +27,7 @@ export function VersionWatcher({ buildVersion }: { buildVersion: string }) {
     const mark = () => {
       lastInteractionRef.current = Date.now();
     };
-    const events: (keyof WindowEventMap)[] = [
-      "click",
-      "keydown",
-      "scroll",
-      "pointerdown",
-    ];
+    const events: (keyof WindowEventMap)[] = ["click", "keydown", "scroll", "pointerdown"];
     for (const e of events) window.addEventListener(e, mark, { passive: true });
     return () => {
       for (const e of events) window.removeEventListener(e, mark);
@@ -47,12 +42,7 @@ export function VersionWatcher({ buildVersion }: { buildVersion: string }) {
         const r = await fetch("/api/version", { cache: "no-store" });
         if (!r.ok) return;
         const data = (await r.json()) as { version?: string };
-        if (
-          !cancelled &&
-          data.version &&
-          buildVersion &&
-          data.version !== buildVersion
-        ) {
+        if (!cancelled && data.version && buildVersion && data.version !== buildVersion) {
           setUpdateAvailable(true);
         }
       } catch {
@@ -82,16 +72,13 @@ export function VersionWatcher({ buildVersion }: { buildVersion: string }) {
   if (!updateAvailable) return null;
 
   return (
-    <div
-      role="status"
-      className="fixed inset-x-0 bottom-4 z-[130] flex justify-center px-4"
-    >
+    <div role="status" className="fixed inset-x-0 bottom-4 z-[130] flex justify-center px-4">
       <div className="flex items-center gap-3 rounded-xl border border-line bg-surface-raised px-4 py-2.5 shadow-xl">
         <span className="text-[13px] text-ink">New version available.</span>
         <button
           type="button"
           onClick={() => window.location.reload()}
-          className="inline-flex h-8 items-center rounded-lg bg-ink px-3 text-[12.5px] font-medium text-surface transition-base hover:bg-ink-soft"
+          className="transition-base inline-flex h-8 items-center rounded-lg bg-ink px-3 text-[12.5px] font-medium text-surface hover:bg-ink-soft"
         >
           Refresh to update
         </button>
@@ -104,8 +91,7 @@ export function VersionWatcher({ buildVersion }: { buildVersion: string }) {
  *  unsaved text in a focused field). */
 function hasInFlightWork(): boolean {
   if (typeof window === "undefined") return false;
-  const uploads = (window as unknown as { __oriaUploadsActive?: number })
-    .__oriaUploadsActive;
+  const uploads = (window as unknown as { __oriaUploadsActive?: number }).__oriaUploadsActive;
   if (typeof uploads === "number" && uploads > 0) return true;
 
   const el = document.activeElement;

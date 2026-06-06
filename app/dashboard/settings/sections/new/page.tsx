@@ -40,18 +40,18 @@ export default function NewSectionPage() {
       <div className="mb-4 flex items-center gap-2">
         <Link
           href="/dashboard/settings"
-          className="inline-flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-[12.5px] text-ink-muted transition-base hover:bg-surface-raised hover:text-ink"
+          className="transition-base inline-flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-[12.5px] text-ink-muted hover:bg-surface-raised hover:text-ink"
         >
           <span className="-ml-0.5">←</span> Settings
         </Link>
       </div>
 
       <p className="mb-8 max-w-xl px-1 text-[13px] text-ink-muted">
-        A few quick taps help Oria place uploads into the right place later.
-        All of these are optional.
+        A few quick taps help Oria place uploads into the right place later. All of these are
+        optional.
       </p>
 
-      <form action={createCustomSection} className="max-w-xl space-y-8 animate-fade-up">
+      <form action={createCustomSection} className="animate-fade-up max-w-xl space-y-8">
         <Field label="Name">
           <input
             type="text"
@@ -59,7 +59,7 @@ export default function NewSectionPage() {
             required
             maxLength={60}
             placeholder="e.g. Taxes, School, Pets, Work"
-            className="block h-11 w-full rounded-xl border border-line-strong bg-surface-raised px-3.5 text-[16px] text-ink placeholder:text-ink-faint outline-none transition-base focus:border-ink"
+            className="transition-base block h-11 w-full rounded-xl border border-line-strong bg-surface-raised px-3.5 text-[16px] text-ink outline-none placeholder:text-ink-faint focus:border-ink"
           />
         </Field>
 
@@ -67,13 +67,8 @@ export default function NewSectionPage() {
           <div className="-mx-1 flex flex-wrap gap-1.5">
             {KIND_OPTIONS.map((k) => (
               <label key={k} className="cursor-pointer">
-                <input
-                  type="checkbox"
-                  name="kinds"
-                  value={k}
-                  className="peer sr-only"
-                />
-                <span className="inline-flex select-none items-center rounded-lg border border-line bg-surface-raised px-3 py-1.5 text-[12.5px] text-ink-muted transition-base hover:border-line-strong hover:text-ink peer-checked:border-ink peer-checked:bg-ink peer-checked:text-surface">
+                <input type="checkbox" name="kinds" value={k} className="peer sr-only" />
+                <span className="transition-base inline-flex items-center rounded-lg border border-line bg-surface-raised px-3 py-1.5 text-[12.5px] text-ink-muted select-none peer-checked:border-ink peer-checked:bg-ink peer-checked:text-surface hover:border-line-strong hover:text-ink">
                   {k}
                 </span>
               </label>
@@ -95,20 +90,20 @@ export default function NewSectionPage() {
             name="related"
             maxLength={280}
             placeholder="e.g. Acme Corp, Jane Smith, taxes"
-            className="block h-11 w-full rounded-xl border border-line-strong bg-surface-raised px-3.5 text-[16px] text-ink placeholder:text-ink-faint outline-none transition-base focus:border-ink"
+            className="transition-base block h-11 w-full rounded-xl border border-line-strong bg-surface-raised px-3.5 text-[16px] text-ink outline-none placeholder:text-ink-faint focus:border-ink"
           />
         </Question>
 
         <div className="flex items-center gap-3 pt-2">
           <button
             type="submit"
-            className="inline-flex h-11 items-center rounded-xl bg-ink px-5 text-[13.5px] text-surface hover:bg-ink-soft transition-base"
+            className="transition-base inline-flex h-11 items-center rounded-xl bg-ink px-5 text-[13.5px] text-surface hover:bg-ink-soft"
           >
             Create section
           </button>
           <Link
             href="/dashboard/settings"
-            className="text-[13px] text-ink-muted hover:text-ink transition-base"
+            className="transition-base text-[13px] text-ink-muted hover:text-ink"
           >
             Cancel
           </Link>
@@ -118,13 +113,7 @@ export default function NewSectionPage() {
   );
 }
 
-function Field({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
       <span className="mb-1.5 block text-[12px] text-ink-muted">{label}</span>
@@ -162,13 +151,8 @@ function RadioGroup({
     <div className="-mx-1 flex flex-wrap gap-1.5">
       {options.map((o) => (
         <label key={o.value} className="cursor-pointer">
-          <input
-            type="radio"
-            name={name}
-            value={o.value}
-            className="peer sr-only"
-          />
-          <span className="inline-flex select-none items-center rounded-lg border border-line bg-surface-raised px-3 py-1.5 text-[12.5px] text-ink-muted transition-base hover:border-line-strong hover:text-ink peer-checked:border-ink peer-checked:bg-ink peer-checked:text-surface">
+          <input type="radio" name={name} value={o.value} className="peer sr-only" />
+          <span className="transition-base inline-flex items-center rounded-lg border border-line bg-surface-raised px-3 py-1.5 text-[12.5px] text-ink-muted select-none peer-checked:border-ink peer-checked:bg-ink peer-checked:text-surface hover:border-line-strong hover:text-ink">
             {o.label}
           </span>
         </label>

@@ -4,8 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { requireContext } from "./organizations";
 import type { TrackableCategory } from "@/lib/ai/detect-trackable";
 
-export type TrackablePeriod =
-  | "once" | "monthly" | "quarterly" | "semi_annually" | "annually";
+export type TrackablePeriod = "once" | "monthly" | "quarterly" | "semi_annually" | "annually";
 
 /** Lifecycle: active by default; wont_do retires a goal/wishlist item the user
  *  decided against (kept, not deleted); done marks it achieved or bought. */

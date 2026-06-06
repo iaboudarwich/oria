@@ -26,12 +26,7 @@ type Props = {
  *   • button. labelled pill used on the upload detail page
  *   • inline-quiet. compact text trigger used on list rows for fast cleanup
  */
-export function MovePicker({
-  uploadId,
-  currentRef,
-  sections,
-  variant = "button",
-}: Props) {
+export function MovePicker({ uploadId, currentRef, sections, variant = "button" }: Props) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const { ref, open, setOpen, toggle } = useDismissable<HTMLDivElement>();
@@ -56,7 +51,7 @@ export function MovePicker({
           onClick={toggle}
           aria-expanded={open}
           disabled={pending}
-          className={`inline-flex h-8 items-center gap-1.5 rounded-lg border px-2.5 text-[12px] transition-base disabled:opacity-50 ${
+          className={`transition-base inline-flex h-8 items-center gap-1.5 rounded-lg border px-2.5 text-[12px] disabled:opacity-50 ${
             open
               ? "border-line-strong bg-canvas text-ink"
               : "border-line bg-surface text-ink-soft hover:border-line-strong hover:text-ink"
@@ -65,9 +60,7 @@ export function MovePicker({
           {pending ? "Moving" : "Move to"}
           <ChevronDownIcon
             size={12}
-            className={`transition-transform duration-150 ${
-              open ? "rotate-180" : ""
-            }`}
+            className={`transition-transform duration-150 ${open ? "rotate-180" : ""}`}
           />
         </button>
       ) : (
@@ -76,7 +69,7 @@ export function MovePicker({
           onClick={toggle}
           aria-expanded={open}
           disabled={pending}
-          className="inline-flex h-7 items-center gap-1 rounded-md px-2 text-[11.5px] text-ink-muted transition-base hover:bg-canvas hover:text-ink disabled:opacity-50"
+          className="transition-base inline-flex h-7 items-center gap-1 rounded-md px-2 text-[11.5px] text-ink-muted hover:bg-canvas hover:text-ink disabled:opacity-50"
         >
           {pending ? "Moving" : "Move"}
           <ArrowRightIcon size={11} />

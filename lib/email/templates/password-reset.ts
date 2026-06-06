@@ -55,9 +55,10 @@ export function passwordResetHtml(d: PasswordResetEmailData): string {
 }
 
 function escapeHtml(s: string): string {
-  return s.replace(/[&<>"']/g, (c) => (
-    { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c] as string
-  ));
+  return s.replace(
+    /[&<>"']/g,
+    (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c] as string,
+  );
 }
 
 function escapeAttr(s: string): string {

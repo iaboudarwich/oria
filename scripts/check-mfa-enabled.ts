@@ -68,7 +68,9 @@ async function main() {
       console.log("✗ TOTP enrollment returned an error.");
       console.log(`  message: ${msg}`);
       if (/not enabled|disabled|MFA|TOTP/i.test(msg)) {
-        console.log("\nLikely cause: TOTP is OFF in Supabase Dashboard → Authentication → Multi-Factor Auth.");
+        console.log(
+          "\nLikely cause: TOTP is OFF in Supabase Dashboard → Authentication → Multi-Factor Auth.",
+        );
         console.log("Toggle TOTP on, then re-run this script.");
       }
       process.exit(1);

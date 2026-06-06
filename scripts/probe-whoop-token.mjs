@@ -8,7 +8,16 @@ const TOKEN = "https://api.prod.whoop.com/oauth/oauth2/token";
 const REDIRECT = "https://heyoria.com/api/oauth/whoop/callback"; // canonical, registered
 const id = process.env.WHOOP_CLIENT_ID || "";
 const secret = process.env.WHOOP_CLIENT_SECRET || "";
-console.log("client_id present:", !!id, "len", id.length, "| secret present:", !!secret, "len", secret.length);
+console.log(
+  "client_id present:",
+  !!id,
+  "len",
+  id.length,
+  "| secret present:",
+  !!secret,
+  "len",
+  secret.length,
+);
 
 const res = await fetch(TOKEN, {
   method: "POST",

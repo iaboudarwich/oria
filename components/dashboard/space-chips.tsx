@@ -45,7 +45,7 @@ export function SpaceChips({ spaces, activeId }: { spaces: SpaceChip[]; activeId
             onClick={() => go(s.id)}
             disabled={pending}
             aria-pressed={on}
-            className={`inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-full border px-3.5 py-2 text-[12.5px] transition-base disabled:opacity-60 ${
+            className={`transition-base inline-flex shrink-0 items-center gap-2 rounded-full border px-3.5 py-2 text-[12.5px] whitespace-nowrap disabled:opacity-60 ${
               on
                 ? "border-ink bg-ink font-semibold text-canvas"
                 : "border-line bg-surface text-ink-muted hover:text-ink"

@@ -4,10 +4,7 @@ import { ReminderDialog } from "@/components/calendar/reminder-dialog";
 import { groupComingUp, loadCalendar } from "@/lib/data/calendar";
 import { getCalendarSources } from "@/lib/data/calendar-prefs";
 import { DEFAULT_CALENDAR_SOURCES } from "@/lib/data/calendar-types";
-import {
-  getCurrentContext,
-  isAccountOwnerInPersonal,
-} from "@/lib/data/organizations";
+import { getCurrentContext, isAccountOwnerInPersonal } from "@/lib/data/organizations";
 
 export const metadata = { title: "Calendar" };
 
@@ -19,13 +16,9 @@ export default async function CalendarPage() {
   const ctx = await getCurrentContext();
   const allowCross = !!ctx && isAccountOwnerInPersonal(ctx);
   const { entries, spaces } = await loadCalendar({ crossSpace: allowCross });
-  const sources = ctx
-    ? await getCalendarSources(ctx.profile.id)
-    : DEFAULT_CALENDAR_SOURCES;
+  const sources = ctx ? await getCalendarSources(ctx.profile.id) : DEFAULT_CALENDAR_SOURCES;
 
-  const activeSpace = ctx
-    ? spaces.find((s) => s.id === ctx.organization.id) ?? null
-    : null;
+  const activeSpace = ctx ? (spaces.find((s) => s.id === ctx.organization.id) ?? null) : null;
   const activeSpaceId = activeSpace?.id ?? "";
 
   // God's Eye visual toggle. Only Personal-owners get to see it. Without
@@ -45,7 +38,7 @@ export default async function CalendarPage() {
     <>
       <Topbar title="Calendar" />
 
-      <div className="space-y-6 animate-fade-up">
+      <div className="animate-fade-up space-y-6">
         {/* Top-right "Add reminder" opens the detailed reminder form. */}
         <div className="flex justify-end">
           <ReminderDialog scopeName={activeSpace?.name ?? null} />

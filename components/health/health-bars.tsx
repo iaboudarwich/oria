@@ -6,13 +6,7 @@
  */
 export type HealthBar = { label: string; value: number };
 
-export function HealthBars({
-  bars,
-  caption,
-}: {
-  bars: HealthBar[];
-  caption?: string;
-}) {
+export function HealthBars({ bars, caption }: { bars: HealthBar[]; caption?: string }) {
   const max = Math.max(...bars.map((b) => b.value), 1);
   return (
     <div className="rounded-2xl border border-line bg-surface-raised p-4">

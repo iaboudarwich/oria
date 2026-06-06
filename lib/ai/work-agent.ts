@@ -71,8 +71,7 @@ function buildSystem(workspaceName: string, ctx: WorkspaceContext | null): strin
 
 function formatSource(s: RetrievedSource): string {
   const state = s.processing_state === "pending" ? "PENDING" : "READY";
-  const kindLabel =
-    s.kind === "upload" ? "Upload" : s.kind === "reminder" ? "Reminder" : "Memory";
+  const kindLabel = s.kind === "upload" ? "Upload" : s.kind === "reminder" ? "Reminder" : "Memory";
   const head = `[${s.id}] (${state}) ${kindLabel}: "${s.title}"${s.meta.section_label ? ` · ${s.meta.section_label}` : ""}${s.meta.date_label ? ` · ${s.meta.date_label}` : ""}`;
   return `${head}\n${s.snippet}`;
 }

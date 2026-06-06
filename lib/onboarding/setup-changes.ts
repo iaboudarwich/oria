@@ -53,7 +53,13 @@ export async function listRecentSetupChanges(userId: string): Promise<SetupChang
     .order("executed_at", { ascending: false });
   const rows =
     (data as
-      | { id: string; plan: StoredPlan; source: string; executed_at: string; reverted_at: string | null }[]
+      | {
+          id: string;
+          plan: StoredPlan;
+          source: string;
+          executed_at: string;
+          reverted_at: string | null;
+        }[]
       | null) ?? [];
   return rows.map((r) => {
     const plan = r.plan ?? {};

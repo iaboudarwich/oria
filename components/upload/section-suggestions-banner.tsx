@@ -38,41 +38,36 @@ export function SectionSuggestionsBanner({
 
   function handleAcceptAll() {
     setSuggestions([]);
-    startTransition(async () => { await acceptAllSectionSuggestions(); });
+    startTransition(async () => {
+      await acceptAllSectionSuggestions();
+    });
   }
 
   return (
     <section>
-      <div className="flex items-center justify-between px-1 mb-2">
-        <h2 className="text-eyebrow">
-          Suggested by Oria
-        </h2>
+      <div className="mb-2 flex items-center justify-between px-1">
+        <h2 className="text-eyebrow">Suggested by Oria</h2>
         {suggestions.length > 1 && (
           <button
             type="button"
             onClick={handleAcceptAll}
-            className="text-[11.5px] text-ink-muted transition-base hover:text-ink"
+            className="transition-base text-[11.5px] text-ink-muted hover:text-ink"
           >
             Accept all ({suggestions.length})
           </button>
         )}
       </div>
-      <ul className="rounded-2xl border border-line bg-surface-raised divide-y divide-line">
+      <ul className="divide-y divide-line rounded-2xl border border-line bg-surface-raised">
         {suggestions.map((s) => (
-          <li
-            key={s.id}
-            className="flex items-center gap-3 px-4 py-2.5"
-          >
+          <li key={s.id} className="flex items-center gap-3 px-4 py-2.5">
             <div className="min-w-0 flex-1">
               <p className="truncate text-[13px] text-ink">{s.title}</p>
-              <p className="text-[11.5px] text-ink-faint">
-                Suggested: {sectionName(s)}
-              </p>
+              <p className="text-[11.5px] text-ink-faint">Suggested: {sectionName(s)}</p>
             </div>
             <button
               type="button"
               onClick={() => handleAccept(s.id)}
-              className="shrink-0 text-[11.5px] text-ink-muted transition-base hover:text-ink"
+              className="transition-base shrink-0 text-[11.5px] text-ink-muted hover:text-ink"
             >
               Move
             </button>

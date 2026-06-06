@@ -1,14 +1,7 @@
 import { Topbar } from "@/components/dashboard/topbar";
 import { Thumbnail } from "@/components/upload/thumbnail";
-import {
-  daysUntilPurge,
-  listTrashUploads,
-  purgeExpiredTrash,
-} from "@/lib/data/trash";
-import {
-  permanentlyDeleteUpload,
-  restoreUpload,
-} from "@/lib/data/trash-actions";
+import { daysUntilPurge, listTrashUploads, purgeExpiredTrash } from "@/lib/data/trash";
+import { permanentlyDeleteUpload, restoreUpload } from "@/lib/data/trash-actions";
 import { getSignedUrlMap } from "@/lib/data/uploads";
 import { displayActor } from "@/lib/data/timeline";
 
@@ -43,7 +36,7 @@ export default async function TrashPage() {
               return (
                 <li
                   key={u.id}
-                  className="flex flex-wrap items-center gap-3 rounded-lg px-3 py-2 transition-base hover:bg-surface-raised sm:flex-nowrap"
+                  className="transition-base flex flex-wrap items-center gap-3 rounded-lg px-3 py-2 hover:bg-surface-raised sm:flex-nowrap"
                 >
                   <Thumbnail
                     mime={u.mime_type}
@@ -52,9 +45,7 @@ export default async function TrashPage() {
                     size={32}
                   />
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-[13.5px] text-ink">
-                      {u.title ?? u.filename}
-                    </p>
+                    <p className="truncate text-[13.5px] text-ink">{u.title ?? u.filename}</p>
                     <p className="truncate text-[11.5px] text-ink-faint">
                       Deleted by {displayActor(u.uploader)} ·{" "}
                       {days === 0
@@ -69,7 +60,7 @@ export default async function TrashPage() {
                       <input type="hidden" name="id" value={u.id} />
                       <button
                         type="submit"
-                        className="inline-flex h-8 items-center rounded-lg border border-line bg-surface-raised px-2.5 text-[12px] text-ink-soft transition-base hover:border-line-strong hover:text-ink"
+                        className="transition-base inline-flex h-8 items-center rounded-lg border border-line bg-surface-raised px-2.5 text-[12px] text-ink-soft hover:border-line-strong hover:text-ink"
                       >
                         Restore
                       </button>
@@ -78,7 +69,7 @@ export default async function TrashPage() {
                       <input type="hidden" name="id" value={u.id} />
                       <button
                         type="submit"
-                        className="text-[11.5px] text-ink-faint hover:text-claret transition-base"
+                        className="transition-base text-[11.5px] text-ink-faint hover:text-claret"
                       >
                         Delete now
                       </button>

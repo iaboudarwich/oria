@@ -17,26 +17,16 @@ import { checkAskDailyLimit, hoursUntilReset } from "@/lib/ai/ask-limit";
 import { recordPattern } from "@/lib/patterns/patterns";
 import { getLocalParts, getOriaTzCookieName } from "@/lib/utils/tz";
 import { getTranslations } from "next-intl/server";
-import {
-  createConversation,
-  addMessage,
-} from "@/lib/data/conversations";
+import { createConversation, addMessage } from "@/lib/data/conversations";
 import { createClient } from "@/lib/supabase/server";
 import { trackEvent } from "@/lib/analytics";
 import { modeForOrgKind } from "@/lib/data/mode";
 import { recordBehaviorSignal } from "@/lib/data/behavior-signals";
 import { getUserProfile } from "@/lib/data/user-profile";
-import {
-  buildPersonalizationContext,
-  personalContextBlock,
-} from "@/lib/ai/personalization";
+import { buildPersonalizationContext, personalContextBlock } from "@/lib/ai/personalization";
 import { currentNetWorth } from "@/lib/data/net-worth";
 import { buildFinanceContextBlock } from "@/lib/ai/finance-context";
-import {
-  shouldAttemptArtifact,
-  generateArtifact,
-  type Artifact,
-} from "@/lib/ai/artifact";
+import { shouldAttemptArtifact, generateArtifact, type Artifact } from "@/lib/ai/artifact";
 import { sectionLabel } from "@/lib/sections-meta";
 import type { SpaceContext } from "@/lib/ai/agent";
 import type { SectionScope } from "@/lib/data/section-scope";
@@ -160,10 +150,7 @@ export async function POST(request: Request) {
 
   const encoder = new TextEncoder();
 
-  function writeEvent(
-    controller: ReadableStreamDefaultController<Uint8Array>,
-    obj: unknown,
-  ) {
+  function writeEvent(controller: ReadableStreamDefaultController<Uint8Array>, obj: unknown) {
     controller.enqueue(encoder.encode(JSON.stringify(obj) + "\n"));
   }
 
@@ -251,8 +238,7 @@ export async function POST(request: Request) {
       .map(([s]) => sectionLabel(s));
     const lang = (await cookies()).get("oria_locale")?.value ?? "en";
     spaceContext = {
-      spaceType:
-        modeForOrgKind(ctx.organization.kind) === "work" ? "Work" : "Personal",
+      spaceType: modeForOrgKind(ctx.organization.kind) === "work" ? "Work" : "Personal",
       template: ctx.organization.template_key ?? null,
       topSections,
       recentUploads,

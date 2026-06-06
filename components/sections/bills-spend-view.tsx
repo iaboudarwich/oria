@@ -21,11 +21,16 @@ const CAT_COLORS = [
 
 function periodSuffixKey(p: TrackablePeriod | null): string {
   switch (p) {
-    case "monthly": return "per_monthly";
-    case "quarterly": return "per_quarterly";
-    case "semi_annually": return "per_semi_annually";
-    case "annually": return "per_annually";
-    default: return "per_once";
+    case "monthly":
+      return "per_monthly";
+    case "quarterly":
+      return "per_quarterly";
+    case "semi_annually":
+      return "per_semi_annually";
+    case "annually":
+      return "per_annually";
+    default:
+      return "per_once";
   }
 }
 
@@ -58,7 +63,7 @@ export async function BillsSpendView({
   return (
     <Stack gap={6}>
       <section>
-        <h2 className="mb-2 px-1 text-eyebrow">{t("spend_over_time")}</h2>
+        <h2 className="text-eyebrow mb-2 px-1">{t("spend_over_time")}</h2>
         <div className="rounded-card border border-line bg-surface p-4 shadow-soft">
           <TrendChart
             week={last6}
@@ -72,7 +77,7 @@ export async function BillsSpendView({
 
       {categories.length > 0 ? (
         <section>
-          <h2 className="mb-2 px-1 text-eyebrow">{t("by_category")}</h2>
+          <h2 className="text-eyebrow mb-2 px-1">{t("by_category")}</h2>
           <Stack gap={3} className="rounded-card border border-line bg-surface p-4 shadow-soft">
             {categories.map((c, i) => {
               const color = CAT_COLORS[i % CAT_COLORS.length];
@@ -109,7 +114,7 @@ export async function BillsSpendView({
 
       {subscriptions.length > 0 ? (
         <section>
-          <h2 className="mb-2 px-1 text-eyebrow">{t("subscriptions")}</h2>
+          <h2 className="text-eyebrow mb-2 px-1">{t("subscriptions")}</h2>
           <ul className="divide-y divide-line overflow-hidden rounded-card border border-line bg-surface shadow-soft">
             {subscriptions.map((s) => (
               <li key={s.id} className="flex items-center justify-between gap-3 px-4 py-3">
@@ -145,7 +150,7 @@ export async function BillsSpendView({
 
       {transactions.length > 0 ? (
         <section>
-          <h2 className="mb-2 px-1 text-eyebrow">{t("transactions")}</h2>
+          <h2 className="text-eyebrow mb-2 px-1">{t("transactions")}</h2>
           <ul className="divide-y divide-line overflow-hidden rounded-card border border-line bg-surface shadow-soft">
             {transactions.map((b) => (
               <li key={b.id} className="flex items-center justify-between gap-3 px-4 py-3">

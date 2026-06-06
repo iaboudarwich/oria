@@ -87,7 +87,10 @@ export interface ProviderAdapter {
   /** Non-streaming completion (supports tools + vision). */
   complete(messages: Message[], options: CompletionOptions): Promise<CompletionResult>;
   /** Streaming text completion: yields text deltas. Calls options.onUsage at the end. */
-  streamComplete(messages: Message[], options: CompletionOptions): AsyncGenerator<string, void, unknown>;
+  streamComplete(
+    messages: Message[],
+    options: CompletionOptions,
+  ): AsyncGenerator<string, void, unknown>;
   /** Embed one string. Note: dimensions differ per provider; Oria's 384-dim
    *  store is fed by the sidecar, so this is only for provider-native use. */
   embed(text: string): Promise<number[]>;

@@ -115,7 +115,11 @@ export async function executeWriteAction(input: {
       kind: "write_action.failed",
       severity: "error",
       message: `Write action failed: ${action.type}`,
-      context: { type: action.type, action_id: actionId, message: (e as Error).message.slice(0, 120) },
+      context: {
+        type: action.type,
+        action_id: actionId,
+        message: (e as Error).message.slice(0, 120),
+      },
       actorId: ctx.profile.id,
     });
     return { ok: false, error: "failed" };
@@ -132,16 +136,14 @@ export async function undoWriteAction(actionId: string): Promise<{ ok: boolean }
     .eq("id", actionId)
     .eq("user_id", ctx.profile.id)
     .maybeSingle();
-  const row = data as
-    | {
-        type: WriteActionType;
-        status: string;
-        organization_id: string | null;
-        target_table: string | null;
-        target_id: string | null;
-        undo: Record<string, unknown>;
-      }
-    | null;
+  const row = data as {
+    type: WriteActionType;
+    status: string;
+    organization_id: string | null;
+    target_table: string | null;
+    target_id: string | null;
+    undo: Record<string, unknown>;
+  } | null;
   // Idempotent: nothing to undo if it never executed or was already undone.
   if (!row || row.status !== "executed") return { ok: true };
 
@@ -169,7 +171,12 @@ export async function undoWriteAction(actionId: string): Promise<{ ok: boolean }
       kind: "write_action.failed",
       severity: "error",
       message: `Undo failed: ${row.type}`,
-      context: { type: row.type, action_id: actionId, undo: true, message: (e as Error).message.slice(0, 120) },
+      context: {
+        type: row.type,
+        action_id: actionId,
+        undo: true,
+        message: (e as Error).message.slice(0, 120),
+      },
       actorId: ctx.profile.id,
     });
     return { ok: false };
@@ -199,7 +206,12 @@ async function performAction(ctx: Ctx, supabase: Sb, action: ProposedAction): Pr
       .maybeSingle();
     if (error || !data) throw new Error(error?.message ?? "insert_failed");
     const id = (data as { id: string }).id;
-    return { targetTable: "reminders", targetId: id, undo: { reminderId: id }, auditAction: "reminder.created" };
+    return {
+      targetTable: "reminders",
+      targetId: id,
+      undo: { reminderId: id },
+      auditAction: "reminder.created",
+    };
   }
 
   if (action.type === "reminder.complete") {
@@ -327,7 +339,8 @@ async function reverseAction(
     return;
   }
   if (type === "reminder.edit") {
-    const prior = (undo.prior as { title?: string; notes?: string | null; due_at?: string | null }) ?? {};
+    const prior =
+      (undo.prior as { title?: string; notes?: string | null; due_at?: string | null }) ?? {};
     await supabase
       .from("reminders")
       .update({ title: prior.title, notes: prior.notes ?? null, due_at: prior.due_at ?? null })

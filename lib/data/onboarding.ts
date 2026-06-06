@@ -29,9 +29,7 @@ export const ALL_HINT_KEYS: HintKey[] = [
 export async function getSeenHintKeys(): Promise<Set<HintKey>> {
   try {
     const supabase = await createClient();
-    const { data } = await supabase
-      .from("user_onboarding")
-      .select("hint_key");
+    const { data } = await supabase.from("user_onboarding").select("hint_key");
     return new Set(((data ?? []) as { hint_key: string }[]).map((r) => r.hint_key as HintKey));
   } catch {
     return new Set();
@@ -49,10 +47,9 @@ export async function markHintSeen(hintKey: HintKey): Promise<void> {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) return;
-    await supabase.from("user_onboarding").upsert(
-      { user_id: user.id, hint_key: hintKey },
-      { onConflict: "user_id,hint_key" }
-    );
+    await supabase
+      .from("user_onboarding")
+      .upsert({ user_id: user.id, hint_key: hintKey }, { onConflict: "user_id,hint_key" });
   } catch {
     // Best-effort
   }

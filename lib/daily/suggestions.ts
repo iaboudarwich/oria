@@ -65,19 +65,23 @@ export function inferSectionFromDocType(docType: string | null): string | null {
   if (has("insurance", "policy", "contract", "agreement", "legal", "will", "deed")) return "legal";
   if (has("lease", "mortgage", "property", "tenancy", "utility", "rent")) return "properties";
   if (has("medical", "health", "prescription", "lab", "vaccin", "clinic")) return "health";
-  if (has("receipt", "invoice", "bank", "statement", "tax", "payslip", "salary", "bill")) return "finance";
-  if (has("passport", "license", "licence", "id_", "identity", "certificate", "birth")) return "personal";
+  if (has("receipt", "invoice", "bank", "statement", "tax", "payslip", "salary", "bill"))
+    return "finance";
+  if (has("passport", "license", "licence", "id_", "identity", "certificate", "birth"))
+    return "personal";
   if (has("flight", "booking", "hotel", "itinerary", "boarding", "travel", "visa")) return "travel";
   return null;
 }
 
 /** Two timed events overlap when each starts before the other ends. */
-export function detectCalendarConflicts(
-  events: SignalEvent[],
-): Array<[SignalEvent, SignalEvent]> {
+export function detectCalendarConflicts(events: SignalEvent[]): Array<[SignalEvent, SignalEvent]> {
   const timed = events
     .filter((e) => !e.isAllDay && e.endsAt)
-    .map((e) => ({ e, s: new Date(e.startsAt).getTime(), n: new Date(e.endsAt as string).getTime() }))
+    .map((e) => ({
+      e,
+      s: new Date(e.startsAt).getTime(),
+      n: new Date(e.endsAt as string).getTime(),
+    }))
     .filter((x) => !Number.isNaN(x.s) && !Number.isNaN(x.n) && x.n > x.s)
     .sort((a, b) => a.s - b.s);
   const pairs: Array<[SignalEvent, SignalEvent]> = [];

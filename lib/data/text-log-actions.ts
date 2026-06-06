@@ -5,10 +5,7 @@ import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireContext } from "./organizations";
 import { extractFromText } from "@/lib/ai/text-extract";
-import {
-  AUTO_FILE_CONFIDENCE,
-  type SmartSection,
-} from "@/lib/ai/extract";
+import { AUTO_FILE_CONFIDENCE, type SmartSection } from "@/lib/ai/extract";
 import { resolveFinalSection } from "./section-routing";
 import { recordLearningEvent } from "./learning";
 import { recordSystemEvent } from "./system-events";
@@ -68,9 +65,7 @@ export type LogFromTextResult =
     }
   | { ok: false; error: string };
 
-export async function logFromText(
-  input: LogFromTextInput,
-): Promise<LogFromTextResult> {
+export async function logFromText(input: LogFromTextInput): Promise<LogFromTextResult> {
   const ctx = await requireContext();
   const text = (input.text ?? "").trim();
   if (text.length < MIN_TEXT_LEN) {
@@ -95,13 +90,9 @@ export async function logFromText(
   if (!burst.ok) return { ok: false, error: burst.message };
 
   // Resolve the typed section/smart-section hint, ignoring junk values.
-  const sectionHint = isBuiltinSection(input.section)
-    ? (input.section as Section)
-    : null;
+  const sectionHint = isBuiltinSection(input.section) ? (input.section as Section) : null;
   const smartHint: SmartSection | null =
-    input.smart_section === "diet" || input.smart_section === "bills"
-      ? input.smart_section
-      : null;
+    input.smart_section === "diet" || input.smart_section === "bills" ? input.smart_section : null;
 
   const result = await extractFromText({
     text,
@@ -144,8 +135,7 @@ export async function logFromText(
     }
     // Bills/invoices/receipts always route to Finance, regardless of
     // what the model suggested. Otherwise honour model > page hint.
-    const suggested =
-      item.confidence >= AUTO_FILE_CONFIDENCE ? item.suggested_section : null;
+    const suggested = item.confidence >= AUTO_FILE_CONFIDENCE ? item.suggested_section : null;
     const effectiveSection: Section | null = resolveFinalSection({
       suggested,
       documentType: item.document_type,
@@ -194,13 +184,9 @@ export async function logFromText(
   });
 
   const admin = createAdminClient();
-  const insertRes = await admin
-    .from("memory_items")
-    .insert(itemRows)
-    .select("id");
+  const insertRes = await admin.from("memory_items").insert(itemRows).select("id");
   if (insertRes.error || (insertRes.data ?? []).length === 0) {
-    const msg =
-      insertRes.error?.message ?? "memory_items insert returned 0 rows";
+    const msg = insertRes.error?.message ?? "memory_items insert returned 0 rows";
     void recordSystemEvent({
       kind: "upload.failed",
       severity: "error",
@@ -256,9 +242,7 @@ export async function logFromText(
 
   const first = result.result.items[0];
   const summary =
-    insertedIds.length === 1
-      ? `Logged · ${first.title}`
-      : `Logged · ${insertedIds.length} items`;
+    insertedIds.length === 1 ? `Logged · ${first.title}` : `Logged · ${insertedIds.length} items`;
   return { ok: true, count: insertedIds.length, itemIds: insertedIds, summary };
 }
 

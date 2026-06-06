@@ -5,10 +5,7 @@ import { revalidatePath } from "next/cache";
 import { logAuditEvent } from "@/lib/data/audit-log";
 import { createJob } from "@/lib/data/jobs";
 import { recordPattern } from "@/lib/patterns/patterns";
-import type {
-  SuggestionAction,
-  SuggestionPattern,
-} from "@/lib/daily/suggestions";
+import type { SuggestionAction, SuggestionPattern } from "@/lib/daily/suggestions";
 
 /**
  * Accept a reminder suggestion. creates a reminder with lead_days,
@@ -51,9 +48,7 @@ export async function acceptSuggestion(input: {
 /**
  * Dismiss a suggestion so it never re-appears for this user.
  */
-export async function dismissSuggestion(
-  suggestionKey: string,
-): Promise<void> {
+export async function dismissSuggestion(suggestionKey: string): Promise<void> {
   try {
     const supabase = await createClient();
     const {
@@ -154,10 +149,7 @@ export async function executeSuggestion(input: {
         .eq("id", action.uploadId)
         .maybeSingle();
       if (!upload) return { ok: false, error: "Not found." };
-      await supabase
-        .from("uploads")
-        .update({ status: "received" })
-        .eq("id", action.uploadId);
+      await supabase.from("uploads").update({ status: "received" }).eq("id", action.uploadId);
       await createJob({
         organizationId: upload.organization_id as string,
         actorId: user.id,

@@ -79,8 +79,7 @@ export function buildMemoryItemRows(input: {
     const smartSection = item.smart_section ?? smartSectionHint ?? null;
     // Only adopt the model's section when it was confident enough; below
     // the threshold the item lands in Unsorted for the user to place.
-    const suggested =
-      item.confidence >= AUTO_FILE_CONFIDENCE ? item.suggested_section : null;
+    const suggested = item.confidence >= AUTO_FILE_CONFIDENCE ? item.suggested_section : null;
     const autoSection = resolveFinalSection({
       suggested,
       documentType: item.document_type,
@@ -91,8 +90,7 @@ export function buildMemoryItemRows(input: {
     // Diet: the upload time IS the meal time; ignore any date the model
     // read off the photo. Other smart sections (bills) need the real
     // extracted due date, so they're untouched.
-    const occurredAt =
-      smartSection === "diet" ? nowISO : (item.occurred_at ?? null);
+    const occurredAt = smartSection === "diet" ? nowISO : (item.occurred_at ?? null);
 
     return {
       organization_id: input.organizationId,

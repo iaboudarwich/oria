@@ -6,8 +6,23 @@ import { EMPTY_PATCH, type PlanPatch, type PlanSection, type WorkspacePlan } fro
 const LANG: Record<string, string> = { en: "English", ar: "Arabic", fr: "French", es: "Spanish" };
 
 const ALLOWED_ICONS = new Set([
-  "home", "travel", "properties", "staff", "events", "finance", "legal",
-  "personal", "vendors", "health", "wallet", "scales", "tag", "heart", "chart", "plane", "person",
+  "home",
+  "travel",
+  "properties",
+  "staff",
+  "events",
+  "finance",
+  "legal",
+  "personal",
+  "vendors",
+  "health",
+  "wallet",
+  "scales",
+  "tag",
+  "heart",
+  "chart",
+  "plane",
+  "person",
 ]);
 
 export type ExistingSection = { id: string; name: string };
@@ -74,7 +89,10 @@ Return JSON ONLY:
       { tier: "premium", maxTokens: 1600 },
     );
     const raw = res?.content.trim() || "{}";
-    const cleaned = raw.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim();
+    const cleaned = raw
+      .replace(/^```(?:json)?\s*/i, "")
+      .replace(/\s*```$/, "")
+      .trim();
     const parsed = JSON.parse(cleaned) as Partial<PlanPatch>;
     return sanitizePatch(parsed, orgIds, sectionIds);
   } catch {
@@ -88,7 +106,13 @@ function sanitizeSection(s: unknown): PlanSection | null {
   if (typeof o.title !== "string" || !o.title.trim()) return null;
   const icon = typeof o.icon === "string" && ALLOWED_ICONS.has(o.icon) ? o.icon : "tag";
   return {
-    key: typeof o.key === "string" ? o.key : o.title.toLowerCase().replace(/[^a-z0-9]+/g, "_").slice(0, 40),
+    key:
+      typeof o.key === "string"
+        ? o.key
+        : o.title
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "_")
+            .slice(0, 40),
     title: o.title.slice(0, 60),
     icon,
     priority: typeof o.priority === "number" ? o.priority : 0,
@@ -97,9 +121,13 @@ function sanitizeSection(s: unknown): PlanSection | null {
 
 // Exported for unit tests: this is the safety gate for delete/rename paths,
 // dropping any patch op whose target id is not a known org/section.
-export function sanitizePatch(p: Partial<PlanPatch>, orgIds: Set<string>, sectionIds: Set<string>): PlanPatch {
+export function sanitizePatch(
+  p: Partial<PlanPatch>,
+  orgIds: Set<string>,
+  sectionIds: Set<string>,
+): PlanPatch {
   const creates: WorkspacePlan[] = Array.isArray(p.creates)
-    ? p.creates
+    ? (p.creates
         .map((c) => {
           const o = c as Record<string, unknown>;
           if (typeof o.name !== "string" || !o.name.trim()) return null;
@@ -113,39 +141,50 @@ export function sanitizePatch(p: Partial<PlanPatch>, orgIds: Set<string>, sectio
             accent_color: typeof o.accent_color === "string" ? o.accent_color : null,
             sections,
             ask_oria_starters: Array.isArray(o.ask_oria_starters)
-              ? (o.ask_oria_starters.filter((x): x is string => typeof x === "string"))
+              ? o.ask_oria_starters.filter((x): x is string => typeof x === "string")
               : [],
             template_id: "custom",
           } as WorkspacePlan;
         })
-        .filter(Boolean) as WorkspacePlan[]
+        .filter(Boolean) as WorkspacePlan[])
     : [];
 
   const section_adds = Array.isArray(p.section_adds)
-    ? p.section_adds
+    ? (p.section_adds
         .map((a) => {
           const o = a as Record<string, unknown>;
           const section = sanitizeSection(o.section);
           if (typeof o.orgId !== "string" || !orgIds.has(o.orgId) || !section) return null;
           return { orgId: o.orgId, section };
         })
-        .filter(Boolean) as PlanPatch["section_adds"]
+        .filter(Boolean) as PlanPatch["section_adds"])
     : [];
 
   const renames = Array.isArray(p.renames)
-    ? p.renames
+    ? (p.renames
         .map((r) => {
           const o = r as Record<string, unknown>;
           const kind = o.kind === "section" ? "section" : "org";
           const set = kind === "org" ? orgIds : sectionIds;
-          if (typeof o.id !== "string" || !set.has(o.id) || typeof o.to !== "string" || !o.to.trim()) return null;
-          return { kind, id: o.id, from: typeof o.from === "string" ? o.from : "", to: o.to.slice(0, 60) };
+          if (
+            typeof o.id !== "string" ||
+            !set.has(o.id) ||
+            typeof o.to !== "string" ||
+            !o.to.trim()
+          )
+            return null;
+          return {
+            kind,
+            id: o.id,
+            from: typeof o.from === "string" ? o.from : "",
+            to: o.to.slice(0, 60),
+          };
         })
-        .filter(Boolean) as PlanPatch["renames"]
+        .filter(Boolean) as PlanPatch["renames"])
     : [];
 
   const deletes = Array.isArray(p.deletes)
-    ? p.deletes
+    ? (p.deletes
         .map((d) => {
           const o = d as Record<string, unknown>;
           const kind = o.kind === "section" ? "section" : "org";
@@ -153,7 +192,7 @@ export function sanitizePatch(p: Partial<PlanPatch>, orgIds: Set<string>, sectio
           if (typeof o.id !== "string" || !set.has(o.id)) return null;
           return { kind, id: o.id, name: typeof o.name === "string" ? o.name : "" };
         })
-        .filter(Boolean) as PlanPatch["deletes"]
+        .filter(Boolean) as PlanPatch["deletes"])
     : [];
 
   return { creates, section_adds, renames, deletes };

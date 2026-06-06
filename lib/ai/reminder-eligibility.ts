@@ -22,9 +22,7 @@ import type { DocumentType } from "@/lib/supabase/types";
 //   trackable_renewal -> handled separately by suggest-reminders (trackables)
 //   flights / appointments -> NOT here: they self-surface on the calendar.
 
-export type ReminderKind =
-  | "bill"
-  | "receipt_recurring";
+export type ReminderKind = "bill" | "receipt_recurring";
 
 export type ReminderEligibility =
   | { eligible: true; kind: ReminderKind; leadDays: number }

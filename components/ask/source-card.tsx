@@ -33,7 +33,7 @@ export function SourceCard({ source }: { source: SourceItem }) {
   return (
     <Link
       href={source.href}
-      className="group flex items-start gap-3 rounded-xl border border-line bg-surface-raised px-3.5 py-2.5 transition-base hover:border-line-strong hover:bg-canvas/40"
+      className="group transition-base flex items-start gap-3 rounded-xl border border-line bg-surface-raised px-3.5 py-2.5 hover:border-line-strong hover:bg-canvas/40"
     >
       <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-canvas text-[10.5px] font-medium text-ink-muted">
         {source.id}
@@ -54,9 +54,7 @@ export function SourceCard({ source }: { source: SourceItem }) {
           ) : null}
         </p>
         <p className="mt-0.5 truncate text-[11.5px] text-ink-faint">
-          {[source.meta.section_label, source.meta.date_label]
-            .filter(Boolean)
-            .join(" · ")}
+          {[source.meta.section_label, source.meta.date_label].filter(Boolean).join(" · ")}
         </p>
       </div>
       {/* Source-space chip on the right. Always shown so the user can

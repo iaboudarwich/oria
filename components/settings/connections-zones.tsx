@@ -65,22 +65,84 @@ export async function ConnectionsZones({
   const privacyAcknowledged = ackAt !== null;
   const has = (a: { length: number }) => a.length > 0;
   const anyConnected =
-    has(gmail) || has(outlook) || has(cal) || has(drive) || has(ocal) || has(onedrive) || has(whoop);
+    has(gmail) ||
+    has(outlook) ||
+    has(cal) ||
+    has(drive) ||
+    has(ocal) ||
+    has(onedrive) ||
+    has(whoop);
 
   // Real OAuth connectors that are not connected yet. A provider whose OAuth
   // is not configured is shown as coming soon rather than a dead Connect link.
-  const candidates: Array<{ id: string; name: string; descKey: string; connected: boolean; ok: boolean; href: string }> = [
-    { id: "gmail", name: "Gmail", descKey: "gmail_desc", connected: has(gmail), ok: gmailOk, href: "/api/oauth/gmail/start" },
-    { id: "gcal", name: "Google Calendar", descKey: "gcal_desc", connected: has(cal), ok: googleOk, href: "/api/oauth/google/connect?service=calendar" },
-    { id: "gdrive", name: "Google Drive", descKey: "gdrive_desc", connected: has(drive), ok: googleOk, href: "/api/oauth/google/connect?service=drive" },
-    { id: "outlook", name: "Outlook", descKey: "outlook_desc", connected: has(outlook), ok: msOk, href: "/api/oauth/microsoft/connect?service=mail" },
-    { id: "ocal", name: "Outlook Calendar", descKey: "ocal_desc", connected: has(ocal), ok: msOk, href: "/api/oauth/microsoft/connect?service=calendar" },
-    { id: "onedrive", name: "OneDrive", descKey: "onedrive_desc", connected: has(onedrive), ok: msOk, href: "/api/oauth/microsoft/connect?service=onedrive" },
+  const candidates: Array<{
+    id: string;
+    name: string;
+    descKey: string;
+    connected: boolean;
+    ok: boolean;
+    href: string;
+  }> = [
+    {
+      id: "gmail",
+      name: "Gmail",
+      descKey: "gmail_desc",
+      connected: has(gmail),
+      ok: gmailOk,
+      href: "/api/oauth/gmail/start",
+    },
+    {
+      id: "gcal",
+      name: "Google Calendar",
+      descKey: "gcal_desc",
+      connected: has(cal),
+      ok: googleOk,
+      href: "/api/oauth/google/connect?service=calendar",
+    },
+    {
+      id: "gdrive",
+      name: "Google Drive",
+      descKey: "gdrive_desc",
+      connected: has(drive),
+      ok: googleOk,
+      href: "/api/oauth/google/connect?service=drive",
+    },
+    {
+      id: "outlook",
+      name: "Outlook",
+      descKey: "outlook_desc",
+      connected: has(outlook),
+      ok: msOk,
+      href: "/api/oauth/microsoft/connect?service=mail",
+    },
+    {
+      id: "ocal",
+      name: "Outlook Calendar",
+      descKey: "ocal_desc",
+      connected: has(ocal),
+      ok: msOk,
+      href: "/api/oauth/microsoft/connect?service=calendar",
+    },
+    {
+      id: "onedrive",
+      name: "OneDrive",
+      descKey: "onedrive_desc",
+      connected: has(onedrive),
+      ok: msOk,
+      href: "/api/oauth/microsoft/connect?service=onedrive",
+    },
     // WHOOP is a live Connect everywhere, same flow as the Health surface. The
     // start route handles a config gap gracefully (plain message), so we never
     // show it as "Soon". Health data is the user's own (user_id-scoped, never
     // shared into a circle or work space), so no per-space gating is needed.
-    { id: "whoop", name: "WHOOP", descKey: "whoop_desc", connected: has(whoop), ok: true, href: "/api/oauth/whoop/start" },
+    {
+      id: "whoop",
+      name: "WHOOP",
+      descKey: "whoop_desc",
+      connected: has(whoop),
+      ok: true,
+      href: "/api/oauth/whoop/start",
+    },
   ];
 
   // WHOOP is the user's own data (no scope); every other connector feeds the
@@ -151,7 +213,9 @@ export async function ConnectionsZones({
             >
               <div>
                 <span className="block text-[13.5px] font-medium text-ink">{item.name}</span>
-                <span className="mt-1 block text-[12px] leading-snug text-ink-faint">{t(item.descKey)}</span>
+                <span className="mt-1 block text-[12px] leading-snug text-ink-faint">
+                  {t(item.descKey)}
+                </span>
               </div>
               <div className="mt-3">
                 {item.available && item.href ? (

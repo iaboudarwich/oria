@@ -49,7 +49,11 @@ export function AiFallbackToast({
         >
           {t("fallback_cta")}
         </Link>
-        <button type="button" onClick={dismiss} className="text-[12.5px] text-ink-faint hover:text-ink">
+        <button
+          type="button"
+          onClick={dismiss}
+          className="text-[12.5px] text-ink-faint hover:text-ink"
+        >
           {t("fallback_dismiss")}
         </button>
       </div>

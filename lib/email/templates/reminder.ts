@@ -46,9 +46,7 @@ export function reminderEmailText(d: ReminderEmailData): string {
  * Tone and structure match the invite email. clean, no marketing.
  */
 export function reminderEmailHtml(d: ReminderEmailData): string {
-  const greeting = d.recipientName
-    ? `Hi ${escapeHtml(d.recipientName)},`
-    : "Hi,";
+  const greeting = d.recipientName ? `Hi ${escapeHtml(d.recipientName)},` : "Hi,";
   const dueRow = d.dueAt
     ? `<p style="margin:6px 0 0 0;font-size:13px;color:#6b6258;">${escapeHtml(formatDueDateUtc(d.dueAt))}</p>`
     : "";

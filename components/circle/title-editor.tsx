@@ -45,10 +45,8 @@ export function TitleEditor({
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState(current ?? "");
   const [pending, startTransition] = useTransition();
-  const presets =
-    orgKind === "office" ? WORKSPACE_PRESETS : CIRCLE_PRESETS;
-  const placeholder =
-    orgKind === "office" ? "e.g. Property manager" : "e.g. Wife or Driver";
+  const presets = orgKind === "office" ? WORKSPACE_PRESETS : CIRCLE_PRESETS;
+  const placeholder = orgKind === "office" ? "e.g. Property manager" : "e.g. Wife or Driver";
 
   function save(text: string) {
     const fd = new FormData();
@@ -70,7 +68,7 @@ export function TitleEditor({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="cursor-pointer text-[11.5px] text-ink-muted transition-base hover:text-ink"
+        className="transition-base cursor-pointer text-[11.5px] text-ink-muted hover:text-ink"
       >
         {current ? "Change title" : "Set title"}
       </button>
@@ -88,7 +86,7 @@ export function TitleEditor({
         onChange={(e) => setValue(e.target.value)}
         placeholder={placeholder}
         maxLength={60}
-        className="block h-8 w-full rounded-md border border-line bg-surface-raised px-2.5 text-[12.5px] text-ink placeholder:text-ink-faint outline-none focus:border-line-strong"
+        className="block h-8 w-full rounded-md border border-line bg-surface-raised px-2.5 text-[12.5px] text-ink outline-none placeholder:text-ink-faint focus:border-line-strong"
         autoFocus
       />
       <ul className="flex flex-wrap gap-1.5">
@@ -98,7 +96,7 @@ export function TitleEditor({
               type="button"
               onClick={() => save(p)}
               disabled={pending}
-              className="cursor-pointer rounded-full border border-line bg-surface px-2 py-0.5 text-[11px] text-ink-muted transition-base hover:border-line-strong hover:text-ink disabled:opacity-50"
+              className="transition-base cursor-pointer rounded-full border border-line bg-surface px-2 py-0.5 text-[11px] text-ink-muted hover:border-line-strong hover:text-ink disabled:opacity-50"
             >
               {p}
             </button>
@@ -109,14 +107,14 @@ export function TitleEditor({
         <button
           type="button"
           onClick={() => setOpen(false)}
-          className="cursor-pointer text-[11.5px] text-ink-muted transition-base hover:text-ink"
+          className="transition-base cursor-pointer text-[11.5px] text-ink-muted hover:text-ink"
         >
           Cancel
         </button>
         <button
           type="submit"
           disabled={pending}
-          className="inline-flex h-7 cursor-pointer items-center rounded-md bg-ink px-2.5 text-[11.5px] text-surface transition-base hover:bg-ink-soft disabled:opacity-50"
+          className="transition-base inline-flex h-7 cursor-pointer items-center rounded-md bg-ink px-2.5 text-[11.5px] text-surface hover:bg-ink-soft disabled:opacity-50"
         >
           {pending ? "Saving" : "Save"}
         </button>

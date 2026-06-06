@@ -8,10 +8,7 @@ import {
   tryAcceptInvite,
   type InvitePreview,
 } from "@/lib/data/invite-accept";
-import {
-  ACCESS_LEVEL_BLURBS,
-  ACCESS_LEVEL_LABELS,
-} from "@/lib/data/access-labels";
+import { ACCESS_LEVEL_BLURBS, ACCESS_LEVEL_LABELS } from "@/lib/data/access-labels";
 import { ArrowRightIcon } from "@/components/ui/icon";
 
 export const metadata = { title: "Join a circle" };
@@ -21,10 +18,7 @@ type PageProps = {
   searchParams: Promise<{ error?: string }>;
 };
 
-export default async function InvitePage({
-  params,
-  searchParams,
-}: PageProps) {
+export default async function InvitePage({ params, searchParams }: PageProps) {
   const { token } = await params;
   const { error } = await searchParams;
 
@@ -52,17 +46,14 @@ export default async function InvitePage({
       <header className="border-b border-line">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4 sm:px-8">
           <Wordmark />
-          <Link
-            href="/"
-            className="text-[13px] text-ink-muted hover:text-ink transition-base"
-          >
+          <Link href="/" className="transition-base text-[13px] text-ink-muted hover:text-ink">
             Back
           </Link>
         </div>
       </header>
 
       <main className="flex min-h-[calc(100vh-72px)] items-center justify-center px-6 py-12">
-        <div className="w-full max-w-[440px] animate-fade-up">
+        <div className="animate-fade-up w-full max-w-[440px]">
           <InviteBody
             preview={preview}
             token={token}
@@ -127,10 +118,8 @@ function InviteBody({
 
   return (
     <>
-      <p className="text-[11.5px] uppercase tracking-[0.12em] text-ink-faint">
-        Circle invite
-      </p>
-      <h1 className="mt-1 text-[26px] font-semibold leading-tight tracking-tight text-ink">
+      <p className="text-[11.5px] tracking-[0.12em] text-ink-faint uppercase">Circle invite</p>
+      <h1 className="mt-1 text-[26px] leading-tight font-semibold tracking-tight text-ink">
         {inviter ? (
           <>
             <span className="text-ink">{inviter}</span> invited you to join{" "}
@@ -138,22 +127,17 @@ function InviteBody({
           </>
         ) : (
           <>
-            You&apos;re invited to{" "}
-            <span className="text-ink">{circle}</span>
+            You&apos;re invited to <span className="text-ink">{circle}</span>
           </>
         )}
       </h1>
       {preview.organization_description ? (
-        <p className="mt-2 text-[13.5px] text-ink-muted">
-          {preview.organization_description}
-        </p>
+        <p className="mt-2 text-[13.5px] text-ink-muted">{preview.organization_description}</p>
       ) : null}
 
       <div className="mt-6 rounded-xl border border-line bg-surface-raised p-3.5">
         <Row label="Invited as">
-          <span className="text-[13px] text-ink">
-            {preview.display_name || preview.email}
-          </span>
+          <span className="text-[13px] text-ink">{preview.display_name || preview.email}</span>
           {preview.title ? (
             <span className="rounded bg-ink/[0.05] px-1.5 py-0.5 text-[10.5px] text-ink-muted">
               {preview.title}
@@ -162,9 +146,7 @@ function InviteBody({
         </Row>
         <div className="my-2 h-px bg-line" />
         <Row label="Can see">
-          <span className="text-[13px] text-ink">
-            {ACCESS_LEVEL_LABELS[preview.access_level]}
-          </span>
+          <span className="text-[13px] text-ink">{ACCESS_LEVEL_LABELS[preview.access_level]}</span>
         </Row>
         <p className="mt-1 pl-[80px] text-[11.5px] text-ink-faint">
           {ACCESS_LEVEL_BLURBS[preview.access_level]}
@@ -178,7 +160,7 @@ function InviteBody({
           <input type="hidden" name="token" value={token} />
           <button
             type="submit"
-            className="flex h-11 w-full items-center justify-center gap-1.5 rounded-xl bg-ink text-[14px] text-surface transition-base hover:bg-ink-soft"
+            className="transition-base flex h-11 w-full items-center justify-center gap-1.5 rounded-xl bg-ink text-[14px] text-surface hover:bg-ink-soft"
           >
             Accept and join {circle}
             <ArrowRightIcon size={14} />
@@ -191,30 +173,26 @@ function InviteBody({
         <div className="mt-6 space-y-2">
           <Link
             href={`/signup?next=${encodeURIComponent(`/invite/${token}`)}&email=${encodeURIComponent(preview.email)}`}
-            className="flex h-11 w-full items-center justify-center gap-1.5 rounded-xl bg-ink text-[14px] text-surface transition-base hover:bg-ink-soft"
+            className="transition-base flex h-11 w-full items-center justify-center gap-1.5 rounded-xl bg-ink text-[14px] text-surface hover:bg-ink-soft"
           >
             Create your account
             <ArrowRightIcon size={14} />
           </Link>
           <Link
             href={`/login?next=${encodeURIComponent(`/invite/${token}`)}&email=${encodeURIComponent(preview.email)}`}
-            className="flex h-11 w-full items-center justify-center rounded-xl border border-line bg-surface text-[14px] text-ink-soft transition-base hover:border-line-strong hover:text-ink"
+            className="transition-base flex h-11 w-full items-center justify-center rounded-xl border border-line bg-surface text-[14px] text-ink-soft hover:border-line-strong hover:text-ink"
           >
             I already have one
           </Link>
           <p className="mt-3 text-center text-[11.5px] text-ink-faint">
-            You&apos;ll join {circle} automatically. Your personal space stays
-            private.
+            You&apos;ll join {circle} automatically. Your personal space stays private.
           </p>
         </div>
       )}
 
       <p className="mt-8 text-center text-[11.5px] text-ink-faint">
         Got a code instead?{" "}
-        <Link
-          href="/invite/code"
-          className="text-ink-muted hover:text-ink transition-base"
-        >
+        <Link href="/invite/code" className="transition-base text-ink-muted hover:text-ink">
           Enter it here
         </Link>
       </p>
@@ -222,18 +200,10 @@ function InviteBody({
   );
 }
 
-function Row({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
+function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex items-center gap-2.5">
-      <span className="w-[72px] shrink-0 text-[11.5px] text-ink-muted">
-        {label}
-      </span>
+      <span className="w-[72px] shrink-0 text-[11.5px] text-ink-muted">{label}</span>
       <div className="flex min-w-0 flex-1 items-center gap-2">{children}</div>
     </div>
   );
@@ -242,13 +212,11 @@ function Row({
 function ErrorView({ title, body }: { title: string; body: string }) {
   return (
     <>
-      <h1 className="text-[24px] font-semibold tracking-tight text-ink">
-        {title}
-      </h1>
+      <h1 className="text-[24px] font-semibold tracking-tight text-ink">{title}</h1>
       <p className="mt-2 text-[13.5px] text-ink-muted">{body}</p>
       <Link
         href="/invite/code"
-        className="mt-6 inline-flex h-10 items-center rounded-xl border border-line bg-surface px-4 text-[13px] text-ink-soft transition-base hover:border-line-strong hover:text-ink"
+        className="transition-base mt-6 inline-flex h-10 items-center rounded-xl border border-line bg-surface px-4 text-[13px] text-ink-soft hover:border-line-strong hover:text-ink"
       >
         Have a code instead?
       </Link>

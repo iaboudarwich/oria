@@ -36,16 +36,13 @@ export interface RouterResult {
 export async function routeExtraction(
   buffer: Buffer,
   mimeType: string | null,
-  filename: string
+  filename: string,
 ): Promise<RouterResult | null> {
   const mime = (mimeType ?? "").toLowerCase().trim();
   const ext = filename.split(".").pop()?.toLowerCase() ?? "";
 
   // ── Plain text. passthrough, no service call ────────────────────────────
-  if (
-    mime.startsWith("text/plain") ||
-    ["txt", "md", "rst", "log"].includes(ext)
-  ) {
+  if (mime.startsWith("text/plain") || ["txt", "md", "rst", "log"].includes(ext)) {
     try {
       const text = buffer.toString("utf-8");
       return { text, method: "passthrough", fileHash: "" };
@@ -78,8 +75,12 @@ export async function routeExtraction(
 
   // Excel fallback
   if (
-    ["application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-     "application/vnd.ms-excel", "text/csv", "application/csv"].includes(mime) ||
+    [
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "application/vnd.ms-excel",
+      "text/csv",
+      "application/csv",
+    ].includes(mime) ||
     ["xlsx", "xls", "csv"].includes(ext)
   ) {
     const text = await extractExcelFallback(buffer);

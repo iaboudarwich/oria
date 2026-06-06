@@ -79,9 +79,9 @@ export function RitualForm({
   }
 
   return (
-    <div className="rounded-2xl border border-line bg-surface-raised p-4 space-y-4">
+    <div className="space-y-4 rounded-2xl border border-line bg-surface-raised p-4">
       <div>
-        <label className="mb-1 block text-eyebrow" htmlFor="ritual-title">
+        <label className="text-eyebrow mb-1 block" htmlFor="ritual-title">
           {t("ritual_name")}
         </label>
         <input
@@ -89,12 +89,12 @@ export function RitualForm({
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder={t("ritual_name_ph")}
-          className="block w-full rounded-xl border border-line bg-canvas/40 px-3 py-2 text-[14px] text-ink placeholder:text-ink-faint outline-none transition-base focus:bg-canvas"
+          className="transition-base block w-full rounded-xl border border-line bg-canvas/40 px-3 py-2 text-[14px] text-ink outline-none placeholder:text-ink-faint focus:bg-canvas"
         />
       </div>
 
       <div>
-        <span className="mb-1 block text-eyebrow">{t("ritual_cadence")}</span>
+        <span className="text-eyebrow mb-1 block">{t("ritual_cadence")}</span>
         <div className="flex gap-2">
           {(["daily", "weekly"] as const).map((c) => (
             <button
@@ -102,8 +102,10 @@ export function RitualForm({
               type="button"
               onClick={() => setCadence(c)}
               aria-pressed={cadence === c}
-              className={`rounded-xl px-3 py-1.5 text-[13px] transition-base ${
-                cadence === c ? "bg-ink text-surface" : "border border-line text-ink-muted hover:text-ink"
+              className={`transition-base rounded-xl px-3 py-1.5 text-[13px] ${
+                cadence === c
+                  ? "bg-ink text-surface"
+                  : "border border-line text-ink-muted hover:text-ink"
               }`}
             >
               {c === "daily" ? t("cadence_daily") : t("cadence_weekly")}
@@ -118,8 +120,10 @@ export function RitualForm({
                 type="button"
                 onClick={() => toggleDay(d)}
                 aria-pressed={days.includes(d)}
-                className={`h-9 min-w-9 rounded-lg px-2 text-[12px] transition-base ${
-                  days.includes(d) ? "bg-ink text-surface" : "border border-line text-ink-muted hover:text-ink"
+                className={`transition-base h-9 min-w-9 rounded-lg px-2 text-[12px] ${
+                  days.includes(d)
+                    ? "bg-ink text-surface"
+                    : "border border-line text-ink-muted hover:text-ink"
                 }`}
               >
                 {dowLabel(d, locale)}
@@ -130,7 +134,7 @@ export function RitualForm({
       </div>
 
       <div>
-        <label className="mb-1 block text-eyebrow" htmlFor="ritual-time">
+        <label className="text-eyebrow mb-1 block" htmlFor="ritual-time">
           {t("ritual_reminder")}
         </label>
         <input
@@ -138,7 +142,7 @@ export function RitualForm({
           type="time"
           value={reminderTime}
           onChange={(e) => setReminderTime(e.target.value)}
-          className="rounded-xl border border-line bg-canvas/40 px-3 py-2 text-[14px] text-ink outline-none transition-base focus:bg-canvas"
+          className="transition-base rounded-xl border border-line bg-canvas/40 px-3 py-2 text-[14px] text-ink outline-none focus:bg-canvas"
         />
         {reminderTime ? (
           <button
@@ -157,7 +161,7 @@ export function RitualForm({
             type="button"
             onClick={save}
             disabled={pending || !title.trim()}
-            className="cta inline-flex h-9 items-center rounded-xl bg-ink px-4 text-[13px] text-surface transition-base hover:bg-ink-soft disabled:opacity-40"
+            className="cta transition-base inline-flex h-9 items-center rounded-xl bg-ink px-4 text-[13px] text-surface hover:bg-ink-soft disabled:opacity-40"
           >
             {pending ? t("saving") : t("save")}
           </button>
@@ -165,7 +169,7 @@ export function RitualForm({
             type="button"
             onClick={onCancel}
             disabled={pending}
-            className="inline-flex h-9 items-center rounded-xl px-3 text-[13px] text-ink-muted transition-base hover:text-ink"
+            className="transition-base inline-flex h-9 items-center rounded-xl px-3 text-[13px] text-ink-muted hover:text-ink"
           >
             {t("cancel")}
           </button>
@@ -175,7 +179,7 @@ export function RitualForm({
             type="button"
             onClick={archive}
             disabled={pending}
-            className="inline-flex h-9 items-center rounded-xl px-3 text-[13px] text-claret transition-base hover:underline disabled:opacity-40"
+            className="transition-base inline-flex h-9 items-center rounded-xl px-3 text-[13px] text-claret hover:underline disabled:opacity-40"
           >
             {t("archive")}
           </button>

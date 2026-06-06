@@ -20,7 +20,7 @@ export default async function EditSectionPage({ params }: Props) {
       <div className="mb-4 flex items-center gap-2">
         <Link
           href="/dashboard/settings"
-          className="inline-flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-[12.5px] text-ink-muted transition-base hover:bg-surface-raised hover:text-ink"
+          className="transition-base inline-flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-[12.5px] text-ink-muted hover:bg-surface-raised hover:text-ink"
         >
           <span className="-ml-0.5">←</span> Settings
         </Link>
@@ -36,19 +36,19 @@ export default async function EditSectionPage({ params }: Props) {
             defaultValue={section.name}
             required
             maxLength={60}
-            className="block h-11 w-full rounded-xl border border-line-strong bg-surface-raised px-3.5 text-[16px] text-ink outline-none transition-base focus:border-ink"
+            className="transition-base block h-11 w-full rounded-xl border border-line-strong bg-surface-raised px-3.5 text-[16px] text-ink outline-none focus:border-ink"
           />
         </label>
         <div className="flex items-center gap-3">
           <button
             type="submit"
-            className="inline-flex h-11 items-center rounded-xl bg-ink px-5 text-[13.5px] text-surface hover:bg-ink-soft transition-base"
+            className="transition-base inline-flex h-11 items-center rounded-xl bg-ink px-5 text-[13.5px] text-surface hover:bg-ink-soft"
           >
             Save
           </button>
           <Link
             href="/dashboard/settings"
-            className="text-[13px] text-ink-muted hover:text-ink transition-base"
+            className="transition-base text-[13px] text-ink-muted hover:text-ink"
           >
             Cancel
           </Link>

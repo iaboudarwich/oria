@@ -4,8 +4,7 @@ import { useTranslations } from "next-intl";
 import { SearchIcon } from "@/components/ui/icon";
 import { COMMAND_OPEN_EVENT } from "./command-palette";
 
-const isMac =
-  typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform);
+const isMac = typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform);
 
 /** Visible top-bar entry point to the command palette (mirrors Cmd/Ctrl+K). */
 export function CommandSearchButton() {
@@ -14,7 +13,7 @@ export function CommandSearchButton() {
     <button
       type="button"
       onClick={() => window.dispatchEvent(new Event(COMMAND_OPEN_EVENT))}
-      className="inline-flex h-9 items-center gap-2 rounded-lg border border-line bg-surface px-3 text-[12.5px] text-ink-muted transition-base hover:border-line-strong hover:text-ink"
+      className="transition-base inline-flex h-9 items-center gap-2 rounded-lg border border-line bg-surface px-3 text-[12.5px] text-ink-muted hover:border-line-strong hover:text-ink"
       aria-label={t("title")}
     >
       <SearchIcon size={14} />

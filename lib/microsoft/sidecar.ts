@@ -9,7 +9,10 @@ import type { DriveFileMeta, DriveFetchResult, SyncedCalendarEvent } from "@/lib
 // body and are never logged.
 
 /** Fetch metadata + a short text excerpt for each picked OneDrive item. */
-export async function onedriveIndex(accessToken: string, itemIds: string[]): Promise<DriveFileMeta[]> {
+export async function onedriveIndex(
+  accessToken: string,
+  itemIds: string[],
+): Promise<DriveFileMeta[]> {
   const out = await postSidecar<{ files: DriveFileMeta[] }>(
     "/cloud/onedrive/index",
     { access_token: accessToken, item_ids: itemIds },

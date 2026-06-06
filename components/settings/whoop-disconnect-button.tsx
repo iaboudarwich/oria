@@ -28,7 +28,7 @@ export function WhoopDisconnectButton({
         }
         startTransition(() => disconnectWhoop());
       }}
-      className="inline-flex h-8 items-center rounded-lg border border-line px-3 text-[12px] text-ink transition-base hover:bg-canvas disabled:opacity-50"
+      className="transition-base inline-flex h-8 items-center rounded-lg border border-line px-3 text-[12px] text-ink hover:bg-canvas disabled:opacity-50"
     >
       {pending ? pendingLabel : armed ? confirmLabel : label}
     </button>

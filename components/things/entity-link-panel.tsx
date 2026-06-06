@@ -33,14 +33,12 @@ export function EntityLinkPanel({
   return (
     <section>
       <div className="mb-2 flex items-center justify-between px-1">
-        <h2 className="text-eyebrow">
-          Linked to
-        </h2>
+        <h2 className="text-eyebrow">Linked to</h2>
         {availableEntities.length > 0 && (
           <button
             type="button"
             onClick={() => setShowPicker((v) => !v)}
-            className="text-[11px] text-ink-faint hover:text-ink transition-base"
+            className="transition-base text-[11px] text-ink-faint hover:text-ink"
           >
             {showPicker ? "Cancel" : "Link thing"}
           </button>
@@ -48,7 +46,7 @@ export function EntityLinkPanel({
       </div>
 
       {linkedEntities.length > 0 && (
-        <ul className="space-y-1 mb-2">
+        <ul className="mb-2 space-y-1">
           {linkedEntities.map(({ entity, entityType, relationship }) => (
             <li
               key={entity.id}
@@ -71,7 +69,7 @@ export function EntityLinkPanel({
       )}
 
       {showPicker && (
-        <div className="rounded-xl border border-line bg-canvas p-3 space-y-2">
+        <div className="space-y-2 rounded-xl border border-line bg-canvas p-3">
           <select
             value={selectedId}
             onChange={(e) => setSelectedId(e.target.value)}
@@ -98,7 +96,7 @@ export function EntityLinkPanel({
             type="button"
             onClick={handleLink}
             disabled={!selectedId || pending}
-            className="inline-flex h-8 items-center rounded-lg bg-ink px-3 text-[12px] text-surface hover:bg-ink-soft disabled:opacity-50 transition-base"
+            className="transition-base inline-flex h-8 items-center rounded-lg bg-ink px-3 text-[12px] text-surface hover:bg-ink-soft disabled:opacity-50"
           >
             {pending ? "Linking..." : "Link"}
           </button>

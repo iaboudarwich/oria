@@ -11,20 +11,56 @@ const QUESTIONS: Record<Bucket, Record<Locale, string[]>> = {
   personal: {
     en: ["What is in my inbox?", "When is my next reminder?", "Show recent uploads."],
     ar: ["ماذا يوجد في صندوق الوارد؟", "متى موعد تذكيري التالي؟", "اعرض الملفات المرفوعة مؤخراً."],
-    fr: ["Qu'y a-t-il dans ma boîte de réception?", "Quel est mon prochain rappel?", "Afficher les imports récents."],
-    es: ["¿Qué hay en mi bandeja de entrada?", "¿Cuándo es mi próximo recordatorio?", "Muestra las cargas recientes."],
+    fr: [
+      "Qu'y a-t-il dans ma boîte de réception?",
+      "Quel est mon prochain rappel?",
+      "Afficher les imports récents.",
+    ],
+    es: [
+      "¿Qué hay en mi bandeja de entrada?",
+      "¿Cuándo es mi próximo recordatorio?",
+      "Muestra las cargas recientes.",
+    ],
   },
   work: {
-    en: ["What are our highest recurring expenses?", "Summarize this quarter's reports", "Which contracts are renewing?"],
+    en: [
+      "What are our highest recurring expenses?",
+      "Summarize this quarter's reports",
+      "Which contracts are renewing?",
+    ],
     ar: ["ما هي أعلى نفقاتنا المتكررة؟", "لخّص تقارير هذا الربع", "ما العقود التي ستتجدد؟"],
-    fr: ["Quelles sont nos dépenses récurrentes les plus élevées?", "Résume les rapports de ce trimestre", "Quels contrats arrivent à renouvellement?"],
-    es: ["¿Cuáles son nuestros mayores gastos recurrentes?", "Resume los informes de este trimestre", "¿Qué contratos se están renovando?"],
+    fr: [
+      "Quelles sont nos dépenses récurrentes les plus élevées?",
+      "Résume les rapports de ce trimestre",
+      "Quels contrats arrivent à renouvellement?",
+    ],
+    es: [
+      "¿Cuáles son nuestros mayores gastos recurrentes?",
+      "Resume los informes de este trimestre",
+      "¿Qué contratos se están renovando?",
+    ],
   },
   investor: {
-    en: ["What is our portfolio composition?", "Which deals are in diligence?", "Show recent fund reporting."],
-    ar: ["ما هو تكوين محفظتنا؟", "ما الصفقات قيد العناية الواجبة؟", "اعرض تقارير الصناديق الأخيرة."],
-    fr: ["Quelle est la composition de notre portefeuille?", "Quelles opérations sont en cours de diligence?", "Afficher les rapports de fonds récents."],
-    es: ["¿Cuál es la composición de nuestra cartera?", "¿Qué operaciones están en diligencia debida?", "Muestra los informes de fondos recientes."],
+    en: [
+      "What is our portfolio composition?",
+      "Which deals are in diligence?",
+      "Show recent fund reporting.",
+    ],
+    ar: [
+      "ما هو تكوين محفظتنا؟",
+      "ما الصفقات قيد العناية الواجبة؟",
+      "اعرض تقارير الصناديق الأخيرة.",
+    ],
+    fr: [
+      "Quelle est la composition de notre portefeuille?",
+      "Quelles opérations sont en cours de diligence?",
+      "Afficher les rapports de fonds récents.",
+    ],
+    es: [
+      "¿Cuál es la composición de nuestra cartera?",
+      "¿Qué operaciones están en diligencia debida?",
+      "Muestra los informes de fondos recientes.",
+    ],
   },
 };
 

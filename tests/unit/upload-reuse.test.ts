@@ -6,10 +6,7 @@ import {
   MEMORY_ITEM_CLONE_COLUMNS,
   EXTRACTION_CLONE_COLUMNS,
 } from "@/lib/data/upload-reuse";
-import {
-  getExtractionModel,
-  getTextExtractionModel,
-} from "@/lib/ai/extract";
+import { getExtractionModel, getTextExtractionModel } from "@/lib/ai/extract";
 
 /**
  * Identical-content upload reuse — pure helpers.
@@ -32,9 +29,7 @@ describe("contentHashHex", () => {
     const h = contentHashHex(Buffer.from("hello world"));
     expect(h).toMatch(/^[0-9a-f]{64}$/);
     // Known sha256 of "hello world".
-    expect(h).toBe(
-      "b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9",
-    );
+    expect(h).toBe("b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9");
   });
 
   it("is deterministic for identical bytes", () => {
@@ -110,9 +105,7 @@ describe("remapRowsToUpload", () => {
 
 describe("markProcessorReused", () => {
   it("appends +reused to a real processor string", () => {
-    expect(markProcessorReused("claude:claude-sonnet-4-6")).toBe(
-      "claude:claude-sonnet-4-6+reused",
-    );
+    expect(markProcessorReused("claude:claude-sonnet-4-6")).toBe("claude:claude-sonnet-4-6+reused");
   });
 
   it("is idempotent — doesn't double-suffix", () => {

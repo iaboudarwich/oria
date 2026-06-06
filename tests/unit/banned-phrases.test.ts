@@ -2,7 +2,13 @@ import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 // @ts-expect-error - plain .mjs module, no types
-import { scanValue, scanMessages, scanJargon, EM_DASH, LOCALES } from "../../scripts/check-i18n-banned.mjs";
+import {
+  scanValue,
+  scanMessages,
+  scanJargon,
+  EM_DASH,
+  LOCALES,
+} from "../../scripts/check-i18n-banned.mjs";
 
 /**
  * Guards the banned-phrase lint rule (wired into `npm run lint`).
@@ -60,7 +66,9 @@ describe("banned-phrase lint rule", () => {
     for (const locale of LOCALES) {
       const data = JSON.parse(readFileSync(join(root, `${locale}.json`), "utf8"));
       const violations = scanMessages(data, locale);
-      expect(violations, `${locale}.json should be clean: ${JSON.stringify(violations)}`).toEqual([]);
+      expect(violations, `${locale}.json should be clean: ${JSON.stringify(violations)}`).toEqual(
+        [],
+      );
     }
   });
 

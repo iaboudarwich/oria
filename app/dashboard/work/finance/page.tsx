@@ -16,7 +16,7 @@ export default async function WorkFinancePage() {
         Payments, receivables, and account activity for this Workspace.
       </div>
 
-      <div className="space-y-8 animate-fade-up">
+      <div className="animate-fade-up space-y-8">
         <section>
           <h2 className="mb-3 px-1 text-[13px] font-medium text-ink-muted">
             Add a financial document
@@ -28,9 +28,7 @@ export default async function WorkFinancePage() {
         </section>
 
         <section>
-          <h2 className="mb-3 px-1 text-[13px] font-medium text-ink-muted">
-            Recent activity
-          </h2>
+          <h2 className="mb-3 px-1 text-[13px] font-medium text-ink-muted">Recent activity</h2>
           <WorkFeed
             items={items}
             emptyTitle="No financial documents yet."

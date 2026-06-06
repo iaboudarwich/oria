@@ -35,11 +35,11 @@ export function ForgotClient({ defaultEmail }: { defaultEmail?: string }) {
       <div className="mt-6 space-y-4 text-center">
         <p
           role="status"
-          className="rounded-xl border border-line bg-canvas px-3.5 py-3 text-body-sm text-ink-soft"
+          className="text-body-sm rounded-xl border border-line bg-canvas px-3.5 py-3 text-ink-soft"
         >
           {t("forgot_sent_neutral")}
         </p>
-        <Link href="/login" className="block text-body-sm text-brand hover:opacity-80">
+        <Link href="/login" className="text-body-sm block text-brand hover:opacity-80">
           {t("forgot_back")}
         </Link>
       </div>
@@ -59,7 +59,7 @@ export function ForgotClient({ defaultEmail }: { defaultEmail?: string }) {
           onChange={(e) => setEmail(e.target.value)}
           placeholder="you@example.com"
           autoComplete="email"
-          className="block h-11 w-full rounded-xl border border-line-strong bg-surface-raised px-3.5 text-[16px] text-ink placeholder:text-ink-faint outline-none transition-base focus:border-ink"
+          className="transition-base block h-11 w-full rounded-xl border border-line-strong bg-surface-raised px-3.5 text-[16px] text-ink outline-none placeholder:text-ink-faint focus:border-ink"
         />
       </label>
 
@@ -84,7 +84,7 @@ export function ForgotClient({ defaultEmail }: { defaultEmail?: string }) {
         {sending ? (
           <>
             <span
-              className="h-3.5 w-3.5 rounded-full border-2 border-current border-t-transparent animate-spin"
+              className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent"
               aria-hidden
             />
             {t("forgot_sending")}

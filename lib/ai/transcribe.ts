@@ -33,14 +33,11 @@ export async function transcribeAudio(params: {
   formData.append("model", "whisper-1");
   formData.append("response_format", "verbose_json");
 
-  const whisperRes = await fetch(
-    "https://api.openai.com/v1/audio/transcriptions",
-    {
-      method: "POST",
-      headers: { Authorization: `Bearer ${apiKey}` },
-      body: formData,
-    },
-  );
+  const whisperRes = await fetch("https://api.openai.com/v1/audio/transcriptions", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${apiKey}` },
+    body: formData,
+  });
 
   if (!whisperRes.ok) {
     const err = await whisperRes.text();

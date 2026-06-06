@@ -23,7 +23,10 @@ async function loadOwnedGroup(
     .eq("id", groupId)
     .maybeSingle();
   if (!data || (data as { organization_id: string }).organization_id !== orgId) return null;
-  return { id: (data as { id: string }).id, status: (data as { status: UploadGroupStatus }).status };
+  return {
+    id: (data as { id: string }).id,
+    status: (data as { status: UploadGroupStatus }).status,
+  };
 }
 
 function revalidateUploads() {

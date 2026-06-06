@@ -9,13 +9,7 @@ import type { Invite } from "@/lib/supabase/types";
  * tiles), the link is a single soft Copy-link button below. Tap "View full
  * link" to reveal the URL. No dense rows of plain text.
  */
-export function InviteResultCard({
-  invite,
-  highlight,
-}: {
-  invite: Invite;
-  highlight?: boolean;
-}) {
+export function InviteResultCard({ invite, highlight }: { invite: Invite; highlight?: boolean }) {
   const [origin, setOrigin] = useState("");
   useEffect(() => {
     // Defer to a microtask so setState isn't called synchronously inside the
@@ -33,7 +27,7 @@ export function InviteResultCard({
           : "border-line"
       }`}
     >
-      <p className="text-center text-[10.5px] uppercase tracking-[0.14em] text-ink-faint">
+      <p className="text-center text-[10.5px] tracking-[0.14em] text-ink-faint uppercase">
         Invite code
       </p>
 
@@ -63,14 +57,12 @@ function CodeTiles({ code }: { code: string }) {
           {group.split("").map((ch, ci) => (
             <span
               key={ci}
-              className="inline-flex h-9 w-7 select-all items-center justify-center rounded-md border border-line bg-canvas/60 font-mono text-[15px] font-medium text-ink"
+              className="inline-flex h-9 w-7 items-center justify-center rounded-md border border-line bg-canvas/60 font-mono text-[15px] font-medium text-ink select-all"
             >
               {ch}
             </span>
           ))}
-          {gi < groups.length - 1 ? (
-            <span className="mx-0.5 h-px w-2 bg-ink-faint" />
-          ) : null}
+          {gi < groups.length - 1 ? <span className="mx-0.5 h-px w-2 bg-ink-faint" /> : null}
         </div>
       ))}
     </div>
@@ -104,7 +96,7 @@ function CopyButton({
       type="button"
       onClick={onCopy}
       disabled={disabled}
-      className={`inline-flex h-9 items-center gap-1.5 rounded-lg border px-3 text-[12px] transition-base disabled:opacity-40 ${
+      className={`transition-base inline-flex h-9 items-center gap-1.5 rounded-lg border px-3 text-[12px] disabled:opacity-40 ${
         copied
           ? "border-sage/30 bg-sage/10 text-[#3f5240]"
           : "border-line bg-surface text-ink-soft hover:border-line-strong hover:text-ink"
@@ -127,11 +119,7 @@ function CopyButton({
 function RevealLink({ href }: { href: string }) {
   const [shown, setShown] = useState(false);
   if (!href) {
-    return (
-      <p className="mt-3 text-center text-[11px] text-ink-faint">
-        Generating link...
-      </p>
-    );
+    return <p className="mt-3 text-center text-[11px] text-ink-faint">Generating link...</p>;
   }
   if (!shown) {
     return (
@@ -139,7 +127,7 @@ function RevealLink({ href }: { href: string }) {
         <button
           type="button"
           onClick={() => setShown(true)}
-          className="text-[11.5px] text-ink-faint hover:text-ink transition-base"
+          className="transition-base text-[11.5px] text-ink-faint hover:text-ink"
         >
           View full link
         </button>
@@ -148,7 +136,7 @@ function RevealLink({ href }: { href: string }) {
   }
   return (
     <div className="mt-3 rounded-lg border border-line bg-canvas/60 px-3 py-2">
-      <p className="break-all text-center font-mono text-[11.5px] leading-relaxed text-ink-muted">
+      <p className="text-center font-mono text-[11.5px] leading-relaxed break-all text-ink-muted">
         {href}
       </p>
     </div>

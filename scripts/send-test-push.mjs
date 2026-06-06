@@ -13,11 +13,7 @@ const env = Object.fromEntries(
     .map((l) => [l.slice(0, l.indexOf("=")).trim(), l.slice(l.indexOf("=") + 1).trim()]),
 );
 
-webpush.setVapidDetails(
-  env.VAPID_SUBJECT,
-  env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
-  env.VAPID_PRIVATE_KEY,
-);
+webpush.setVapidDetails(env.VAPID_SUBJECT, env.NEXT_PUBLIC_VAPID_PUBLIC_KEY, env.VAPID_PRIVATE_KEY);
 
 const supa = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, {
   auth: { persistSession: false },
@@ -46,8 +42,12 @@ for (const s of subs) {
       { endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } },
       payload,
     );
-    console.log(`-> ${new URL(s.endpoint).host}: HTTP ${res.statusCode} (accepted by push service)`);
+    console.log(
+      `-> ${new URL(s.endpoint).host}: HTTP ${res.statusCode} (accepted by push service)`,
+    );
   } catch (e) {
-    console.log(`-> ${new URL(s.endpoint).host}: FAILED statusCode=${e.statusCode} ${e.body || ""}`);
+    console.log(
+      `-> ${new URL(s.endpoint).host}: FAILED statusCode=${e.statusCode} ${e.body || ""}`,
+    );
   }
 }

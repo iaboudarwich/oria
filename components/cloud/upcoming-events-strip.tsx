@@ -31,7 +31,7 @@ export function UpcomingEventsStrip({
   return (
     <div className="rounded-2xl border border-line bg-surface-raised px-4 py-3">
       <div className="mb-2 flex items-center justify-between gap-3">
-        <p className="text-[12px] font-semibold uppercase tracking-[0.05em] text-ink-faint">
+        <p className="text-[12px] font-semibold tracking-[0.05em] text-ink-faint uppercase">
           {heading}
         </p>
         <button
@@ -46,7 +46,11 @@ export function UpcomingEventsStrip({
       <ul className="flex flex-wrap gap-2">
         {events.map((e) => {
           const when = e.isAllDay
-            ? new Date(e.startsAt).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })
+            ? new Date(e.startsAt).toLocaleDateString(undefined, {
+                weekday: "short",
+                month: "short",
+                day: "numeric",
+              })
             : new Date(e.startsAt).toLocaleString(undefined, {
                 weekday: "short",
                 hour: "numeric",
@@ -65,7 +69,12 @@ export function UpcomingEventsStrip({
               className="rounded-lg border border-line bg-canvas px-2.5 py-1 text-[12px]"
             >
               {e.webViewLink ? (
-                <a href={e.webViewLink} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                <a
+                  href={e.webViewLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:underline"
+                >
                   {inner}
                 </a>
               ) : (

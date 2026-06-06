@@ -26,14 +26,11 @@ export default function WorkReportsPage() {
         Executive summaries Oria writes from your uploads.
       </div>
 
-      <div className="space-y-8 animate-fade-up">
+      <div className="animate-fade-up space-y-8">
         <section>
           <ul className="grid grid-cols-1 gap-2 sm:grid-cols-3">
             {REPORT_CARDS.map((r) => (
-              <li
-                key={r.title}
-                className="rounded-2xl border border-line bg-surface-raised p-4"
-              >
+              <li key={r.title} className="rounded-2xl border border-line bg-surface-raised p-4">
                 <p className="text-[13.5px] text-ink">{r.title}</p>
                 <p className="mt-1 text-[12px] text-ink-faint">{r.body}</p>
               </li>
@@ -42,13 +39,11 @@ export default function WorkReportsPage() {
         </section>
 
         <section>
-          <h2 className="mb-3 px-1 text-[13px] font-medium text-ink-muted">
-            Latest
-          </h2>
+          <h2 className="mb-3 px-1 text-[13px] font-medium text-ink-muted">Latest</h2>
           <div className="rounded-2xl border border-line bg-surface-raised p-5">
             <p className="text-[12.5px] text-ink-faint">
-              Reports will appear here once Oria has enough context. Upload
-              a few months of invoices and statements to get started.
+              Reports will appear here once Oria has enough context. Upload a few months of invoices
+              and statements to get started.
             </p>
           </div>
         </section>

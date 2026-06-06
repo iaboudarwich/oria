@@ -2,12 +2,7 @@ import "server-only";
 
 import type { SectionRef } from "@/lib/data/all-sections";
 import type { SummaryData } from "./types";
-import {
-  travelSummary,
-  healthSummary,
-  propertiesSummary,
-  genericSummary,
-} from "./generators";
+import { travelSummary, healthSummary, propertiesSummary, genericSummary } from "./generators";
 
 export type { SummaryData } from "./types";
 export { billsSummary } from "./generators";

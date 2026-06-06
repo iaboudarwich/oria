@@ -2,13 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   CalendarIcon,
   ChatIcon,
@@ -107,7 +101,7 @@ function highlight(text: string, query: string): React.ReactNode {
   return (
     <>
       {text.slice(0, idx)}
-      <span className="bg-accent-soft/70 rounded-sm text-ink">
+      <span className="rounded-sm bg-accent-soft/70 text-ink">
         {text.slice(idx, idx + q.length)}
       </span>
       {text.slice(idx + q.length)}
@@ -261,10 +255,7 @@ export function LiveSearch({
   };
 
   const showResults =
-    open &&
-    (variant === "inline" ||
-      query.trim().length > 0 ||
-      recent.length > 0);
+    open && (variant === "inline" || query.trim().length > 0 || recent.length > 0);
   const hasAny =
     results &&
     (results.uploads.length > 0 ||
@@ -272,18 +263,12 @@ export function LiveSearch({
       results.reminders.length > 0 ||
       results.pages.length > 0);
 
-  const inputCls =
-    variant === "inline"
-      ? "h-14 px-4 text-[15px]"
-      : "h-12 px-3.5 text-[14.5px]";
+  const inputCls = variant === "inline" ? "h-14 px-4 text-[15px]" : "h-12 px-3.5 text-[14.5px]";
 
   return (
-    <div
-      ref={containerRef}
-      className={variant === "dropdown" ? "relative" : ""}
-    >
+    <div ref={containerRef} className={variant === "dropdown" ? "relative" : ""}>
       <div
-        className={`flex items-center gap-2.5 rounded-2xl border bg-surface-raised shadow-[0_1px_2px_rgba(28,26,23,0.04),0_2px_8px_-6px_rgba(28,26,23,0.10)] transition-base focus-within:border-ink-muted focus-within:shadow-[0_2px_4px_rgba(28,26,23,0.05),0_8px_24px_-14px_rgba(28,26,23,0.30)] ${inputCls} ${
+        className={`transition-base flex items-center gap-2.5 rounded-2xl border bg-surface-raised shadow-[0_1px_2px_rgba(28,26,23,0.04),0_2px_8px_-6px_rgba(28,26,23,0.10)] focus-within:border-ink-muted focus-within:shadow-[0_2px_4px_rgba(28,26,23,0.05),0_8px_24px_-14px_rgba(28,26,23,0.30)] ${inputCls} ${
           open ? "border-line-strong" : "border-line"
         }`}
       >
@@ -297,7 +282,7 @@ export function LiveSearch({
           onKeyDown={onKey}
           placeholder={placeholder}
           autoFocus={autoFocus}
-          className="h-full w-full bg-transparent text-ink placeholder:text-ink-faint outline-none"
+          className="h-full w-full bg-transparent text-ink outline-none placeholder:text-ink-faint"
         />
         <span className="hidden rounded border border-line px-1.5 py-0.5 text-[10.5px] text-ink-faint sm:inline">
           ⌘K
@@ -365,13 +350,11 @@ function ResultsPanel({
     return (
       <div className={wrapper}>
         <div className="flex items-center justify-between px-4 pt-3 pb-1">
-          <p className="text-[11px] uppercase tracking-[0.12em] text-ink-faint">
-            Recent
-          </p>
+          <p className="text-[11px] tracking-[0.12em] text-ink-faint uppercase">Recent</p>
           <button
             type="button"
             onClick={onClearRecent}
-            className="text-[11px] text-ink-faint hover:text-ink transition-base"
+            className="transition-base text-[11px] text-ink-faint hover:text-ink"
           >
             Clear
           </button>
@@ -382,7 +365,7 @@ function ResultsPanel({
               <button
                 type="button"
                 onClick={() => onRecentClick(r)}
-                className="flex w-full items-center gap-2.5 px-4 py-2 text-left text-[13px] text-ink-soft transition-base hover:bg-canvas/60 hover:text-ink"
+                className="transition-base flex w-full items-center gap-2.5 px-4 py-2 text-left text-[13px] text-ink-soft hover:bg-canvas/60 hover:text-ink"
               >
                 <ChevronUpIcon size={12} />
                 <span className="flex-1 truncate">{r}</span>
@@ -526,16 +509,10 @@ function ResultsPanel({
   );
 }
 
-function Group({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
+function Group({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <section className="border-b border-line last:border-b-0">
-      <p className="px-4 pt-3 pb-1 text-[11px] uppercase tracking-[0.12em] text-ink-faint">
+      <p className="px-4 pt-3 pb-1 text-[11px] tracking-[0.12em] text-ink-faint uppercase">
         {label}
       </p>
       <ul className="pb-2">{children}</ul>
@@ -568,16 +545,14 @@ function Row({
           e.preventDefault();
           onActivate(href);
         }}
-        className={`flex items-center gap-3 px-4 transition-base ${
+        className={`transition-base flex items-center gap-3 px-4 ${
           compact ? "py-1.5" : "py-2"
         } ${active ? "bg-canvas" : "hover:bg-canvas/60"}`}
       >
         {leading}
         <div className="min-w-0 flex-1">
           <p className="truncate text-[13.5px] text-ink">{title}</p>
-          {subtitle ? (
-            <p className="truncate text-[11.5px] text-ink-faint">{subtitle}</p>
-          ) : null}
+          {subtitle ? <p className="truncate text-[11.5px] text-ink-faint">{subtitle}</p> : null}
         </div>
       </Link>
     </li>

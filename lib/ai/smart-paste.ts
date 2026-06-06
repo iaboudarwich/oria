@@ -59,10 +59,7 @@ Guidance:
 - JSON only. No commentary. No em-dashes in any string.`;
 
 /** Classify a pasted block. Infra AI, never throws (returns none on failure). */
-export async function classifyPaste(
-  userId: string,
-  text: string,
-): Promise<PasteClassification> {
+export async function classifyPaste(userId: string, text: string): Promise<PasteClassification> {
   try {
     const adapter = await getProvider(userId, "infrastructure");
     if (!adapter) return NONE;
@@ -94,8 +91,18 @@ export function sanitizePasteClass(raw: unknown): PasteClassification {
       : null;
   if (!section) return NONE; // no section to file into means no useful offer
   const documentType =
-    typeof o.document_type === "string" ? o.document_type.replace(/\u2014/g, "-").trim().slice(0, 40) : null;
+    typeof o.document_type === "string"
+      ? o.document_type
+          .replace(/\u2014/g, "-")
+          .trim()
+          .slice(0, 40)
+      : null;
   const title =
-    typeof o.title === "string" ? o.title.replace(/\u2014/g, "-").trim().slice(0, 60) : "";
+    typeof o.title === "string"
+      ? o.title
+          .replace(/\u2014/g, "-")
+          .trim()
+          .slice(0, 60)
+      : "";
   return { kind: "file", section, documentType, title: title || (documentType ?? "Pasted note") };
 }

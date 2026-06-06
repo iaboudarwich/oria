@@ -16,19 +16,17 @@ export default function MarketingLayout({ children }: { children: ReactNode }) {
           <Wordmark href="/" />
           <Link
             href="/login"
-            className="text-body-sm text-ink-muted transition-base hover:text-ink"
+            className="text-body-sm transition-base text-ink-muted hover:text-ink"
           >
             Sign in
           </Link>
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-3xl flex-1 px-6 py-12">
-        {children}
-      </main>
+      <main className="mx-auto w-full max-w-3xl flex-1 px-6 py-12">{children}</main>
 
       <footer className="border-t border-line">
-        <div className="mx-auto flex max-w-3xl flex-col gap-4 px-6 py-8 text-body-sm text-ink-muted sm:flex-row sm:items-center sm:justify-between">
+        <div className="text-body-sm mx-auto flex max-w-3xl flex-col gap-4 px-6 py-8 text-ink-muted sm:flex-row sm:items-center sm:justify-between">
           <Wordmark />
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
             <Link href="/privacy" className="transition-base hover:text-ink">
@@ -37,17 +35,10 @@ export default function MarketingLayout({ children }: { children: ReactNode }) {
             <Link href="/terms" className="transition-base hover:text-ink">
               Terms
             </Link>
-            <Link
-              href="/security"
-              prefetch={false}
-              className="transition-base hover:text-ink"
-            >
+            <Link href="/security" prefetch={false} className="transition-base hover:text-ink">
               Security
             </Link>
-            <a
-              href="mailto:hi@heyoria.com"
-              className="transition-base hover:text-ink"
-            >
+            <a href="mailto:hi@heyoria.com" className="transition-base hover:text-ink">
               Contact
             </a>
           </div>

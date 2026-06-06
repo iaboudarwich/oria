@@ -1,0 +1,14 @@
+.next/
+out/
+build/
+node_modules/
+python/
+coverage/
+*.lock
+package-lock.json
+messages/*.json
+public/
+supabase/migrations/
+.storybook/
+storybook-static/
+tests/visual/**/*-snapshots/

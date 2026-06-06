@@ -5,11 +5,7 @@ import { sidecarAuthHeaders } from "@/lib/google/shared/sidecar-auth";
 import { getFreshGmailAccessToken, markConnectionError, markConnectionSynced } from "./connections";
 import { classifyEmail, type ScannedEmail, type EmailClassification } from "./classify";
 import { autoRoutePendingItems } from "./apply";
-import {
-  resolveWorkspaceOrgs,
-  chooseOrgForEmail,
-  type WorkspaceRouting,
-} from "./workspace";
+import { resolveWorkspaceOrgs, chooseOrgForEmail, type WorkspaceRouting } from "./workspace";
 import { computeSectionSuggestions } from "@/lib/sections/suggest-sections";
 import { logAuditEvent } from "@/lib/data/audit-log";
 
@@ -185,7 +181,10 @@ export async function listDetectedItems(
   if (status) query = query.eq("status", status);
   const { data } = await query;
   return ((data as Record<string, unknown>[]) ?? []).map((r) => {
-    const conn = r.email_connections as { email_address?: string } | { email_address?: string }[] | null;
+    const conn = r.email_connections as
+      | { email_address?: string }
+      | { email_address?: string }[]
+      | null;
     const connObj = Array.isArray(conn) ? conn[0] : conn;
     return {
       id: r.id as string,
@@ -270,14 +269,15 @@ export async function startGmailScan(input: {
     )
     .eq("id", token.connectionId)
     .maybeSingle();
-  const conn = (connRow as {
-    exclude_keywords?: string[];
-    exclude_senders?: string[];
-    exclude_with_attachments?: boolean;
-    workspace_routing?: WorkspaceRouting;
-    routing_mode?: "auto" | "fixed";
-    routing_target_org_ids?: string[];
-  } | null) ?? {};
+  const conn =
+    (connRow as {
+      exclude_keywords?: string[];
+      exclude_senders?: string[];
+      exclude_with_attachments?: boolean;
+      workspace_routing?: WorkspaceRouting;
+      routing_mode?: "auto" | "fixed";
+      routing_target_org_ids?: string[];
+    } | null) ?? {};
   const filters: ConnectionFilters = {
     excludeKeywords: conn.exclude_keywords ?? [],
     excludeSenders: conn.exclude_senders ?? [],

@@ -57,7 +57,7 @@ export function MetricDial({
   const hasTrend = week.some((p) => p.value > 0) || month.some((p) => p.value > 0);
   const center: ReactNode = (
     <span className="flex items-baseline gap-0.5">
-      <span className="num text-[26px] font-semibold leading-none" style={{ color: colorVar }}>
+      <span className="num text-[26px] leading-none font-semibold" style={{ color: colorVar }}>
         {displayValue}
       </span>
       {unit ? <span className="text-[12px] text-ink-muted">{unit}</span> : null}

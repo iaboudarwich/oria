@@ -17,8 +17,7 @@ export default function HouseholdRolePage() {
     <>
       <DemoTopbar title="This week, together" />
 
-
-      <div className="space-y-6 animate-fade-up">
+      <div className="animate-fade-up space-y-6">
         <Stats />
 
         <div className="grid gap-5 lg:grid-cols-3">
@@ -66,11 +65,11 @@ function Tasks() {
         <h2 className="text-[14px] font-semibold text-ink">Together</h2>
         <Badge tone="neutral">5</Badge>
       </div>
-      <ul className="rounded-xl border border-line bg-surface-raised divide-y divide-line">
+      <ul className="divide-y divide-line rounded-xl border border-line bg-surface-raised">
         {items.map((it) => (
           <li
             key={it.t}
-            className={`flex items-center gap-3 px-4 py-3 transition-base hover:bg-canvas/60 ${it.done ? "opacity-60" : ""}`}
+            className={`transition-base flex items-center gap-3 px-4 py-3 hover:bg-canvas/60 ${it.done ? "opacity-60" : ""}`}
           >
             <span
               className={`inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-md border ${
@@ -82,7 +81,9 @@ function Tasks() {
               <CheckIcon size={11} />
             </span>
             <div className="min-w-0 flex-1">
-              <p className={`text-[13.5px] ${it.done ? "text-ink-muted line-through" : "text-ink"}`}>
+              <p
+                className={`text-[13.5px] ${it.done ? "text-ink-muted line-through" : "text-ink"}`}
+              >
                 {it.t}
               </p>
               <p className="text-[11.5px] text-ink-muted">{it.w}</p>
@@ -100,10 +101,20 @@ function People() {
       <div className="mb-3 flex items-center justify-between px-1">
         <h2 className="text-[14px] font-semibold text-ink">Around you</h2>
       </div>
-      <ul className="rounded-xl border border-line bg-surface-raised divide-y divide-line">
+      <ul className="divide-y divide-line rounded-xl border border-line bg-surface-raised">
         {[
-          { name: "Antoine", state: "Travelling Tue, Wed", tone: "neutral" as const, Icon: HeartIcon },
-          { name: "Madeleine", state: "Arriving Sun", tone: "champagne" as const, Icon: PersonIcon },
+          {
+            name: "Antoine",
+            state: "Travelling Tue, Wed",
+            tone: "neutral" as const,
+            Icon: HeartIcon,
+          },
+          {
+            name: "Madeleine",
+            state: "Arriving Sun",
+            tone: "champagne" as const,
+            Icon: PersonIcon,
+          },
           { name: "Théo", state: "Boarding school", tone: "neutral" as const, Icon: PersonIcon },
           { name: "Sofia", state: "Coordinating", tone: "sage" as const, Icon: PersonIcon },
           { name: "Henri", state: "Preparing chalet", tone: "sage" as const, Icon: HomeIcon },
@@ -136,9 +147,12 @@ function Upcoming() {
       <div className="mb-3 flex items-center justify-between px-1">
         <h2 className="text-[14px] font-semibold text-ink">Coming up</h2>
       </div>
-      <ul className="rounded-xl border border-line bg-surface-raised divide-y divide-line">
+      <ul className="divide-y divide-line rounded-xl border border-line bg-surface-raised">
         {events.map((e) => (
-          <li key={e.title} className="flex items-center gap-3 px-4 py-3 transition-base hover:bg-canvas/60">
+          <li
+            key={e.title}
+            className="transition-base flex items-center gap-3 px-4 py-3 hover:bg-canvas/60"
+          >
             <span className="w-12 shrink-0 text-[13px] font-medium text-ink">{e.date}</span>
             <span className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-line bg-canvas text-ink-muted">
               <e.Icon size={12} />

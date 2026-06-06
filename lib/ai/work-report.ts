@@ -27,8 +27,7 @@ const REPORT_TOOL: Anthropic.Messages.Tool = {
       },
       summary: {
         type: "string",
-        description:
-          "A 2–4 sentence executive summary. Lead with the answer to the user's brief.",
+        description: "A 2–4 sentence executive summary. Lead with the answer to the user's brief.",
       },
       key_metrics: {
         type: "array",
@@ -70,8 +69,7 @@ const REPORT_TOOL: Anthropic.Messages.Tool = {
                 caption: { type: "string" },
                 series: {
                   type: "array",
-                  description:
-                    "Required for bar/line. Omit for table.",
+                  description: "Required for bar/line. Omit for table.",
                   items: {
                     type: "object",
                     properties: {
@@ -263,9 +261,7 @@ async function collectAggregates(organizationId: string): Promise<Aggregates> {
   ]);
 
   const rows = ((itemsRes.data ?? []) as AggregateRow[]).filter(Boolean);
-  const reminderRows = ((remindersRes.data ?? []) as ReminderRow[]).filter(
-    Boolean,
-  );
+  const reminderRows = ((remindersRes.data ?? []) as ReminderRow[]).filter(Boolean);
 
   // recentRows = first 100 of the time-ordered fetch. Goes into the
   // LINE ITEMS block so the model can sanity-check aggregates.
@@ -276,15 +272,14 @@ async function collectAggregates(organizationId: string): Promise<Aggregates> {
   for (const r of rows) {
     if (!r.amount_normalized || !r.amount_currency) continue;
     const cur = r.amount_currency;
-    const cell =
-      totalsByCur.get(cur) ?? {
-        currency: cur,
-        inflow: 0,
-        outflow: 0,
-        net: 0,
-        inCount: 0,
-        outCount: 0,
-      };
+    const cell = totalsByCur.get(cur) ?? {
+      currency: cur,
+      inflow: 0,
+      outflow: 0,
+      net: 0,
+      inCount: 0,
+      outCount: 0,
+    };
     if (r.direction === "inflow") {
       cell.inflow += r.amount_normalized;
       cell.inCount += 1;
@@ -296,8 +291,7 @@ async function collectAggregates(organizationId: string): Promise<Aggregates> {
   }
   for (const c of totalsByCur.values()) c.net = c.inflow - c.outflow;
   const byCurrency = Array.from(totalsByCur.values()).sort(
-    (a, b) =>
-      Math.abs(b.inflow) + Math.abs(b.outflow) - Math.abs(a.inflow) - Math.abs(a.outflow),
+    (a, b) => Math.abs(b.inflow) + Math.abs(b.outflow) - Math.abs(a.inflow) - Math.abs(a.outflow),
   );
 
   // -- monthly series per currency ------------------------------------
@@ -322,8 +316,7 @@ async function collectAggregates(organizationId: string): Promise<Aggregates> {
   // -- top vendors by outflow -----------------------------------------
   const vendorMap = new Map<string, VendorBucket>();
   for (const r of rows) {
-    if (r.direction !== "outflow" || !r.merchant || !r.amount_normalized)
-      continue;
+    if (r.direction !== "outflow" || !r.merchant || !r.amount_normalized) continue;
     const key = r.merchant.trim();
     if (!key) continue;
     const cell = vendorMap.get(key) ?? {
@@ -364,10 +357,7 @@ async function collectAggregates(organizationId: string): Promise<Aggregates> {
     .slice(0, 15);
 
   // -- recurring ------------------------------------------------------
-  const recurringMap = new Map<
-    string,
-    { sum: number; count: number; currency: string | null }
-  >();
+  const recurringMap = new Map<string, { sum: number; count: number; currency: string | null }>();
   for (const r of rows) {
     if (!r.is_recurring || !r.merchant) continue;
     const v = r.amount_normalized ?? 0;
@@ -441,10 +431,7 @@ const MAX_FILES = 12;
 const RAW_TEXT_BUDGET = 3000;
 const MAX_ITEM_SUMMARIES = 6;
 
-async function collectFiles(
-  organizationId: string,
-  prompt: string,
-): Promise<WorkspaceFile[]> {
+async function collectFiles(organizationId: string, prompt: string): Promise<WorkspaceFile[]> {
   const supabase = createAdminClient();
 
   // Load uploads + their latest extraction in a single embed.
@@ -509,9 +496,7 @@ async function collectFiles(
   const scored: WorkspaceFile[] = uploads.map((u) => {
     const ext = (u.extractions ?? [])
       .filter((e) => e?.raw_text)
-      .sort((a, b) =>
-        (b.processed_at ?? "").localeCompare(a.processed_at ?? ""),
-      )[0];
+      .sort((a, b) => (b.processed_at ?? "").localeCompare(a.processed_at ?? ""))[0];
     const fileTokens = tokenize(u.filename);
     let score = 0;
     for (const t of tokens) {
@@ -520,9 +505,7 @@ async function collectFiles(
     }
     const items = itemsByUpload.get(u.id) ?? [];
     const itemSummaries = items.slice(0, MAX_ITEM_SUMMARIES).map(formatItem);
-    const body = ext?.raw_text
-      ? truncate(ext.raw_text, RAW_TEXT_BUDGET)
-      : null;
+    const body = ext?.raw_text ? truncate(ext.raw_text, RAW_TEXT_BUDGET) : null;
     return {
       uploadId: u.id,
       filename: u.filename,
@@ -546,11 +529,51 @@ async function collectFiles(
 }
 
 const TOKEN_STOPWORDS = new Set([
-  "a", "an", "the", "of", "and", "or", "to", "in", "on", "for", "with",
-  "by", "at", "from", "is", "are", "was", "were", "be", "been", "this",
-  "that", "these", "those", "it", "as", "vs", "between", "across", "all",
-  "any", "what", "show", "compare", "analyze", "list", "find", "make",
-  "give", "me", "tell", "summarize", "summary", "report", "please",
+  "a",
+  "an",
+  "the",
+  "of",
+  "and",
+  "or",
+  "to",
+  "in",
+  "on",
+  "for",
+  "with",
+  "by",
+  "at",
+  "from",
+  "is",
+  "are",
+  "was",
+  "were",
+  "be",
+  "been",
+  "this",
+  "that",
+  "these",
+  "those",
+  "it",
+  "as",
+  "vs",
+  "between",
+  "across",
+  "all",
+  "any",
+  "what",
+  "show",
+  "compare",
+  "analyze",
+  "list",
+  "find",
+  "make",
+  "give",
+  "me",
+  "tell",
+  "summarize",
+  "summary",
+  "report",
+  "please",
 ]);
 
 function tokenize(s: string): Set<string> {
@@ -582,11 +605,7 @@ function formatItem(it: {
   if (it.occurred_at) parts.push(it.occurred_at.slice(0, 10));
   if (it.merchant) parts.push(it.merchant);
   if (it.amount_value) {
-    parts.push(
-      it.amount_currency
-        ? `${it.amount_value} ${it.amount_currency}`
-        : it.amount_value,
-    );
+    parts.push(it.amount_currency ? `${it.amount_value} ${it.amount_currency}` : it.amount_value);
   }
   if (it.direction) parts.push(it.direction);
   if (it.document_type) parts.push(it.document_type);
@@ -620,11 +639,7 @@ function formatRowForPrompt(r: AggregateRow): string {
   if (r.occurred_at) parts.push(r.occurred_at.slice(0, 10));
   if (r.merchant) parts.push(r.merchant);
   if (r.amount_value) {
-    parts.push(
-      r.amount_currency
-        ? `${r.amount_value} ${r.amount_currency}`
-        : r.amount_value,
-    );
+    parts.push(r.amount_currency ? `${r.amount_value} ${r.amount_currency}` : r.amount_value);
   }
   if (r.direction) parts.push(r.direction);
   if (r.section) parts.push(`section:${r.section}`);
@@ -646,9 +661,7 @@ export type GenerateResult =
   | { ok: true; payload: ReportPayload; title: string }
   | { ok: false; error: string };
 
-export async function generateWorkReport(
-  input: GenerateInput,
-): Promise<GenerateResult> {
+export async function generateWorkReport(input: GenerateInput): Promise<GenerateResult> {
   const client = getAnthropic();
   if (!client) {
     return { ok: false, error: "Claude isn't connected." };
@@ -672,9 +685,7 @@ export async function generateWorkReport(
     contextLines.push(`INSTRUCTIONS: ${workspaceContext.ai_instructions}`);
   }
   if (workspaceContext?.preferred_metrics?.length) {
-    contextLines.push(
-      `PREFERRED METRICS: ${workspaceContext.preferred_metrics.join(", ")}`,
-    );
+    contextLines.push(`PREFERRED METRICS: ${workspaceContext.preferred_metrics.join(", ")}`);
   }
   contextLines.push(`USER BRIEF: ${input.prompt}`);
   contextLines.push(`REPORT KIND: ${input.kind}`);
@@ -710,9 +721,7 @@ export async function generateWorkReport(
   if (agg.topVendorsByOutflow.length > 0) {
     contextLines.push("TOP VENDORS BY OUTFLOW (last 12 months):");
     for (const v of agg.topVendorsByOutflow) {
-      contextLines.push(
-        `  ${v.merchant}: ${fmtMoney(v.total)} ${v.currency ?? ""} (n=${v.count})`,
-      );
+      contextLines.push(`  ${v.merchant}: ${fmtMoney(v.total)} ${v.currency ?? ""} (n=${v.count})`);
     }
     contextLines.push("");
   }
@@ -746,17 +755,13 @@ export async function generateWorkReport(
     if (overdue.length > 0) {
       contextLines.push("  Overdue:");
       for (const r of overdue) {
-        contextLines.push(
-          `    - "${r.title}" due ${r.due_at?.slice(0, 10) ?? "?"}`,
-        );
+        contextLines.push(`    - "${r.title}" due ${r.due_at?.slice(0, 10) ?? "?"}`);
       }
     }
     if (upcoming30d.length > 0) {
       contextLines.push("  Upcoming next 30d:");
       for (const r of upcoming30d) {
-        contextLines.push(
-          `    - "${r.title}" due ${r.due_at?.slice(0, 10) ?? "?"}`,
-        );
+        contextLines.push(`    - "${r.title}" due ${r.due_at?.slice(0, 10) ?? "?"}`);
       }
     }
     contextLines.push("");
@@ -769,14 +774,8 @@ export async function generateWorkReport(
       "  Each entry has filename, document type, item summaries, and a body snippet pulled from prior extraction. Reference files by name when the user asked about specific ones. You can cross-reference data across files.",
     );
     for (const f of files) {
-      const sizeKb = f.sizeBytes
-        ? `${Math.round(f.sizeBytes / 1024)} KB`
-        : "?";
-      const tagLine = [
-        f.documentType ?? "document",
-        sizeKb,
-        f.uploadedAt.slice(0, 10),
-      ]
+      const sizeKb = f.sizeBytes ? `${Math.round(f.sizeBytes / 1024)} KB` : "?";
+      const tagLine = [f.documentType ?? "document", sizeKb, f.uploadedAt.slice(0, 10)]
         .filter(Boolean)
         .join(" · ");
       contextLines.push("");
@@ -844,9 +843,7 @@ Hard rules:
 - Honour STANDING INSTRUCTIONS and PREFERRED METRICS when present.`;
 
   const reportModel =
-    process.env.ANTHROPIC_EXTRACTION_MODEL ??
-    process.env.ANTHROPIC_MODEL ??
-    "claude-sonnet-4-6";
+    process.env.ANTHROPIC_EXTRACTION_MODEL ?? process.env.ANTHROPIC_MODEL ?? "claude-sonnet-4-6";
   let response: Anthropic.Messages.Message;
   const startedAt = Date.now();
   try {
@@ -902,8 +899,7 @@ Hard rules:
 }
 
 function normalizePayload(raw: Record<string, unknown>): ReportPayload | null {
-  const summary =
-    typeof raw.summary === "string" ? raw.summary.trim() : "";
+  const summary = typeof raw.summary === "string" ? raw.summary.trim() : "";
   if (!summary) return null;
 
   const sectionsIn = Array.isArray(raw.sections) ? raw.sections : [];

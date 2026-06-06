@@ -52,7 +52,9 @@ Rules:
     if (parsed.is_reminder !== true) return null;
     const title = typeof parsed.title === "string" ? parsed.title.trim().slice(0, 200) : "";
     const date =
-      typeof parsed.date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(parsed.date) ? parsed.date : null;
+      typeof parsed.date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(parsed.date)
+        ? parsed.date
+        : null;
     const time =
       typeof parsed.time === "string" && /^\d{2}:\d{2}$/.test(parsed.time) ? parsed.time : null;
     return { type: "reminder.create", title, date, time };

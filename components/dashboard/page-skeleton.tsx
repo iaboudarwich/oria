@@ -21,10 +21,7 @@ export function PageSkeleton({
       ) : null}
       <div className="space-y-3">
         {Array.from({ length: rows }).map((_, i) => (
-          <div
-            key={i}
-            className="h-14 rounded-2xl border border-line bg-surface-raised"
-          />
+          <div key={i} className="h-14 rounded-2xl border border-line bg-surface-raised" />
         ))}
       </div>
     </div>

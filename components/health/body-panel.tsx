@@ -35,14 +35,19 @@ export async function BodyPanel({
     return (
       <div className="space-y-5">
         <CalorieBalanceCard intakeKcal={intakeKcal} burnKcal={burnKcal} />
-        <WhoopCta body={t("body_empty")} acknowledged={acknowledged} whoopConnected={whoopConnected} />
+        <WhoopCta
+          body={t("body_empty")}
+          acknowledged={acknowledged}
+          whoopConnected={whoopConnected}
+        />
       </div>
     );
   }
 
   const score = rec?.recovery_score ?? null;
   const contributors: Contributor[] = [];
-  if (rhr) contributors.push({ label: t("resting_hr"), value: `${rhr.resting_heart_rate} ${t("bpm")}` });
+  if (rhr)
+    contributors.push({ label: t("resting_hr"), value: `${rhr.resting_heart_rate} ${t("bpm")}` });
   if (hrv) contributors.push({ label: t("hrv"), value: `${Math.round(hrv.hrv_milli!)} ms` });
 
   return (

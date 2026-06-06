@@ -2,11 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-import {
-  CalendarIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-} from "@/components/ui/icon";
+import { CalendarIcon, ChevronLeftIcon, ChevronRightIcon } from "@/components/ui/icon";
 import { EmptyState } from "@/components/ui/empty-state";
 import {
   CALENDAR_CATEGORY_LABEL,
@@ -122,9 +118,7 @@ export function CalendarView({
   // the user can access and let them filter further.
   const scoped = useMemo(() => {
     if (scope === "active") {
-      return activeSpaceId
-        ? entries.filter((e) => e.space_id === activeSpaceId)
-        : entries;
+      return activeSpaceId ? entries.filter((e) => e.space_id === activeSpaceId) : entries;
     }
     return entries;
   }, [entries, scope, activeSpaceId]);
@@ -170,11 +164,9 @@ export function CalendarView({
         <div className="flex items-center gap-2 px-1">
           <button
             type="button"
-            onClick={() =>
-              setScope((s) => (s === "active" ? "all" : "active"))
-            }
+            onClick={() => setScope((s) => (s === "active" ? "all" : "active"))}
             aria-pressed={scope === "all"}
-            className={`cursor-pointer rounded-full border px-2.5 py-0.5 text-[11.5px] transition-base focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink ${
+            className={`transition-base cursor-pointer rounded-full border px-2.5 py-0.5 text-[11.5px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink ${
               scope === "all"
                 ? "border-ink bg-ink text-surface"
                 : "border-line bg-canvas text-ink-muted hover:border-line-strong hover:text-ink"
@@ -243,35 +235,24 @@ export function CalendarView({
               active={topicFilter === "all"}
               onClick={() => setTopicFilter("all")}
             />
-            {TOPIC_ORDER.filter((t) => (topicCounts.get(t) ?? 0) > 0).map(
-              (t) => (
-                <Pill
-                  key={t}
-                  label={`${CALENDAR_TOPIC_LABEL[t]} · ${topicCounts.get(t) ?? 0}`}
-                  active={topicFilter === t}
-                  onClick={() => setTopicFilter(t)}
-                />
-              ),
-            )}
+            {TOPIC_ORDER.filter((t) => (topicCounts.get(t) ?? 0) > 0).map((t) => (
+              <Pill
+                key={t}
+                label={`${CALENDAR_TOPIC_LABEL[t]} · ${topicCounts.get(t) ?? 0}`}
+                active={topicFilter === t}
+                onClick={() => setTopicFilter(t)}
+              />
+            ))}
           </PillRow>
         </div>
       ) : null}
 
       {/* Mode bar */}
-      <ModeBar
-        mode={mode}
-        setMode={setMode}
-        cursor={cursor}
-        setCursor={setCursor}
-      />
+      <ModeBar mode={mode} setMode={setMode} cursor={cursor} setCursor={setCursor} />
 
       {/* Active view */}
       {mode === "list" ? (
-        <ListView
-          entries={filtered}
-          showSpacePill={showSpacePill}
-          activeSpaceId={activeSpaceId}
-        />
+        <ListView entries={filtered} showSpacePill={showSpacePill} activeSpaceId={activeSpaceId} />
       ) : mode === "year" ? (
         <YearGrid
           cursor={cursor}
@@ -363,14 +344,14 @@ function ModeBar({
               type="button"
               onClick={() => stepCursor(-1)}
               aria-label={tc("prev")}
-              className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-line bg-surface text-ink-soft transition-base hover:border-line-strong hover:text-ink"
+              className="transition-base inline-flex h-8 w-8 items-center justify-center rounded-lg border border-line bg-surface text-ink-soft hover:border-line-strong hover:text-ink"
             >
               <ChevronLeftIcon size={12} />
             </button>
             <button
               type="button"
               onClick={goToday}
-              className="inline-flex h-8 items-center rounded-lg border border-line bg-surface px-3 text-[12px] text-ink-soft transition-base hover:border-line-strong hover:text-ink"
+              className="transition-base inline-flex h-8 items-center rounded-lg border border-line bg-surface px-3 text-[12px] text-ink-soft hover:border-line-strong hover:text-ink"
             >
               {tc("today")}
             </button>
@@ -378,15 +359,13 @@ function ModeBar({
               type="button"
               onClick={() => stepCursor(1)}
               aria-label={tc("next")}
-              className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-line bg-surface text-ink-soft transition-base hover:border-line-strong hover:text-ink"
+              className="transition-base inline-flex h-8 w-8 items-center justify-center rounded-lg border border-line bg-surface text-ink-soft hover:border-line-strong hover:text-ink"
             >
               <ChevronRightIcon size={12} />
             </button>
           </div>
 
-          <p className="text-[13.5px] font-medium text-ink">
-            {periodTitle(mode, cursor)}
-          </p>
+          <p className="text-[13.5px] font-medium text-ink">{periodTitle(mode, cursor)}</p>
 
           <div className="ms-auto">
             <Segment>
@@ -412,9 +391,7 @@ function ModeBar({
 
 function Segment({ children }: { children: React.ReactNode }) {
   return (
-    <div className="inline-flex rounded-lg border border-line bg-surface p-0.5">
-      {children}
-    </div>
+    <div className="inline-flex rounded-lg border border-line bg-surface p-0.5">{children}</div>
   );
 }
 
@@ -431,10 +408,8 @@ function SegmentButton({
     <button
       type="button"
       onClick={onClick}
-      className={`inline-flex h-7 items-center rounded-md px-3 text-[12px] transition-base ${
-        active
-          ? "bg-canvas text-ink"
-          : "text-ink-muted hover:text-ink"
+      className={`transition-base inline-flex h-7 items-center rounded-md px-3 text-[12px] ${
+        active ? "bg-canvas text-ink" : "text-ink-muted hover:text-ink"
       }`}
     >
       {children}
@@ -475,13 +450,7 @@ function periodTitle(mode: Mode, cursor: Date): string {
 // Pills (filter rows)
 // ---------------------------------------------------------------------------
 
-function PillRow({
-  children,
-  muted,
-}: {
-  children: React.ReactNode;
-  muted?: boolean;
-}) {
+function PillRow({ children, muted }: { children: React.ReactNode; muted?: boolean }) {
   return (
     <div
       className={`-mx-1 flex flex-nowrap items-center gap-1.5 overflow-x-auto px-1 pb-0.5 ${
@@ -493,20 +462,12 @@ function PillRow({
   );
 }
 
-function Pill({
-  label,
-  active,
-  onClick,
-}: {
-  label: string;
-  active: boolean;
-  onClick: () => void;
-}) {
+function Pill({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`inline-flex h-7 shrink-0 items-center rounded-full border px-3 text-[12px] transition-base ${
+      className={`transition-base inline-flex h-7 shrink-0 items-center rounded-full border px-3 text-[12px] ${
         active
           ? "border-ink bg-ink text-surface"
           : "border-line bg-surface text-ink-soft hover:border-line-strong hover:text-ink"
@@ -549,9 +510,7 @@ function ListView({
         <section key={g.key}>
           <div className="mb-2 flex items-baseline gap-2 px-1">
             <h2 className="text-[13px] font-medium text-ink">{g.label}</h2>
-            {g.hint ? (
-              <span className="text-[11.5px] text-ink-faint">{g.hint}</span>
-            ) : null}
+            {g.hint ? <span className="text-[11.5px] text-ink-faint">{g.hint}</span> : null}
           </div>
           <ul className="space-y-0.5">
             {g.entries.map((e) => (
@@ -592,20 +551,14 @@ function WeekView({
         return (
           <section key={dayKey(d)}>
             <div className="mb-2 flex items-baseline gap-2 px-1">
-              <h2
-                className={`text-[13px] font-medium ${
-                  isToday ? "text-ink" : "text-ink-muted"
-                }`}
-              >
+              <h2 className={`text-[13px] font-medium ${isToday ? "text-ink" : "text-ink-muted"}`}>
                 {d.toLocaleDateString(undefined, {
                   weekday: "long",
                   month: "short",
                   day: "numeric",
                 })}
               </h2>
-              {isToday ? (
-                <span className="text-[11.5px] text-ink-faint">Today</span>
-              ) : null}
+              {isToday ? <span className="text-[11.5px] text-ink-faint">Today</span> : null}
             </div>
             {items.length === 0 ? (
               <p className="px-3 text-[12px] text-ink-faint">Nothing scheduled.</p>

@@ -70,16 +70,12 @@ function generateBackupCode(): BackupCodePlaintext {
  * stores the plaintext anywhere. The previous set (if any) is wiped
  * so disable+re-enable cycles don't leave stale codes valid.
  */
-export async function rotateBackupCodes(
-  userId: string,
-): Promise<BackupCodePlaintext[]> {
+export async function rotateBackupCodes(userId: string): Promise<BackupCodePlaintext[]> {
   const admin = createAdminClient();
   // Wipe any prior codes first so re-enrollment can never leave the
   // old set live.
   await admin.from("mfa_backup_codes").delete().eq("user_id", userId);
-  const plaintexts = Array.from({ length: BACKUP_CODE_COUNT }, () =>
-    generateBackupCode(),
-  );
+  const plaintexts = Array.from({ length: BACKUP_CODE_COUNT }, () => generateBackupCode());
   const rows = plaintexts.map((code) => ({
     user_id: userId,
     code_hash: hashBackupCode(code),
@@ -105,10 +101,7 @@ export async function countUnusedBackupCodes(userId: string): Promise<number> {
  * Try to consume a backup code. Returns true on success, false if
  * no matching unused code exists. Atomic via a single UPDATE.
  */
-export async function consumeBackupCode(
-  userId: string,
-  plaintext: string,
-): Promise<boolean> {
+export async function consumeBackupCode(userId: string, plaintext: string): Promise<boolean> {
   if (!BACKUP_CODE_REGEX.test(plaintext.trim())) return false;
   const hash = hashBackupCode(plaintext.trim());
   const admin = createAdminClient();
@@ -148,10 +141,7 @@ export async function markEnrolled(userId: string): Promise<void> {
 /** Clear `mfa_enrolled_at` on the profile. */
 export async function markUnenrolled(userId: string): Promise<void> {
   const admin = createAdminClient();
-  await admin
-    .from("profiles")
-    .update({ mfa_enrolled_at: null })
-    .eq("id", userId);
+  await admin.from("profiles").update({ mfa_enrolled_at: null }).eq("id", userId);
 }
 
 /** Read enrolled-at for the active user. Null when not enrolled. */
@@ -215,7 +205,6 @@ export async function readMfaStatus(): Promise<MfaStatus> {
     factorStatus,
     currentLevel,
     nextLevel,
-    challengeRequired:
-      verified !== null && currentLevel === "aal1" && nextLevel === "aal2",
+    challengeRequired: verified !== null && currentLevel === "aal1" && nextLevel === "aal2",
   };
 }

@@ -38,10 +38,8 @@ function resolveTarget(kind: string, key: string): ResolvedTarget | null {
 }
 
 function patchForTarget(t: ResolvedTarget) {
-  if (t.kind === "builtin")
-    return { section: t.section, custom_section_id: null };
-  if (t.kind === "custom")
-    return { section: null, custom_section_id: t.custom_section_id };
+  if (t.kind === "builtin") return { section: t.section, custom_section_id: null };
+  if (t.kind === "custom") return { section: null, custom_section_id: t.custom_section_id };
   return { section: null, custom_section_id: null };
 }
 
@@ -90,9 +88,7 @@ export async function setItemSection(formData: FormData): Promise<void> {
       | { uploaded_by: string | null; filename: string | null }
       | null;
   };
-  const uploadJoin = Array.isArray(row.uploads)
-    ? row.uploads[0] ?? null
-    : row.uploads ?? null;
+  const uploadJoin = Array.isArray(row.uploads) ? (row.uploads[0] ?? null) : (row.uploads ?? null);
   const uploader = uploadJoin?.uploaded_by ?? null;
   const parentFilename = uploadJoin?.filename ?? null;
 
@@ -184,15 +180,11 @@ async function propagateUploadSectionFromItems(
     const items = (itemRows ?? []) as ItemSlim[];
     if (items.length === 0) return; // nothing to propagate from
 
-    const anyUnsorted = items.some(
-      (i) => i.section === null && i.custom_section_id === null,
-    );
+    const anyUnsorted = items.some((i) => i.section === null && i.custom_section_id === null);
     if (anyUnsorted) return; // still has work pending
 
     const builtins = new Set(items.map((i) => i.section).filter((s): s is Section => !!s));
-    const customs = new Set(
-      items.map((i) => i.custom_section_id).filter((s): s is string => !!s),
-    );
+    const customs = new Set(items.map((i) => i.custom_section_id).filter((s): s is string => !!s));
 
     const { data: uploadRow } = await supabase
       .from("uploads")
@@ -277,9 +269,7 @@ export type NLApplyResult =
  * runs through Claude using tool-use so the model returns a clean mapping
  * we then apply via setItemSection.
  */
-export async function applyItemSortingInstruction(
-  formData: FormData,
-): Promise<NLApplyResult> {
+export async function applyItemSortingInstruction(formData: FormData): Promise<NLApplyResult> {
   const uploadId = String(formData.get("upload_id") ?? "").trim();
   const instruction = String(formData.get("instruction") ?? "").trim();
   if (!uploadId || !instruction) {
@@ -296,15 +286,14 @@ export async function applyItemSortingInstruction(
     .eq("upload_id", uploadId)
     .eq("organization_id", ctx.organization.id)
     .is("deleted_at", null);
-  const items =
-    (itemsRes.data ?? []) as Array<{
-      id: string;
-      title: string;
-      merchant: string | null;
-      category: string | null;
-      section: Section | null;
-      custom_section_id: string | null;
-    }>;
+  const items = (itemsRes.data ?? []) as Array<{
+    id: string;
+    title: string;
+    merchant: string | null;
+    category: string | null;
+    section: Section | null;
+    custom_section_id: string | null;
+  }>;
   if (items.length === 0) return { ok: false, error: "No items to sort" };
 
   // Sections available in this org (builtin labels + custom names).
@@ -345,8 +334,7 @@ export async function applyItemSortingInstruction(
         target.kind === "builtin"
           ? target.section
           : target.kind === "custom"
-            ? customs.find((c) => c.id === target.custom_section_id)?.name ??
-              "Custom"
+            ? (customs.find((c) => c.id === target.custom_section_id)?.name ?? "Custom")
             : "Unsorted",
     });
   }

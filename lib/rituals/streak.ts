@@ -130,8 +130,24 @@ export function computeStreak(input: StreakInput): StreakResult {
 /* --- voice/text "mark done" matcher -------------------------------------- */
 
 const STOP_WORDS = new Set([
-  "i", "did", "do", "done", "my", "the", "a", "mark", "as", "complete",
-  "completed", "finish", "finished", "for", "today", "log", "just", "ritual",
+  "i",
+  "did",
+  "do",
+  "done",
+  "my",
+  "the",
+  "a",
+  "mark",
+  "as",
+  "complete",
+  "completed",
+  "finish",
+  "finished",
+  "for",
+  "today",
+  "log",
+  "just",
+  "ritual",
 ]);
 
 function tokens(s: string): string[] {

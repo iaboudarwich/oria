@@ -50,7 +50,8 @@ export function UserMenu({
       .split(/\s+/)
       .slice(0, 2)
       .map((s) => s[0]?.toUpperCase())
-      .join("") || user.email[0]?.toUpperCase() ||
+      .join("") ||
+    user.email[0]?.toUpperCase() ||
     "?";
 
   return (
@@ -61,21 +62,17 @@ export function UserMenu({
         aria-expanded={open}
         aria-haspopup="menu"
         title={collapsed ? user.name : undefined}
-        className={`cta flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-2 py-2 transition-base hover:bg-canvas/60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink ${
+        className={`cta transition-base flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-2 py-2 hover:bg-canvas/60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink ${
           collapsed ? "justify-center" : ""
         }`}
       >
-        <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-sand text-ink-soft text-[11px] font-semibold">
+        <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-sand text-[11px] font-semibold text-ink-soft">
           {initials}
         </span>
         {!collapsed ? (
           <span className="min-w-0 flex-1 text-left">
-            <span className="block truncate text-[12.5px] text-ink">
-              {user.name}
-            </span>
-            <span className="block truncate text-[10.5px] text-ink-faint">
-              {t("account")}
-            </span>
+            <span className="block truncate text-[12.5px] text-ink">{user.name}</span>
+            <span className="block truncate text-[10.5px] text-ink-faint">{t("account")}</span>
           </span>
         ) : null}
       </button>
@@ -83,18 +80,14 @@ export function UserMenu({
       {open ? (
         <div
           role="menu"
-          className={`absolute z-40 w-[220px] overflow-hidden rounded-xl border border-line bg-surface-raised shadow-[0_10px_30px_-15px_rgba(28,26,23,0.20)] animate-fade-up ${
-            collapsed
-              ? "bottom-2 left-[calc(100%+8px)]"
-              : "bottom-[calc(100%-2px)] left-2 right-2"
+          className={`animate-fade-up absolute z-40 w-[220px] overflow-hidden rounded-xl border border-line bg-surface-raised shadow-[0_10px_30px_-15px_rgba(28,26,23,0.20)] ${
+            collapsed ? "bottom-2 left-[calc(100%+8px)]" : "right-2 bottom-[calc(100%-2px)] left-2"
           }`}
         >
           {/* Header: identifies the account at a glance. Not clickable. */}
           <div className="border-b border-line px-3.5 py-3">
             <p className="truncate text-[13px] text-ink">{user.name}</p>
-            <p className="truncate text-[11.5px] text-ink-faint">
-              {user.email}
-            </p>
+            <p className="truncate text-[11.5px] text-ink-faint">{user.email}</p>
           </div>
 
           {/* Logical order: Settings first, then the personal/onboarding
@@ -136,7 +129,7 @@ export function UserMenu({
                   setOpen(false);
                   setReportOpen(true);
                 }}
-                className="flex w-full items-center gap-2.5 px-3.5 py-2 text-left text-[13px] text-ink-soft transition-base hover:bg-canvas hover:text-ink"
+                className="transition-base flex w-full items-center gap-2.5 px-3.5 py-2 text-left text-[13px] text-ink-soft hover:bg-canvas hover:text-ink"
               >
                 <span className="inline-flex h-4 w-4 items-center justify-center text-ink-faint">
                   <BugIcon size={13} />
@@ -150,7 +143,7 @@ export function UserMenu({
             <form action={signOut}>
               <button
                 type="submit"
-                className="flex w-full items-center gap-2.5 px-3.5 py-2 text-left text-[13px] text-ink-soft transition-base hover:bg-canvas hover:text-ink"
+                className="transition-base flex w-full items-center gap-2.5 px-3.5 py-2 text-left text-[13px] text-ink-soft hover:bg-canvas hover:text-ink"
               >
                 <span className="inline-flex h-4 w-4 items-center justify-center text-ink-faint">
                   <LockIcon size={13} />
@@ -183,7 +176,7 @@ function MenuLink({
       <Link
         href={href}
         onClick={onSelect}
-        className="flex items-center gap-2.5 px-3.5 py-2 text-[13px] text-ink-soft transition-base hover:bg-canvas hover:text-ink"
+        className="transition-base flex items-center gap-2.5 px-3.5 py-2 text-[13px] text-ink-soft hover:bg-canvas hover:text-ink"
       >
         <span className="inline-flex h-4 w-4 items-center justify-center text-ink-faint">
           <Icon size={13} />

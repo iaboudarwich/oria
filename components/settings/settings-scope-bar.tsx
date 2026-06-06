@@ -45,7 +45,7 @@ export function SettingsScopeBar({
         value={currentId}
         onChange={onChange}
         disabled={pending}
-        className="rounded-lg border border-line-strong bg-surface px-2.5 py-1.5 text-[13px] font-medium text-ink outline-none transition-base focus:border-ink disabled:opacity-60"
+        className="transition-base rounded-lg border border-line-strong bg-surface px-2.5 py-1.5 text-[13px] font-medium text-ink outline-none focus:border-ink disabled:opacity-60"
       >
         {scopes.map((s) => (
           <option key={s.id} value={s.id}>

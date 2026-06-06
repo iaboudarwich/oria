@@ -56,10 +56,12 @@ const BILL_COLUMNS =
  * Pull the user's Diet items in the active org. Default window is "today",
  * but callers can request a wider range for the weekly view.
  */
-export async function listDietMeals(opts: {
-  since?: Date;
-  limit?: number;
-} = {}): Promise<DietMeal[]> {
+export async function listDietMeals(
+  opts: {
+    since?: Date;
+    limit?: number;
+  } = {},
+): Promise<DietMeal[]> {
   const { since, limit = 200 } = opts;
   const ctx = await requireContext();
   const supabase = await createClient();
@@ -119,11 +121,7 @@ export async function listBills(limit = 200): Promise<BillItem[]> {
     .order("occurred_at", { ascending: false, nullsFirst: false })
     .limit(limit);
   type Row = BillItem & { organization_id: string };
-  return enforceActiveOrg(
-    (data ?? []) as Row[],
-    ctx.organization.id,
-    "listBills",
-  ) as BillItem[];
+  return enforceActiveOrg((data ?? []) as Row[], ctx.organization.id, "listBills") as BillItem[];
 }
 
 /**
@@ -153,15 +151,11 @@ export function summarizeRecurring(bills: BillItem[]): RecurringSummary[] {
   }
   const out: RecurringSummary[] = [];
   for (const [, bs] of groups) {
-    bs.sort((a, b) =>
-      (b.occurred_at ?? "").localeCompare(a.occurred_at ?? ""),
-    );
+    bs.sort((a, b) => (b.occurred_at ?? "").localeCompare(a.occurred_at ?? ""));
     const numeric = bs
       .map((b) => b.amount_normalized)
       .filter((n): n is number => typeof n === "number");
-    const avg = numeric.length
-      ? numeric.reduce((a, b) => a + b, 0) / numeric.length
-      : null;
+    const avg = numeric.length ? numeric.reduce((a, b) => a + b, 0) / numeric.length : null;
     const interval = bs.find((b) => b.recurring_interval)?.recurring_interval ?? null;
     const last = bs[0]?.occurred_at ?? null;
     out.push({
@@ -169,8 +163,7 @@ export function summarizeRecurring(bills: BillItem[]): RecurringSummary[] {
       interval,
       count: bs.length,
       average: avg !== null ? Math.round(avg * 100) / 100 : null,
-      currency:
-        bs.find((b) => b.amount_currency)?.amount_currency ?? null,
+      currency: bs.find((b) => b.amount_currency)?.amount_currency ?? null,
       last_seen: last,
       next_expected: last ? nextOccurrence(last, interval) : null,
     });

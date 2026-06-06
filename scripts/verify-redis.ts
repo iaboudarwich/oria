@@ -23,8 +23,10 @@ function loadDotEnv() {
       if (eq < 0) continue;
       const key = trimmed.slice(0, eq).trim();
       let val = trimmed.slice(eq + 1).trim();
-      if ((val.startsWith('"') && val.endsWith('"')) ||
-          (val.startsWith("'") && val.endsWith("'"))) {
+      if (
+        (val.startsWith('"') && val.endsWith('"')) ||
+        (val.startsWith("'") && val.endsWith("'"))
+      ) {
         val = val.slice(1, -1);
       }
       if (!process.env[key]) process.env[key] = val;
@@ -35,9 +37,9 @@ function loadDotEnv() {
 }
 loadDotEnv();
 
-const UPSTASH_URL   = process.env.UPSTASH_REDIS_REST_URL;
+const UPSTASH_URL = process.env.UPSTASH_REDIS_REST_URL;
 const UPSTASH_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
-const TEST_KEY      = `oria:verify:${Date.now()}`;
+const TEST_KEY = `oria:verify:${Date.now()}`;
 
 function assert(cond: boolean, msg: string) {
   if (!cond) throw new Error(`ASSERTION FAILED: ${msg}`);
@@ -54,7 +56,7 @@ async function redisCmd<T>(cmd: string, ...args: (string | number)[]): Promise<T
     body: JSON.stringify([parts]),
   });
   if (!res.ok) throw new Error(`HTTP ${res.status}: ${await res.text()}`);
-  const body = await res.json() as Array<{ result: T; error?: string }>;
+  const body = (await res.json()) as Array<{ result: T; error?: string }>;
   if (body[0].error) throw new Error(body[0].error);
   return body[0].result;
 }
@@ -103,15 +105,15 @@ async function main() {
   console.log("\n── 4b: Dedup simulation ─────────────────");
 
   // Mirror dedup.ts logic exactly
-  const fakeOrgId   = "test-org-00000000";
-  const fakeHash    = "deadbeef".repeat(8); // 64-char hex
-  const dedupKey    = `dedup:${fakeOrgId}:${fakeHash}`;
-  const TTL_SECONDS = 60 * 60 * 24 * 30;   // 30 days (matches dedup.ts)
+  const fakeOrgId = "test-org-00000000";
+  const fakeHash = "deadbeef".repeat(8); // 64-char hex
+  const dedupKey = `dedup:${fakeOrgId}:${fakeHash}`;
+  const TTL_SECONDS = 60 * 60 * 24 * 30; // 30 days (matches dedup.ts)
 
-  const dedupEntry  = JSON.stringify({
-    uploadId:    "upload-test-id",
+  const dedupEntry = JSON.stringify({
+    uploadId: "upload-test-id",
     extractedAt: new Date().toISOString(),
-    charCount:   12345,
+    charCount: 12345,
   });
 
   // First call: should be a miss
@@ -132,7 +134,9 @@ async function main() {
   const hit = await redisCmd<string>("GET", dedupKey);
   const parsed = JSON.parse(hit) as { uploadId: string; charCount: number };
   assert(parsed.uploadId === "upload-test-id", `hit.uploadId mismatch: "${parsed.uploadId}"`);
-  console.log(`✓  Second checkDedup → cache HIT (uploadId=${parsed.uploadId}, charCount=${parsed.charCount})`);
+  console.log(
+    `✓  Second checkDedup → cache HIT (uploadId=${parsed.uploadId}, charCount=${parsed.charCount})`,
+  );
 
   // Cleanup
   await redisCmd<number>("DEL", dedupKey);
@@ -159,7 +163,9 @@ async function main() {
 
   // ── 4e: Rate-limiter readiness ───────────────────────────────────────────────
   console.log("\n── 4e: Rate-limiter readiness ───────────");
-  console.log(`  @upstash/redis   : ${process.env.npm_package_dependencies_upstash_redis ?? "^1.38.0"} (installed)`);
+  console.log(
+    `  @upstash/redis   : ${process.env.npm_package_dependencies_upstash_redis ?? "^1.38.0"} (installed)`,
+  );
   console.log(`  @upstash/ratelimit: not installed yet (correct — not needed yet)`);
   console.log(`  Env vars needed  : same UPSTASH_REDIS_REST_URL + TOKEN (already set)`);
   console.log(`  Integration shape:`);

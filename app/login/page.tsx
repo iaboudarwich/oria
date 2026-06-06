@@ -20,34 +20,48 @@ export default async function LoginPage({ searchParams }: Props) {
   const { error, notice, email, next } = await searchParams;
 
   return (
-    <div className="min-h-screen bg-canvas relative flex flex-col items-center justify-center px-4 py-12 overflow-hidden">
+    <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-canvas px-4 py-12">
       {/* Gradient orbs. premium background depth */}
       <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -start-40 h-[600px] w-[600px] rounded-full bg-brand/5 blur-3xl" />
-        <div className="absolute -bottom-40 -end-20 h-[400px] w-[400px] rounded-full bg-accent/8 blur-3xl" />
+        <div className="absolute -start-40 -top-40 h-[600px] w-[600px] rounded-full bg-brand/5 blur-3xl" />
+        <div className="absolute -end-20 -bottom-40 h-[400px] w-[400px] rounded-full bg-accent/8 blur-3xl" />
       </div>
 
-      <div className="mb-8 relative z-10">
+      <div className="relative z-10 mb-8">
         <Wordmark />
       </div>
 
-      <div className="relative z-10 w-full max-w-[400px] animate-scale-in">
-        <div className="rounded-2xl border border-line bg-surface-raised shadow-xl px-8 py-8">
+      <div className="animate-scale-in relative z-10 w-full max-w-[400px]">
+        <div className="rounded-2xl border border-line bg-surface-raised px-8 py-8 shadow-xl">
           <div className="mb-6 text-center">
             <h1 className="text-[24px] font-semibold tracking-tight text-ink">Welcome back</h1>
-            <p className="mt-1.5 text-[13.5px] text-ink-muted">Your private AI for everything that matters.</p>
+            <p className="mt-1.5 text-[13.5px] text-ink-muted">
+              Your private AI for everything that matters.
+            </p>
           </div>
 
           {notice && (
-            <div className="mb-4 rounded-xl border border-line bg-canvas px-3.5 py-2.5 text-[13px] text-ink-soft">{notice}</div>
+            <div className="mb-4 rounded-xl border border-line bg-canvas px-3.5 py-2.5 text-[13px] text-ink-soft">
+              {notice}
+            </div>
           )}
           {error && (
-            <div className="mb-4 rounded-xl border border-claret/20 bg-claret/5 px-3.5 py-2.5 text-[13px] text-claret">{error}</div>
+            <div className="mb-4 rounded-xl border border-claret/20 bg-claret/5 px-3.5 py-2.5 text-[13px] text-claret">
+              {error}
+            </div>
           )}
 
           <form className="space-y-3.5" action={signIn}>
             <input type="hidden" name="next" value={next ?? "/dashboard"} />
-            <Field label="Email" type="email" name="email" defaultValue={email} placeholder="you@example.com" autoComplete="email" required />
+            <Field
+              label="Email"
+              type="email"
+              name="email"
+              defaultValue={email}
+              placeholder="you@example.com"
+              autoComplete="email"
+              required
+            />
             <PasswordField
               label="Password"
               name="password"
@@ -55,12 +69,15 @@ export default async function LoginPage({ searchParams }: Props) {
               autoComplete="current-password"
               required
               hint={
-                <Link href="/auth/forgot" className="text-[12px] text-brand hover:opacity-80 transition-base">
+                <Link
+                  href="/auth/forgot"
+                  className="transition-base text-[12px] text-brand hover:opacity-80"
+                >
                   Forgot password?
                 </Link>
               }
             />
-            <SubmitButton pendingLabel="Signing in" className="w-full mt-1">
+            <SubmitButton pendingLabel="Signing in" className="mt-1 w-full">
               Sign in <ArrowRightIcon size={14} />
             </SubmitButton>
           </form>
@@ -76,7 +93,7 @@ export default async function LoginPage({ searchParams }: Props) {
             <MagicLinkField defaultEmail={email} />
             <button
               type="submit"
-              className="flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-line bg-canvas text-[13.5px] text-ink-muted transition-base hover:border-line-strong hover:text-ink hover:bg-surface-raised"
+              className="transition-base flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-line bg-canvas text-[13.5px] text-ink-muted hover:border-line-strong hover:bg-surface-raised hover:text-ink"
             >
               Send me a sign-in link
             </button>
@@ -86,7 +103,7 @@ export default async function LoginPage({ searchParams }: Props) {
             New to Oria?{" "}
             <Link
               href={`/signup${next ? `?next=${encodeURIComponent(next)}` : ""}`}
-              className="text-brand font-medium hover:opacity-80 transition-base"
+              className="transition-base font-medium text-brand hover:opacity-80"
             >
               Create account
             </Link>
@@ -112,7 +129,7 @@ function Field({
       )}
       <input
         {...rest}
-        className="block h-11 w-full rounded-xl border border-line-strong bg-canvas px-3.5 text-[16px] text-ink placeholder:text-ink-faint outline-none transition-all duration-150 focus:border-brand focus:shadow-[0_0_0_3px_rgba(91,95,221,0.12)] focus:bg-surface-raised"
+        className="block h-11 w-full rounded-xl border border-line-strong bg-canvas px-3.5 text-[16px] text-ink transition-all duration-150 outline-none placeholder:text-ink-faint focus:border-brand focus:bg-surface-raised focus:shadow-[0_0_0_3px_rgba(91,95,221,0.12)]"
       />
     </label>
   );
@@ -127,7 +144,7 @@ function MagicLinkField({ defaultEmail }: { defaultEmail?: string }) {
         defaultValue={defaultEmail}
         placeholder="Email address for magic link"
         autoComplete="email"
-        className="block h-11 w-full rounded-xl border border-line-strong bg-canvas px-3.5 text-[16px] text-ink placeholder:text-ink-faint outline-none transition-all duration-150 focus:border-brand focus:shadow-[0_0_0_3px_rgba(91,95,221,0.12)]"
+        className="block h-11 w-full rounded-xl border border-line-strong bg-canvas px-3.5 text-[16px] text-ink transition-all duration-150 outline-none placeholder:text-ink-faint focus:border-brand focus:shadow-[0_0_0_3px_rgba(91,95,221,0.12)]"
       />
     </label>
   );

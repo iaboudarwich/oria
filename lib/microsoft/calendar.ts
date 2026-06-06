@@ -30,13 +30,14 @@ export async function syncAllOutlookCalendars(): Promise<{ connections: number; 
     .eq("service", "outlook_calendar")
     .eq("status", "active");
 
-  const conns = (data as Array<{
-    id: string;
-    user_id: string;
-    account_email: string;
-    routing_mode: "auto" | "fixed";
-    routing_target_org_ids: string[] | null;
-  }>) ?? [];
+  const conns =
+    (data as Array<{
+      id: string;
+      user_id: string;
+      account_email: string;
+      routing_mode: "auto" | "fixed";
+      routing_target_org_ids: string[] | null;
+    }>) ?? [];
 
   let events = 0;
   for (const c of conns) {

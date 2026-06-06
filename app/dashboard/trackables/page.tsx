@@ -5,42 +5,43 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { PulseIcon } from "@/components/ui/icon";
 import { listTrackables, daysUntilRenewal } from "@/lib/data/trackables";
 import type { Trackable } from "@/lib/data/trackables";
-import {
-  AddTrackableForm,
-  TrackableRowActions,
-} from "@/components/trackables/trackable-controls";
+import { AddTrackableForm, TrackableRowActions } from "@/components/trackables/trackable-controls";
 
 export const metadata = { title: "Trackables" };
 export const dynamic = "force-dynamic";
 
 const CATEGORY_LABELS: Record<string, string> = {
-  insurance:     "Insurance",
-  subscription:  "Subscriptions",
-  lease:         "Leases",
-  membership:    "Memberships",
+  insurance: "Insurance",
+  subscription: "Subscriptions",
+  lease: "Leases",
+  membership: "Memberships",
   certification: "Certifications",
-  id_document:   "ID Documents",
-  contract:      "Contracts",
-  warranty:      "Warranties",
-  goal:          "Goals",
-  wishlist:      "Wishlist",
-  other:         "Other",
+  id_document: "ID Documents",
+  contract: "Contracts",
+  warranty: "Warranties",
+  goal: "Goals",
+  wishlist: "Wishlist",
+  other: "Other",
 };
 
 const CATEGORY_ORDER = [
-  "insurance", "lease", "subscription", "membership",
-  "certification", "id_document", "contract", "warranty",
-  "goal", "wishlist", "other",
+  "insurance",
+  "lease",
+  "subscription",
+  "membership",
+  "certification",
+  "id_document",
+  "contract",
+  "warranty",
+  "goal",
+  "wishlist",
+  "other",
 ];
 
 function countdownBadge(days: number | null) {
   if (days === null) return null;
   const label =
-    days < 0
-      ? `Expired ${Math.abs(days)}d ago`
-      : days === 0
-        ? "Expires today"
-        : `${days}d left`;
+    days < 0 ? `Expired ${Math.abs(days)}d ago` : days === 0 ? "Expires today" : `${days}d left`;
   const color =
     days < 0
       ? "bg-claret/10 text-claret"
@@ -50,7 +51,9 @@ function countdownBadge(days: number | null) {
           ? "bg-amber-50 text-amber-700 border-amber-200"
           : "bg-canvas text-ink-faint border-line";
   return (
-    <span className={`inline-flex items-center rounded-md border px-2 py-0.5 text-[10.5px] ${color}`}>
+    <span
+      className={`inline-flex items-center rounded-md border px-2 py-0.5 text-[10.5px] ${color}`}
+    >
       {label}
     </span>
   );
@@ -102,28 +105,28 @@ export default async function TrackablesPage() {
             const items = groups.get(cat) ?? [];
             return (
               <section key={cat}>
-                <h2 className="mb-3 px-1 text-eyebrow">
+                <h2 className="text-eyebrow mb-3 px-1">
                   {CATEGORY_LABELS[cat] ?? cat} ({items.length})
                 </h2>
-                <ul className="divide-y divide-line rounded-2xl border border-line bg-surface-raised overflow-hidden">
+                <ul className="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface-raised">
                   {items.map((t) => {
                     const days = daysUntilRenewal(t.renewal_date);
                     const cost = formatCost(t);
                     const dimmed = t.status === "wont_do" ? "opacity-55" : "";
                     return (
-                      <li key={t.id} className="px-4 py-3 hover:bg-canvas/60 transition-base">
+                      <li key={t.id} className="transition-base px-4 py-3 hover:bg-canvas/60">
                         <div className={`flex items-start gap-3 ${dimmed}`}>
                           <div className="min-w-0 flex-1">
-                            <div className="flex items-baseline gap-2 flex-wrap">
+                            <div className="flex flex-wrap items-baseline gap-2">
                               {t.source_upload_id ? (
                                 <Link
                                   href={`/dashboard/uploads/${t.source_upload_id}`}
-                                  className="font-medium text-[13.5px] text-ink hover:underline"
+                                  className="text-[13.5px] font-medium text-ink hover:underline"
                                 >
                                   {t.title}
                                 </Link>
                               ) : (
-                                <span className="font-medium text-[13.5px] text-ink">
+                                <span className="text-[13.5px] font-medium text-ink">
                                   {t.title}
                                 </span>
                               )}
@@ -131,17 +134,18 @@ export default async function TrackablesPage() {
                                 <span className="text-[12px] text-ink-faint">{t.vendor}</span>
                               )}
                             </div>
-                            <div className="mt-1 flex items-center gap-3 flex-wrap">
+                            <div className="mt-1 flex flex-wrap items-center gap-3">
                               {t.renewal_date && (
                                 <span className="text-[12px] text-ink-faint">
-                                  Renews {new Date(t.renewal_date).toLocaleDateString(undefined, {
-                                    month: "short", day: "numeric", year: "numeric",
+                                  Renews{" "}
+                                  {new Date(t.renewal_date).toLocaleDateString(undefined, {
+                                    month: "short",
+                                    day: "numeric",
+                                    year: "numeric",
                                   })}
                                 </span>
                               )}
-                              {cost && (
-                                <span className="text-[12px] text-ink-faint">{cost}</span>
-                              )}
+                              {cost && <span className="text-[12px] text-ink-faint">{cost}</span>}
                             </div>
                           </div>
                           {countdownBadge(days)}

@@ -31,7 +31,10 @@ function askMessages(userContent: Message["content"]): Message[] {
 
 /** Mirror each adapter's system handling using the shared pure helpers, and
  *  return the voice text that actually reaches that provider. */
-function voiceDeliveredTo(provider: "anthropic" | "openai" | "gemini", messages: Message[]): string {
+function voiceDeliveredTo(
+  provider: "anthropic" | "openai" | "gemini",
+  messages: Message[],
+): string {
   if (provider === "anthropic") {
     // Delivered verbatim as the `system` field.
     return flattenSystem(messages);
@@ -44,7 +47,9 @@ function voiceDeliveredTo(provider: "anthropic" | "openai" | "gemini", messages:
 }
 
 describe("voice reaches every provider intact", () => {
-  const messages = askMessages("SOURCES\n[1] passport expires 2028-09-14\n\nQUESTION\nwhen does my passport expire?");
+  const messages = askMessages(
+    "SOURCES\n[1] passport expires 2028-09-14\n\nQUESTION\nwhen does my passport expire?",
+  );
 
   it("flattenSystem carries the full voice block", () => {
     expect(flattenSystem(messages)).toContain(VOICE_RULES);

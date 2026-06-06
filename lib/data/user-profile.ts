@@ -129,8 +129,7 @@ export const getUserProfile = cache(async (userId: string): Promise<UserProfile>
       topSections,
       avgQueryLength: queryCount > 0 ? Math.round(queryLenSum / queryCount) : null,
       preferredTime: signals.length > 0 ? preferredTime : null,
-      reminderDismissalRate:
-        dismissed + acted > 0 ? dismissed / (dismissed + acted) : null,
+      reminderDismissalRate: dismissed + acted > 0 ? dismissed / (dismissed + acted) : null,
       totalSignals: signals.length,
     },
   };

@@ -20,15 +20,16 @@ const EXTRACTOR_VERSION = "v1-vision";
  * This replaces Phase B (entity.extract) for image uploads so the cron
  * doesn't double-process them.
  */
-export async function runImageAnalysis(uploadId: string, accountLanguage?: string | null): Promise<void> {
+export async function runImageAnalysis(
+  uploadId: string,
+  accountLanguage?: string | null,
+): Promise<void> {
   const admin = createAdminClient();
 
   // ── Skip conditions ────────────────────────────────────────────────────
   const { data: upload } = await admin
     .from("uploads")
-    .select(
-      "id, filename, mime_type, size_bytes, status, organization_id, storage_path",
-    )
+    .select("id, filename, mime_type, size_bytes, status, organization_id, storage_path")
     .eq("id", uploadId)
     .maybeSingle();
 
@@ -68,9 +69,7 @@ export async function runImageAnalysis(uploadId: string, accountLanguage?: strin
   if (!result) return; // HEIC, unsupported format, or AI unavailable
 
   // ── Store text as a document chunk (enables semantic search) ──────────
-  const searchText = [result.description, result.raw_text]
-    .filter(Boolean)
-    .join("\n\n");
+  const searchText = [result.description, result.raw_text].filter(Boolean).join("\n\n");
 
   if (searchText.trim().length >= 50) {
     await storeChunks({
