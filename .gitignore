@@ -53,3 +53,7 @@ screenshots/
 # Python sidecar
 python/.venv/
 python/**/__pycache__/
+
+# Visual-regression failure artifacts (baselines ARE committed)
+tests/visual/*.actual.png
+tests/visual/*.diff.png
