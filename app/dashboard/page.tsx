@@ -39,6 +39,7 @@ import { getDashboardCardPrefs } from "@/lib/data/dashboard-cards";
 import { DashboardCards } from "@/components/dashboard/dashboard-cards";
 import { NetWorthMiniCard } from "@/components/dashboard/net-worth-mini-card";
 import { SpendMiniCard } from "@/components/dashboard/spend-mini-card";
+import { Stack } from "@/components/ui/layout";
 import { listBills } from "@/lib/data/smart-sections";
 import { summarizeSpend } from "@/lib/sections/spend-summary";
 import { defaultStatCards, resolveStatCards, type StatCardKey } from "@/lib/daily/stat-cards";
@@ -193,7 +194,7 @@ export default async function DashboardHome() {
 
       {ctx ? <TwoFactorPrompt enrolled={!!mfaEnrolledAt} /> : null}
 
-      <div className="space-y-6 animate-fade-up">
+      <Stack gap={6} className="animate-fade-up">
         {upcomingEvents.length > 0 ? (
           <UpcomingEventsStrip
             events={upcomingEvents.map((e) => ({
@@ -252,7 +253,7 @@ export default async function DashboardHome() {
         ) : null}
 
         <SectionsGrid sections={allSections} counts={sectionCounts} />
-      </div>
+      </Stack>
 
       <Hint
         hintKey="first_upload"

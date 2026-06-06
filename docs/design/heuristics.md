@@ -122,6 +122,26 @@ Use the 4px scale: 4, 8, 12, 16, 20, 24, 32, 40, 48, 64, 96. Nothing in between.
 
 ---
 
+## 2b. Layout primitives (no hand-typed spacing)
+
+Spacing is set through four primitives (`components/ui/layout.tsx`), never a
+hand-typed `gap-*` / `p-*` / `space-y-*` in app code. Their only spacing input is
+a token step on the 4/8pt scale (`Space` = 1·4px, 2·8px, 3·12px, 4·16px, 5·20px,
+6·24px, 8·32px, 10·40px, 12·48px); an off-scale value is a TypeScript error.
+
+- **Stack** — vertical rhythm: `<Stack gap={6}>`. Replaces `space-y-*` / flex-col.
+- **Cluster** — a horizontal group that wraps: `<Cluster gap={2}>`. Centers by
+  default; `justify` for spread.
+- **Grid** — responsive columns: `<Grid gap={3} cols={2}>` (one per row on phones).
+- **Inset** — a padding box: `<Inset pad={4}>` or split `x`/`y`.
+
+Each accepts `as` (element) and a `className` for non-spacing concerns only.
+Adopted on the Home (`app/dashboard/page.tsx`) and the Finance spend view; extend
+to every new surface. Card-internal padding stays the `--radius`/token classes;
+the primitives own the BETWEEN-element rhythm.
+
+---
+
 ## 3. Border radius
 
 - Buttons, inputs, small chips, icon tiles: 10-12px

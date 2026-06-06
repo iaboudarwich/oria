@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { TrendChart } from "@/components/ui/trend-chart";
+import { Stack } from "@/components/ui/layout";
 import { money } from "@/lib/sections/format";
 import { summarizeSpend } from "@/lib/sections/spend-summary";
 import type { BillItem } from "@/lib/data/smart-sections";
@@ -55,7 +56,7 @@ export async function BillsSpendView({
     .slice(0, 12);
 
   return (
-    <div className="space-y-6">
+    <Stack gap={6}>
       <section>
         <h2 className="mb-2 px-1 text-eyebrow">{t("spend_over_time")}</h2>
         <div className="rounded-card border border-line bg-surface p-4 shadow-soft">
@@ -72,7 +73,7 @@ export async function BillsSpendView({
       {categories.length > 0 ? (
         <section>
           <h2 className="mb-2 px-1 text-eyebrow">{t("by_category")}</h2>
-          <div className="space-y-3 rounded-card border border-line bg-surface p-4 shadow-soft">
+          <Stack gap={3} className="rounded-card border border-line bg-surface p-4 shadow-soft">
             {categories.map((c, i) => {
               const color = CAT_COLORS[i % CAT_COLORS.length];
               return (
@@ -102,7 +103,7 @@ export async function BillsSpendView({
                 </div>
               );
             })}
-          </div>
+          </Stack>
         </section>
       ) : null}
 
@@ -169,6 +170,6 @@ export async function BillsSpendView({
           </ul>
         </section>
       ) : null}
-    </div>
+    </Stack>
   );
 }
