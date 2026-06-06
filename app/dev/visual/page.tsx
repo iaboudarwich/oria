@@ -5,6 +5,8 @@ import { TrendChart } from "@/components/ui/trend-chart";
 import { InsightCard } from "@/components/ui/insight-card";
 import { CardStack, CardStackItem } from "@/components/ui/card-stack";
 import { Button } from "@/components/ui/button";
+import { Skeleton, SkeletonRing } from "@/components/ui/skeleton";
+import { PaperclipIcon } from "@/components/ui/icon";
 import { Stack, Cluster, Grid, Inset } from "@/components/ui/layout";
 import { DATA_VAR, DATA_TRACK } from "@/lib/ui/status-color";
 import { ACCENT_PRESETS } from "@/lib/appearance/accent";
@@ -162,6 +164,34 @@ function Showcase() {
                 title={v}
               />
             ))}
+          </Cluster>
+        </Section>
+
+        <Section title="Skeletons (shimmer frozen in the shot)">
+          <div className="rounded-card border border-line bg-surface p-4 shadow-soft">
+            <Skeleton className="h-3 w-20 rounded-md" />
+            <div className="mt-3 flex items-center gap-4">
+              <SkeletonRing size={78} />
+              <div className="flex-1 space-y-2">
+                <Skeleton className="h-4 w-24 rounded-md" />
+                <Skeleton className="h-3.5 w-16 rounded-md" />
+              </div>
+            </div>
+          </div>
+        </Section>
+
+        <Section title="Tooltip (static sample; live on hover/focus on real surfaces)">
+          <Cluster gap={4} align="center">
+            <button
+              type="button"
+              aria-label="Attach a file"
+              className="flex h-9 w-9 items-center justify-center rounded-xl border border-line bg-surface-3 text-ink-muted"
+            >
+              <PaperclipIcon size={17} />
+            </button>
+            <span className="rounded-md border border-line-strong bg-surface-floating px-2 py-1 text-[11.5px] font-medium text-ink shadow-lg">
+              Attach a file
+            </span>
           </Cluster>
         </Section>
 
